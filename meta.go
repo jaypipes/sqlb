@@ -16,6 +16,16 @@ WHERE t.TABLE_TYPE = 'BASE TABLE'
 AND t.TABLE_SCHEMA = ?
 ORDER BY t.TABLE_NAME
 `
+    IS_COLUMNS = `
+SELECT c.TABLE_NAME, c.COLUMN_NAME
+FROM INFORMATION_SCHEMA.COLUMNS AS c
+JOIN INFORMATION_SCHEMA.TABLES AS t
+ ON t.TABLE_SCHEMA = c.TABLE_SCHEMA
+ AND t.TABLE_NAME = c.TABLE_NAME
+WHERE c.TABLE_SCHEMA = ?
+AND t.TABLE_TYPE = 'BASE TABLE'
+ORDER BY c.TABLE_NAME, c.COLUMN_NAME
+`
 )
 
 type Column struct {
@@ -51,12 +61,41 @@ func Reflect(driver string, db *sql.DB, meta *Meta) error {
         }
         tables[table.Name] = table
     }
+    if err = fillTableColumns(db, schemaName, &tables); err != nil {
+        return err
+    }
     meta.schemaName = schemaName
     meta.tables = tables
     meta.db = db
     return nil
 }
 
+// Grabs column information from the information schema and populates the
+// supplied map of Table descriptors' columns
+func fillTableColumns(db *sql.DB, schemaName string, tables *map[string]*Table) error {
+    rows, err := db.Query(IS_COLUMNS, schemaName)
+    if err != nil {
+        return err
+    }
+    var table *Table
+    for rows.Next() {
+        var tname string
+        var cname string
+        err = rows.Scan(&tname, &cname)
+        if err != nil {
+            return err
+        }
+        table = (*tables)[tname]
+        if table.Columns == nil {
+            table.Columns = make(map[string]*Column, 0)
+        }
+        col := &Column{Table: table, Name: cname}
+        table.Columns[cname] = col
+    }
+    return nil
+}
+
+// Returns the database schema name given a driver name and a sql.DB handle
 func getSchemaName(driver string, db *sql.DB) string {
     var qs string
     switch driver {
