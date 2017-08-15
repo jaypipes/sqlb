@@ -28,28 +28,28 @@ ORDER BY c.TABLE_NAME, c.COLUMN_NAME
 `
 )
 
-type Column struct {
+type ColumnDef struct {
     name string
-    table *Table
+    table *TableDef
 }
 
-type Table struct {
+type TableDef struct {
     name string
     schema string
-    columns map[string]*Column
+    columns map[string]*ColumnDef
 }
 
-func (t *Table) Column(colName string) *Column {
+func (t *TableDef) Column(colName string) *ColumnDef {
     return t.columns[colName]
 }
 
 type Meta struct {
     db *sql.DB
-    tables map[string]*Table
+    tables map[string]*TableDef
     schemaName string
 }
 
-func (m *Meta) Table(tblName string) *Table {
+func (m *Meta) Table(tblName string) *TableDef {
     return m.tables[tblName]
 }
 
@@ -60,16 +60,16 @@ func Reflect(driver string, db *sql.DB, meta *Meta) error {
     if err != nil {
         return err
     }
-    tables := make(map[string]*Table, 0)
+    tables := make(map[string]*TableDef, 0)
     for rows.Next() {
-        table := &Table{schema: schemaName}
+        table := &TableDef{schema: schemaName}
         err = rows.Scan(&table.name)
         if err != nil {
             return err
         }
         tables[table.name] = table
     }
-    if err = fillTableColumns(db, schemaName, &tables); err != nil {
+    if err = fillTableColumnDefs(db, schemaName, &tables); err != nil {
         return err
     }
     meta.schemaName = schemaName
@@ -79,13 +79,13 @@ func Reflect(driver string, db *sql.DB, meta *Meta) error {
 }
 
 // Grabs column information from the information schema and populates the
-// supplied map of Table descriptors' columns
-func fillTableColumns(db *sql.DB, schemaName string, tables *map[string]*Table) error {
+// supplied map of TableDef descriptors' columns
+func fillTableColumnDefs(db *sql.DB, schemaName string, tables *map[string]*TableDef) error {
     rows, err := db.Query(IS_COLUMNS, schemaName)
     if err != nil {
         return err
     }
-    var table *Table
+    var table *TableDef
     for rows.Next() {
         var tname string
         var cname string
@@ -95,9 +95,9 @@ func fillTableColumns(db *sql.DB, schemaName string, tables *map[string]*Table) 
         }
         table = (*tables)[tname]
         if table.columns == nil {
-            table.columns = make(map[string]*Column, 0)
+            table.columns = make(map[string]*ColumnDef, 0)
         }
-        col := &Column{table: table, name: cname}
+        col := &ColumnDef{table: table, name: cname}
         table.columns[cname] = col
     }
     return nil
