@@ -15,7 +15,7 @@ transform this application to instead work with the `sqlb` library, showing the
 resulting gains in both code expressiveness, application speed and memory
 efficiency.
 
-Our example will be a simple blogging application supporting comments.
+Our example will be a simple blogging application.
 
 Imagine we have the following set of tables in our database:
 
@@ -88,7 +88,7 @@ type Article struct {
 }
 
 func getArticles() []*Article {
-    qs := 
+    qs := `
 SELECT
   articles.title,
   articles.content,
@@ -158,7 +158,7 @@ particular author? In both of these cases, we will need to modify the
 func getArticles(numArticles int, byAuthor string) []*Articles {
     // Our collection of query arguments
     qargs := make([]interface{}, 0)
-    qs := 
+    qs := `
 SELECT
   articles.title,
   articles.content,
