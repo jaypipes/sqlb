@@ -39,10 +39,18 @@ type Table struct {
     columns map[string]*Column
 }
 
+func (t *Table) Column(colName string) *Column {
+    return t.columns[colName]
+}
+
 type Meta struct {
     db *sql.DB
     tables map[string]*Table
     schemaName string
+}
+
+func (m *Meta) Table(tblName string) *Table {
+    return m.tables[tblName]
 }
 
 func Reflect(driver string, db *sql.DB, meta *Meta) error {

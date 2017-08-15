@@ -80,4 +80,8 @@ func TestReflectMySQL(t *testing.T) {
 
     assert.Equal(7, len(userTbl.columns))
     assert.Equal(5, len(artTbl.columns))
+
+    createdOnCol := userTbl.Column("created_on")
+    assert.NotNil(createdOnCol)
+    assert.Equal("created_on", createdOnCol.name)
 }

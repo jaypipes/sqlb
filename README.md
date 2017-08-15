@@ -245,12 +245,12 @@ support for a configurable number of articles and filtering by author -- to use
 ```go
 
 func getArticles() []*Article {
-    articles := meta.Table("articles").Columns
-    users := meta.Table("users").Columns
+    articles := meta.Table("articles")
+    users := meta.Table("users")
 
-    q := sqlb.Select(articles["title"], articles["content"],
-                     articles["created_by"], users["name"])
-    q.OrderBy(qe.Desc(articles["created_by"))
+    q := sqlb.Select(articles.Column("title"), articles.Column("content"),
+                     articles.Column("created_by"), users.Column("name"))
+    q.OrderBy(qe.Desc(articles.Column("created_by"))
     q.Limit(10)
 
     articles := make([]*Article, 0)
