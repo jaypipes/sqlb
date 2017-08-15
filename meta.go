@@ -29,14 +29,14 @@ ORDER BY c.TABLE_NAME, c.COLUMN_NAME
 )
 
 type Column struct {
-    Name string
-    Table *Table
+    name string
+    table *Table
 }
 
 type Table struct {
-    Name string
-    Schema string
-    Columns map[string]*Column
+    name string
+    schema string
+    columns map[string]*Column
 }
 
 type Meta struct {
@@ -54,12 +54,12 @@ func Reflect(driver string, db *sql.DB, meta *Meta) error {
     }
     tables := make(map[string]*Table, 0)
     for rows.Next() {
-        table := &Table{Schema: schemaName}
-        err = rows.Scan(&table.Name)
+        table := &Table{schema: schemaName}
+        err = rows.Scan(&table.name)
         if err != nil {
             return err
         }
-        tables[table.Name] = table
+        tables[table.name] = table
     }
     if err = fillTableColumns(db, schemaName, &tables); err != nil {
         return err
@@ -86,11 +86,11 @@ func fillTableColumns(db *sql.DB, schemaName string, tables *map[string]*Table) 
             return err
         }
         table = (*tables)[tname]
-        if table.Columns == nil {
-            table.Columns = make(map[string]*Column, 0)
+        if table.columns == nil {
+            table.columns = make(map[string]*Column, 0)
         }
-        col := &Column{Table: table, Name: cname}
-        table.Columns[cname] = col
+        col := &Column{table: table, name: cname}
+        table.columns[cname] = col
     }
     return nil
 }

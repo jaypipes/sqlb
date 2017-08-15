@@ -75,9 +75,9 @@ func TestReflectMySQL(t *testing.T) {
     artTbl := meta.tables["articles"]
     userTbl := meta.tables["users"]
 
-    assert.Equal("articles", artTbl.Name)
-    assert.Equal("users", userTbl.Name)
+    assert.Equal("articles", artTbl.name)
+    assert.Equal("users", userTbl.name)
 
-    assert.Equal(7, len(userTbl.Columns))
-    assert.Equal(5, len(artTbl.Columns))
+    assert.Equal(7, len(userTbl.columns))
+    assert.Equal(5, len(artTbl.columns))
 }
