@@ -222,13 +222,13 @@ import (
     "github.com/jaypipes/sqlb"
 )
 
-var meta *sqlb.Meta
+var meta sqlb.Meta
 
 func main() {
     if db, err := sql.Open("mysql", DSN); err != nil {
         log.Fatal(err)
     }
-    if err := sqlb.Reflect(db, meta); err != nil {
+    if db, err := sqlb.Reflect("mysql", db, &meta); err != nil {
         log.Fatal(err)
     }
 }
