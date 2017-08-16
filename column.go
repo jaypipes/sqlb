@@ -37,6 +37,10 @@ type ColumnList struct {
     columns []*Column
 }
 
+func (cl *ColumnList) Columns() []*Column {
+    return cl.columns
+}
+
 func (cl *ColumnList) Size() int {
     size := 0
     ncols := len(cl.columns)

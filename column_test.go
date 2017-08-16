@@ -134,4 +134,6 @@ func TestColumnListMulti(t *testing.T) {
 
     assert.Equal(written, s)
     assert.Equal(exp, string(b))
+
+    assert.Equal(cl.columns, cl.Columns())
 }

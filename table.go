@@ -5,6 +5,16 @@ type Table struct {
     def *TableDef
 }
 
+func (t *Table) Columns() []*Column {
+    cdefs := t.def.ColumnDefs()
+    ncols := len(cdefs)
+    cols := make([]*Column, ncols)
+    for x := 0; x < ncols; x++ {
+        cols[x] = &Column{def: cdefs[x]}
+    }
+    return cols
+}
+
 func (t *Table) Size() int {
     size := t.def.Size()
     if t.alias != "" {

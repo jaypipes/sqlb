@@ -115,3 +115,59 @@ func TestTableListMulti(t *testing.T) {
     assert.Equal(written, s)
     assert.Equal(exp, string(b))
 }
+
+func TestTableColumnDefs(t *testing.T) {
+    assert := assert.New(t)
+
+    td := &TableDef{
+        name: "users",
+        schema: "test",
+    }
+
+    cdefs := map[string]*ColumnDef{
+        "id": &ColumnDef{
+            name: "id",
+            table: td,
+        },
+        "email": &ColumnDef{
+            name: "email",
+            table: td,
+        },
+    }
+    td.columns = cdefs
+
+    defs := td.ColumnDefs()
+
+    assert.Equal(2, len(defs))
+    for _, def := range defs {
+        assert.Equal(td, def.table)
+    }
+}
+
+func TestTableColumn(t *testing.T) {
+    assert := assert.New(t)
+
+    td := &TableDef{
+        name: "users",
+        schema: "test",
+    }
+
+    cdefs := map[string]*ColumnDef{
+        "id": &ColumnDef{
+            name: "id",
+            table: td,
+        },
+        "email": &ColumnDef{
+            name: "email",
+            table: td,
+        },
+    }
+    td.columns = cdefs
+
+    defs := td.ColumnDefs()
+
+    assert.Equal(2, len(defs))
+    for _, def := range defs {
+        assert.Equal(td, def.table)
+    }
+}

@@ -59,6 +59,16 @@ func (t *TableDef) Column(colName string) *ColumnDef {
     return t.columns[colName]
 }
 
+func (t *TableDef) ColumnDefs() []*ColumnDef {
+    res := make([]*ColumnDef, len(t.columns))
+    x := 0
+    for _, def := range t.columns {
+        res[x] = def
+        x++
+    }
+    return res
+}
+
 type Meta struct {
     db *sql.DB
     tables map[string]*TableDef
