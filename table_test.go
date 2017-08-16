@@ -124,12 +124,12 @@ func TestTableColumnDefs(t *testing.T) {
         schema: "test",
     }
 
-    cdefs := map[string]*ColumnDef{
-        "id": &ColumnDef{
+    cdefs := []*ColumnDef{
+         &ColumnDef{
             name: "id",
             table: td,
         },
-        "email": &ColumnDef{
+        &ColumnDef{
             name: "email",
             table: td,
         },
@@ -142,6 +142,10 @@ func TestTableColumnDefs(t *testing.T) {
     for _, def := range defs {
         assert.Equal(td, def.table)
     }
+
+    // Check stable order of insertion from above...
+    assert.Equal(defs[0].name, "id")
+    assert.Equal(defs[1].name, "email")
 }
 
 func TestTableColumn(t *testing.T) {
@@ -152,24 +156,26 @@ func TestTableColumn(t *testing.T) {
         schema: "test",
     }
 
-    cdefs := map[string]*ColumnDef{
-        "id": &ColumnDef{
+    cdefs := []*ColumnDef{
+        &ColumnDef{
             name: "id",
             table: td,
         },
-        "email": &ColumnDef{
+        &ColumnDef{
             name: "email",
             table: td,
         },
     }
     td.columns = cdefs
 
-    defs := td.ColumnDefs()
+    c := td.Column("email")
 
-    assert.Equal(2, len(defs))
-    for _, def := range defs {
-        assert.Equal(td, def.table)
-    }
+    assert.Equal(td, c.table)
+    assert.Equal("email", c.name)
+
+    // Check an unknown column name returns nil
+    unknown := td.Column("unknown")
+    assert.Nil(unknown)
 }
 
 func TestTableAs(t *testing.T) {

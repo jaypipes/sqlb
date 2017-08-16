@@ -49,7 +49,7 @@ func (c *ColumnDef) As(alias string) *Column {
 type TableDef struct {
     name string
     schema string
-    columns map[string]*ColumnDef
+    columns []*ColumnDef
 }
 
 func (t *TableDef) Size() int {
@@ -66,17 +66,16 @@ func (t *TableDef) As(alias string) *Table {
 }
 
 func (t *TableDef) Column(colName string) *ColumnDef {
-    return t.columns[colName]
+    for _, cdef := range t.columns {
+        if cdef.name == colName {
+            return cdef
+        }
+    }
+    return nil
 }
 
 func (t *TableDef) ColumnDefs() []*ColumnDef {
-    res := make([]*ColumnDef, len(t.columns))
-    x := 0
-    for _, def := range t.columns {
-        res[x] = def
-        x++
-    }
-    return res
+    return t.columns
 }
 
 type Meta struct {
@@ -131,10 +130,10 @@ func fillTableColumnDefs(db *sql.DB, schemaName string, tables *map[string]*Tabl
         }
         table = (*tables)[tname]
         if table.columns == nil {
-            table.columns = make(map[string]*ColumnDef, 0)
+            table.columns = make([]*ColumnDef, 0)
         }
         col := &ColumnDef{table: table, name: cname}
-        table.columns[cname] = col
+        table.columns = append(table.columns, col)
     }
     return nil
 }
