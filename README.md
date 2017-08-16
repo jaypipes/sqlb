@@ -284,15 +284,15 @@ and optionally filter for a specific author's articles.
 
 ```go
 func getArticles(numArticles int, byAuthor string) []*Articles {
-    articles := meta.Table("articles").Columns
-    users := meta.Table("users").Columns
+    articles := meta.Table("articles")
+    users := meta.Table("users")
 
-    q := sqlb.Select(articles["title"], articles["content"],
-                     articles["created_by"], users["name"])
+    q := sqlb.Select(articles.Column("title"), articles.Column("content"),
+                     articles.Column("created_by"), users.Column("name"))
     if byAuthor != "" {
-        q.Where(q.Equal(users["name"], byAuthor))
+        q.Where(q.Equal(users.Column("name"), byAuthor))
     }
-    q.OrderBy(qe.Desc(articles["created_by"))
+    q.OrderBy(q.Desc(articles.Column("created_by"))
     q.Limit(numArticle)
 
     articles := make([]*Article, 0)
