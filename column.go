@@ -24,6 +24,15 @@ func (c *Column) Scan(b []byte) int {
     return written
 }
 
+func (c *Column) Alias(alias string) {
+    c.alias = alias
+}
+
+func (c *Column) As(alias string) *Column {
+    c.Alias(alias)
+    return c
+}
+
 type ColumnList struct {
     columns []*Column
 }

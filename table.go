@@ -24,6 +24,15 @@ func (t *Table) Scan(b []byte) int {
     return written
 }
 
+func (t *Table) Alias(alias string) {
+    t.alias = alias
+}
+
+func (t *Table) As(alias string) *Table {
+    t.Alias(alias)
+    return t
+}
+
 type TableList struct {
     tables []*Table
 }
