@@ -23,3 +23,30 @@ func (c *Column) Scan(b []byte) int {
     }
     return written
 }
+
+type ColumnList struct {
+    columns []*Column
+}
+
+func (cl *ColumnList) Size() int {
+    size := 0
+    ncols := len(cl.columns)
+    for _, c := range cl.columns {
+        size += c.Size()
+    }
+    size += (SYM_COMMA_WS_LEN * (ncols - 1))  // Add in the commas
+    return size
+}
+
+func (cl *ColumnList) Scan(b []byte) int {
+    ncols := len(cl.columns)
+    written := 0
+    for x, c := range cl.columns {
+        written += c.Scan(b[written:])
+        if x != (ncols - 1) {
+            copy(b[written:], SYM_COMMA_WS)
+            written += SYM_COMMA_WS_LEN
+        }
+    }
+    return written
+}
