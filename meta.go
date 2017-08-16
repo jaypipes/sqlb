@@ -47,6 +47,14 @@ type TableDef struct {
     columns map[string]*ColumnDef
 }
 
+func (t *TableDef) Size() int {
+    return len(t.name)
+}
+
+func (t *TableDef) Scan(b []byte) int {
+    return copy(b, t.name)
+}
+
 func (t *TableDef) Column(colName string) *ColumnDef {
     return t.columns[colName]
 }
