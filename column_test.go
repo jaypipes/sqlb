@@ -137,3 +137,21 @@ func TestColumnListMulti(t *testing.T) {
 
     assert.Equal(cl.columns, cl.Columns())
 }
+
+func TestColumnAs(t *testing.T) {
+    assert := assert.New(t)
+
+    td := &TableDef{
+        name: "users",
+        schema: "test",
+    }
+
+    cd := &ColumnDef{
+        name: "name",
+        table: td,
+    }
+
+    c := cd.As("n")
+    assert.Equal("n", c.alias)
+    assert.Equal(cd, c.def)
+}

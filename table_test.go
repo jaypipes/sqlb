@@ -171,3 +171,16 @@ func TestTableColumn(t *testing.T) {
         assert.Equal(td, def.table)
     }
 }
+
+func TestTableAs(t *testing.T) {
+    assert := assert.New(t)
+
+    td := &TableDef{
+        name: "users",
+        schema: "test",
+    }
+
+    t1 := td.As("u")
+    assert.Equal("u", t1.alias)
+    assert.Equal(td, t1.def)
+}

@@ -41,6 +41,11 @@ func (c *ColumnDef) Scan(b []byte) int {
     return copy(b, c.name)
 }
 
+// Generate an aliased Column from a ColumnDef
+func (c *ColumnDef) As(alias string) *Column {
+    return &Column{def: c, alias: alias}
+}
+
 type TableDef struct {
     name string
     schema string
@@ -53,6 +58,11 @@ func (t *TableDef) Size() int {
 
 func (t *TableDef) Scan(b []byte) int {
     return copy(b, t.name)
+}
+
+// Generate an aliased Table from a TableDef
+func (t *TableDef) As(alias string) *Table {
+    return &Table{def: t, alias: alias}
 }
 
 func (t *TableDef) Column(colName string) *ColumnDef {
