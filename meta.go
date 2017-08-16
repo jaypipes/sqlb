@@ -33,6 +33,14 @@ type ColumnDef struct {
     table *TableDef
 }
 
+func (c *ColumnDef) Size() int {
+    return len(c.name)
+}
+
+func (c *ColumnDef) Scan(b []byte) int {
+    return copy(b, c.name)
+}
+
 type TableDef struct {
     name string
     schema string
