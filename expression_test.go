@@ -358,3 +358,81 @@ func TestNotEqualFuncTwoElements(t *testing.T) {
     assert.Equal(expArgCount, numArgs)
     assert.Equal(0, len(args))
 }
+
+func TestInSingle(t *testing.T) {
+    assert := assert.New(t)
+
+    td := &TableDef{
+        name: "users",
+        schema: "test",
+    }
+
+    cd := &ColumnDef{
+        name: "name",
+        table: td,
+    }
+
+    c := &Column{
+        def: cd,
+    }
+
+    e := In(c, "foo")
+
+    exp := "name IN (?)"
+    expLen := len(exp)
+    expArgCount := 1
+
+    s := e.Size()
+    assert.Equal(expLen, s)
+
+    argc := e.ArgCount()
+    assert.Equal(expArgCount, argc)
+
+    args := make([]interface{}, 1)
+    b := make([]byte, s)
+    written, numArgs := e.Scan(b, args)
+
+    assert.Equal(s, written)
+    assert.Equal(exp, string(b))
+    assert.Equal(expArgCount, numArgs)
+    assert.Equal(expArgCount, len(args))
+}
+
+func TestInMulti(t *testing.T) {
+    assert := assert.New(t)
+
+    td := &TableDef{
+        name: "users",
+        schema: "test",
+    }
+
+    cd := &ColumnDef{
+        name: "name",
+        table: td,
+    }
+
+    c := &Column{
+        def: cd,
+    }
+
+    e := In(c, "foo", "bar", 1)
+
+    exp := "name IN (?, ?, ?)"
+    expLen := len(exp)
+    expArgCount := 3
+
+    s := e.Size()
+    assert.Equal(expLen, s)
+
+    argc := e.ArgCount()
+    assert.Equal(expArgCount, argc)
+
+    args := make([]interface{}, 3)
+    b := make([]byte, s)
+    written, numArgs := e.Scan(b, args)
+
+    assert.Equal(s, written)
+    assert.Equal(exp, string(b))
+    assert.Equal(expArgCount, numArgs)
+    assert.Equal(expArgCount, len(args))
+}
