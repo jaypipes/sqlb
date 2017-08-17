@@ -35,37 +35,11 @@ func (c *Column) As(alias string) *Column {
     return c
 }
 
-type ColumnList struct {
-    columns []*Column
-}
-
-func (cl *ColumnList) ArgCount() int {
-    return 0
-}
-
-func (cl *ColumnList) Columns() []*Column {
-    return cl.columns
-}
-
-func (cl *ColumnList) Size() int {
-    size := 0
-    ncols := len(cl.columns)
-    for _, c := range cl.columns {
-        size += c.Size()
+func isColumn(el Element) bool {
+    switch el.(type) {
+    case *Column:
+        return true
+    default:
+        return false
     }
-    size += (SYM_COMMA_WS_LEN * (ncols - 1))
-    return size
-}
-
-func (cl *ColumnList) Scan(b []byte, args []interface{}) (int, int) {
-    ncols := len(cl.columns)
-    bw  := 0
-    for x, c := range cl.columns {
-        cbw, _ := c.Scan(b[bw:], args)
-        bw += cbw
-        if x != (ncols - 1) {
-            bw += copy(b[bw:], SYM_COMMA_WS)
-        }
-    }
-    return bw, 0
 }
