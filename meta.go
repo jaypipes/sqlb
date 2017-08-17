@@ -33,12 +33,16 @@ type ColumnDef struct {
     table *TableDef
 }
 
+func (c *ColumnDef) ArgCount() int {
+    return 0
+}
+
 func (c *ColumnDef) Size() int {
     return len(c.name)
 }
 
-func (c *ColumnDef) Scan(b []byte) int {
-    return copy(b, c.name)
+func (c *ColumnDef) Scan(b []byte, args []interface{}) (int, int) {
+    return copy(b, c.name), 0
 }
 
 // Generate an aliased Column from a ColumnDef
@@ -52,12 +56,16 @@ type TableDef struct {
     columns []*ColumnDef
 }
 
+func (t *TableDef) ArgCount() int {
+    return 0
+}
+
 func (t *TableDef) Size() int {
     return len(t.name)
 }
 
-func (t *TableDef) Scan(b []byte) int {
-    return copy(b, t.name)
+func (t *TableDef) Scan(b []byte, args []interface{}) (int, int) {
+    return copy(b, t.name), 0
 }
 
 // Generate an aliased Table from a TableDef

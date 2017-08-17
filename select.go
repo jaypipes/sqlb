@@ -3,7 +3,15 @@ package sqlb
 type Selectable struct {
     alias string
     projected *ColumnList
-    subjects []Scannable
+    subjects []Element
+}
+
+func (s *Selectable) ArgCount() int {
+    argc := s.projected.ArgCount()
+    for _, subj := range s.subjects {
+        argc += subj.ArgCount()
+    }
+    return argc
 }
 
 func (s *Selectable) Alias(alias string) {
@@ -27,29 +35,35 @@ func (s *Selectable) Size() int {
     return size
 }
 
-func (s *Selectable) Scan(b []byte) int {
-    idx := 0
-    idx += copy(b[idx:], SYM_SELECT)
-    idx += s.projected.Scan(b[idx:])
-    idx += copy(b[idx:], SYM_FROM)
+func (s *Selectable) Scan(b []byte, args []interface{}) (int, int) {
+    var bw, ac int
+    bw += copy(b[bw:], SYM_SELECT)
+    pbw, pac := s.projected.Scan(b[bw:], args)
+    bw += pbw
+    ac += pac
+    bw += copy(b[bw:], SYM_FROM)
     for _, subj := range s.subjects {
-        idx += subj.Scan(b[idx:])
+        sbw, sac := subj.Scan(b[bw:], args)
+        bw += sbw
+        ac += sac
     }
     if s.alias != "" {
-        idx += copy(b[idx:], SYM_AS)
-        idx += copy(b[idx:], s.alias)
+        bw += copy(b[bw:], SYM_AS)
+        bw += copy(b[bw:], s.alias)
     }
-    return idx
+    return bw, ac
 }
 
 func (s *Selectable) String() string {
     size := s.Size()
+    argc := s.ArgCount()
+    args := make([]interface{}, argc)
     b := make([]byte, size)
-    s.Scan(b)
+    s.Scan(b, args)
     return string(b)
 }
 
-func Select(items ...Scannable) *Selectable {
+func Select(items ...Element) *Selectable {
     // TODO(jaypipes): Make the memory allocation more efficient below by
     // looping through the elements and determining the number of Column struct
     // pointers to allocate instead of just making an empty array of Column
@@ -58,7 +72,7 @@ func Select(items ...Scannable) *Selectable {
         projected: &ColumnList{},
     }
 
-    subjSet := make(map[Scannable]bool, 0)
+    subjSet := make(map[Element]bool, 0)
 
     // For each scannable item we're received in the call, check what concrete
     // type they are and, depending on which type they are, either add them to
@@ -97,7 +111,7 @@ func Select(items ...Scannable) *Selectable {
                 subjSet[v.table] = true
         }
     }
-    subjects := make([]Scannable, len(subjSet))
+    subjects := make([]Element, len(subjSet))
     x := 0
     for scannable, _ := range subjSet {
         subjects[x] = scannable

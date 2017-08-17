@@ -24,7 +24,7 @@ func TestTable(t *testing.T) {
     assert.Equal(expLen, s)
 
     b := make([]byte, s)
-    written := t1.Scan(b)
+    written, _ := t1.Scan(b, nil)
 
     assert.Equal(written, s)
     assert.Equal(exp, string(b))
@@ -49,7 +49,7 @@ func TestTableAlias(t *testing.T) {
     assert.Equal(expLen, s)
 
     b := make([]byte, s)
-    written := t1.Scan(b)
+    written, _ := t1.Scan(b, nil)
 
     assert.Equal(written, s)
     assert.Equal(exp, string(b))
@@ -75,7 +75,7 @@ func TestTableListSingle(t *testing.T) {
     assert.Equal(expLen, s)
 
     b := make([]byte, s)
-    written := tl.Scan(b)
+    written, _ := tl.Scan(b, nil)
 
     assert.Equal(written, s)
     assert.Equal(exp, string(b))
@@ -110,7 +110,7 @@ func TestTableListMulti(t *testing.T) {
     assert.Equal(expLen, s)
 
     b := make([]byte, s)
-    written := tl.Scan(b)
+    written, _ := tl.Scan(b, nil)
 
     assert.Equal(written, s)
     assert.Equal(exp, string(b))
