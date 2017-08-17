@@ -2,7 +2,7 @@ package sqlb
 
 type Selectable struct {
     alias string
-    projected *ColumnList
+    projected *List
     subjects []Element
 }
 
@@ -65,11 +65,11 @@ func (s *Selectable) String() string {
 
 func Select(items ...Element) *Selectable {
     // TODO(jaypipes): Make the memory allocation more efficient below by
-    // looping through the elements and determining the number of Column struct
-    // pointers to allocate instead of just making an empty array of Column
+    // looping through the elements and determining the number of element struct
+    // pointers to allocate instead of just making an empty array of Element
     // pointers.
     res := &Selectable{
-        projected: &ColumnList{},
+        projected: &List{},
     }
 
     subjSet := make(map[Element]bool, 0)
@@ -82,32 +82,35 @@ func Select(items ...Element) *Selectable {
         switch item.(type) {
             case *Column:
                 v := item.(*Column)
-                res.projected.columns = append(res.projected.columns, v)
+                res.projected.elements = append(res.projected.elements, v)
                 subjSet[v.def.table] = true
-            case *ColumnList:
-                v := item.(*ColumnList)
-                for _, c := range v.Columns() {
-                    res.projected.columns = append(res.projected.columns, c)
-                    subjSet[c.def.table] = true
+            case *List:
+                v := item.(*List)
+                for _, el := range v.elements {
+                    res.projected.elements = append(res.projected.elements, el)
+                    if isColumn(el) {
+                        c := el.(*Column)
+                        subjSet[c.def.table] = true
+                    }
                 }
             case *Table:
                 v := item.(*Table)
                 for _, c := range v.Columns() {
-                    res.projected.columns = append(res.projected.columns, c)
+                    res.projected.elements = append(res.projected.elements, c)
                 }
                 subjSet[v] = true
             case *TableDef:
                 v := item.(*TableDef)
                 for _, cd := range v.ColumnDefs() {
                     c := &Column{def: cd}
-                    res.projected.columns = append(res.projected.columns, c)
+                    res.projected.elements = append(res.projected.elements, c)
                 }
                 t := &Table{def: v}
                 subjSet[t] = true
             case *ColumnDef:
                 v := item.(*ColumnDef)
                 c := &Column{def: v}
-                res.projected.columns = append(res.projected.columns, c)
+                res.projected.elements = append(res.projected.elements, c)
                 subjSet[v.table] = true
         }
     }

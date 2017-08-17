@@ -23,12 +23,12 @@ func TestExpressionEqual(t *testing.T) {
         def: cd,
     }
 
-    lit := &Literal{value: "foo"}
+    val := &Value{value: "foo"}
 
     e := &Expression{
         op: OP_EQUAL,
         left: c,
-        right: lit,
+        right: val,
     }
 
     exp := "name = ?"
@@ -56,7 +56,7 @@ func TestExpressionEqual(t *testing.T) {
 
     erev := &Expression{
         op: OP_EQUAL,
-        left: lit,
+        left: val,
         right: c,
     }
 
@@ -80,7 +80,7 @@ func TestExpressionEqual(t *testing.T) {
     assert.Equal(expArgCount, numArgs)
 }
 
-func TestEqualFuncLiteral(t *testing.T) {
+func TestEqualFuncValue(t *testing.T) {
     assert := assert.New(t)
 
     td := &TableDef{
@@ -214,12 +214,12 @@ func TestExpressionNotEqual(t *testing.T) {
         def: cd,
     }
 
-    lit := &Literal{value: "foo"}
+    val := &Value{value: "foo"}
 
     e := &Expression{
         op: OP_NEQUAL,
         left: c,
-        right: lit,
+        right: val,
     }
 
     exp := "name != ?"
@@ -242,7 +242,7 @@ func TestExpressionNotEqual(t *testing.T) {
     assert.Equal(expArgCount, numArgs)
 }
 
-func TestNotEqualFuncLiteral(t *testing.T) {
+func TestNotEqualFuncValue(t *testing.T) {
     assert := assert.New(t)
 
     td := &TableDef{

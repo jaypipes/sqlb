@@ -55,67 +55,6 @@ func TestTableAlias(t *testing.T) {
     assert.Equal(exp, string(b))
 }
 
-func TestTableListSingle(t *testing.T) {
-    assert := assert.New(t)
-
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    t1 := &Table{
-        def: td,
-    }
-
-    tl := &TableList{tables: []*Table{t1}}
-
-    exp := "users"
-    expLen := len(exp)
-    s := tl.Size()
-    assert.Equal(expLen, s)
-
-    b := make([]byte, s)
-    written, _ := tl.Scan(b, nil)
-
-    assert.Equal(written, s)
-    assert.Equal(exp, string(b))
-}
-
-func TestTableListMulti(t *testing.T) {
-    assert := assert.New(t)
-
-    td1 := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    td2 := &TableDef{
-        name: "articles",
-        schema: "test",
-    }
-
-    t1 := &Table{
-        def: td1,
-    }
-
-    t2 := &Table{
-        def: td2,
-    }
-
-    tl := &TableList{tables: []*Table{t1, t2}}
-
-    exp := "users, articles"
-    expLen := len(exp)
-    s := tl.Size()
-    assert.Equal(expLen, s)
-
-    b := make([]byte, s)
-    written, _ := tl.Scan(b, nil)
-
-    assert.Equal(written, s)
-    assert.Equal(exp, string(b))
-}
-
 func TestTableColumnDefs(t *testing.T) {
     assert := assert.New(t)
 

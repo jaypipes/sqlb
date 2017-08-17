@@ -44,34 +44,3 @@ func (t *Table) As(alias string) *Table {
     t.Alias(alias)
     return t
 }
-
-type TableList struct {
-    tables []*Table
-}
-
-func (tl *TableList) ArgCount() int {
-    return 0
-}
-
-func (tl *TableList) Size() int {
-    size := 0
-    ntables := len(tl.tables)
-    for _, t := range tl.tables {
-        size += t.Size()
-    }
-    size += (SYM_COMMA_WS_LEN * (ntables - 1))  // Add in the commas
-    return size
-}
-
-func (tl *TableList) Scan(b []byte, args []interface{}) (int, int) {
-    ntables := len(tl.tables)
-    bw := 0
-    for x, t := range tl.tables {
-        tbw, _ := t.Scan(b[bw:], args)
-        bw += tbw
-        if x != (ntables - 1) {
-            bw += copy(b[bw:], SYM_COMMA_WS)
-        }
-    }
-    return bw, 0
-}
