@@ -6,24 +6,24 @@ import (
     "github.com/stretchr/testify/assert"
 )
 
-func TestLiteral(t *testing.T) {
+func TestValue(t *testing.T) {
     assert := assert.New(t)
 
-    lit := &Literal{value: "foo"}
+    val := &Value{value: "foo"}
 
     exp := "?"
     expLen := len(exp)
     expArgCount := 1
 
-    s := lit.Size()
+    s := val.Size()
     assert.Equal(expLen, s)
 
-    argc := lit.ArgCount()
+    argc := val.ArgCount()
     assert.Equal(expArgCount, argc)
 
     args := make([]interface{}, 1)
     b := make([]byte, s)
-    written, numArgs  := lit.Scan(b, args)
+    written, numArgs  := val.Scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
