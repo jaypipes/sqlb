@@ -1,6 +1,8 @@
 package sqlb
 
 var (
+    SYM_QM = []byte("?")
+    SYM_QM_LEN = 1
     SYM_AS = []byte(" AS ")
     SYM_AS_LEN = 4
     SYM_COMMA_WS = []byte(", ")
