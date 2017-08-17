@@ -11,4 +11,9 @@ var (
     SYM_SELECT_LEN = 7
     SYM_FROM = []byte(" FROM ")
     SYM_FROM_LEN = 6
+
+    SYM_OP = map[Op][]byte{
+        OP_EQUAL: []byte(" = "),
+        OP_NEQUAL: []byte(" != "),
+    }
 )
