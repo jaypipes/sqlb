@@ -29,3 +29,21 @@ func (o *Expression) Scan(b []byte, args []interface{}) (int, int) {
     argc += ac
     return idx, argc
 }
+
+func Equal(left interface{}, right interface{}) *Expression {
+    els := toElements(left, right)
+    return &Expression{
+        op: OP_EQUAL,
+        left: els[0],
+        right: els[1],
+    }
+}
+
+func NotEqual(left interface{}, right interface{}) *Expression {
+    els := toElements(left, right)
+    return &Expression{
+        op: OP_NEQUAL,
+        left: els[0],
+        right: els[1],
+    }
+}
