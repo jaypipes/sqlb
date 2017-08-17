@@ -74,9 +74,9 @@ func Select(items ...Element) *Selectable {
 
     subjSet := make(map[Element]bool, 0)
 
-    // For each scannable item we're received in the call, check what concrete
+    // For each scannable item we've received in the call, check what concrete
     // type they are and, depending on which type they are, either add them to
-    // the returned Selectable's projected ColumnList or query the underlying
+    // the returned Selectable's projected List or query the underlying
     // table metadata to generate a list of all columns in that table.
     for _, item := range items {
         switch item.(type) {

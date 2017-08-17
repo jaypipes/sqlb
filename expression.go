@@ -5,6 +5,7 @@ type Op int
 const (
     OP_EQUAL = iota
     OP_NEQUAL
+    OP_IN
 )
 
 type Expression struct {
@@ -13,21 +14,21 @@ type Expression struct {
     right Element
 }
 
-func (o *Expression) ArgCount() int {
-    return o.left.ArgCount() + o.right.ArgCount()
+func (e *Expression) ArgCount() int {
+    return e.left.ArgCount() + e.right.ArgCount()
 }
 
-func (o *Expression) Size() int {
-    return len(SYM_OP[o.op]) + o.left.Size() + o.right.Size()
+func (e *Expression) Size() int {
+    return len(SYM_OP[e.op]) + e.left.Size() + e.right.Size()
 }
 
-func (o *Expression) Scan(b []byte, args []interface{}) (int, int) {
-    idx, argc := o.left.Scan(b, args)
-    idx += copy(b[idx:], SYM_OP[o.op])
-    bc, ac := o.right.Scan(b[idx:], args)
-    idx += bc
-    argc += ac
-    return idx, argc
+func (e *Expression) Scan(b []byte, args []interface{}) (int, int) {
+    bw, ac := e.left.Scan(b, args)
+    bw += copy(b[bw:], SYM_OP[e.op])
+    rbw, rac := e.right.Scan(b[bw:], args)
+    bw += rbw
+    ac += rac
+    return bw, ac
 }
 
 func Equal(left interface{}, right interface{}) *Expression {
@@ -45,5 +46,35 @@ func NotEqual(left interface{}, right interface{}) *Expression {
         op: OP_NEQUAL,
         left: els[0],
         right: els[1],
+    }
+}
+
+type InExpression struct {
+    subject Element
+    values *List
+}
+
+func (e *InExpression) ArgCount() int {
+    return e.values.ArgCount()
+}
+
+func (e *InExpression) Size() int {
+    return e.subject.Size() + SYM_IN_LEN + e.values.Size() + SYM_RPAREN_LEN
+}
+
+func (e *InExpression) Scan(b []byte, args []interface{}) (int, int) {
+    bw, ac := e.subject.Scan(b, args)
+    bw += copy(b[bw:], SYM_IN)
+    lbw, lac := e.values.Scan(b[bw:], args[ac:])
+    bw += lbw
+    ac += lac
+    bw += copy(b[bw:], SYM_RPAREN)
+    return bw, ac
+}
+
+func In(subject Element, values ...interface{}) *InExpression {
+    return &InExpression{
+        subject: subject,
+        values: toValueList(values...),
     }
 }

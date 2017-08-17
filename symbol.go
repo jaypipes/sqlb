@@ -11,6 +11,12 @@ var (
     SYM_SELECT_LEN = 7
     SYM_FROM = []byte(" FROM ")
     SYM_FROM_LEN = 6
+    SYM_LPAREN = []byte("(")
+    SYM_LPAREN_LEN = 1
+    SYM_RPAREN = []byte(")")
+    SYM_RPAREN_LEN = 1
+    SYM_IN = []byte(" IN (")
+    SYM_IN_LEN = 5
 
     SYM_OP = map[Op][]byte{
         OP_EQUAL: []byte(" = "),

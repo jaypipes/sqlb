@@ -13,7 +13,9 @@ func (val *Value) ArgCount() int {
 }
 
 func (val  *Value) Size() int {
-    return 1  // The valeral is always injected as a question mark
+    // The value is always injected as a question mark in the produced SQL
+    // string
+    return 1
 }
 
 func (val *Value) Scan(b []byte, args []interface{}) (int, int) {

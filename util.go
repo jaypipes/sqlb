@@ -15,3 +15,15 @@ func toElements(vars ...interface{}) []Element {
     }
     return els
 }
+
+// Given a variable number of interface{} variables, returns a List containing
+// Value structs for the variables
+// If any of the interface{} variables are *not* of type Element already, we
+// construct a Value{} for the variable.
+func toValueList(vars ...interface{}) *List {
+    els := make([]Element, len(vars))
+    for x, v := range vars {
+        els[x] = &Value{value: v}
+    }
+    return &List{elements: els}
+}
