@@ -15,6 +15,10 @@ func (t *Table) Columns() []*Column {
     return cols
 }
 
+func (t *Table) ArgCount() int {
+    return 0
+}
+
 func (t *Table) Size() int {
     size := t.def.Size()
     if t.alias != "" {
@@ -23,15 +27,13 @@ func (t *Table) Size() int {
     return size
 }
 
-func (t *Table) Scan(b []byte) int {
-    written := t.def.Scan(b)
+func (t *Table) Scan(b []byte, args []interface{}) (int, int) {
+    bw, _ := t.def.Scan(b, args)
     if t.alias != "" {
-        copy(b[written:], SYM_AS)
-        written += SYM_AS_LEN
-        nalias := copy(b[written:], t.alias)
-        written += nalias
+        bw += copy(b[bw:], SYM_AS)
+        bw += copy(b[bw:], t.alias)
     }
-    return written
+    return bw, 0
 }
 
 func (t *Table) Alias(alias string) {
@@ -47,6 +49,10 @@ type TableList struct {
     tables []*Table
 }
 
+func (tl *TableList) ArgCount() int {
+    return 0
+}
+
 func (tl *TableList) Size() int {
     size := 0
     ntables := len(tl.tables)
@@ -57,15 +63,15 @@ func (tl *TableList) Size() int {
     return size
 }
 
-func (tl *TableList) Scan(b []byte) int {
+func (tl *TableList) Scan(b []byte, args []interface{}) (int, int) {
     ntables := len(tl.tables)
-    written := 0
+    bw := 0
     for x, t := range tl.tables {
-        written += t.Scan(b[written:])
+        tbw, _ := t.Scan(b[bw:], args)
+        bw += tbw
         if x != (ntables - 1) {
-            copy(b[written:], SYM_COMMA_WS)
-            written += SYM_COMMA_WS_LEN
+            bw += copy(b[bw:], SYM_COMMA_WS)
         }
     }
-    return written
+    return bw, 0
 }

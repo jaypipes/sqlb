@@ -5,6 +5,10 @@ type Column struct {
     def *ColumnDef
 }
 
+func (c *Column) ArgCount() int {
+    return 0
+}
+
 func (c *Column) Size() int {
     size := c.def.Size()
     if c.alias != "" {
@@ -13,15 +17,13 @@ func (c *Column) Size() int {
     return size
 }
 
-func (c *Column) Scan(b []byte) int {
-    written := c.def.Scan(b)
+func (c *Column) Scan(b []byte, args []interface{}) (int, int) {
+    bw, _ := c.def.Scan(b, args)
     if c.alias != "" {
-        copy(b[written:], SYM_AS)
-        written += SYM_AS_LEN
-        nalias := copy(b[written:], c.alias)
-        written += nalias
+        bw += copy(b[bw:], SYM_AS)
+        bw += copy(b[bw:], c.alias)
     }
-    return written
+    return bw, 0
 }
 
 func (c *Column) Alias(alias string) {
@@ -35,6 +37,10 @@ func (c *Column) As(alias string) *Column {
 
 type ColumnList struct {
     columns []*Column
+}
+
+func (cl *ColumnList) ArgCount() int {
+    return 0
 }
 
 func (cl *ColumnList) Columns() []*Column {
@@ -51,15 +57,15 @@ func (cl *ColumnList) Size() int {
     return size
 }
 
-func (cl *ColumnList) Scan(b []byte) int {
+func (cl *ColumnList) Scan(b []byte, args []interface{}) (int, int) {
     ncols := len(cl.columns)
-    written := 0
+    bw  := 0
     for x, c := range cl.columns {
-        written += c.Scan(b[written:])
+        cbw, _ := c.Scan(b[bw:], args)
+        bw += cbw
         if x != (ncols - 1) {
-            copy(b[written:], SYM_COMMA_WS)
-            written += SYM_COMMA_WS_LEN
+            bw += copy(b[bw:], SYM_COMMA_WS)
         }
     }
-    return written
+    return bw, 0
 }

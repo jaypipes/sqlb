@@ -29,7 +29,7 @@ func TestColumn(t *testing.T) {
     assert.Equal(expLen, s)
 
     b := make([]byte, s)
-    written := c.Scan(b)
+    written, _ := c.Scan(b, nil)
 
     assert.Equal(written, s)
     assert.Equal(exp, string(b))
@@ -59,7 +59,7 @@ func TestColumnAlias(t *testing.T) {
     assert.Equal(expLen, s)
 
     b := make([]byte, s)
-    written := c.Scan(b)
+    written, _ := c.Scan(b, nil)
 
     assert.Equal(written, s)
     assert.Equal(exp, string(b))
@@ -90,7 +90,7 @@ func TestColumnListSingle(t *testing.T) {
     assert.Equal(expLen, s)
 
     b := make([]byte, s)
-    written := cl.Scan(b)
+    written, _ := cl.Scan(b, nil)
 
     assert.Equal(written, s)
     assert.Equal(exp, string(b))
@@ -130,7 +130,7 @@ func TestColumnListMulti(t *testing.T) {
     assert.Equal(expLen, s)
 
     b := make([]byte, s)
-    written := cl.Scan(b)
+    written, _ := cl.Scan(b, nil)
 
     assert.Equal(written, s)
     assert.Equal(exp, string(b))
