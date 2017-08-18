@@ -1,48 +1,53 @@
 package sqlb
 
-
-type sortColumn struct {
+type SortColumn struct {
     el Element
     desc bool
 }
 
+func (sc *SortColumn) ArgCount() int {
+    return sc.el.ArgCount()
+}
+
+func (sc *SortColumn) Size() int {
+    size := sc.el.Size()
+    if sc.desc {
+        size += len(Symbols[SYM_DESC])
+    }
+    return size
+}
+
+func (sc *SortColumn) Scan(b []byte, args []interface{}) (int, int) {
+    var bw, ac int
+    ebw, eac := sc.el.Scan(b[bw:], args[ac:])
+    bw += ebw
+    ac += eac
+    if sc.desc {
+        bw += copy(b[bw:], Symbols[SYM_DESC])
+    }
+    return bw, ac
+}
+
 type OrderByClause struct {
-    cols []*sortColumn
+    cols *List
 }
 
 func (ob *OrderByClause) ArgCount() int {
     argc := 0
-    for _, col := range ob.cols {
-        argc += col.el.ArgCount()
-    }
     return argc
 }
 
 func (ob *OrderByClause) Size() int {
     size := len(Symbols[SYM_ORDER_BY])
-    for _, col := range ob.cols {
-        size += col.el.Size()
-        if col.desc {
-            size += len(Symbols[SYM_DESC])
-        }
-    }
-    size += ((len(ob.cols) - 1) * len(Symbols[SYM_COMMA_WS]))
+    size += ob.cols.Size()
     return size
 }
 
 func (ob *OrderByClause) Scan(b []byte, args []interface{}) (int, int) {
     var bw, ac int
     bw += copy(b[bw:], Symbols[SYM_ORDER_BY])
-    for x, col := range ob.cols {
-        if x > 0 {
-            bw += copy(b[bw:], Symbols[SYM_COMMA_WS])
-        }
-        ebw, eac := col.el.Scan(b[bw:], args[ac:])
-        bw += ebw
-        ac += eac
-        if col.desc {
-            bw += copy(b[bw:], Symbols[SYM_DESC])
-        }
-    }
+    ebw, eac := ob.cols.Scan(b[bw:], args[ac:])
+    bw += ebw
+    ac += eac
     return bw, ac
 }

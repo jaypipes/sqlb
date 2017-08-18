@@ -35,6 +35,14 @@ func (c *Column) As(alias string) *Column {
     return c
 }
 
+func (c *Column) Desc() *SortColumn {
+    return &SortColumn{el: c, desc: true}
+}
+
+func (c *Column) Asc() *SortColumn {
+    return &SortColumn{el: c}
+}
+
 func isColumn(el Element) bool {
     switch el.(type) {
     case *Column:
