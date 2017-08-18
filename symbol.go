@@ -21,5 +21,6 @@ var (
     SYM_OP = map[Op][]byte{
         OP_EQUAL: []byte(" = "),
         OP_NEQUAL: []byte(" != "),
+        OP_AND: []byte(" AND "),
     }
 )

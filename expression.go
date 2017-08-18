@@ -5,7 +5,7 @@ type Op int
 const (
     OP_EQUAL = iota
     OP_NEQUAL
-    OP_IN
+    OP_AND
 )
 
 type Expression struct {
@@ -25,7 +25,7 @@ func (e *Expression) Size() int {
 func (e *Expression) Scan(b []byte, args []interface{}) (int, int) {
     bw, ac := e.left.Scan(b, args)
     bw += copy(b[bw:], SYM_OP[e.op])
-    rbw, rac := e.right.Scan(b[bw:], args)
+    rbw, rac := e.right.Scan(b[bw:], args[ac:])
     bw += rbw
     ac += rac
     return bw, ac
@@ -47,6 +47,10 @@ func NotEqual(left interface{}, right interface{}) *Expression {
         left: els[0],
         right: els[1],
     }
+}
+
+func And(a *Expression, b *Expression) *Expression {
+    return &Expression{op: OP_AND, left: a, right: b}
 }
 
 type InExpression struct {
