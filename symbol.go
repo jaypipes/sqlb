@@ -17,6 +17,10 @@ var (
     SYM_RPAREN_LEN = 1
     SYM_IN = []byte(" IN (")
     SYM_IN_LEN = 5
+    SYM_WHERE = []byte(" WHERE ")
+    SYM_WHERE_LEN = 7
+    SYM_AND = []byte(" AND ")
+    SYM_AND_LEN = 5
 
     SYM_OP = map[Op][]byte{
         OP_EQUAL: []byte(" = "),

@@ -4,12 +4,16 @@ type Selectable struct {
     alias string
     projected *List
     subjects []Element
+    filters []*Expression
 }
 
 func (s *Selectable) ArgCount() int {
     argc := s.projected.ArgCount()
     for _, subj := range s.subjects {
         argc += subj.ArgCount()
+    }
+    for _, filter := range s.filters {
+        argc += filter.ArgCount()
     }
     return argc
 }
@@ -32,6 +36,14 @@ func (s *Selectable) Size() int {
     if s.alias != "" {
         size += SYM_AS_LEN + len(s.alias)
     }
+    nfilters := len(s.filters)
+    if nfilters > 0 {
+        size += SYM_WHERE_LEN
+        size += SYM_AND_LEN * (nfilters - 1)
+        for _, filter := range s.filters {
+            size += filter.Size()
+        }
+    }
     return size
 }
 
@@ -51,6 +63,17 @@ func (s *Selectable) Scan(b []byte, args []interface{}) (int, int) {
         bw += copy(b[bw:], SYM_AS)
         bw += copy(b[bw:], s.alias)
     }
+    if len(s.filters) > 0 {
+        bw += copy(b[bw:], SYM_WHERE)
+        for x, filter := range s.filters {
+            if x > 0 {
+                bw += copy(b[bw:], SYM_AND)
+            }
+            fbw, fac := filter.Scan(b[bw:], args[ac:])
+            bw += fbw
+            ac += fac
+        }
+    }
     return bw, ac
 }
 
@@ -61,6 +84,11 @@ func (s *Selectable) String() string {
     b := make([]byte, size)
     s.Scan(b, args)
     return string(b)
+}
+
+func (s *Selectable) Where(e *Expression) *Selectable {
+    s.filters = append(s.filters, e)
+    return s
 }
 
 func Select(items ...Element) *Selectable {
