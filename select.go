@@ -5,6 +5,7 @@ type Selectable struct {
     projected *List
     subjects []Element
     filters []*Expression
+    limit *LimitClause
 }
 
 func (s *Selectable) ArgCount() int {
@@ -14,6 +15,9 @@ func (s *Selectable) ArgCount() int {
     }
     for _, filter := range s.filters {
         argc += filter.ArgCount()
+    }
+    if s.limit != nil {
+        argc += s.limit.ArgCount()
     }
     return argc
 }
@@ -43,6 +47,9 @@ func (s *Selectable) Size() int {
         for _, filter := range s.filters {
             size += filter.Size()
         }
+    }
+    if s.limit != nil {
+        size += s.limit.Size()
     }
     return size
 }
@@ -74,6 +81,11 @@ func (s *Selectable) Scan(b []byte, args []interface{}) (int, int) {
             ac += fac
         }
     }
+    if s.limit != nil {
+        lbw, lac := s.limit.Scan(b[bw:], args[ac:])
+        bw += lbw
+        ac += lac
+    }
     return bw, ac
 }
 
@@ -88,6 +100,19 @@ func (s *Selectable) String() string {
 
 func (s *Selectable) Where(e *Expression) *Selectable {
     s.filters = append(s.filters, e)
+    return s
+}
+
+func (s *Selectable) LimitWithOffset(limit int, offset int) *Selectable {
+    lc := &LimitClause{limit: limit}
+    lc.offset = &offset
+    s.limit = lc
+    return s
+}
+
+func (s *Selectable) Limit(limit int) *Selectable {
+    lc := &LimitClause{limit: limit}
+    s.limit = lc
     return s
 }
 

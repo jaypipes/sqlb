@@ -274,3 +274,59 @@ func TestWhereMultiInAndEqual(t *testing.T) {
     assert.Equal(expArgCount, sel.ArgCount())
     assert.Equal(exp, sel.String())
 }
+
+func TestSelectLimit(t *testing.T) {
+    assert := assert.New(t)
+
+    td := &TableDef{
+        name: "users",
+        schema: "test",
+    }
+
+    cd := &ColumnDef{
+        name: "name",
+        table: td,
+    }
+
+    c := &Column{
+        def: cd,
+    }
+
+    sel := Select(c).Limit(10)
+
+    exp := "SELECT name FROM users LIMIT ?"
+    expLen := len(exp)
+    expArgCount := 1
+
+    assert.Equal(expLen, sel.Size())
+    assert.Equal(expArgCount, sel.ArgCount())
+    assert.Equal(exp, sel.String())
+}
+
+func TestSelectLimitWithOffset(t *testing.T) {
+    assert := assert.New(t)
+
+    td := &TableDef{
+        name: "users",
+        schema: "test",
+    }
+
+    cd := &ColumnDef{
+        name: "name",
+        table: td,
+    }
+
+    c := &Column{
+        def: cd,
+    }
+
+    sel := Select(c).LimitWithOffset(10, 5)
+
+    exp := "SELECT name FROM users LIMIT ? OFFSET ?"
+    expLen := len(exp)
+    expArgCount := 2
+
+    assert.Equal(expLen, sel.Size())
+    assert.Equal(expArgCount, sel.ArgCount())
+    assert.Equal(exp, sel.String())
+}

@@ -18,6 +18,8 @@ const (
     SYM_EQUAL
     SYM_NEQUAL
     SYM_BETWEEN
+    SYM_LIMIT
+    SYM_OFFSET
 )
 
 var (
@@ -36,5 +38,7 @@ var (
         SYM_EQUAL: []byte(" = "),
         SYM_NEQUAL: []byte(" != "),
         SYM_BETWEEN: []byte(" BETWEEN "),
+        SYM_LIMIT: []byte(" LIMIT "),
+        SYM_OFFSET: []byte(" OFFSET "),
     }
 )
