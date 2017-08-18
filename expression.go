@@ -1,80 +1,128 @@
 package sqlb
 
-type Op int
+type exprType int
 
 const (
-    OP_EQUAL = iota
-    OP_NEQUAL
-    OP_IN
+    EXP_EQUAL = iota
+    EXP_NEQUAL
+    EXP_AND
+    EXP_OR
+    EXP_IN
+    EXP_BETWEEN
+)
+
+type exprScanInfo []Symbol
+
+var (
+    // A static table containing information used in constructing the
+    // expression's SQL string during Scan() calls
+    exprScanTable = map[exprType]exprScanInfo{
+        EXP_EQUAL: exprScanInfo{
+            SYM_ELEMENT, SYM_EQUAL, SYM_ELEMENT,
+        },
+        EXP_NEQUAL: exprScanInfo{
+            SYM_ELEMENT, SYM_NEQUAL, SYM_ELEMENT,
+        },
+        EXP_AND: exprScanInfo{
+            SYM_ELEMENT, SYM_AND, SYM_ELEMENT,
+        },
+        EXP_OR: exprScanInfo{
+            SYM_ELEMENT, SYM_OR, SYM_ELEMENT,
+        },
+        EXP_IN: exprScanInfo{
+            SYM_ELEMENT, SYM_IN, SYM_ELEMENT, SYM_RPAREN,
+        },
+        EXP_BETWEEN: exprScanInfo{
+            SYM_ELEMENT, SYM_BETWEEN, SYM_ELEMENT, SYM_AND, SYM_ELEMENT,
+        },
+    }
 )
 
 type Expression struct {
-    op Op
-    left Element
-    right Element
+    scanInfo exprScanInfo
+    elements []Element
 }
 
 func (e *Expression) ArgCount() int {
-    return e.left.ArgCount() + e.right.ArgCount()
+    ac := 0
+    for _, el := range e.elements {
+        ac += el.ArgCount()
+    }
+    return ac
 }
 
 func (e *Expression) Size() int {
-    return len(SYM_OP[e.op]) + e.left.Size() + e.right.Size()
+    size := 0
+    elidx := 0
+    for _, sym := range e.scanInfo {
+        if sym == SYM_ELEMENT {
+            el := e.elements[elidx]
+            elidx++
+            size += el.Size()
+        } else {
+            size += len(Symbols[sym])
+        }
+    }
+    return size
 }
 
 func (e *Expression) Scan(b []byte, args []interface{}) (int, int) {
-    bw, ac := e.left.Scan(b, args)
-    bw += copy(b[bw:], SYM_OP[e.op])
-    rbw, rac := e.right.Scan(b[bw:], args)
-    bw += rbw
-    ac += rac
+    bw, ac := 0, 0
+    elidx := 0
+    for _, sym := range e.scanInfo {
+        if sym == SYM_ELEMENT {
+            el := e.elements[elidx]
+            elidx++
+            ebw, eac := el.Scan(b[bw:], args[ac:])
+            bw += ebw
+            ac += eac
+        } else {
+            bw += copy(b[bw:], Symbols[sym])
+        }
+    }
     return bw, ac
 }
 
 func Equal(left interface{}, right interface{}) *Expression {
     els := toElements(left, right)
     return &Expression{
-        op: OP_EQUAL,
-        left: els[0],
-        right: els[1],
+        scanInfo: exprScanTable[EXP_EQUAL],
+        elements: els,
     }
 }
 
 func NotEqual(left interface{}, right interface{}) *Expression {
     els := toElements(left, right)
     return &Expression{
-        op: OP_NEQUAL,
-        left: els[0],
-        right: els[1],
+        scanInfo: exprScanTable[EXP_NEQUAL],
+        elements: els,
     }
 }
 
-type InExpression struct {
-    subject Element
-    values *List
+func And(a *Expression, b *Expression) *Expression {
+    return &Expression{
+        scanInfo: exprScanTable[EXP_AND],
+        elements: []Element{a, b},
+    }
 }
 
-func (e *InExpression) ArgCount() int {
-    return e.values.ArgCount()
+func Or(a *Expression, b *Expression) *Expression {
+    return &Expression{
+        scanInfo: exprScanTable[EXP_OR],
+        elements: []Element{a, b},
+    }
 }
 
-func (e *InExpression) Size() int {
-    return e.subject.Size() + SYM_IN_LEN + e.values.Size() + SYM_RPAREN_LEN
+func In(subject Element, values ...interface{}) *Expression {
+    return &Expression{
+        scanInfo: exprScanTable[EXP_IN],
+        elements: []Element{subject, toValueList(values...)},
+    }
 }
 
-func (e *InExpression) Scan(b []byte, args []interface{}) (int, int) {
-    bw, ac := e.subject.Scan(b, args)
-    bw += copy(b[bw:], SYM_IN)
-    lbw, lac := e.values.Scan(b[bw:], args[ac:])
-    bw += lbw
-    ac += lac
-    bw += copy(b[bw:], SYM_RPAREN)
-    return bw, ac
-}
-
-func In(subject Element, values ...interface{}) *InExpression {
-    return &InExpression{
-        subject: subject,
-        values: toValueList(values...),
+func Between(a *Expression, b *Expression) *Expression {
+    return &Expression{
+        scanInfo: exprScanTable[EXP_BETWEEN],
+        elements: []Element{a, b},
     }
 }

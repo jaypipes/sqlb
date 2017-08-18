@@ -26,9 +26,8 @@ func TestExpressionEqual(t *testing.T) {
     val := &Value{value: "foo"}
 
     e := &Expression{
-        op: OP_EQUAL,
-        left: c,
-        right: val,
+        scanInfo: exprScanTable[EXP_EQUAL],
+        elements: []Element{c, val},
     }
 
     exp := "name = ?"
@@ -55,9 +54,8 @@ func TestExpressionEqual(t *testing.T) {
     // the left and right expression reversed
 
     erev := &Expression{
-        op: OP_EQUAL,
-        left: val,
-        right: c,
+        scanInfo: exprScanTable[EXP_EQUAL],
+        elements: []Element{val, c},
     }
 
     exp = "? = name"
@@ -217,9 +215,8 @@ func TestExpressionNotEqual(t *testing.T) {
     val := &Value{value: "foo"}
 
     e := &Expression{
-        op: OP_NEQUAL,
-        left: c,
-        right: val,
+        scanInfo: exprScanTable[EXP_NEQUAL],
+        elements: []Element{c, val},
     }
 
     exp := "name != ?"
@@ -435,4 +432,104 @@ func TestInMulti(t *testing.T) {
     assert.Equal(exp, string(b))
     assert.Equal(expArgCount, numArgs)
     assert.Equal(expArgCount, len(args))
+}
+
+func TestAnd(t *testing.T) {
+    assert := assert.New(t)
+
+    td := &TableDef{
+        name: "users",
+        schema: "test",
+    }
+
+    cd := &ColumnDef{
+        name: "name",
+        table: td,
+    }
+
+    c := &Column{
+        def: cd,
+    }
+
+    ea := &Expression{
+        scanInfo: exprScanTable[EXP_NEQUAL],
+        elements: []Element{c, &Value{value: "foo"}},
+    }
+
+    eb := &Expression{
+        scanInfo: exprScanTable[EXP_NEQUAL],
+        elements: []Element{c, &Value{value: "bar"}},
+    }
+    e := And(ea, eb)
+
+    exp := "name != ? AND name != ?"
+    expLen := len(exp)
+    expArgCount := 2
+
+    s := e.Size()
+    assert.Equal(expLen, s)
+
+    argc := e.ArgCount()
+    assert.Equal(expArgCount, argc)
+
+    args := make([]interface{}, expArgCount)
+    b := make([]byte, s)
+    written, numArgs := e.Scan(b, args)
+
+    assert.Equal(s, written)
+    assert.Equal(exp, string(b))
+    assert.Equal(expArgCount, numArgs)
+    assert.Equal(expArgCount, len(args))
+    assert.Equal("foo", args[0])
+    assert.Equal("bar", args[1])
+}
+
+func TestOr(t *testing.T) {
+    assert := assert.New(t)
+
+    td := &TableDef{
+        name: "users",
+        schema: "test",
+    }
+
+    cd := &ColumnDef{
+        name: "name",
+        table: td,
+    }
+
+    c := &Column{
+        def: cd,
+    }
+
+    ea := &Expression{
+        scanInfo: exprScanTable[EXP_EQUAL],
+        elements: []Element{c, &Value{value: "foo"}},
+    }
+
+    eb := &Expression{
+        scanInfo: exprScanTable[EXP_EQUAL],
+        elements: []Element{c, &Value{value: "bar"}},
+    }
+    e := Or(ea, eb)
+
+    exp := "name = ? OR name = ?"
+    expLen := len(exp)
+    expArgCount := 2
+
+    s := e.Size()
+    assert.Equal(expLen, s)
+
+    argc := e.ArgCount()
+    assert.Equal(expArgCount, argc)
+
+    args := make([]interface{}, expArgCount)
+    b := make([]byte, s)
+    written, numArgs := e.Scan(b, args)
+
+    assert.Equal(s, written)
+    assert.Equal(exp, string(b))
+    assert.Equal(expArgCount, numArgs)
+    assert.Equal(expArgCount, len(args))
+    assert.Equal("foo", args[0])
+    assert.Equal("bar", args[1])
 }

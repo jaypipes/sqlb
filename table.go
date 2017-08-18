@@ -22,7 +22,7 @@ func (t *Table) ArgCount() int {
 func (t *Table) Size() int {
     size := t.def.Size()
     if t.alias != "" {
-        size += SYM_AS_LEN + len(t.alias)
+        size += len(Symbols[SYM_AS]) + len(t.alias)
     }
     return size
 }
@@ -30,7 +30,7 @@ func (t *Table) Size() int {
 func (t *Table) Scan(b []byte, args []interface{}) (int, int) {
     bw, _ := t.def.Scan(b, args)
     if t.alias != "" {
-        bw += copy(b[bw:], SYM_AS)
+        bw += copy(b[bw:], Symbols[SYM_AS])
         bw += copy(b[bw:], t.alias)
     }
     return bw, 0

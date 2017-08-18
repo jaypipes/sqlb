@@ -1,25 +1,40 @@
 package sqlb
 
-var (
-    SYM_QM = []byte("?")
-    SYM_QM_LEN = 1
-    SYM_AS = []byte(" AS ")
-    SYM_AS_LEN = 4
-    SYM_COMMA_WS = []byte(", ")
-    SYM_COMMA_WS_LEN = 2
-    SYM_SELECT = []byte("SELECT ")
-    SYM_SELECT_LEN = 7
-    SYM_FROM = []byte(" FROM ")
-    SYM_FROM_LEN = 6
-    SYM_LPAREN = []byte("(")
-    SYM_LPAREN_LEN = 1
-    SYM_RPAREN = []byte(")")
-    SYM_RPAREN_LEN = 1
-    SYM_IN = []byte(" IN (")
-    SYM_IN_LEN = 5
+type Symbol int
 
-    SYM_OP = map[Op][]byte{
-        OP_EQUAL: []byte(" = "),
-        OP_NEQUAL: []byte(" != "),
+const (
+    SYM_ELEMENT = iota // Marker for an element that self-scans into the SQL buffer
+    SYM_QUEST_MARK
+    SYM_AS
+    SYM_COMMA_WS
+    SYM_SELECT
+    SYM_FROM
+    SYM_LPAREN
+    SYM_RPAREN
+    SYM_IN
+    SYM_WHERE
+    SYM_AND
+    SYM_OR
+    SYM_EQUAL
+    SYM_NEQUAL
+    SYM_BETWEEN
+)
+
+var (
+    Symbols = map[Symbol][]byte{
+        SYM_QUEST_MARK: []byte("?"),
+        SYM_AS: []byte(" AS "),
+        SYM_COMMA_WS: []byte(", "),
+        SYM_SELECT: []byte("SELECT "),
+        SYM_FROM: []byte(" FROM "),
+        SYM_LPAREN: []byte("("),
+        SYM_RPAREN: []byte(")"),
+        SYM_IN: []byte(" IN ("),
+        SYM_WHERE: []byte(" WHERE "),
+        SYM_AND: []byte(" AND "),
+        SYM_OR: []byte(" OR "),
+        SYM_EQUAL: []byte(" = "),
+        SYM_NEQUAL: []byte(" != "),
+        SYM_BETWEEN: []byte(" BETWEEN "),
     }
 )

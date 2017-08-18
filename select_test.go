@@ -148,3 +148,129 @@ func TestSelectFromTableDef(t *testing.T) {
     assert.Equal(expLen, sel.Size())
     assert.Equal(exp, sel.String())
 }
+
+func TestWhereSingleEqual(t *testing.T) {
+    assert := assert.New(t)
+
+    td := &TableDef{
+        name: "users",
+        schema: "test",
+    }
+
+    cd := &ColumnDef{
+        name: "name",
+        table: td,
+    }
+
+    sel := Select(cd).Where(Equal(cd, "foo"))
+
+    exp := "SELECT name FROM users WHERE name = ?"
+    expLen := len(exp)
+    expArgCount := 1
+
+    assert.Equal(expLen, sel.Size())
+    assert.Equal(expArgCount, sel.ArgCount())
+    assert.Equal(exp, sel.String())
+}
+
+func TestWhereSingleAnd(t *testing.T) {
+    assert := assert.New(t)
+
+    td := &TableDef{
+        name: "users",
+        schema: "test",
+    }
+
+    cd := &ColumnDef{
+        name: "name",
+        table: td,
+    }
+
+    sel := Select(cd).Where(And(NotEqual(cd, "foo"), NotEqual(cd, "bar")))
+
+    exp := "SELECT name FROM users WHERE name != ? AND name != ?"
+    expLen := len(exp)
+    expArgCount := 2
+
+    assert.Equal(expLen, sel.Size())
+    assert.Equal(expArgCount, sel.ArgCount())
+    assert.Equal(exp, sel.String())
+}
+
+func TestWhereSingleIn(t *testing.T) {
+    assert := assert.New(t)
+
+    td := &TableDef{
+        name: "users",
+        schema: "test",
+    }
+
+    cd := &ColumnDef{
+        name: "name",
+        table: td,
+    }
+
+    sel := Select(cd).Where(In(cd, "foo", "bar"))
+
+    exp := "SELECT name FROM users WHERE name IN (?, ?)"
+    expLen := len(exp)
+    expArgCount := 2
+
+    assert.Equal(expLen, sel.Size())
+    assert.Equal(expArgCount, sel.ArgCount())
+    assert.Equal(exp, sel.String())
+}
+
+func TestWhereMultiNotEqual(t *testing.T) {
+    assert := assert.New(t)
+
+    td := &TableDef{
+        name: "users",
+        schema: "test",
+    }
+
+    cd := &ColumnDef{
+        name: "name",
+        table: td,
+    }
+
+    sel := Select(cd).Where(NotEqual(cd, "foo"))
+    sel = sel.Where(NotEqual(cd, "bar"))
+
+    exp := "SELECT name FROM users WHERE name != ? AND name != ?"
+    expLen := len(exp)
+    expArgCount := 2
+
+    assert.Equal(expLen, sel.Size())
+    assert.Equal(expArgCount, sel.ArgCount())
+    assert.Equal(exp, sel.String())
+}
+
+func TestWhereMultiInAndEqual(t *testing.T) {
+    assert := assert.New(t)
+
+    td := &TableDef{
+        name: "users",
+        schema: "test",
+    }
+
+    cd1 := &ColumnDef{
+        name: "name",
+        table: td,
+    }
+
+    cd2 := &ColumnDef{
+        name: "is_author",
+        table: td,
+    }
+
+    sel := Select(cd1).Where(And(In(cd1, "foo", "bar"), Equal(cd2, 1)))
+
+    exp := "SELECT name FROM users WHERE name IN (?, ?) AND is_author = ?"
+    expLen := len(exp)
+    expArgCount := 3
+
+    assert.Equal(expLen, sel.Size())
+    assert.Equal(expArgCount, sel.ArgCount())
+    assert.Equal(exp, sel.String())
+}
