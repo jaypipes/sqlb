@@ -26,9 +26,8 @@ func TestExpressionEqual(t *testing.T) {
     val := &Value{value: "foo"}
 
     e := &Expression{
-        scanInfo: exprScanTable[OP_EQUAL],
-        left: c,
-        right: val,
+        scanInfo: exprScanTable[EXP_EQUAL],
+        elements: []Element{c, val},
     }
 
     exp := "name = ?"
@@ -55,9 +54,8 @@ func TestExpressionEqual(t *testing.T) {
     // the left and right expression reversed
 
     erev := &Expression{
-        scanInfo: exprScanTable[OP_EQUAL],
-        left: val,
-        right: c,
+        scanInfo: exprScanTable[EXP_EQUAL],
+        elements: []Element{val, c},
     }
 
     exp = "? = name"
@@ -217,9 +215,8 @@ func TestExpressionNotEqual(t *testing.T) {
     val := &Value{value: "foo"}
 
     e := &Expression{
-        scanInfo: exprScanTable[OP_NEQUAL],
-        left: c,
-        right: val,
+        scanInfo: exprScanTable[EXP_NEQUAL],
+        elements: []Element{c, val},
     }
 
     exp := "name != ?"
@@ -455,15 +452,13 @@ func TestAnd(t *testing.T) {
     }
 
     ea := &Expression{
-        scanInfo: exprScanTable[OP_NEQUAL],
-        left: c,
-        right: &Value{value: "foo"},
+        scanInfo: exprScanTable[EXP_NEQUAL],
+        elements: []Element{c, &Value{value: "foo"}},
     }
 
     eb := &Expression{
-        scanInfo: exprScanTable[OP_NEQUAL],
-        left: c,
-        right: &Value{value: "bar"},
+        scanInfo: exprScanTable[EXP_NEQUAL],
+        elements: []Element{c, &Value{value: "bar"}},
     }
     e := And(ea, eb)
 
@@ -507,15 +502,13 @@ func TestOr(t *testing.T) {
     }
 
     ea := &Expression{
-        scanInfo: exprScanTable[OP_EQUAL],
-        left: c,
-        right: &Value{value: "foo"},
+        scanInfo: exprScanTable[EXP_EQUAL],
+        elements: []Element{c, &Value{value: "foo"}},
     }
 
     eb := &Expression{
-        scanInfo: exprScanTable[OP_EQUAL],
-        left: c,
-        right: &Value{value: "bar"},
+        scanInfo: exprScanTable[EXP_EQUAL],
+        elements: []Element{c, &Value{value: "bar"}},
     }
     e := Or(ea, eb)
 

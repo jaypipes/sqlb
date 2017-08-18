@@ -28,18 +28,18 @@ func (s *Selectable) As(alias string) *Selectable {
 }
 
 func (s *Selectable) Size() int {
-    size := SYM_SELECT_LEN + SYM_FROM_LEN
+    size := len(Symbols[SYM_SELECT]) + len(Symbols[SYM_FROM])
     size += s.projected.Size()
     for _, subj := range s.subjects {
         size += subj.Size()
     }
     if s.alias != "" {
-        size += SYM_AS_LEN + len(s.alias)
+        size += len(Symbols[SYM_AS]) + len(s.alias)
     }
     nfilters := len(s.filters)
     if nfilters > 0 {
-        size += SYM_WHERE_LEN
-        size += SYM_AND_LEN * (nfilters - 1)
+        size += len(Symbols[SYM_WHERE])
+        size += len(Symbols[SYM_AND]) * (nfilters - 1)
         for _, filter := range s.filters {
             size += filter.Size()
         }
@@ -49,25 +49,25 @@ func (s *Selectable) Size() int {
 
 func (s *Selectable) Scan(b []byte, args []interface{}) (int, int) {
     var bw, ac int
-    bw += copy(b[bw:], SYM_SELECT)
+    bw += copy(b[bw:], Symbols[SYM_SELECT])
     pbw, pac := s.projected.Scan(b[bw:], args)
     bw += pbw
     ac += pac
-    bw += copy(b[bw:], SYM_FROM)
+    bw += copy(b[bw:], Symbols[SYM_FROM])
     for _, subj := range s.subjects {
         sbw, sac := subj.Scan(b[bw:], args)
         bw += sbw
         ac += sac
     }
     if s.alias != "" {
-        bw += copy(b[bw:], SYM_AS)
+        bw += copy(b[bw:], Symbols[SYM_AS])
         bw += copy(b[bw:], s.alias)
     }
     if len(s.filters) > 0 {
-        bw += copy(b[bw:], SYM_WHERE)
+        bw += copy(b[bw:], Symbols[SYM_WHERE])
         for x, filter := range s.filters {
             if x > 0 {
-                bw += copy(b[bw:], SYM_AND)
+                bw += copy(b[bw:], Symbols[SYM_AND])
             }
             fbw, fac := filter.Scan(b[bw:], args[ac:])
             bw += fbw

@@ -12,7 +12,7 @@ func (c *Column) ArgCount() int {
 func (c *Column) Size() int {
     size := c.def.Size()
     if c.alias != "" {
-        size += SYM_AS_LEN + len(c.alias)
+        size += len(Symbols[SYM_AS]) + len(c.alias)
     }
     return size
 }
@@ -20,7 +20,7 @@ func (c *Column) Size() int {
 func (c *Column) Scan(b []byte, args []interface{}) (int, int) {
     bw, _ := c.def.Scan(b, args)
     if c.alias != "" {
-        bw += copy(b[bw:], SYM_AS)
+        bw += copy(b[bw:], Symbols[SYM_AS])
         bw += copy(b[bw:], c.alias)
     }
     return bw, 0

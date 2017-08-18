@@ -20,6 +20,6 @@ func (val  *Value) Size() int {
 
 func (val *Value) Scan(b []byte, args []interface{}) (int, int) {
     args[0] = val.value
-    copy(b, SYM_QM)
+    copy(b, Symbols[SYM_QUEST_MARK])
     return 1, 1
 }

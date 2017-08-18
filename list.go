@@ -20,7 +20,7 @@ func (l  *List) Size() int {
     for _, el := range l.elements {
         size += el.Size()
     }
-    return size + (SYM_COMMA_WS_LEN * (nels - 1))  // the commas...
+    return size + (len(Symbols[SYM_COMMA_WS]) * (nels - 1))  // the commas...
 }
 
 func (l *List) Scan(b []byte, args []interface{}) (int, int) {
@@ -30,7 +30,7 @@ func (l *List) Scan(b []byte, args []interface{}) (int, int) {
         ebw, eac := el.Scan(b[bw:], args[ac:])
         bw += ebw
         if x != (nels - 1) {
-            bw += copy(b[bw:], SYM_COMMA_WS)
+            bw += copy(b[bw:], Symbols[SYM_COMMA_WS])
         }
         ac += eac
     }
