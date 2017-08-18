@@ -6,6 +6,7 @@ type Selectable struct {
     subjects []Element
     filters []*Expression
     limit *LimitClause
+    orderBy *OrderByClause
 }
 
 func (s *Selectable) ArgCount() int {
@@ -18,6 +19,9 @@ func (s *Selectable) ArgCount() int {
     }
     if s.limit != nil {
         argc += s.limit.ArgCount()
+    }
+    if s.orderBy != nil {
+        argc += s.orderBy.ArgCount()
     }
     return argc
 }
@@ -50,6 +54,9 @@ func (s *Selectable) Size() int {
     }
     if s.limit != nil {
         size += s.limit.Size()
+    }
+    if s.orderBy != nil {
+        size += s.orderBy.Size()
     }
     return size
 }
@@ -86,6 +93,11 @@ func (s *Selectable) Scan(b []byte, args []interface{}) (int, int) {
         bw += lbw
         ac += lac
     }
+    if s.orderBy != nil {
+        obbw, obac := s.orderBy.Scan(b[bw:], args[ac:])
+        bw += obbw
+        ac += obac
+    }
     return bw, ac
 }
 
@@ -100,6 +112,28 @@ func (s *Selectable) String() string {
 
 func (s *Selectable) Where(e *Expression) *Selectable {
     s.filters = append(s.filters, e)
+    return s
+}
+
+// Given one or more sort columns, either set or add to the ORDER BY clause for
+// the Selectable
+func (s *Selectable) OrderBy(sortCols ...*SortColumn) *Selectable {
+    ob := s.orderBy
+    if ob == nil {
+        ob = &OrderByClause{
+            cols: &List{
+                elements: make([]Element, len(sortCols)),
+            },
+        }
+        for x, sc := range sortCols {
+            ob.cols.elements[x] = sc
+        }
+    } else {
+        for _, sc := range sortCols {
+            ob.cols.elements = append(ob.cols.elements, sc)
+        }
+    }
+    s.orderBy = ob
     return s
 }
 

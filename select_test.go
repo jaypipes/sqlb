@@ -330,3 +330,56 @@ func TestSelectLimitWithOffset(t *testing.T) {
     assert.Equal(expArgCount, sel.ArgCount())
     assert.Equal(exp, sel.String())
 }
+
+func TestSelectOrderByAsc(t *testing.T) {
+    assert := assert.New(t)
+
+    td := &TableDef{
+        name: "users",
+        schema: "test",
+    }
+
+    cd := &ColumnDef{
+        name: "name",
+        table: td,
+    }
+
+    sel := Select(cd).OrderBy(cd.Asc())
+
+    exp := "SELECT name FROM users ORDER BY name"
+    expLen := len(exp)
+    expArgCount := 0
+
+    assert.Equal(expLen, sel.Size())
+    assert.Equal(expArgCount, sel.ArgCount())
+    assert.Equal(exp, sel.String())
+}
+
+func TestSelectOrderByMultiAscDesc(t *testing.T) {
+    assert := assert.New(t)
+
+    td := &TableDef{
+        name: "users",
+        schema: "test",
+    }
+
+    cd1 := &ColumnDef{
+        name: "name",
+        table: td,
+    }
+
+    cd2 := &ColumnDef{
+        name: "email",
+        table: td,
+    }
+
+    sel := Select(cd1).OrderBy(cd1.Asc(), cd2.Desc())
+
+    exp := "SELECT name FROM users ORDER BY name, email DESC"
+    expLen := len(exp)
+    expArgCount := 0
+
+    assert.Equal(expLen, sel.Size())
+    assert.Equal(expArgCount, sel.ArgCount())
+    assert.Equal(exp, sel.String())
+}
