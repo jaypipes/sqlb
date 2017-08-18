@@ -6,6 +6,7 @@ const (
     OP_EQUAL = iota
     OP_NEQUAL
     OP_AND
+    OP_OR
 )
 
 type Expression struct {
@@ -51,6 +52,10 @@ func NotEqual(left interface{}, right interface{}) *Expression {
 
 func And(a *Expression, b *Expression) *Expression {
     return &Expression{op: OP_AND, left: a, right: b}
+}
+
+func Or(a *Expression, b *Expression) *Expression {
+    return &Expression{op: OP_OR, left: a, right: b}
 }
 
 type InExpression struct {

@@ -22,5 +22,6 @@ var (
         OP_EQUAL: []byte(" = "),
         OP_NEQUAL: []byte(" != "),
         OP_AND: []byte(" AND "),
+        OP_OR: []byte(" OR "),
     }
 )
