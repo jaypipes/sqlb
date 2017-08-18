@@ -20,6 +20,8 @@ const (
     SYM_BETWEEN
     SYM_LIMIT
     SYM_OFFSET
+    SYM_ORDER_BY
+    SYM_DESC
 )
 
 var (
@@ -40,5 +42,7 @@ var (
         SYM_BETWEEN: []byte(" BETWEEN "),
         SYM_LIMIT: []byte(" LIMIT "),
         SYM_OFFSET: []byte(" OFFSET "),
+        SYM_ORDER_BY: []byte(" ORDER BY "),
+        SYM_DESC: []byte(" DESC"),
     }
 )

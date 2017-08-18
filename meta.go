@@ -50,6 +50,14 @@ func (c *ColumnDef) As(alias string) *Column {
     return &Column{def: c, alias: alias}
 }
 
+func (c *ColumnDef) Desc() *SortColumn {
+    return &SortColumn{el: c, desc: true}
+}
+
+func (c *ColumnDef) Asc() *SortColumn {
+    return &SortColumn{el: c}
+}
+
 type TableDef struct {
     name string
     schema string
