@@ -383,3 +383,32 @@ func TestSelectOrderByMultiAscDesc(t *testing.T) {
     assert.Equal(expArgCount, sel.ArgCount())
     assert.Equal(exp, sel.String())
 }
+
+func TestSelectStringArgs(t *testing.T) {
+    assert := assert.New(t)
+
+    td := &TableDef{
+        name: "users",
+        schema: "test",
+    }
+
+    cd := &ColumnDef{
+        name: "name",
+        table: td,
+    }
+
+    sel := Select(cd).Where(In(cd, "foo", "bar"))
+
+    expStr := "SELECT name FROM users WHERE name IN (?, ?)"
+    expLen := len(expStr)
+    expArgCount := 2
+    expArgs := []interface{}{"foo", "bar"}
+
+    assert.Equal(expLen, sel.Size())
+    assert.Equal(expArgCount, sel.ArgCount())
+
+    actStr, actArgs := sel.StringArgs()
+
+    assert.Equal(expStr, actStr)
+    assert.Equal(expArgs, actArgs)
+}

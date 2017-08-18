@@ -110,6 +110,15 @@ func (s *Selectable) String() string {
     return string(b)
 }
 
+func (s *Selectable) StringArgs() (string, []interface{}) {
+    size := s.Size()
+    argc := s.ArgCount()
+    args := make([]interface{}, argc)
+    b := make([]byte, size)
+    s.Scan(b, args)
+    return string(b), args
+}
+
 func (s *Selectable) Where(e *Expression) *Selectable {
     s.filters = append(s.filters, e)
     return s
