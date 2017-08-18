@@ -7,6 +7,7 @@ const (
     OP_NEQUAL
     OP_AND
     OP_OR
+    OP_IN
 )
 
 type exprScanInfo struct {
@@ -22,6 +23,7 @@ var (
         OP_NEQUAL: &exprScanInfo{opSym: SYM_NEQUAL, suffix: SYM_EMPTY},
         OP_AND: &exprScanInfo{opSym: SYM_AND, suffix: SYM_EMPTY},
         OP_OR: &exprScanInfo{opSym: SYM_OR, suffix: SYM_EMPTY},
+        OP_IN: &exprScanInfo{opSym: SYM_IN, suffix: SYM_RPAREN},
     }
 )
 
@@ -86,32 +88,10 @@ func Or(a *Expression, b *Expression) *Expression {
     }
 }
 
-type InExpression struct {
-    subject Element
-    values *List
-}
-
-func (e *InExpression) ArgCount() int {
-    return e.values.ArgCount()
-}
-
-func (e *InExpression) Size() int {
-    return e.subject.Size() + SYM_IN_LEN + e.values.Size() + SYM_RPAREN_LEN
-}
-
-func (e *InExpression) Scan(b []byte, args []interface{}) (int, int) {
-    bw, ac := e.subject.Scan(b, args)
-    bw += copy(b[bw:], SYM_IN)
-    lbw, lac := e.values.Scan(b[bw:], args[ac:])
-    bw += lbw
-    ac += lac
-    bw += copy(b[bw:], SYM_RPAREN)
-    return bw, ac
-}
-
-func In(subject Element, values ...interface{}) *InExpression {
-    return &InExpression{
-        subject: subject,
-        values: toValueList(values...),
+func In(subject Element, values ...interface{}) *Expression {
+    return &Expression{
+        scanInfo: exprScanTable[OP_IN],
+        left: subject,
+        right: toValueList(values...),
     }
 }
