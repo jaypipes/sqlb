@@ -1,6 +1,8 @@
 package sqlb
 
 var (
+    SYM_EMPTY = []byte("")
+    SYM_EMPTY_LEN = 0
     SYM_QM = []byte("?")
     SYM_QM_LEN = 1
     SYM_AS = []byte(" AS ")
@@ -21,11 +23,10 @@ var (
     SYM_WHERE_LEN = 7
     SYM_AND = []byte(" AND ")
     SYM_AND_LEN = 5
-
-    SYM_OP = map[Op][]byte{
-        OP_EQUAL: []byte(" = "),
-        OP_NEQUAL: []byte(" != "),
-        OP_AND: []byte(" AND "),
-        OP_OR: []byte(" OR "),
-    }
+    SYM_OR = []byte(" OR ")
+    SYM_OR_LEN = 4
+    SYM_EQUAL = []byte(" = ")
+    SYM_EQUAL_LEN = 3
+    SYM_NEQUAL = []byte(" != ")
+    SYM_NEQUAL_LEN = 4
 )

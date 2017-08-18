@@ -26,7 +26,7 @@ func TestExpressionEqual(t *testing.T) {
     val := &Value{value: "foo"}
 
     e := &Expression{
-        op: OP_EQUAL,
+        scanInfo: exprScanTable[OP_EQUAL],
         left: c,
         right: val,
     }
@@ -55,7 +55,7 @@ func TestExpressionEqual(t *testing.T) {
     // the left and right expression reversed
 
     erev := &Expression{
-        op: OP_EQUAL,
+        scanInfo: exprScanTable[OP_EQUAL],
         left: val,
         right: c,
     }
@@ -217,7 +217,7 @@ func TestExpressionNotEqual(t *testing.T) {
     val := &Value{value: "foo"}
 
     e := &Expression{
-        op: OP_NEQUAL,
+        scanInfo: exprScanTable[OP_NEQUAL],
         left: c,
         right: val,
     }
@@ -455,13 +455,13 @@ func TestAnd(t *testing.T) {
     }
 
     ea := &Expression{
-        op: OP_NEQUAL,
+        scanInfo: exprScanTable[OP_NEQUAL],
         left: c,
         right: &Value{value: "foo"},
     }
 
     eb := &Expression{
-        op: OP_NEQUAL,
+        scanInfo: exprScanTable[OP_NEQUAL],
         left: c,
         right: &Value{value: "bar"},
     }
@@ -507,13 +507,13 @@ func TestOr(t *testing.T) {
     }
 
     ea := &Expression{
-        op: OP_EQUAL,
+        scanInfo: exprScanTable[OP_EQUAL],
         left: c,
         right: &Value{value: "foo"},
     }
 
     eb := &Expression{
-        op: OP_EQUAL,
+        scanInfo: exprScanTable[OP_EQUAL],
         left: c,
         right: &Value{value: "bar"},
     }
