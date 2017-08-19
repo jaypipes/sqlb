@@ -33,6 +33,10 @@ type ColumnDef struct {
     table *TableDef
 }
 
+func (c *ColumnDef) Column() *Column {
+    return &Column{def: c}
+}
+
 func (c *ColumnDef) ArgCount() int {
     return 0
 }
