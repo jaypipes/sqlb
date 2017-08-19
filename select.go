@@ -5,8 +5,9 @@ type Selectable struct {
     projected *List
     subjects []Element
     filters []*Expression
-    limit *LimitClause
+    groupBy *GroupByClause
     orderBy *OrderByClause
+    limit *LimitClause
 }
 
 func (s *Selectable) ArgCount() int {
@@ -17,11 +18,14 @@ func (s *Selectable) ArgCount() int {
     for _, filter := range s.filters {
         argc += filter.ArgCount()
     }
-    if s.limit != nil {
-        argc += s.limit.ArgCount()
+    if s.groupBy != nil {
+        argc += s.groupBy.ArgCount()
     }
     if s.orderBy != nil {
         argc += s.orderBy.ArgCount()
+    }
+    if s.limit != nil {
+        argc += s.limit.ArgCount()
     }
     return argc
 }
@@ -52,11 +56,14 @@ func (s *Selectable) Size() int {
             size += filter.Size()
         }
     }
-    if s.limit != nil {
-        size += s.limit.Size()
+    if s.groupBy != nil {
+        size += s.groupBy.Size()
     }
     if s.orderBy != nil {
         size += s.orderBy.Size()
+    }
+    if s.limit != nil {
+        size += s.limit.Size()
     }
     return size
 }
@@ -88,15 +95,20 @@ func (s *Selectable) Scan(b []byte, args []interface{}) (int, int) {
             ac += fac
         }
     }
-    if s.limit != nil {
-        lbw, lac := s.limit.Scan(b[bw:], args[ac:])
-        bw += lbw
-        ac += lac
+    if s.groupBy != nil {
+        gbbw, gbac := s.groupBy.Scan(b[bw:], args[ac:])
+        bw += gbbw
+        ac += gbac
     }
     if s.orderBy != nil {
         obbw, obac := s.orderBy.Scan(b[bw:], args[ac:])
         bw += obbw
         ac += obac
+    }
+    if s.limit != nil {
+        lbw, lac := s.limit.Scan(b[bw:], args[ac:])
+        bw += lbw
+        ac += lac
     }
     return bw, ac
 }
@@ -124,9 +136,37 @@ func (s *Selectable) Where(e *Expression) *Selectable {
     return s
 }
 
+// Given one or more columns, either set or add to the GROUP BY clause for
+// the Selectable
+func (s *Selectable) GroupBy(cols ...Columnar) *Selectable {
+    if len(cols) == 0 {
+        return s
+    }
+    gb := s.groupBy
+    if gb == nil {
+        gb = &GroupByClause{
+            cols: &List{
+                elements: make([]Element, len(cols)),
+            },
+        }
+        for x, c := range cols {
+            gb.cols.elements[x] = c.Column()
+        }
+    } else {
+        for _, c := range cols {
+            gb.cols.elements = append(gb.cols.elements, c.Column())
+        }
+    }
+    s.groupBy = gb
+    return s
+}
+
 // Given one or more sort columns, either set or add to the ORDER BY clause for
 // the Selectable
 func (s *Selectable) OrderBy(sortCols ...*SortColumn) *Selectable {
+    if len(sortCols) == 0 {
+        return s
+    }
     ob := s.orderBy
     if ob == nil {
         ob = &OrderByClause{

@@ -412,3 +412,80 @@ func TestSelectStringArgs(t *testing.T) {
     assert.Equal(expStr, actStr)
     assert.Equal(expArgs, actArgs)
 }
+
+func TestSelectGroupByAsc(t *testing.T) {
+    assert := assert.New(t)
+
+    td := &TableDef{
+        name: "users",
+        schema: "test",
+    }
+
+    cd := &ColumnDef{
+        name: "name",
+        table: td,
+    }
+
+    sel := Select(cd).GroupBy(cd)
+
+    exp := "SELECT name FROM users GROUP BY name"
+    expLen := len(exp)
+    expArgCount := 0
+
+    assert.Equal(expLen, sel.Size())
+    assert.Equal(expArgCount, sel.ArgCount())
+    assert.Equal(exp, sel.String())
+}
+
+func TestSelectGroupByMultiAscDesc(t *testing.T) {
+    assert := assert.New(t)
+
+    td := &TableDef{
+        name: "users",
+        schema: "test",
+    }
+
+    cd1 := &ColumnDef{
+        name: "name",
+        table: td,
+    }
+
+    cd2 := &ColumnDef{
+        name: "email",
+        table: td,
+    }
+
+    sel := Select(cd1).GroupBy(cd1, cd2)
+
+    exp := "SELECT name FROM users GROUP BY name, email"
+    expLen := len(exp)
+    expArgCount := 0
+
+    assert.Equal(expLen, sel.Size())
+    assert.Equal(expArgCount, sel.ArgCount())
+    assert.Equal(exp, sel.String())
+}
+
+func TestSelectGroupOrderLimit(t *testing.T) {
+    assert := assert.New(t)
+
+    td := &TableDef{
+        name: "users",
+        schema: "test",
+    }
+
+    cd := &ColumnDef{
+        name: "name",
+        table: td,
+    }
+
+    sel := Select(cd).GroupBy(cd).OrderBy(cd.Desc()).Limit(10)
+
+    exp := "SELECT name FROM users GROUP BY name ORDER BY name DESC LIMIT ?"
+    expLen := len(exp)
+    expArgCount := 1
+
+    assert.Equal(expLen, sel.Size())
+    assert.Equal(expArgCount, sel.ArgCount())
+    assert.Equal(exp, sel.String())
+}

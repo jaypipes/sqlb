@@ -1,8 +1,16 @@
 package sqlb
 
+type Columnar interface {
+    Column() *Column
+}
+
 type Column struct {
     alias string
     def *ColumnDef
+}
+
+func (c *Column) Column() *Column {
+    return c
 }
 
 func (c *Column) ArgCount() int {
