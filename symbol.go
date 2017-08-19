@@ -22,6 +22,7 @@ const (
     SYM_OFFSET
     SYM_ORDER_BY
     SYM_DESC
+    SYM_GROUP_BY
 )
 
 var (
@@ -44,5 +45,6 @@ var (
         SYM_OFFSET: []byte(" OFFSET "),
         SYM_ORDER_BY: []byte(" ORDER BY "),
         SYM_DESC: []byte(" DESC"),
+        SYM_GROUP_BY: []byte(" GROUP BY "),
     }
 )
