@@ -43,14 +43,6 @@ func (c *Column) As(alias string) *Column {
     return c
 }
 
-func (c *Column) Desc() *SortColumn {
-    return &SortColumn{el: c, desc: true}
-}
-
-func (c *Column) Asc() *SortColumn {
-    return &SortColumn{el: c}
-}
-
 func isColumn(el Element) bool {
     switch el.(type) {
     case *Column:
@@ -84,12 +76,4 @@ func (c *ColumnDef) Scan(b []byte, args []interface{}) (int, int) {
 // Generate an aliased Column from a ColumnDef
 func (c *ColumnDef) As(alias string) *Column {
     return &Column{def: c, alias: alias}
-}
-
-func (c *ColumnDef) Desc() *SortColumn {
-    return &SortColumn{el: c, desc: true}
-}
-
-func (c *ColumnDef) Asc() *SortColumn {
-    return &SortColumn{el: c}
 }

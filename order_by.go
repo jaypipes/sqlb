@@ -51,3 +51,19 @@ func (ob *OrderByClause) Scan(b []byte, args []interface{}) (int, int) {
     ac += eac
     return bw, ac
 }
+
+func (c *Column) Desc() *SortColumn {
+    return &SortColumn{el: c, desc: true}
+}
+
+func (c *Column) Asc() *SortColumn {
+    return &SortColumn{el: c}
+}
+
+func (c *ColumnDef) Desc() *SortColumn {
+    return &SortColumn{el: c, desc: true}
+}
+
+func (c *ColumnDef) Asc() *SortColumn {
+    return &SortColumn{el: c}
+}
