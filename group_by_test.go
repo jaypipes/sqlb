@@ -16,7 +16,7 @@ func TestGroupByClauseSingle(t *testing.T) {
 
     cd := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     ob := &GroupByClause{
@@ -54,12 +54,12 @@ func TestGroupByClauseMulti(t *testing.T) {
 
     cd1 := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     cd2 := &ColumnDef{
         name: "email",
-        table: td,
+        tdef: td,
     }
 
     ob := &GroupByClause{

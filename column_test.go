@@ -16,14 +16,45 @@ func TestColumn(t *testing.T) {
 
     cd := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     c := &Column{
-        def: cd,
+        cdef: cd,
+        tbl: td.Table(),
     }
 
     exp := "name"
+    expLen := len(exp)
+    s := c.Size()
+    assert.Equal(expLen, s)
+
+    b := make([]byte, s)
+    written, _ := c.Scan(b, nil)
+
+    assert.Equal(written, s)
+    assert.Equal(exp, string(b))
+}
+
+func TestColumnWithTableAlias(t *testing.T) {
+    assert := assert.New(t)
+
+    td := &TableDef{
+        name: "users",
+        schema: "test",
+    }
+
+    cd := &ColumnDef{
+        name: "name",
+        tdef: td,
+    }
+
+    c := &Column{
+        cdef: cd,
+        tbl: td.As("u"),
+    }
+
+    exp := "u.name"
     expLen := len(exp)
     s := c.Size()
     assert.Equal(expLen, s)
@@ -45,7 +76,7 @@ func TestColumnDefSorts(t *testing.T) {
 
     cd := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     sc := cd.Asc()
@@ -85,11 +116,12 @@ func TestColumnSorts(t *testing.T) {
 
     cd := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     c := &Column{
-        def: cd,
+        cdef: cd,
+        tbl: td.Table(),
     }
 
     sc := c.Asc()
@@ -129,11 +161,12 @@ func TestColumnAlias(t *testing.T) {
 
     cd := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     c := &Column{
-        def: cd,
+        cdef: cd,
+        tbl: td.Table(),
         alias: "user_name",
     }
 
@@ -159,10 +192,10 @@ func TestColumnAs(t *testing.T) {
 
     cd := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     c := cd.As("n")
     assert.Equal("n", c.alias)
-    assert.Equal(cd, c.def)
+    assert.Equal(cd, c.cdef)
 }

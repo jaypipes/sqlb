@@ -28,76 +28,6 @@ ORDER BY c.TABLE_NAME, c.COLUMN_NAME
 `
 )
 
-type ColumnDef struct {
-    name string
-    table *TableDef
-}
-
-func (c *ColumnDef) Column() *Column {
-    return &Column{def: c}
-}
-
-func (c *ColumnDef) ArgCount() int {
-    return 0
-}
-
-func (c *ColumnDef) Size() int {
-    return len(c.name)
-}
-
-func (c *ColumnDef) Scan(b []byte, args []interface{}) (int, int) {
-    return copy(b, c.name), 0
-}
-
-// Generate an aliased Column from a ColumnDef
-func (c *ColumnDef) As(alias string) *Column {
-    return &Column{def: c, alias: alias}
-}
-
-func (c *ColumnDef) Desc() *SortColumn {
-    return &SortColumn{el: c, desc: true}
-}
-
-func (c *ColumnDef) Asc() *SortColumn {
-    return &SortColumn{el: c}
-}
-
-type TableDef struct {
-    name string
-    schema string
-    columns []*ColumnDef
-}
-
-func (t *TableDef) ArgCount() int {
-    return 0
-}
-
-func (t *TableDef) Size() int {
-    return len(t.name)
-}
-
-func (t *TableDef) Scan(b []byte, args []interface{}) (int, int) {
-    return copy(b, t.name), 0
-}
-
-// Generate an aliased Table from a TableDef
-func (t *TableDef) As(alias string) *Table {
-    return &Table{def: t, alias: alias}
-}
-
-func (t *TableDef) Column(colName string) *ColumnDef {
-    for _, cdef := range t.columns {
-        if cdef.name == colName {
-            return cdef
-        }
-    }
-    return nil
-}
-
-func (t *TableDef) ColumnDefs() []*ColumnDef {
-    return t.columns
-}
-
 type Meta struct {
     db *sql.DB
     tables map[string]*TableDef
@@ -135,12 +65,12 @@ func Reflect(driver string, db *sql.DB, meta *Meta) error {
 
 // Grabs column information from the information schema and populates the
 // supplied map of TableDef descriptors' columns
-func fillTableColumnDefs(db *sql.DB, schemaName string, tables *map[string]*TableDef) error {
+func fillTableColumnDefs(db *sql.DB, schemaName string, tdefs *map[string]*TableDef) error {
     rows, err := db.Query(IS_COLUMNS, schemaName)
     if err != nil {
         return err
     }
-    var table *TableDef
+    var tdef *TableDef
     for rows.Next() {
         var tname string
         var cname string
@@ -148,12 +78,12 @@ func fillTableColumnDefs(db *sql.DB, schemaName string, tables *map[string]*Tabl
         if err != nil {
             return err
         }
-        table = (*tables)[tname]
-        if table.columns == nil {
-            table.columns = make([]*ColumnDef, 0)
+        tdef = (*tdefs)[tname]
+        if tdef.cdefs == nil {
+            tdef.cdefs = make([]*ColumnDef, 0)
         }
-        col := &ColumnDef{table: table, name: cname}
-        table.columns = append(table.columns, col)
+        cdef := &ColumnDef{tdef: tdef, name: cname}
+        tdef.cdefs = append(tdef.cdefs, cdef)
     }
     return nil
 }

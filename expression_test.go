@@ -16,11 +16,12 @@ func TestExpressionEqual(t *testing.T) {
 
     cd := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     c := &Column{
-        def: cd,
+        cdef: cd,
+        tbl: td.Table(),
     }
 
     val := &Value{value: "foo"}
@@ -88,11 +89,12 @@ func TestEqualFuncValue(t *testing.T) {
 
     cd := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     c := &Column{
-        def: cd,
+        cdef: cd,
+        tbl: td.Table(),
     }
 
     eq := Equal(c, "foo")
@@ -127,11 +129,12 @@ func TestEqualFuncTwoElements(t *testing.T) {
 
     userId := &ColumnDef{
         name: "id",
-        table: users,
+        tdef: users,
     }
 
     c1 := &Column{
-        def: userId,
+        cdef: userId,
+        tbl: users.Table(),
     }
 
     articles := &TableDef{
@@ -141,11 +144,12 @@ func TestEqualFuncTwoElements(t *testing.T) {
 
     author := &ColumnDef{
         name: "author",
-        table: articles,
+        tdef: articles,
     }
 
     c2 := &Column{
-        def: author,
+        cdef: author,
+        tbl: articles.Table(),
     }
 
     eq := Equal(c1, c2)
@@ -205,11 +209,12 @@ func TestExpressionNotEqual(t *testing.T) {
 
     cd := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     c := &Column{
-        def: cd,
+        cdef: cd,
+        tbl: td.Table(),
     }
 
     val := &Value{value: "foo"}
@@ -249,11 +254,12 @@ func TestNotEqualFuncValue(t *testing.T) {
 
     cd := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     c := &Column{
-        def: cd,
+        cdef: cd,
+        tbl: td.Table(),
     }
 
     eq := NotEqual(c, "foo")
@@ -288,11 +294,12 @@ func TestNotEqualFuncTwoElements(t *testing.T) {
 
     userId := &ColumnDef{
         name: "id",
-        table: users,
+        tdef: users,
     }
 
     c1 := &Column{
-        def: userId,
+        cdef: userId,
+        tbl: users.Table(),
     }
 
     articles := &TableDef{
@@ -302,11 +309,12 @@ func TestNotEqualFuncTwoElements(t *testing.T) {
 
     author := &ColumnDef{
         name: "author",
-        table: articles,
+        tdef: articles,
     }
 
     c2 := &Column{
-        def: author,
+        cdef: author,
+        tbl: articles.Table(),
     }
 
     eq := NotEqual(c1, c2)
@@ -366,11 +374,12 @@ func TestInSingle(t *testing.T) {
 
     cd := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     c := &Column{
-        def: cd,
+        cdef: cd,
+        tbl: td.Table(),
     }
 
     e := In(c, "foo")
@@ -405,11 +414,12 @@ func TestInMulti(t *testing.T) {
 
     cd := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     c := &Column{
-        def: cd,
+        cdef: cd,
+        tbl: td.Table(),
     }
 
     e := In(c, "foo", "bar", 1)
@@ -444,11 +454,12 @@ func TestAnd(t *testing.T) {
 
     cd := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     c := &Column{
-        def: cd,
+        cdef: cd,
+        tbl: td.Table(),
     }
 
     ea := &Expression{
@@ -494,11 +505,12 @@ func TestOr(t *testing.T) {
 
     cd := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     c := &Column{
-        def: cd,
+        cdef: cd,
+        tbl: td.Table(),
     }
 
     ea := &Expression{

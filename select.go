@@ -1,6 +1,6 @@
 package sqlb
 
-type Selectable struct {
+type SelectClause struct {
     alias string
     projected *List
     subjects []Element
@@ -10,7 +10,7 @@ type Selectable struct {
     limit *LimitClause
 }
 
-func (s *Selectable) ArgCount() int {
+func (s *SelectClause) ArgCount() int {
     argc := s.projected.ArgCount()
     for _, subj := range s.subjects {
         argc += subj.ArgCount()
@@ -30,16 +30,16 @@ func (s *Selectable) ArgCount() int {
     return argc
 }
 
-func (s *Selectable) Alias(alias string) {
+func (s *SelectClause) Alias(alias string) {
     s.alias = alias
 }
 
-func (s *Selectable) As(alias string) *Selectable {
+func (s *SelectClause) As(alias string) *SelectClause {
     s.Alias(alias)
     return s
 }
 
-func (s *Selectable) Size() int {
+func (s *SelectClause) Size() int {
     size := len(Symbols[SYM_SELECT]) + len(Symbols[SYM_FROM])
     size += s.projected.Size()
     for _, subj := range s.subjects {
@@ -68,7 +68,7 @@ func (s *Selectable) Size() int {
     return size
 }
 
-func (s *Selectable) Scan(b []byte, args []interface{}) (int, int) {
+func (s *SelectClause) Scan(b []byte, args []interface{}) (int, int) {
     var bw, ac int
     bw += copy(b[bw:], Symbols[SYM_SELECT])
     pbw, pac := s.projected.Scan(b[bw:], args)
@@ -113,7 +113,7 @@ func (s *Selectable) Scan(b []byte, args []interface{}) (int, int) {
     return bw, ac
 }
 
-func (s *Selectable) String() string {
+func (s *SelectClause) String() string {
     size := s.Size()
     argc := s.ArgCount()
     args := make([]interface{}, argc)
@@ -122,7 +122,7 @@ func (s *Selectable) String() string {
     return string(b)
 }
 
-func (s *Selectable) StringArgs() (string, []interface{}) {
+func (s *SelectClause) StringArgs() (string, []interface{}) {
     size := s.Size()
     argc := s.ArgCount()
     args := make([]interface{}, argc)
@@ -131,14 +131,14 @@ func (s *Selectable) StringArgs() (string, []interface{}) {
     return string(b), args
 }
 
-func (s *Selectable) Where(e *Expression) *Selectable {
+func (s *SelectClause) Where(e *Expression) *SelectClause {
     s.filters = append(s.filters, e)
     return s
 }
 
 // Given one or more columns, either set or add to the GROUP BY clause for
-// the Selectable
-func (s *Selectable) GroupBy(cols ...Columnar) *Selectable {
+// the SelectClause
+func (s *SelectClause) GroupBy(cols ...Columnar) *SelectClause {
     if len(cols) == 0 {
         return s
     }
@@ -162,8 +162,8 @@ func (s *Selectable) GroupBy(cols ...Columnar) *Selectable {
 }
 
 // Given one or more sort columns, either set or add to the ORDER BY clause for
-// the Selectable
-func (s *Selectable) OrderBy(sortCols ...*SortColumn) *Selectable {
+// the SelectClause
+func (s *SelectClause) OrderBy(sortCols ...*SortColumn) *SelectClause {
     if len(sortCols) == 0 {
         return s
     }
@@ -186,73 +186,70 @@ func (s *Selectable) OrderBy(sortCols ...*SortColumn) *Selectable {
     return s
 }
 
-func (s *Selectable) LimitWithOffset(limit int, offset int) *Selectable {
+func (s *SelectClause) LimitWithOffset(limit int, offset int) *SelectClause {
     lc := &LimitClause{limit: limit}
     lc.offset = &offset
     s.limit = lc
     return s
 }
 
-func (s *Selectable) Limit(limit int) *Selectable {
+func (s *SelectClause) Limit(limit int) *SelectClause {
     lc := &LimitClause{limit: limit}
     s.limit = lc
     return s
 }
 
-func Select(items ...Element) *Selectable {
+func Select(items ...Element) *SelectClause {
     // TODO(jaypipes): Make the memory allocation more efficient below by
     // looping through the elements and determining the number of element struct
     // pointers to allocate instead of just making an empty array of Element
     // pointers.
-    res := &Selectable{
+    res := &SelectClause{
         projected: &List{},
     }
 
-    subjSet := make(map[Element]bool, 0)
+    subjSet := make(map[uint64]Element, 0)
 
     // For each scannable item we've received in the call, check what concrete
     // type they are and, depending on which type they are, either add them to
-    // the returned Selectable's projected List or query the underlying
+    // the returned SelectClause's projected List or query the underlying
     // table metadata to generate a list of all columns in that table.
     for _, item := range items {
         switch item.(type) {
             case *Column:
                 v := item.(*Column)
                 res.projected.elements = append(res.projected.elements, v)
-                subjSet[v.def.table] = true
+                subjSet[v.tbl.id()] = v.tbl
             case *List:
                 v := item.(*List)
                 for _, el := range v.elements {
                     res.projected.elements = append(res.projected.elements, el)
                     if isColumn(el) {
                         c := el.(*Column)
-                        subjSet[c.def.table] = true
+                        subjSet[c.tbl.id()] = c.tbl
                     }
                 }
             case *Table:
                 v := item.(*Table)
-                for _, c := range v.Columns() {
-                    res.projected.elements = append(res.projected.elements, c)
+                for _, cd := range v.tdef.ColumnDefs() {
+                    res.projected.elements = append(res.projected.elements, cd)
                 }
-                subjSet[v] = true
+                subjSet[v.id()] = v
             case *TableDef:
                 v := item.(*TableDef)
                 for _, cd := range v.ColumnDefs() {
-                    c := &Column{def: cd}
-                    res.projected.elements = append(res.projected.elements, c)
+                    res.projected.elements = append(res.projected.elements, cd)
                 }
-                t := &Table{def: v}
-                subjSet[t] = true
+                subjSet[v.id()] = v
             case *ColumnDef:
                 v := item.(*ColumnDef)
-                c := &Column{def: v}
-                res.projected.elements = append(res.projected.elements, c)
-                subjSet[v.table] = true
+                res.projected.elements = append(res.projected.elements, v)
+                subjSet[v.tdef.id()] = v.tdef
         }
     }
     subjects := make([]Element, len(subjSet))
     x := 0
-    for scannable, _ := range subjSet {
+    for _, scannable := range subjSet {
         subjects[x] = scannable
         x++
     }

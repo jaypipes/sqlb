@@ -16,11 +16,12 @@ func TestAsTemplated(t *testing.T) {
 
     cd := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     c := &Column{
-        def: cd,
+        cdef: cd,
+        tbl: td.Table(),
     }
 
     assert.Equal("", c.alias)
@@ -43,7 +44,7 @@ func TestAsMethod(t *testing.T) {
     }
 
     t1 := &Table{
-        def: td,
+        tdef: td,
     }
 
     assert.Equal("", t1.alias)
@@ -54,11 +55,12 @@ func TestAsMethod(t *testing.T) {
 
     cd := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     c := &Column{
-        def: cd,
+        cdef: cd,
+        tbl: td.Table(),
     }
 
     assert.Equal("", c.alias)

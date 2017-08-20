@@ -16,11 +16,12 @@ func TestListSingle(t *testing.T) {
 
     cd := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     c := &Column{
-        def: cd,
+        cdef: cd,
+        tbl: td.Table(),
     }
 
     cl := &List{elements: []Element{c}}
@@ -47,20 +48,22 @@ func TestListMulti(t *testing.T) {
 
     cd1 := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     cd2 := &ColumnDef{
         name: "email",
-        table: td,
+        tdef: td,
     }
 
     c1 := &Column{
-        def: cd1,
+        cdef: cd1,
+        tbl: td.Table(),
     }
 
     c2:= &Column{
-        def: cd2,
+        cdef: cd2,
+        tbl: td.Table(),
     }
 
     cl := &List{elements: []Element{c1, c2}}

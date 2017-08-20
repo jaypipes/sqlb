@@ -16,16 +16,44 @@ func TestSelectSingleColumn(t *testing.T) {
 
     cd := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     c := &Column{
-        def: cd,
+        cdef: cd,
+        tbl: td.Table(),
     }
 
     sel := Select(c)
 
     exp := "SELECT name FROM users"
+    expLen := len(exp)
+
+    assert.Equal(expLen, sel.Size())
+    assert.Equal(exp, sel.String())
+}
+
+func TestSelectSingleColumnWithTableAlias(t *testing.T) {
+    assert := assert.New(t)
+
+    td := &TableDef{
+        name: "users",
+        schema: "test",
+    }
+
+    cd := &ColumnDef{
+        name: "name",
+        tdef: td,
+    }
+
+    c := &Column{
+        cdef: cd,
+        tbl: td.As("u"),
+    }
+
+    sel := Select(c)
+
+    exp := "SELECT u.name FROM users AS u"
     expLen := len(exp)
 
     assert.Equal(expLen, sel.Size())
@@ -42,20 +70,22 @@ func TestSelectMultiColumnsSingleTable(t *testing.T) {
 
     cd1 := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     c1 := &Column{
-        def: cd1,
+        cdef: cd1,
+        tbl: td.Table(),
     }
 
     cd2 := &ColumnDef{
         name: "email",
-        table: td,
+        tdef: td,
     }
 
     c2 := &Column{
-        def: cd2,
+        cdef: cd2,
+        tbl: td.Table(),
     }
 
     sel := Select(c1, c2)
@@ -77,7 +107,7 @@ func TestSelectFromColumnDef(t *testing.T) {
 
     cd := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     sel := Select(cd)
@@ -99,16 +129,17 @@ func TestSelectFromColumnDefAndColumn(t *testing.T) {
 
     cd1 := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     cd2 := &ColumnDef{
         name: "email",
-        table: td,
+        tdef: td,
     }
 
     c2 := &Column{
-        def: cd2,
+        cdef: cd2,
+        tbl: td.Table(),
     }
 
     sel := Select(cd1, c2)
@@ -131,14 +162,14 @@ func TestSelectFromTableDef(t *testing.T) {
     cdefs := []*ColumnDef{
         &ColumnDef{
             name: "name",
-            table: td,
+            tdef: td,
         },
         &ColumnDef{
             name: "email",
-            table: td,
+            tdef: td,
         },
     }
-    td.columns = cdefs
+    td.cdefs = cdefs
 
     sel := Select(td)
 
@@ -159,7 +190,7 @@ func TestWhereSingleEqual(t *testing.T) {
 
     cd := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     sel := Select(cd).Where(Equal(cd, "foo"))
@@ -183,7 +214,7 @@ func TestWhereSingleAnd(t *testing.T) {
 
     cd := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     sel := Select(cd).Where(And(NotEqual(cd, "foo"), NotEqual(cd, "bar")))
@@ -207,7 +238,7 @@ func TestWhereSingleIn(t *testing.T) {
 
     cd := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     sel := Select(cd).Where(In(cd, "foo", "bar"))
@@ -231,7 +262,7 @@ func TestWhereMultiNotEqual(t *testing.T) {
 
     cd := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     sel := Select(cd).Where(NotEqual(cd, "foo"))
@@ -256,12 +287,12 @@ func TestWhereMultiInAndEqual(t *testing.T) {
 
     cd1 := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     cd2 := &ColumnDef{
         name: "is_author",
-        table: td,
+        tdef: td,
     }
 
     sel := Select(cd1).Where(And(In(cd1, "foo", "bar"), Equal(cd2, 1)))
@@ -285,11 +316,12 @@ func TestSelectLimit(t *testing.T) {
 
     cd := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     c := &Column{
-        def: cd,
+        cdef: cd,
+        tbl: td.Table(),
     }
 
     sel := Select(c).Limit(10)
@@ -313,11 +345,12 @@ func TestSelectLimitWithOffset(t *testing.T) {
 
     cd := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     c := &Column{
-        def: cd,
+        cdef: cd,
+        tbl: td.Table(),
     }
 
     sel := Select(c).LimitWithOffset(10, 5)
@@ -341,7 +374,7 @@ func TestSelectOrderByAsc(t *testing.T) {
 
     cd := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     sel := Select(cd).OrderBy(cd.Asc())
@@ -365,12 +398,12 @@ func TestSelectOrderByMultiAscDesc(t *testing.T) {
 
     cd1 := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     cd2 := &ColumnDef{
         name: "email",
-        table: td,
+        tdef: td,
     }
 
     sel := Select(cd1).OrderBy(cd1.Asc(), cd2.Desc())
@@ -394,7 +427,7 @@ func TestSelectStringArgs(t *testing.T) {
 
     cd := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     sel := Select(cd).Where(In(cd, "foo", "bar"))
@@ -423,7 +456,7 @@ func TestSelectGroupByAsc(t *testing.T) {
 
     cd := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     sel := Select(cd).GroupBy(cd)
@@ -447,12 +480,12 @@ func TestSelectGroupByMultiAscDesc(t *testing.T) {
 
     cd1 := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     cd2 := &ColumnDef{
         name: "email",
-        table: td,
+        tdef: td,
     }
 
     sel := Select(cd1).GroupBy(cd1, cd2)
@@ -476,7 +509,7 @@ func TestSelectGroupOrderLimit(t *testing.T) {
 
     cd := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     sel := Select(cd).GroupBy(cd).OrderBy(cd.Desc()).Limit(10)

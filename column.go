@@ -6,7 +6,8 @@ type Columnar interface {
 
 type Column struct {
     alias string
-    def *ColumnDef
+    cdef *ColumnDef
+    tbl *Table
 }
 
 func (c *Column) Column() *Column {
@@ -18,7 +19,10 @@ func (c *Column) ArgCount() int {
 }
 
 func (c *Column) Size() int {
-    size := c.def.Size()
+    size := c.cdef.Size()
+    if c.tbl.alias != "" {
+        size += len(Symbols[SYM_PERIOD]) + len(c.tbl.alias)
+    }
     if c.alias != "" {
         size += len(Symbols[SYM_AS]) + len(c.alias)
     }
@@ -26,7 +30,13 @@ func (c *Column) Size() int {
 }
 
 func (c *Column) Scan(b []byte, args []interface{}) (int, int) {
-    bw, _ := c.def.Scan(b, args)
+    bw := 0
+    if c.tbl.alias != "" {
+        bw += copy(b[bw:], c.tbl.alias)
+        bw += copy(b[bw:], Symbols[SYM_PERIOD])
+    }
+    cbw, _ := c.cdef.Scan(b[bw:], args)
+    bw += cbw
     if c.alias != "" {
         bw += copy(b[bw:], Symbols[SYM_AS])
         bw += copy(b[bw:], c.alias)
@@ -43,19 +53,48 @@ func (c *Column) As(alias string) *Column {
     return c
 }
 
-func (c *Column) Desc() *SortColumn {
-    return &SortColumn{el: c, desc: true}
-}
-
-func (c *Column) Asc() *SortColumn {
-    return &SortColumn{el: c}
-}
-
 func isColumn(el Element) bool {
     switch el.(type) {
     case *Column:
         return true
     default:
         return false
+    }
+}
+
+type ColumnDef struct {
+    name string
+    tdef *TableDef
+}
+
+func (cd *ColumnDef) Column() *Column {
+    return &Column{
+        cdef: cd,
+        tbl: &Table{
+            tdef: cd.tdef,
+        },
+    }
+}
+
+func (cd *ColumnDef) ArgCount() int {
+    return 0
+}
+
+func (cd *ColumnDef) Size() int {
+    return len(cd.name)
+}
+
+func (cd *ColumnDef) Scan(b []byte, args []interface{}) (int, int) {
+    return copy(b, cd.name), 0
+}
+
+// Generate an aliased Column from a ColumnDef
+func (cd *ColumnDef) As(alias string) *Column {
+    return &Column{
+        cdef: cd,
+        alias: alias,
+        tbl: &Table{
+            tdef: cd.tdef,
+        },
     }
 }

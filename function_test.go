@@ -16,7 +16,7 @@ func TestFuncWithAlias(t *testing.T) {
 
     cd := &ColumnDef{
         name: "created_on",
-        table: td,
+        tdef: td,
     }
 
     m := Max(cd).As("max_created_on")
@@ -50,7 +50,7 @@ func TestFuncMax(t *testing.T) {
 
     cd := &ColumnDef{
         name: "created_on",
-        table: td,
+        tdef: td,
     }
 
     m := Max(cd)
@@ -84,7 +84,7 @@ func TestFuncMaxColumn(t *testing.T) {
 
     cd := &ColumnDef{
         name: "created_on",
-        table: td,
+        tdef: td,
     }
 
     m := cd.Max()
@@ -109,7 +109,8 @@ func TestFuncMaxColumn(t *testing.T) {
 
     // Test with Column not ColumnDef
     c := &Column{
-        def: cd,
+        cdef: cd,
+        tbl: td.Table(),
     }
     m = c.Max()
 
@@ -138,7 +139,7 @@ func TestFuncMin(t *testing.T) {
 
     cd := &ColumnDef{
         name: "created_on",
-        table: td,
+        tdef: td,
     }
 
     m := Min(cd)
@@ -172,7 +173,7 @@ func TestFuncMinColumn(t *testing.T) {
 
     cd := &ColumnDef{
         name: "created_on",
-        table: td,
+        tdef: td,
     }
 
     m := cd.Min()
@@ -197,7 +198,8 @@ func TestFuncMinColumn(t *testing.T) {
 
     // Test with Column not ColumnDef
     c := &Column{
-        def: cd,
+        cdef: cd,
+        tbl: td.Table(),
     }
     m = c.Min()
 
@@ -226,7 +228,7 @@ func TestFuncSum(t *testing.T) {
 
     cd := &ColumnDef{
         name: "created_on",
-        table: td,
+        tdef: td,
     }
 
     f := Sum(cd)
@@ -260,7 +262,7 @@ func TestFuncSumColumn(t *testing.T) {
 
     cd := &ColumnDef{
         name: "created_on",
-        table: td,
+        tdef: td,
     }
 
     f := cd.Sum()
@@ -285,7 +287,8 @@ func TestFuncSumColumn(t *testing.T) {
 
     // Test with Column not ColumnDef
     c := &Column{
-        def: cd,
+        cdef: cd,
+        tbl: td.Table(),
     }
     f = c.Sum()
 
@@ -314,7 +317,7 @@ func TestFuncAvg(t *testing.T) {
 
     cd := &ColumnDef{
         name: "created_on",
-        table: td,
+        tdef: td,
     }
 
     f := Avg(cd)
@@ -348,7 +351,7 @@ func TestFuncAvgColumn(t *testing.T) {
 
     cd := &ColumnDef{
         name: "created_on",
-        table: td,
+        tdef: td,
     }
 
     f := cd.Avg()
@@ -373,7 +376,8 @@ func TestFuncAvgColumn(t *testing.T) {
 
     // Test with Column not ColumnDef
     c := &Column{
-        def: cd,
+        cdef: cd,
+        tbl: td.Table(),
     }
     f = c.Avg()
 
