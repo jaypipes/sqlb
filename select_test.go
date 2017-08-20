@@ -33,6 +33,33 @@ func TestSelectSingleColumn(t *testing.T) {
     assert.Equal(exp, sel.String())
 }
 
+func TestSelectSingleColumnWithTableAlias(t *testing.T) {
+    assert := assert.New(t)
+
+    td := &TableDef{
+        name: "users",
+        schema: "test",
+    }
+
+    cd := &ColumnDef{
+        name: "name",
+        tdef: td,
+    }
+
+    c := &Column{
+        cdef: cd,
+        tbl: td.As("u"),
+    }
+
+    sel := Select(c)
+
+    exp := "SELECT u.name FROM users AS u"
+    expLen := len(exp)
+
+    assert.Equal(expLen, sel.Size())
+    assert.Equal(exp, sel.String())
+}
+
 func TestSelectMultiColumnsSingleTable(t *testing.T) {
     assert := assert.New(t)
 

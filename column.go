@@ -20,6 +20,9 @@ func (c *Column) ArgCount() int {
 
 func (c *Column) Size() int {
     size := c.cdef.Size()
+    if c.tbl.alias != "" {
+        size += len(Symbols[SYM_PERIOD]) + len(c.tbl.alias)
+    }
     if c.alias != "" {
         size += len(Symbols[SYM_AS]) + len(c.alias)
     }
@@ -27,7 +30,13 @@ func (c *Column) Size() int {
 }
 
 func (c *Column) Scan(b []byte, args []interface{}) (int, int) {
-    bw, _ := c.cdef.Scan(b, args)
+    bw := 0
+    if c.tbl.alias != "" {
+        bw += copy(b[bw:], c.tbl.alias)
+        bw += copy(b[bw:], Symbols[SYM_PERIOD])
+    }
+    cbw, _ := c.cdef.Scan(b[bw:], args)
+    bw += cbw
     if c.alias != "" {
         bw += copy(b[bw:], Symbols[SYM_AS])
         bw += copy(b[bw:], c.alias)

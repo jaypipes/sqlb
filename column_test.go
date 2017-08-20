@@ -36,6 +36,36 @@ func TestColumn(t *testing.T) {
     assert.Equal(exp, string(b))
 }
 
+func TestColumnWithTableAlias(t *testing.T) {
+    assert := assert.New(t)
+
+    td := &TableDef{
+        name: "users",
+        schema: "test",
+    }
+
+    cd := &ColumnDef{
+        name: "name",
+        tdef: td,
+    }
+
+    c := &Column{
+        cdef: cd,
+        tbl: td.As("u"),
+    }
+
+    exp := "u.name"
+    expLen := len(exp)
+    s := c.Size()
+    assert.Equal(expLen, s)
+
+    b := make([]byte, s)
+    written, _ := c.Scan(b, nil)
+
+    assert.Equal(written, s)
+    assert.Equal(exp, string(b))
+}
+
 func TestColumnDefSorts(t *testing.T) {
     assert := assert.New(t)
 
