@@ -1,6 +1,7 @@
 package sqlb
 
 type Symbol int
+type scanInfo []Symbol
 
 const (
     SYM_ELEMENT = iota // Marker for an element that self-scans into the SQL buffer
@@ -23,6 +24,10 @@ const (
     SYM_ORDER_BY
     SYM_DESC
     SYM_GROUP_BY
+    SYM_MAX
+    SYM_MIN
+    SYM_SUM
+    SYM_AVG
 )
 
 var (
@@ -46,5 +51,9 @@ var (
         SYM_ORDER_BY: []byte(" ORDER BY "),
         SYM_DESC: []byte(" DESC"),
         SYM_GROUP_BY: []byte(" GROUP BY "),
+        SYM_MAX: []byte("MAX("),
+        SYM_MIN: []byte("MIN("),
+        SYM_SUM: []byte("SUM("),
+        SYM_AVG: []byte("AVG("),
     }
 )
