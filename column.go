@@ -59,3 +59,37 @@ func isColumn(el Element) bool {
         return false
     }
 }
+
+type ColumnDef struct {
+    name string
+    table *TableDef
+}
+
+func (c *ColumnDef) Column() *Column {
+    return &Column{def: c}
+}
+
+func (c *ColumnDef) ArgCount() int {
+    return 0
+}
+
+func (c *ColumnDef) Size() int {
+    return len(c.name)
+}
+
+func (c *ColumnDef) Scan(b []byte, args []interface{}) (int, int) {
+    return copy(b, c.name), 0
+}
+
+// Generate an aliased Column from a ColumnDef
+func (c *ColumnDef) As(alias string) *Column {
+    return &Column{def: c, alias: alias}
+}
+
+func (c *ColumnDef) Desc() *SortColumn {
+    return &SortColumn{el: c, desc: true}
+}
+
+func (c *ColumnDef) Asc() *SortColumn {
+    return &SortColumn{el: c}
+}

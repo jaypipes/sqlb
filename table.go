@@ -53,3 +53,39 @@ func (t *Table) As(alias string) *Table {
     t.Alias(alias)
     return t
 }
+
+type TableDef struct {
+    name string
+    schema string
+    columns []*ColumnDef
+}
+
+func (t *TableDef) ArgCount() int {
+    return 0
+}
+
+func (t *TableDef) Size() int {
+    return len(t.name)
+}
+
+func (t *TableDef) Scan(b []byte, args []interface{}) (int, int) {
+    return copy(b, t.name), 0
+}
+
+// Generate an aliased Table from a TableDef
+func (t *TableDef) As(alias string) *Table {
+    return &Table{def: t, alias: alias}
+}
+
+func (t *TableDef) Column(colName string) *ColumnDef {
+    for _, cdef := range t.columns {
+        if cdef.name == colName {
+            return cdef
+        }
+    }
+    return nil
+}
+
+func (t *TableDef) ColumnDefs() []*ColumnDef {
+    return t.columns
+}
