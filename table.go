@@ -5,6 +5,15 @@ type Table struct {
     def *TableDef
 }
 
+func (t *Table) Column(name string) *Column {
+    for _, cdef := range t.def.ColumnDefs() {
+        if name == cdef.name {
+            return &Column{def: cdef}
+        }
+    }
+    return nil
+}
+
 func (t *Table) Columns() []*Column {
     cdefs := t.def.ColumnDefs()
     ncols := len(cdefs)
