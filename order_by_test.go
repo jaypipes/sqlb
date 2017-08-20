@@ -16,7 +16,7 @@ func TestOrderByClauseSingleAsc(t *testing.T) {
 
     cd := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     ob := &OrderByClause{
@@ -56,7 +56,7 @@ func TestOrderByClauseSingleDesc(t *testing.T) {
 
     cd := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     ob := &OrderByClause{
@@ -96,12 +96,12 @@ func TestOrderByClauseMultiAsc(t *testing.T) {
 
     cd1 := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     cd2 := &ColumnDef{
         name: "email",
-        table: td,
+        tdef: td,
     }
 
     ob := &OrderByClause{
@@ -142,12 +142,12 @@ func TestOrderByClauseMultiAscDesc(t *testing.T) {
 
     cd1 := &ColumnDef{
         name: "name",
-        table: td,
+        tdef: td,
     }
 
     cd2 := &ColumnDef{
         name: "email",
-        table: td,
+        tdef: td,
     }
 
     ob := &OrderByClause{

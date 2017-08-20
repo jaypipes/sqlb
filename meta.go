@@ -65,12 +65,12 @@ func Reflect(driver string, db *sql.DB, meta *Meta) error {
 
 // Grabs column information from the information schema and populates the
 // supplied map of TableDef descriptors' columns
-func fillTableColumnDefs(db *sql.DB, schemaName string, tables *map[string]*TableDef) error {
+func fillTableColumnDefs(db *sql.DB, schemaName string, tdefs *map[string]*TableDef) error {
     rows, err := db.Query(IS_COLUMNS, schemaName)
     if err != nil {
         return err
     }
-    var table *TableDef
+    var tdef *TableDef
     for rows.Next() {
         var tname string
         var cname string
@@ -78,12 +78,12 @@ func fillTableColumnDefs(db *sql.DB, schemaName string, tables *map[string]*Tabl
         if err != nil {
             return err
         }
-        table = (*tables)[tname]
-        if table.columns == nil {
-            table.columns = make([]*ColumnDef, 0)
+        tdef = (*tdefs)[tname]
+        if tdef.cdefs == nil {
+            tdef.cdefs = make([]*ColumnDef, 0)
         }
-        col := &ColumnDef{table: table, name: cname}
-        table.columns = append(table.columns, col)
+        cdef := &ColumnDef{tdef: tdef, name: cname}
+        tdef.cdefs = append(tdef.cdefs, cdef)
     }
     return nil
 }

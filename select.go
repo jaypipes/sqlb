@@ -208,7 +208,7 @@ func Select(items ...Element) *SelectClause {
         projected: &List{},
     }
 
-    subjSet := make(map[Element]bool, 0)
+    subjSet := make(map[uint64]Element, 0)
 
     // For each scannable item we've received in the call, check what concrete
     // type they are and, depending on which type they are, either add them to
@@ -219,40 +219,37 @@ func Select(items ...Element) *SelectClause {
             case *Column:
                 v := item.(*Column)
                 res.projected.elements = append(res.projected.elements, v)
-                subjSet[v.def.table] = true
+                subjSet[v.tbl.id()] = v.tbl
             case *List:
                 v := item.(*List)
                 for _, el := range v.elements {
                     res.projected.elements = append(res.projected.elements, el)
                     if isColumn(el) {
                         c := el.(*Column)
-                        subjSet[c.def.table] = true
+                        subjSet[c.tbl.id()] = c.tbl
                     }
                 }
             case *Table:
                 v := item.(*Table)
-                for _, c := range v.Columns() {
-                    res.projected.elements = append(res.projected.elements, c)
+                for _, cd := range v.tdef.ColumnDefs() {
+                    res.projected.elements = append(res.projected.elements, cd)
                 }
-                subjSet[v] = true
+                subjSet[v.id()] = v
             case *TableDef:
                 v := item.(*TableDef)
                 for _, cd := range v.ColumnDefs() {
-                    c := &Column{def: cd}
-                    res.projected.elements = append(res.projected.elements, c)
+                    res.projected.elements = append(res.projected.elements, cd)
                 }
-                t := &Table{def: v}
-                subjSet[t] = true
+                subjSet[v.id()] = v
             case *ColumnDef:
                 v := item.(*ColumnDef)
-                c := &Column{def: v}
-                res.projected.elements = append(res.projected.elements, c)
-                subjSet[v.table] = true
+                res.projected.elements = append(res.projected.elements, v)
+                subjSet[v.tdef.id()] = v.tdef
         }
     }
     subjects := make([]Element, len(subjSet))
     x := 0
-    for scannable, _ := range subjSet {
+    for _, scannable := range subjSet {
         subjects[x] = scannable
         x++
     }

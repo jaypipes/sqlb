@@ -6,7 +6,8 @@ type Columnar interface {
 
 type Column struct {
     alias string
-    def *ColumnDef
+    cdef *ColumnDef
+    tbl *Table
 }
 
 func (c *Column) Column() *Column {
@@ -18,7 +19,7 @@ func (c *Column) ArgCount() int {
 }
 
 func (c *Column) Size() int {
-    size := c.def.Size()
+    size := c.cdef.Size()
     if c.alias != "" {
         size += len(Symbols[SYM_AS]) + len(c.alias)
     }
@@ -26,7 +27,7 @@ func (c *Column) Size() int {
 }
 
 func (c *Column) Scan(b []byte, args []interface{}) (int, int) {
-    bw, _ := c.def.Scan(b, args)
+    bw, _ := c.cdef.Scan(b, args)
     if c.alias != "" {
         bw += copy(b[bw:], Symbols[SYM_AS])
         bw += copy(b[bw:], c.alias)
@@ -54,26 +55,37 @@ func isColumn(el Element) bool {
 
 type ColumnDef struct {
     name string
-    table *TableDef
+    tdef *TableDef
 }
 
-func (c *ColumnDef) Column() *Column {
-    return &Column{def: c}
+func (cd *ColumnDef) Column() *Column {
+    return &Column{
+        cdef: cd,
+        tbl: &Table{
+            tdef: cd.tdef,
+        },
+    }
 }
 
-func (c *ColumnDef) ArgCount() int {
+func (cd *ColumnDef) ArgCount() int {
     return 0
 }
 
-func (c *ColumnDef) Size() int {
-    return len(c.name)
+func (cd *ColumnDef) Size() int {
+    return len(cd.name)
 }
 
-func (c *ColumnDef) Scan(b []byte, args []interface{}) (int, int) {
-    return copy(b, c.name), 0
+func (cd *ColumnDef) Scan(b []byte, args []interface{}) (int, int) {
+    return copy(b, cd.name), 0
 }
 
 // Generate an aliased Column from a ColumnDef
-func (c *ColumnDef) As(alias string) *Column {
-    return &Column{def: c, alias: alias}
+func (cd *ColumnDef) As(alias string) *Column {
+    return &Column{
+        cdef: cd,
+        alias: alias,
+        tbl: &Table{
+            tdef: cd.tdef,
+        },
+    }
 }
