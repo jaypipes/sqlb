@@ -215,3 +215,179 @@ func TestFuncMinColumn(t *testing.T) {
     assert.Equal(exp, string(b))
     assert.Equal(expArgCount, numArgs)
 }
+
+func TestFuncSum(t *testing.T) {
+    assert := assert.New(t)
+
+    td := &TableDef{
+        name: "users",
+        schema: "test",
+    }
+
+    cd := &ColumnDef{
+        name: "created_on",
+        table: td,
+    }
+
+    f := Sum(cd)
+
+    exp := "SUM(created_on)"
+    expLen := len(exp)
+    expArgCount := 0
+
+    s := f.Size()
+    assert.Equal(expLen, s)
+
+    argc := f.ArgCount()
+    assert.Equal(expArgCount, argc)
+
+    args := make([]interface{}, expArgCount)
+    b := make([]byte, s)
+    written, numArgs := f.Scan(b, args)
+
+    assert.Equal(s, written)
+    assert.Equal(exp, string(b))
+    assert.Equal(expArgCount, numArgs)
+}
+
+func TestFuncSumColumn(t *testing.T) {
+    assert := assert.New(t)
+
+    td := &TableDef{
+        name: "users",
+        schema: "test",
+    }
+
+    cd := &ColumnDef{
+        name: "created_on",
+        table: td,
+    }
+
+    f := cd.Sum()
+
+    exp := "SUM(created_on)"
+    expLen := len(exp)
+    expArgCount := 0
+
+    s := f.Size()
+    assert.Equal(expLen, s)
+
+    argc := f.ArgCount()
+    assert.Equal(expArgCount, argc)
+
+    args := make([]interface{}, expArgCount)
+    b := make([]byte, s)
+    written, numArgs := f.Scan(b, args)
+
+    assert.Equal(s, written)
+    assert.Equal(exp, string(b))
+    assert.Equal(expArgCount, numArgs)
+
+    // Test with Column not ColumnDef
+    c := &Column{
+        def: cd,
+    }
+    f = c.Sum()
+
+    s = f.Size()
+    assert.Equal(expLen, s)
+
+    argc = f.ArgCount()
+    assert.Equal(expArgCount, argc)
+
+    args = make([]interface{}, expArgCount)
+    b = make([]byte, s)
+    written, numArgs = f.Scan(b, args)
+
+    assert.Equal(s, written)
+    assert.Equal(exp, string(b))
+    assert.Equal(expArgCount, numArgs)
+}
+
+func TestFuncAvg(t *testing.T) {
+    assert := assert.New(t)
+
+    td := &TableDef{
+        name: "users",
+        schema: "test",
+    }
+
+    cd := &ColumnDef{
+        name: "created_on",
+        table: td,
+    }
+
+    f := Avg(cd)
+
+    exp := "AVG(created_on)"
+    expLen := len(exp)
+    expArgCount := 0
+
+    s := f.Size()
+    assert.Equal(expLen, s)
+
+    argc := f.ArgCount()
+    assert.Equal(expArgCount, argc)
+
+    args := make([]interface{}, expArgCount)
+    b := make([]byte, s)
+    written, numArgs := f.Scan(b, args)
+
+    assert.Equal(s, written)
+    assert.Equal(exp, string(b))
+    assert.Equal(expArgCount, numArgs)
+}
+
+func TestFuncAvgColumn(t *testing.T) {
+    assert := assert.New(t)
+
+    td := &TableDef{
+        name: "users",
+        schema: "test",
+    }
+
+    cd := &ColumnDef{
+        name: "created_on",
+        table: td,
+    }
+
+    f := cd.Avg()
+
+    exp := "AVG(created_on)"
+    expLen := len(exp)
+    expArgCount := 0
+
+    s := f.Size()
+    assert.Equal(expLen, s)
+
+    argc := f.ArgCount()
+    assert.Equal(expArgCount, argc)
+
+    args := make([]interface{}, expArgCount)
+    b := make([]byte, s)
+    written, numArgs := f.Scan(b, args)
+
+    assert.Equal(s, written)
+    assert.Equal(exp, string(b))
+    assert.Equal(expArgCount, numArgs)
+
+    // Test with Column not ColumnDef
+    c := &Column{
+        def: cd,
+    }
+    f = c.Avg()
+
+    s = f.Size()
+    assert.Equal(expLen, s)
+
+    argc = f.ArgCount()
+    assert.Equal(expArgCount, argc)
+
+    args = make([]interface{}, expArgCount)
+    b = make([]byte, s)
+    written, numArgs = f.Scan(b, args)
+
+    assert.Equal(s, written)
+    assert.Equal(exp, string(b))
+    assert.Equal(expArgCount, numArgs)
+}

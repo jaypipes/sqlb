@@ -26,6 +26,8 @@ const (
     SYM_GROUP_BY
     SYM_MAX
     SYM_MIN
+    SYM_SUM
+    SYM_AVG
 )
 
 var (
@@ -51,5 +53,7 @@ var (
         SYM_GROUP_BY: []byte(" GROUP BY "),
         SYM_MAX: []byte("MAX("),
         SYM_MIN: []byte("MIN("),
+        SYM_SUM: []byte("SUM("),
+        SYM_AVG: []byte("AVG("),
     }
 )

@@ -5,6 +5,8 @@ type funcId int
 const (
     FUNC_MAX funcId = iota
     FUNC_MIN
+    FUNC_SUM
+    FUNC_AVG
 )
 
 var (
@@ -16,6 +18,12 @@ var (
         },
         FUNC_MIN: scanInfo{
             SYM_MIN, SYM_ELEMENT, SYM_RPAREN,
+        },
+        FUNC_SUM: scanInfo{
+            SYM_SUM, SYM_ELEMENT, SYM_RPAREN,
+        },
+        FUNC_AVG: scanInfo{
+            SYM_AVG, SYM_ELEMENT, SYM_RPAREN,
         },
     }
 )
@@ -110,4 +118,34 @@ func (c *Column) Min() *sqlFunc {
 
 func (c *ColumnDef) Min() *sqlFunc {
     return Min(c)
+}
+
+func Sum(el Element) *sqlFunc {
+    return &sqlFunc{
+        scanInfo: funcScanTable[FUNC_SUM],
+        elements: []Element{el},
+    }
+}
+
+func (c *Column) Sum() *sqlFunc {
+    return Sum(c)
+}
+
+func (c *ColumnDef) Sum() *sqlFunc {
+    return Sum(c)
+}
+
+func Avg(el Element) *sqlFunc {
+    return &sqlFunc{
+        scanInfo: funcScanTable[FUNC_AVG],
+        elements: []Element{el},
+    }
+}
+
+func (c *Column) Avg() *sqlFunc {
+    return Avg(c)
+}
+
+func (c *ColumnDef) Avg() *sqlFunc {
+    return Avg(c)
 }
