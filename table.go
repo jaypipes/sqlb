@@ -5,11 +5,11 @@ type Table struct {
     tdef *TableDef
 }
 
-func (t *Table) id() uint64 {
+func (t *Table) selectionId() uint64 {
     if t.alias != "" {
         return toId(t.alias)
     }
-    return t.tdef.id()
+    return t.tdef.selectionId()
 }
 
 func (t *Table) Column(name string) *Column {
@@ -73,7 +73,7 @@ type TableDef struct {
     cdefs []*ColumnDef
 }
 
-func (td *TableDef) id() uint64 {
+func (td *TableDef) selectionId() uint64 {
     return toId(td.schema, td.name)
 }
 

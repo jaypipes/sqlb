@@ -8,8 +8,8 @@ const (
 
 type JoinClause struct {
     joinType joinType
-    left *Table
-    right *Table
+    left Selection
+    right Selection
     onExprs []*Expression
 }
 
@@ -60,4 +60,8 @@ func (j *JoinClause) On(onExprs ...*Expression) *JoinClause {
         j.onExprs = append(j.onExprs, onExpr)
     }
     return j
+}
+
+func Join(left Selection, right Selection, onExpr ...*Expression) *JoinClause {
+    return &JoinClause{left: left, right: right, onExprs: onExpr}
 }

@@ -43,6 +43,40 @@ func init() {
     articles.cdefs = []*ColumnDef{colArticleId, colArticleAuthor}
 }
 
+func TestJoinFuncGenerics(t *testing.T) {
+    // Test that the sqlb.Join() func can take a *Table or *TableDef and zero
+    // or more *Expression struct pointers and returns a *JoinClause struct
+    // pointers. Essentially, we're testing the Selection generic interface here
+    assert := assert.New(t)
+
+    cond := Equal(colArticleAuthor, colUserId)
+
+    joins := []*JoinClause{
+        Join(articles, users, cond),
+        Join(articles.Table(), users.Table(), cond),
+    }
+
+    for _, j := range joins {
+        exp := " JOIN users ON author = id"
+        expLen := len(exp)
+        expArgCount := 0
+
+        s := j.Size()
+        assert.Equal(expLen, s)
+
+        argc := j.ArgCount()
+        assert.Equal(expArgCount, argc)
+
+        args := make([]interface{}, expArgCount)
+        b := make([]byte, s)
+        written, numArgs := j.Scan(b, args)
+
+        assert.Equal(s, written)
+        assert.Equal(exp, string(b))
+        assert.Equal(expArgCount, numArgs)
+    }
+}
+
 func TestJoinClauseInnerOnEqualSingle(t *testing.T) {
     assert := assert.New(t)
 

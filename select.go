@@ -1,5 +1,14 @@
 package sqlb
 
+// A Selection is something that produces rows. A table, view, subselect, etc
+type Selection interface {
+    selectionId() uint64
+    // Selections must also implement Element
+    Size() int
+    ArgCount() int
+    Scan([]byte, []interface{}) (int, int)
+}
+
 type SelectClause struct {
     alias string
     projected *List
@@ -219,14 +228,14 @@ func Select(items ...Element) *SelectClause {
             case *Column:
                 v := item.(*Column)
                 res.projected.elements = append(res.projected.elements, v)
-                subjSet[v.tbl.id()] = v.tbl
+                subjSet[v.tbl.selectionId()] = v.tbl
             case *List:
                 v := item.(*List)
                 for _, el := range v.elements {
                     res.projected.elements = append(res.projected.elements, el)
                     if isColumn(el) {
                         c := el.(*Column)
-                        subjSet[c.tbl.id()] = c.tbl
+                        subjSet[c.tbl.selectionId()] = c.tbl
                     }
                 }
             case *Table:
@@ -234,17 +243,17 @@ func Select(items ...Element) *SelectClause {
                 for _, cd := range v.tdef.ColumnDefs() {
                     res.projected.elements = append(res.projected.elements, cd)
                 }
-                subjSet[v.id()] = v
+                subjSet[v.selectionId()] = v
             case *TableDef:
                 v := item.(*TableDef)
                 for _, cd := range v.ColumnDefs() {
                     res.projected.elements = append(res.projected.elements, cd)
                 }
-                subjSet[v.id()] = v
+                subjSet[v.selectionId()] = v
             case *ColumnDef:
                 v := item.(*ColumnDef)
                 res.projected.elements = append(res.projected.elements, v)
-                subjSet[v.tdef.id()] = v.tdef
+                subjSet[v.tdef.selectionId()] = v.tdef
         }
     }
     subjects := make([]Element, len(subjSet))
