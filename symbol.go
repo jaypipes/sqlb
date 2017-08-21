@@ -11,20 +11,22 @@ const (
     SYM_COMMA_WS
     SYM_SELECT
     SYM_FROM
+    SYM_JOIN
+    SYM_ON
+    SYM_WHERE
+    SYM_GROUP_BY
+    SYM_ORDER_BY
+    SYM_DESC
+    SYM_LIMIT
+    SYM_OFFSET
     SYM_LPAREN
     SYM_RPAREN
     SYM_IN
-    SYM_WHERE
     SYM_AND
     SYM_OR
     SYM_EQUAL
     SYM_NEQUAL
     SYM_BETWEEN
-    SYM_LIMIT
-    SYM_OFFSET
-    SYM_ORDER_BY
-    SYM_DESC
-    SYM_GROUP_BY
     SYM_MAX
     SYM_MIN
     SYM_SUM
@@ -39,20 +41,22 @@ var (
         SYM_COMMA_WS: []byte(", "),
         SYM_SELECT: []byte("SELECT "),
         SYM_FROM: []byte(" FROM "),
+        SYM_JOIN: []byte(" JOIN "),
+        SYM_ON: []byte(" ON "),
+        SYM_WHERE: []byte(" WHERE "),
+        SYM_GROUP_BY: []byte(" GROUP BY "),
+        SYM_ORDER_BY: []byte(" ORDER BY "),
+        SYM_DESC: []byte(" DESC"),
+        SYM_LIMIT: []byte(" LIMIT "),
+        SYM_OFFSET: []byte(" OFFSET "),
         SYM_LPAREN: []byte("("),
         SYM_RPAREN: []byte(")"),
         SYM_IN: []byte(" IN ("),
-        SYM_WHERE: []byte(" WHERE "),
         SYM_AND: []byte(" AND "),
         SYM_OR: []byte(" OR "),
         SYM_EQUAL: []byte(" = "),
         SYM_NEQUAL: []byte(" != "),
         SYM_BETWEEN: []byte(" BETWEEN "),
-        SYM_LIMIT: []byte(" LIMIT "),
-        SYM_OFFSET: []byte(" OFFSET "),
-        SYM_ORDER_BY: []byte(" ORDER BY "),
-        SYM_DESC: []byte(" DESC"),
-        SYM_GROUP_BY: []byte(" GROUP BY "),
         SYM_MAX: []byte("MAX("),
         SYM_MIN: []byte("MIN("),
         SYM_SUM: []byte("SUM("),
