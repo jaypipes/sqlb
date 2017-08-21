@@ -73,6 +73,34 @@ func TestJoinClauseInnerOnEqualSingle(t *testing.T) {
     assert.Equal(expArgCount, numArgs)
 }
 
+func TestJoinClauseOnMethod(t *testing.T) {
+    assert := assert.New(t)
+
+    j := &JoinClause{
+        left: articles.Table(),
+        right: users.Table(),
+    }
+    j.On(Equal(colArticleAuthor, colUserId))
+
+    exp := " JOIN users ON author = id"
+    expLen := len(exp)
+    expArgCount := 0
+
+    s := j.Size()
+    assert.Equal(expLen, s)
+
+    argc := j.ArgCount()
+    assert.Equal(expArgCount, argc)
+
+    args := make([]interface{}, expArgCount)
+    b := make([]byte, s)
+    written, numArgs := j.Scan(b, args)
+
+    assert.Equal(s, written)
+    assert.Equal(exp, string(b))
+    assert.Equal(expArgCount, numArgs)
+}
+
 func TestJoinClauseAliasedInnerOnEqualSingle(t *testing.T) {
     assert := assert.New(t)
 

@@ -54,3 +54,10 @@ func (j *JoinClause) Scan(b []byte, args []interface{}) (int, int) {
     }
     return bw, ac
 }
+
+func (j *JoinClause) On(onExprs ...*Expression) *JoinClause {
+    for _, onExpr := range onExprs {
+        j.onExprs = append(j.onExprs, onExpr)
+    }
+    return j
+}
