@@ -26,11 +26,11 @@ func TestColumn(t *testing.T) {
 
     exp := "users.name"
     expLen := len(exp)
-    s := c.Size()
+    s := c.size()
     assert.Equal(expLen, s)
 
     b := make([]byte, s)
-    written, _ := c.Scan(b, nil)
+    written, _ := c.scan(b, nil)
 
     assert.Equal(written, s)
     assert.Equal(exp, string(b))
@@ -56,11 +56,11 @@ func TestColumnWithTableAlias(t *testing.T) {
 
     exp := "u.name"
     expLen := len(exp)
-    s := c.Size()
+    s := c.size()
     assert.Equal(expLen, s)
 
     b := make([]byte, s)
-    written, _ := c.Scan(b, nil)
+    written, _ := c.scan(b, nil)
 
     assert.Equal(written, s)
     assert.Equal(exp, string(b))
@@ -83,11 +83,11 @@ func TestColumnDefSorts(t *testing.T) {
 
     exp := "users.name"
     expLen := len(exp)
-    s := sc.Size()
+    s := sc.size()
     assert.Equal(expLen, s)
 
     b := make([]byte, s)
-    written, _ := sc.Scan(b, nil)
+    written, _ := sc.scan(b, nil)
 
     assert.Equal(written, s)
     assert.Equal(exp, string(b))
@@ -96,11 +96,11 @@ func TestColumnDefSorts(t *testing.T) {
 
     exp = "users.name DESC"
     expLen = len(exp)
-    s = sc.Size()
+    s = sc.size()
     assert.Equal(expLen, s)
 
     b = make([]byte, s)
-    written, _ = sc.Scan(b, nil)
+    written, _ = sc.scan(b, nil)
 
     assert.Equal(written, s)
     assert.Equal(exp, string(b))
@@ -128,11 +128,11 @@ func TestColumnSorts(t *testing.T) {
 
     exp := "users.name"
     expLen := len(exp)
-    s := sc.Size()
+    s := sc.size()
     assert.Equal(expLen, s)
 
     b := make([]byte, s)
-    written, _ := sc.Scan(b, nil)
+    written, _ := sc.scan(b, nil)
 
     assert.Equal(written, s)
     assert.Equal(exp, string(b))
@@ -141,11 +141,11 @@ func TestColumnSorts(t *testing.T) {
 
     exp = "users.name DESC"
     expLen = len(exp)
-    s = sc.Size()
+    s = sc.size()
     assert.Equal(expLen, s)
 
     b = make([]byte, s)
-    written, _ = sc.Scan(b, nil)
+    written, _ = sc.scan(b, nil)
 
     assert.Equal(written, s)
     assert.Equal(exp, string(b))
@@ -172,11 +172,11 @@ func TestColumnAlias(t *testing.T) {
 
     exp := "users.name AS user_name"
     expLen := len(exp)
-    s := c.Size()
+    s := c.size()
     assert.Equal(expLen, s)
 
     b := make([]byte, s)
-    written, _ := c.Scan(b, nil)
+    written, _ := c.scan(b, nil)
 
     assert.Equal(written, s)
     assert.Equal(exp, string(b))

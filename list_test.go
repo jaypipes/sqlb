@@ -24,15 +24,15 @@ func TestListSingle(t *testing.T) {
         tbl: td.Table(),
     }
 
-    cl := &List{elements: []Element{c}}
+    cl := &List{elements: []element{c}}
 
     exp := "users.name"
     expLen := len(exp)
-    s := cl.Size()
+    s := cl.size()
     assert.Equal(expLen, s)
 
     b := make([]byte, s)
-    written, _ := cl.Scan(b, nil)
+    written, _ := cl.scan(b, nil)
 
     assert.Equal(written, s)
     assert.Equal(exp, string(b))
@@ -66,15 +66,15 @@ func TestListMulti(t *testing.T) {
         tbl: td.Table(),
     }
 
-    cl := &List{elements: []Element{c1, c2}}
+    cl := &List{elements: []element{c1, c2}}
 
     exp := "users.name, users.email"
     expLen := len(exp)
-    s := cl.Size()
+    s := cl.size()
     assert.Equal(expLen, s)
 
     b := make([]byte, s)
-    written, _ := cl.Scan(b, nil)
+    written, _ := cl.scan(b, nil)
 
     assert.Equal(written, s)
     assert.Equal(exp, string(b))

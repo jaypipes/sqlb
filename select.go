@@ -1,30 +1,9 @@
 package sqlb
 
-// A Projection is something that produces a scalar value. A column, column
-// definition, function, etc.
-type Projection interface {
-    projectionId() uint64
-    // Projections must also implement Element
-    Size() int
-    ArgCount() int
-    Scan([]byte, []interface{}) (int, int)
-}
-
-// A Selection is something that produces rows. A table, table definition,
-// view, subselect, etc
-type Selection interface {
-    projections() []Projection
-    selectionId() uint64
-    // Selections must also implement Element
-    Size() int
-    ArgCount() int
-    Scan([]byte, []interface{}) (int, int)
-}
-
 type SelectClause struct {
     alias string
     projected *List
-    selections []Selection
+    selections []selection
     joins []*JoinClause
     filters []*Expression
     groupBy *GroupByClause
@@ -32,25 +11,25 @@ type SelectClause struct {
     limit *LimitClause
 }
 
-func (s *SelectClause) ArgCount() int {
-    argc := s.projected.ArgCount()
+func (s *SelectClause) argCount() int {
+    argc := s.projected.argCount()
     for _, sel := range s.selections {
-        argc += sel.ArgCount()
+        argc += sel.argCount()
     }
     for _, join := range s.joins {
-        argc += join.ArgCount()
+        argc += join.argCount()
     }
     for _, filter := range s.filters {
-        argc += filter.ArgCount()
+        argc += filter.argCount()
     }
     if s.groupBy != nil {
-        argc += s.groupBy.ArgCount()
+        argc += s.groupBy.argCount()
     }
     if s.orderBy != nil {
-        argc += s.orderBy.ArgCount()
+        argc += s.orderBy.argCount()
     }
     if s.limit != nil {
-        argc += s.limit.ArgCount()
+        argc += s.limit.argCount()
     }
     return argc
 }
@@ -64,47 +43,47 @@ func (s *SelectClause) As(alias string) *SelectClause {
     return s
 }
 
-func (s *SelectClause) Size() int {
+func (s *SelectClause) size() int {
     size := len(Symbols[SYM_SELECT]) + len(Symbols[SYM_FROM])
-    size += s.projected.Size()
+    size += s.projected.size()
     for _, sel := range s.selections {
-        size += sel.Size()
+        size += sel.size()
     }
     if s.alias != "" {
         size += len(Symbols[SYM_AS]) + len(s.alias)
     }
     for _, join := range s.joins {
-        size += join.Size()
+        size += join.size()
     }
     nfilters := len(s.filters)
     if nfilters > 0 {
         size += len(Symbols[SYM_WHERE])
         size += len(Symbols[SYM_AND]) * (nfilters - 1)
         for _, filter := range s.filters {
-            size += filter.Size()
+            size += filter.size()
         }
     }
     if s.groupBy != nil {
-        size += s.groupBy.Size()
+        size += s.groupBy.size()
     }
     if s.orderBy != nil {
-        size += s.orderBy.Size()
+        size += s.orderBy.size()
     }
     if s.limit != nil {
-        size += s.limit.Size()
+        size += s.limit.size()
     }
     return size
 }
 
-func (s *SelectClause) Scan(b []byte, args []interface{}) (int, int) {
+func (s *SelectClause) scan(b []byte, args []interface{}) (int, int) {
     var bw, ac int
     bw += copy(b[bw:], Symbols[SYM_SELECT])
-    pbw, pac := s.projected.Scan(b[bw:], args)
+    pbw, pac := s.projected.scan(b[bw:], args)
     bw += pbw
     ac += pac
     bw += copy(b[bw:], Symbols[SYM_FROM])
     for _, sel := range s.selections {
-        sbw, sac := sel.Scan(b[bw:], args)
+        sbw, sac := sel.scan(b[bw:], args)
         bw += sbw
         ac += sac
     }
@@ -113,7 +92,7 @@ func (s *SelectClause) Scan(b []byte, args []interface{}) (int, int) {
         bw += copy(b[bw:], s.alias)
     }
     for _, join := range s.joins {
-        jbw, jac := join.Scan(b[bw:], args)
+        jbw, jac := join.scan(b[bw:], args)
         bw += jbw
         ac += jac
     }
@@ -123,23 +102,23 @@ func (s *SelectClause) Scan(b []byte, args []interface{}) (int, int) {
             if x > 0 {
                 bw += copy(b[bw:], Symbols[SYM_AND])
             }
-            fbw, fac := filter.Scan(b[bw:], args[ac:])
+            fbw, fac := filter.scan(b[bw:], args[ac:])
             bw += fbw
             ac += fac
         }
     }
     if s.groupBy != nil {
-        gbbw, gbac := s.groupBy.Scan(b[bw:], args[ac:])
+        gbbw, gbac := s.groupBy.scan(b[bw:], args[ac:])
         bw += gbbw
         ac += gbac
     }
     if s.orderBy != nil {
-        obbw, obac := s.orderBy.Scan(b[bw:], args[ac:])
+        obbw, obac := s.orderBy.scan(b[bw:], args[ac:])
         bw += obbw
         ac += obac
     }
     if s.limit != nil {
-        lbw, lac := s.limit.Scan(b[bw:], args[ac:])
+        lbw, lac := s.limit.scan(b[bw:], args[ac:])
         bw += lbw
         ac += lac
     }
@@ -147,20 +126,20 @@ func (s *SelectClause) Scan(b []byte, args []interface{}) (int, int) {
 }
 
 func (s *SelectClause) String() string {
-    size := s.Size()
-    argc := s.ArgCount()
+    size := s.size()
+    argc := s.argCount()
     args := make([]interface{}, argc)
     b := make([]byte, size)
-    s.Scan(b, args)
+    s.scan(b, args)
     return string(b)
 }
 
 func (s *SelectClause) StringArgs() (string, []interface{}) {
-    size := s.Size()
-    argc := s.ArgCount()
+    size := s.size()
+    argc := s.argCount()
     args := make([]interface{}, argc)
     b := make([]byte, size)
-    s.Scan(b, args)
+    s.scan(b, args)
     return string(b), args
 }
 
@@ -179,7 +158,7 @@ func (s *SelectClause) GroupBy(cols ...Columnar) *SelectClause {
     if gb == nil {
         gb = &GroupByClause{
             cols: &List{
-                elements: make([]Element, len(cols)),
+                elements: make([]element, len(cols)),
             },
         }
         for x, c := range cols {
@@ -204,7 +183,7 @@ func (s *SelectClause) OrderBy(sortCols ...*SortColumn) *SelectClause {
     if ob == nil {
         ob = &OrderByClause{
             cols: &List{
-                elements: make([]Element, len(sortCols)),
+                elements: make([]element, len(sortCols)),
             },
         }
         for x, sc := range sortCols {
@@ -241,20 +220,20 @@ func containsJoin(s *SelectClause, j *JoinClause) bool {
     return false
 }
 
-func addToProjections(s *SelectClause, p Projection) {
+func addToprojections(s *SelectClause, p projection) {
     s.projected.elements = append(s.projected.elements, p)
 }
 
-func Select(items ...Element) *SelectClause {
+func Select(items ...element) *SelectClause {
     // TODO(jaypipes): Make the memory allocation more efficient below by
     // looping through the elements and determining the number of element struct
-    // pointers to allocate instead of just making an empty array of Element
+    // pointers to allocate instead of just making an empty array of element
     // pointers.
     res := &SelectClause{
         projected: &List{},
     }
 
-    selectionMap := make(map[uint64]Selection, 0)
+    selectionMap := make(map[uint64]selection, 0)
 
     // For each scannable item we've received in the call, check what concrete
     // type they are and, depending on which type they are, either add them to
@@ -269,7 +248,7 @@ func Select(items ...Element) *SelectClause {
                     if _, ok := selectionMap[j.left.selectionId()]; ! ok {
                         selectionMap[j.left.selectionId()] = j.left
                         for _, proj := range j.left.projections() {
-                            addToProjections(res, proj)
+                            addToprojections(res, proj)
                         }
                     }
                 }
@@ -289,22 +268,22 @@ func Select(items ...Element) *SelectClause {
             case *Table:
                 v := item.(*Table)
                 for _, cd := range v.tdef.projections() {
-                    addToProjections(res, cd)
+                    addToprojections(res, cd)
                 }
                 selectionMap[v.selectionId()] = v
             case *TableDef:
                 v := item.(*TableDef)
                 for _, cd := range v.projections() {
-                    addToProjections(res, cd)
+                    addToprojections(res, cd)
                 }
                 selectionMap[v.selectionId()] = v
             case *ColumnDef:
                 v := item.(*ColumnDef)
-                addToProjections(res, v)
+                addToprojections(res, v)
                 selectionMap[v.tdef.selectionId()] = v.tdef
         }
     }
-    selections := make([]Selection, len(selectionMap))
+    selections := make([]selection, len(selectionMap))
     x := 0
     for _, sel := range selectionMap {
         selections[x] = sel

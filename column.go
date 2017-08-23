@@ -24,11 +24,11 @@ func (c *Column) Column() *Column {
     return c
 }
 
-func (c *Column) ArgCount() int {
+func (c *Column) argCount() int {
     return 0
 }
 
-func (c *Column) Size() int {
+func (c *Column) size() int {
     size := 0
     if c.tbl.alias != "" {
         size += len(c.tbl.alias)
@@ -43,7 +43,7 @@ func (c *Column) Size() int {
     return size
 }
 
-func (c *Column) Scan(b []byte, args []interface{}) (int, int) {
+func (c *Column) scan(b []byte, args []interface{}) (int, int) {
     bw := 0
     if c.tbl.alias != "" {
         bw += copy(b[bw:], c.tbl.alias)
@@ -59,16 +59,16 @@ func (c *Column) Scan(b []byte, args []interface{}) (int, int) {
     return bw, 0
 }
 
-func (c *Column) Alias(alias string) {
+func (c *Column) setAlias(alias string) {
     c.alias = alias
 }
 
 func (c *Column) As(alias string) *Column {
-    c.Alias(alias)
+    c.setAlias(alias)
     return c
 }
 
-func isColumn(el Element) bool {
+func isColumn(el element) bool {
     switch el.(type) {
     case *Column:
         return true
@@ -101,15 +101,15 @@ func (cd *ColumnDef) Column() *Column {
     }
 }
 
-func (cd *ColumnDef) ArgCount() int {
+func (cd *ColumnDef) argCount() int {
     return 0
 }
 
-func (cd *ColumnDef) Size() int {
+func (cd *ColumnDef) size() int {
     return len(cd.tdef.name) + len(Symbols[SYM_PERIOD]) + len(cd.name)
 }
 
-func (cd *ColumnDef) Scan(b []byte, args []interface{}) (int, int) {
+func (cd *ColumnDef) scan(b []byte, args []interface{}) (int, int) {
     bw := copy(b, cd.tdef.name)
     bw += copy(b[bw:], Symbols[SYM_PERIOD])
     bw += copy(b[bw:], cd.name)

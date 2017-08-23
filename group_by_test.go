@@ -21,27 +21,27 @@ func TestGroupByClauseSingle(t *testing.T) {
 
     ob := &GroupByClause{
         cols: &List{
-            elements: []Element{cd},
+            elements: []element{cd},
         },
     }
 
     exp := " GROUP BY users.name"
     expLen := len(exp)
-    expArgCount := 0
+    expargCount := 0
 
-    s := ob.Size()
+    s := ob.size()
     assert.Equal(expLen, s)
 
-    argc := ob.ArgCount()
-    assert.Equal(expArgCount, argc)
+    argc := ob.argCount()
+    assert.Equal(expargCount, argc)
 
-    args := make([]interface{}, expArgCount)
+    args := make([]interface{}, expargCount)
     b := make([]byte, s)
-    written, numArgs := ob.Scan(b, args)
+    written, numArgs := ob.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expArgCount, numArgs)
+    assert.Equal(expargCount, numArgs)
 }
 
 func TestGroupByClauseMulti(t *testing.T) {
@@ -64,25 +64,25 @@ func TestGroupByClauseMulti(t *testing.T) {
 
     ob := &GroupByClause{
         cols: &List{
-            elements: []Element{cd1, cd2},
+            elements: []element{cd1, cd2},
         },
     }
 
     exp := " GROUP BY users.name, users.email"
     expLen := len(exp)
-    expArgCount := 0
+    expargCount := 0
 
-    s := ob.Size()
+    s := ob.size()
     assert.Equal(expLen, s)
 
-    argc := ob.ArgCount()
-    assert.Equal(expArgCount, argc)
+    argc := ob.argCount()
+    assert.Equal(expargCount, argc)
 
-    args := make([]interface{}, expArgCount)
+    args := make([]interface{}, expargCount)
     b := make([]byte, s)
-    written, numArgs := ob.Scan(b, args)
+    written, numArgs := ob.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expArgCount, numArgs)
+    assert.Equal(expargCount, numArgs)
 }

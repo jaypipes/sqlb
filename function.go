@@ -15,8 +15,8 @@ const (
 
 var (
     // A static table containing information used in constructing the
-    // expression's SQL string during Scan() calls
-    funcScanTable = map[funcId]scanInfo{
+    // expression's SQL string during scan() calls
+    funcscanTable = map[funcId]scanInfo{
         FUNC_MAX: scanInfo{
             SYM_MAX, SYM_ELEMENT, SYM_RPAREN,
         },
@@ -35,7 +35,7 @@ var (
 type sqlFunc struct {
     alias string
     scanInfo scanInfo
-    elements []Element
+    elements []element
 }
 
 func (f *sqlFunc) projectionId() uint64 {
@@ -53,22 +53,22 @@ func (f *sqlFunc) As(alias string) *sqlFunc {
     return f
 }
 
-func (e *sqlFunc) ArgCount() int {
+func (e *sqlFunc) argCount() int {
     ac := 0
     for _, el := range e.elements {
-        ac += el.ArgCount()
+        ac += el.argCount()
     }
     return ac
 }
 
-func (f *sqlFunc) Size() int {
+func (f *sqlFunc) size() int {
     size := 0
     elidx := 0
     for _, sym := range f.scanInfo {
         if sym == SYM_ELEMENT {
             el := f.elements[elidx]
             elidx++
-            size += el.Size()
+            size += el.size()
         } else {
             size += len(Symbols[sym])
         }
@@ -79,14 +79,14 @@ func (f *sqlFunc) Size() int {
     return size
 }
 
-func (f *sqlFunc) Scan(b []byte, args []interface{}) (int, int) {
+func (f *sqlFunc) scan(b []byte, args []interface{}) (int, int) {
     bw, ac := 0, 0
     elidx := 0
     for _, sym := range f.scanInfo {
         if sym == SYM_ELEMENT {
             el := f.elements[elidx]
             elidx++
-            ebw, eac := el.Scan(b[bw:], args[ac:])
+            ebw, eac := el.scan(b[bw:], args[ac:])
             bw += ebw
             ac += eac
         } else {
@@ -100,10 +100,10 @@ func (f *sqlFunc) Scan(b []byte, args []interface{}) (int, int) {
     return bw, ac
 }
 
-func Max(el Element) *sqlFunc {
+func Max(el element) *sqlFunc {
     return &sqlFunc{
-        scanInfo: funcScanTable[FUNC_MAX],
-        elements: []Element{el},
+        scanInfo: funcscanTable[FUNC_MAX],
+        elements: []element{el},
     }
 }
 
@@ -115,10 +115,10 @@ func (c *ColumnDef) Max() *sqlFunc {
     return Max(c)
 }
 
-func Min(el Element) *sqlFunc {
+func Min(el element) *sqlFunc {
     return &sqlFunc{
-        scanInfo: funcScanTable[FUNC_MIN],
-        elements: []Element{el},
+        scanInfo: funcscanTable[FUNC_MIN],
+        elements: []element{el},
     }
 }
 
@@ -130,10 +130,10 @@ func (c *ColumnDef) Min() *sqlFunc {
     return Min(c)
 }
 
-func Sum(el Element) *sqlFunc {
+func Sum(el element) *sqlFunc {
     return &sqlFunc{
-        scanInfo: funcScanTable[FUNC_SUM],
-        elements: []Element{el},
+        scanInfo: funcscanTable[FUNC_SUM],
+        elements: []element{el},
     }
 }
 
@@ -145,10 +145,10 @@ func (c *ColumnDef) Sum() *sqlFunc {
     return Sum(c)
 }
 
-func Avg(el Element) *sqlFunc {
+func Avg(el element) *sqlFunc {
     return &sqlFunc{
-        scanInfo: funcScanTable[FUNC_AVG],
-        elements: []Element{el},
+        scanInfo: funcscanTable[FUNC_AVG],
+        elements: []element{el},
     }
 }
 

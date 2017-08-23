@@ -21,7 +21,7 @@ func TestOrderByClauseSingleAsc(t *testing.T) {
 
     ob := &OrderByClause{
         cols: &List{
-            elements: []Element{
+            elements: []element{
                 &SortColumn{el: cd},
             },
         },
@@ -29,21 +29,21 @@ func TestOrderByClauseSingleAsc(t *testing.T) {
 
     exp := " ORDER BY users.name"
     expLen := len(exp)
-    expArgCount := 0
+    expargCount := 0
 
-    s := ob.Size()
+    s := ob.size()
     assert.Equal(expLen, s)
 
-    argc := ob.ArgCount()
-    assert.Equal(expArgCount, argc)
+    argc := ob.argCount()
+    assert.Equal(expargCount, argc)
 
-    args := make([]interface{}, expArgCount)
+    args := make([]interface{}, expargCount)
     b := make([]byte, s)
-    written, numArgs := ob.Scan(b, args)
+    written, numArgs := ob.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expArgCount, numArgs)
+    assert.Equal(expargCount, numArgs)
 }
 
 func TestOrderByClauseSingleDesc(t *testing.T) {
@@ -61,7 +61,7 @@ func TestOrderByClauseSingleDesc(t *testing.T) {
 
     ob := &OrderByClause{
         cols: &List{
-            elements: []Element{
+            elements: []element{
                 &SortColumn{el: cd, desc: true},
             },
         },
@@ -69,21 +69,21 @@ func TestOrderByClauseSingleDesc(t *testing.T) {
 
     exp := " ORDER BY users.name DESC"
     expLen := len(exp)
-    expArgCount := 0
+    expargCount := 0
 
-    s := ob.Size()
+    s := ob.size()
     assert.Equal(expLen, s)
 
-    argc := ob.ArgCount()
-    assert.Equal(expArgCount, argc)
+    argc := ob.argCount()
+    assert.Equal(expargCount, argc)
 
-    args := make([]interface{}, expArgCount)
+    args := make([]interface{}, expargCount)
     b := make([]byte, s)
-    written, numArgs := ob.Scan(b, args)
+    written, numArgs := ob.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expArgCount, numArgs)
+    assert.Equal(expargCount, numArgs)
 }
 
 func TestOrderByClauseMultiAsc(t *testing.T) {
@@ -106,7 +106,7 @@ func TestOrderByClauseMultiAsc(t *testing.T) {
 
     ob := &OrderByClause{
         cols: &List{
-            elements: []Element{
+            elements: []element{
                 &SortColumn{el: cd1},
                 &SortColumn{el: cd2},
             },
@@ -115,21 +115,21 @@ func TestOrderByClauseMultiAsc(t *testing.T) {
 
     exp := " ORDER BY users.name, users.email"
     expLen := len(exp)
-    expArgCount := 0
+    expargCount := 0
 
-    s := ob.Size()
+    s := ob.size()
     assert.Equal(expLen, s)
 
-    argc := ob.ArgCount()
-    assert.Equal(expArgCount, argc)
+    argc := ob.argCount()
+    assert.Equal(expargCount, argc)
 
-    args := make([]interface{}, expArgCount)
+    args := make([]interface{}, expargCount)
     b := make([]byte, s)
-    written, numArgs := ob.Scan(b, args)
+    written, numArgs := ob.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expArgCount, numArgs)
+    assert.Equal(expargCount, numArgs)
 }
 
 func TestOrderByClauseMultiAscDesc(t *testing.T) {
@@ -152,7 +152,7 @@ func TestOrderByClauseMultiAscDesc(t *testing.T) {
 
     ob := &OrderByClause{
         cols: &List{
-            elements: []Element{
+            elements: []element{
                 &SortColumn{el: cd1},
                 &SortColumn{el: cd2, desc: true},
             },
@@ -161,19 +161,19 @@ func TestOrderByClauseMultiAscDesc(t *testing.T) {
 
     exp := " ORDER BY users.name, users.email DESC"
     expLen := len(exp)
-    expArgCount := 0
+    expargCount := 0
 
-    s := ob.Size()
+    s := ob.size()
     assert.Equal(expLen, s)
 
-    argc := ob.ArgCount()
-    assert.Equal(expArgCount, argc)
+    argc := ob.argCount()
+    assert.Equal(expargCount, argc)
 
-    args := make([]interface{}, expArgCount)
+    args := make([]interface{}, expargCount)
     b := make([]byte, s)
-    written, numArgs := ob.Scan(b, args)
+    written, numArgs := ob.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expArgCount, numArgs)
+    assert.Equal(expargCount, numArgs)
 }

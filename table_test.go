@@ -20,11 +20,11 @@ func TestTable(t *testing.T) {
 
     exp := "users"
     expLen := len(exp)
-    s := t1.Size()
+    s := t1.size()
     assert.Equal(expLen, s)
 
     b := make([]byte, s)
-    written, _ := t1.Scan(b, nil)
+    written, _ := t1.scan(b, nil)
 
     assert.Equal(written, s)
     assert.Equal(exp, string(b))
@@ -45,11 +45,11 @@ func TestTableAlias(t *testing.T) {
 
     exp := "users AS u"
     expLen := len(exp)
-    s := t1.Size()
+    s := t1.size()
     assert.Equal(expLen, s)
 
     b := make([]byte, s)
-    written, _ := t1.Scan(b, nil)
+    written, _ := t1.scan(b, nil)
 
     assert.Equal(written, s)
     assert.Equal(exp, string(b))
