@@ -11,54 +11,54 @@ const (
     EXP_BETWEEN
 )
 
-type exprScanInfo []Symbol
+type exprscanInfo []Symbol
 
 var (
     // A static table containing information used in constructing the
-    // expression's SQL string during Scan() calls
-    exprScanTable = map[exprType]exprScanInfo{
-        EXP_EQUAL: exprScanInfo{
+    // expression's SQL string during scan() calls
+    exprscanTable = map[exprType]exprscanInfo{
+        EXP_EQUAL: exprscanInfo{
             SYM_ELEMENT, SYM_EQUAL, SYM_ELEMENT,
         },
-        EXP_NEQUAL: exprScanInfo{
+        EXP_NEQUAL: exprscanInfo{
             SYM_ELEMENT, SYM_NEQUAL, SYM_ELEMENT,
         },
-        EXP_AND: exprScanInfo{
+        EXP_AND: exprscanInfo{
             SYM_ELEMENT, SYM_AND, SYM_ELEMENT,
         },
-        EXP_OR: exprScanInfo{
+        EXP_OR: exprscanInfo{
             SYM_ELEMENT, SYM_OR, SYM_ELEMENT,
         },
-        EXP_IN: exprScanInfo{
+        EXP_IN: exprscanInfo{
             SYM_ELEMENT, SYM_IN, SYM_ELEMENT, SYM_RPAREN,
         },
-        EXP_BETWEEN: exprScanInfo{
+        EXP_BETWEEN: exprscanInfo{
             SYM_ELEMENT, SYM_BETWEEN, SYM_ELEMENT, SYM_AND, SYM_ELEMENT,
         },
     }
 )
 
 type Expression struct {
-    scanInfo exprScanInfo
-    elements []Element
+    scanInfo exprscanInfo
+    elements []element
 }
 
-func (e *Expression) ArgCount() int {
+func (e *Expression) argCount() int {
     ac := 0
     for _, el := range e.elements {
-        ac += el.ArgCount()
+        ac += el.argCount()
     }
     return ac
 }
 
-func (e *Expression) Size() int {
+func (e *Expression) size() int {
     size := 0
     elidx := 0
     for _, sym := range e.scanInfo {
         if sym == SYM_ELEMENT {
             el := e.elements[elidx]
             elidx++
-            size += el.Size()
+            size += el.size()
         } else {
             size += len(Symbols[sym])
         }
@@ -66,14 +66,14 @@ func (e *Expression) Size() int {
     return size
 }
 
-func (e *Expression) Scan(b []byte, args []interface{}) (int, int) {
+func (e *Expression) scan(b []byte, args []interface{}) (int, int) {
     bw, ac := 0, 0
     elidx := 0
     for _, sym := range e.scanInfo {
         if sym == SYM_ELEMENT {
             el := e.elements[elidx]
             elidx++
-            ebw, eac := el.Scan(b[bw:], args[ac:])
+            ebw, eac := el.scan(b[bw:], args[ac:])
             bw += ebw
             ac += eac
         } else {
@@ -84,45 +84,45 @@ func (e *Expression) Scan(b []byte, args []interface{}) (int, int) {
 }
 
 func Equal(left interface{}, right interface{}) *Expression {
-    els := toElements(left, right)
+    els := toelements(left, right)
     return &Expression{
-        scanInfo: exprScanTable[EXP_EQUAL],
+        scanInfo: exprscanTable[EXP_EQUAL],
         elements: els,
     }
 }
 
 func NotEqual(left interface{}, right interface{}) *Expression {
-    els := toElements(left, right)
+    els := toelements(left, right)
     return &Expression{
-        scanInfo: exprScanTable[EXP_NEQUAL],
+        scanInfo: exprscanTable[EXP_NEQUAL],
         elements: els,
     }
 }
 
 func And(a *Expression, b *Expression) *Expression {
     return &Expression{
-        scanInfo: exprScanTable[EXP_AND],
-        elements: []Element{a, b},
+        scanInfo: exprscanTable[EXP_AND],
+        elements: []element{a, b},
     }
 }
 
 func Or(a *Expression, b *Expression) *Expression {
     return &Expression{
-        scanInfo: exprScanTable[EXP_OR],
-        elements: []Element{a, b},
+        scanInfo: exprscanTable[EXP_OR],
+        elements: []element{a, b},
     }
 }
 
-func In(subject Element, values ...interface{}) *Expression {
+func In(subject element, values ...interface{}) *Expression {
     return &Expression{
-        scanInfo: exprScanTable[EXP_IN],
-        elements: []Element{subject, toValueList(values...)},
+        scanInfo: exprscanTable[EXP_IN],
+        elements: []element{subject, toValueList(values...)},
     }
 }
 
 func Between(a *Expression, b *Expression) *Expression {
     return &Expression{
-        scanInfo: exprScanTable[EXP_BETWEEN],
-        elements: []Element{a, b},
+        scanInfo: exprscanTable[EXP_BETWEEN],
+        elements: []element{a, b},
     }
 }

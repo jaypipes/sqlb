@@ -27,56 +27,56 @@ func TestExpressionEqual(t *testing.T) {
     val := &Value{value: "foo"}
 
     e := &Expression{
-        scanInfo: exprScanTable[EXP_EQUAL],
-        elements: []Element{c, val},
+        scanInfo: exprscanTable[EXP_EQUAL],
+        elements: []element{c, val},
     }
 
     exp := "users.name = ?"
     expLen := len(exp)
-    expArgCount := 1
+    expargCount := 1
 
-    s := e.Size()
+    s := e.size()
     assert.Equal(expLen, s)
 
-    argc := e.ArgCount()
-    assert.Equal(expArgCount, argc)
+    argc := e.argCount()
+    assert.Equal(expargCount, argc)
 
     args := make([]interface{}, 1)
     b := make([]byte, s)
-    written, numArgs := e.Scan(b, args)
+    written, numArgs := e.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
     assert.Equal("foo", args[0])
-    assert.Equal(expArgCount, numArgs)
+    assert.Equal(expargCount, numArgs)
 
     // Check that if we reverse the order in which the Expression is constructed,
-    // that our Scan() still functions but merely generates the SQL string with
+    // that our scan() still functions but merely generates the SQL string with
     // the left and right expression reversed
 
     erev := &Expression{
-        scanInfo: exprScanTable[EXP_EQUAL],
-        elements: []Element{val, c},
+        scanInfo: exprscanTable[EXP_EQUAL],
+        elements: []element{val, c},
     }
 
     exp = "? = users.name"
     expLen = len(exp)
-    expArgCount = 1
+    expargCount = 1
 
-    s = erev.Size()
+    s = erev.size()
     assert.Equal(expLen, s)
 
-    argc = erev.ArgCount()
-    assert.Equal(expArgCount, argc)
+    argc = erev.argCount()
+    assert.Equal(expargCount, argc)
 
     args = make([]interface{}, 1)
     b = make([]byte, s)
-    written, numArgs = erev.Scan(b, args)
+    written, numArgs = erev.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
     assert.Equal("foo", args[0])
-    assert.Equal(expArgCount, numArgs)
+    assert.Equal(expargCount, numArgs)
 }
 
 func TestEqualFuncValue(t *testing.T) {
@@ -101,25 +101,25 @@ func TestEqualFuncValue(t *testing.T) {
 
     exp := "users.name = ?"
     expLen := len(exp)
-    expArgCount := 1
+    expargCount := 1
 
-    s := eq.Size()
+    s := eq.size()
     assert.Equal(expLen, s)
 
-    argc := eq.ArgCount()
-    assert.Equal(expArgCount, argc)
+    argc := eq.argCount()
+    assert.Equal(expargCount, argc)
 
     args := make([]interface{}, 1)
     b := make([]byte, s)
-    written, numArgs := eq.Scan(b, args)
+    written, numArgs := eq.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
     assert.Equal("foo", args[0])
-    assert.Equal(expArgCount, numArgs)
+    assert.Equal(expargCount, numArgs)
 }
 
-func TestEqualFuncTwoElements(t *testing.T) {
+func TestEqualFuncTwoelements(t *testing.T) {
     assert := assert.New(t)
 
     users := &TableDef{
@@ -156,46 +156,46 @@ func TestEqualFuncTwoElements(t *testing.T) {
 
     exp := "users.id = articles.author"
     expLen := len(exp)
-    expArgCount := 0
+    expargCount := 0
 
-    s := eq.Size()
+    s := eq.size()
     assert.Equal(expLen, s)
 
-    argc := eq.ArgCount()
-    assert.Equal(expArgCount, argc)
+    argc := eq.argCount()
+    assert.Equal(expargCount, argc)
 
     args := make([]interface{}, 0)
     b := make([]byte, s)
-    written, numArgs := eq.Scan(b, args)
+    written, numArgs := eq.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expArgCount, numArgs)
+    assert.Equal(expargCount, numArgs)
     assert.Equal(0, len(args))
 
     // Check that if we reverse the order in which the Expression is constructed,
-    // that our Scan() still functions but merely generates the SQL string with
+    // that our scan() still functions but merely generates the SQL string with
     // the left and right expression reversed
 
     erev := Equal(c2, c1)
 
     exp = "articles.author = users.id"
     expLen = len(exp)
-    expArgCount = 0
+    expargCount = 0
 
-    s = erev.Size()
+    s = erev.size()
     assert.Equal(expLen, s)
 
-    argc = erev.ArgCount()
-    assert.Equal(expArgCount, argc)
+    argc = erev.argCount()
+    assert.Equal(expargCount, argc)
 
     args = make([]interface{}, 0)
     b = make([]byte, s)
-    written, numArgs = erev.Scan(b, args)
+    written, numArgs = erev.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expArgCount, numArgs)
+    assert.Equal(expargCount, numArgs)
     assert.Equal(0, len(args))
 }
 
@@ -220,28 +220,28 @@ func TestExpressionNotEqual(t *testing.T) {
     val := &Value{value: "foo"}
 
     e := &Expression{
-        scanInfo: exprScanTable[EXP_NEQUAL],
-        elements: []Element{c, val},
+        scanInfo: exprscanTable[EXP_NEQUAL],
+        elements: []element{c, val},
     }
 
     exp := "users.name != ?"
     expLen := len(exp)
-    expArgCount := 1
+    expargCount := 1
 
-    s := e.Size()
+    s := e.size()
     assert.Equal(expLen, s)
 
-    argc := e.ArgCount()
-    assert.Equal(expArgCount, argc)
+    argc := e.argCount()
+    assert.Equal(expargCount, argc)
 
     args := make([]interface{}, 1)
     b := make([]byte, s)
-    written, numArgs := e.Scan(b, args)
+    written, numArgs := e.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
     assert.Equal("foo", args[0])
-    assert.Equal(expArgCount, numArgs)
+    assert.Equal(expargCount, numArgs)
 }
 
 func TestNotEqualFuncValue(t *testing.T) {
@@ -266,25 +266,25 @@ func TestNotEqualFuncValue(t *testing.T) {
 
     exp := "users.name != ?"
     expLen := len(exp)
-    expArgCount := 1
+    expargCount := 1
 
-    s := eq.Size()
+    s := eq.size()
     assert.Equal(expLen, s)
 
-    argc := eq.ArgCount()
-    assert.Equal(expArgCount, argc)
+    argc := eq.argCount()
+    assert.Equal(expargCount, argc)
 
     args := make([]interface{}, 1)
     b := make([]byte, s)
-    written, numArgs := eq.Scan(b, args)
+    written, numArgs := eq.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
     assert.Equal("foo", args[0])
-    assert.Equal(expArgCount, numArgs)
+    assert.Equal(expargCount, numArgs)
 }
 
-func TestNotEqualFuncTwoElements(t *testing.T) {
+func TestNotEqualFuncTwoelements(t *testing.T) {
     assert := assert.New(t)
 
     users := &TableDef{
@@ -321,46 +321,46 @@ func TestNotEqualFuncTwoElements(t *testing.T) {
 
     exp := "users.id != articles.author"
     expLen := len(exp)
-    expArgCount := 0
+    expargCount := 0
 
-    s := eq.Size()
+    s := eq.size()
     assert.Equal(expLen, s)
 
-    argc := eq.ArgCount()
-    assert.Equal(expArgCount, argc)
+    argc := eq.argCount()
+    assert.Equal(expargCount, argc)
 
     args := make([]interface{}, 0)
     b := make([]byte, s)
-    written, numArgs := eq.Scan(b, args)
+    written, numArgs := eq.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expArgCount, numArgs)
+    assert.Equal(expargCount, numArgs)
     assert.Equal(0, len(args))
 
     // Check that if we reverse the order in which the Expression is constructed,
-    // that our Scan() still functions but merely generates the SQL string with
+    // that our scan() still functions but merely generates the SQL string with
     // the left and right expression reversed
 
     erev := NotEqual(c2, c1)
 
     exp = "articles.author != users.id"
     expLen = len(exp)
-    expArgCount = 0
+    expargCount = 0
 
-    s = erev.Size()
+    s = erev.size()
     assert.Equal(expLen, s)
 
-    argc = erev.ArgCount()
-    assert.Equal(expArgCount, argc)
+    argc = erev.argCount()
+    assert.Equal(expargCount, argc)
 
     args = make([]interface{}, 0)
     b = make([]byte, s)
-    written, numArgs = erev.Scan(b, args)
+    written, numArgs = erev.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expArgCount, numArgs)
+    assert.Equal(expargCount, numArgs)
     assert.Equal(0, len(args))
 }
 
@@ -386,22 +386,22 @@ func TestInSingle(t *testing.T) {
 
     exp := "users.name IN (?)"
     expLen := len(exp)
-    expArgCount := 1
+    expargCount := 1
 
-    s := e.Size()
+    s := e.size()
     assert.Equal(expLen, s)
 
-    argc := e.ArgCount()
-    assert.Equal(expArgCount, argc)
+    argc := e.argCount()
+    assert.Equal(expargCount, argc)
 
     args := make([]interface{}, 1)
     b := make([]byte, s)
-    written, numArgs := e.Scan(b, args)
+    written, numArgs := e.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expArgCount, numArgs)
-    assert.Equal(expArgCount, len(args))
+    assert.Equal(expargCount, numArgs)
+    assert.Equal(expargCount, len(args))
 }
 
 func TestInMulti(t *testing.T) {
@@ -426,22 +426,22 @@ func TestInMulti(t *testing.T) {
 
     exp := "users.name IN (?, ?, ?)"
     expLen := len(exp)
-    expArgCount := 3
+    expargCount := 3
 
-    s := e.Size()
+    s := e.size()
     assert.Equal(expLen, s)
 
-    argc := e.ArgCount()
-    assert.Equal(expArgCount, argc)
+    argc := e.argCount()
+    assert.Equal(expargCount, argc)
 
     args := make([]interface{}, 3)
     b := make([]byte, s)
-    written, numArgs := e.Scan(b, args)
+    written, numArgs := e.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expArgCount, numArgs)
-    assert.Equal(expArgCount, len(args))
+    assert.Equal(expargCount, numArgs)
+    assert.Equal(expargCount, len(args))
 }
 
 func TestAnd(t *testing.T) {
@@ -463,34 +463,34 @@ func TestAnd(t *testing.T) {
     }
 
     ea := &Expression{
-        scanInfo: exprScanTable[EXP_NEQUAL],
-        elements: []Element{c, &Value{value: "foo"}},
+        scanInfo: exprscanTable[EXP_NEQUAL],
+        elements: []element{c, &Value{value: "foo"}},
     }
 
     eb := &Expression{
-        scanInfo: exprScanTable[EXP_NEQUAL],
-        elements: []Element{c, &Value{value: "bar"}},
+        scanInfo: exprscanTable[EXP_NEQUAL],
+        elements: []element{c, &Value{value: "bar"}},
     }
     e := And(ea, eb)
 
     exp := "users.name != ? AND users.name != ?"
     expLen := len(exp)
-    expArgCount := 2
+    expargCount := 2
 
-    s := e.Size()
+    s := e.size()
     assert.Equal(expLen, s)
 
-    argc := e.ArgCount()
-    assert.Equal(expArgCount, argc)
+    argc := e.argCount()
+    assert.Equal(expargCount, argc)
 
-    args := make([]interface{}, expArgCount)
+    args := make([]interface{}, expargCount)
     b := make([]byte, s)
-    written, numArgs := e.Scan(b, args)
+    written, numArgs := e.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expArgCount, numArgs)
-    assert.Equal(expArgCount, len(args))
+    assert.Equal(expargCount, numArgs)
+    assert.Equal(expargCount, len(args))
     assert.Equal("foo", args[0])
     assert.Equal("bar", args[1])
 }
@@ -514,34 +514,34 @@ func TestOr(t *testing.T) {
     }
 
     ea := &Expression{
-        scanInfo: exprScanTable[EXP_EQUAL],
-        elements: []Element{c, &Value{value: "foo"}},
+        scanInfo: exprscanTable[EXP_EQUAL],
+        elements: []element{c, &Value{value: "foo"}},
     }
 
     eb := &Expression{
-        scanInfo: exprScanTable[EXP_EQUAL],
-        elements: []Element{c, &Value{value: "bar"}},
+        scanInfo: exprscanTable[EXP_EQUAL],
+        elements: []element{c, &Value{value: "bar"}},
     }
     e := Or(ea, eb)
 
     exp := "users.name = ? OR users.name = ?"
     expLen := len(exp)
-    expArgCount := 2
+    expargCount := 2
 
-    s := e.Size()
+    s := e.size()
     assert.Equal(expLen, s)
 
-    argc := e.ArgCount()
-    assert.Equal(expArgCount, argc)
+    argc := e.argCount()
+    assert.Equal(expargCount, argc)
 
-    args := make([]interface{}, expArgCount)
+    args := make([]interface{}, expargCount)
     b := make([]byte, s)
-    written, numArgs := e.Scan(b, args)
+    written, numArgs := e.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expArgCount, numArgs)
-    assert.Equal(expArgCount, len(args))
+    assert.Equal(expargCount, numArgs)
+    assert.Equal(expargCount, len(args))
     assert.Equal("foo", args[0])
     assert.Equal("bar", args[1])
 }

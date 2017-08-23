@@ -31,10 +31,10 @@ func (t *Table) Column(name string) *Column {
     return nil
 }
 
-func (t *Table) projections() []Projection {
+func (t *Table) projections() []projection {
     cdefs := t.tdef.cdefs
     ncols := len(cdefs)
-    cols := make([]Projection, ncols)
+    cols := make([]projection, ncols)
     for x := 0; x < ncols; x++ {
         cols[x] = &Column{
             tbl: t,
@@ -44,20 +44,20 @@ func (t *Table) projections() []Projection {
     return cols
 }
 
-func (t *Table) ArgCount() int {
+func (t *Table) argCount() int {
     return 0
 }
 
-func (t *Table) Size() int {
-    size := t.tdef.Size()
+func (t *Table) size() int {
+    size := t.tdef.size()
     if t.alias != "" {
         size += len(Symbols[SYM_AS]) + len(t.alias)
     }
     return size
 }
 
-func (t *Table) Scan(b []byte, args []interface{}) (int, int) {
-    bw, _ := t.tdef.Scan(b, args)
+func (t *Table) scan(b []byte, args []interface{}) (int, int) {
+    bw, _ := t.tdef.scan(b, args)
     if t.alias != "" {
         bw += copy(b[bw:], Symbols[SYM_AS])
         bw += copy(b[bw:], t.alias)
@@ -65,12 +65,12 @@ func (t *Table) Scan(b []byte, args []interface{}) (int, int) {
     return bw, 0
 }
 
-func (t *Table) Alias(alias string) {
+func (t *Table) setAlias(alias string) {
     t.alias = alias
 }
 
 func (t *Table) As(alias string) *Table {
-    t.Alias(alias)
+    t.setAlias(alias)
     return t
 }
 
@@ -92,15 +92,15 @@ func (td *TableDef) Table() *Table {
     return &Table{tdef: td}
 }
 
-func (td *TableDef) ArgCount() int {
+func (td *TableDef) argCount() int {
     return 0
 }
 
-func (td *TableDef) Size() int {
+func (td *TableDef) size() int {
     return len(td.name)
 }
 
-func (td *TableDef) Scan(b []byte, args []interface{}) (int, int) {
+func (td *TableDef) scan(b []byte, args []interface{}) (int, int) {
     return copy(b, td.name), 0
 }
 
@@ -123,8 +123,8 @@ func (td *TableDef) Column(name string) *Column {
     return nil
 }
 
-func (td *TableDef) projections() []Projection {
-    res := make([]Projection, len(td.cdefs))
+func (td *TableDef) projections() []projection {
+    res := make([]projection, len(td.cdefs))
     for x, cdef := range td.cdefs {
         res[x] = cdef
     }

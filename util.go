@@ -13,15 +13,15 @@ func toId(names ...string) uint64 {
     return hasher.Sum64()
 }
 
-// Given a slice of interface{} variables, returns a slice of Element members.
-// If any of the interface{} variables are *not* of type Element already, we
+// Given a slice of interface{} variables, returns a slice of element members.
+// If any of the interface{} variables are *not* of type element already, we
 // construct a Value{} for the variable.
-func toElements(vars ...interface{}) []Element {
-    els := make([]Element, len(vars))
+func toelements(vars ...interface{}) []element {
+    els := make([]element, len(vars))
     for x, v := range vars {
         switch v.(type) {
-        case Element:
-            els[x] = v.(Element)
+        case element:
+            els[x] = v.(element)
         default:
             els[x] = &Value{value: v}
         }
@@ -31,10 +31,10 @@ func toElements(vars ...interface{}) []Element {
 
 // Given a variable number of interface{} variables, returns a List containing
 // Value structs for the variables
-// If any of the interface{} variables are *not* of type Element already, we
+// If any of the interface{} variables are *not* of type element already, we
 // construct a Value{} for the variable.
 func toValueList(vars ...interface{}) *List {
-    els := make([]Element, len(vars))
+    els := make([]element, len(vars))
     for x, v := range vars {
         els[x] = &Value{value: v}
     }
