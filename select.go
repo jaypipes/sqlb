@@ -12,7 +12,7 @@ type Selection interface {
 type SelectClause struct {
     alias string
     projected *List
-    subjects []Element
+    selections []Selection
     filters []*Expression
     groupBy *GroupByClause
     orderBy *OrderByClause
@@ -21,8 +21,8 @@ type SelectClause struct {
 
 func (s *SelectClause) ArgCount() int {
     argc := s.projected.ArgCount()
-    for _, subj := range s.subjects {
-        argc += subj.ArgCount()
+    for _, sel := range s.selections {
+        argc += sel.ArgCount()
     }
     for _, filter := range s.filters {
         argc += filter.ArgCount()
@@ -51,8 +51,8 @@ func (s *SelectClause) As(alias string) *SelectClause {
 func (s *SelectClause) Size() int {
     size := len(Symbols[SYM_SELECT]) + len(Symbols[SYM_FROM])
     size += s.projected.Size()
-    for _, subj := range s.subjects {
-        size += subj.Size()
+    for _, sel := range s.selections {
+        size += sel.Size()
     }
     if s.alias != "" {
         size += len(Symbols[SYM_AS]) + len(s.alias)
@@ -84,8 +84,8 @@ func (s *SelectClause) Scan(b []byte, args []interface{}) (int, int) {
     bw += pbw
     ac += pac
     bw += copy(b[bw:], Symbols[SYM_FROM])
-    for _, subj := range s.subjects {
-        sbw, sac := subj.Scan(b[bw:], args)
+    for _, sel := range s.selections {
+        sbw, sac := sel.Scan(b[bw:], args)
         bw += sbw
         ac += sac
     }
@@ -217,7 +217,7 @@ func Select(items ...Element) *SelectClause {
         projected: &List{},
     }
 
-    subjSet := make(map[uint64]Element, 0)
+    selectionMap := make(map[uint64]Selection, 0)
 
     // For each scannable item we've received in the call, check what concrete
     // type they are and, depending on which type they are, either add them to
@@ -228,14 +228,14 @@ func Select(items ...Element) *SelectClause {
             case *Column:
                 v := item.(*Column)
                 res.projected.elements = append(res.projected.elements, v)
-                subjSet[v.tbl.selectionId()] = v.tbl
+                selectionMap[v.tbl.selectionId()] = v.tbl
             case *List:
                 v := item.(*List)
                 for _, el := range v.elements {
                     res.projected.elements = append(res.projected.elements, el)
                     if isColumn(el) {
                         c := el.(*Column)
-                        subjSet[c.tbl.selectionId()] = c.tbl
+                        selectionMap[c.tbl.selectionId()] = c.tbl
                     }
                 }
             case *Table:
@@ -243,25 +243,25 @@ func Select(items ...Element) *SelectClause {
                 for _, cd := range v.tdef.ColumnDefs() {
                     res.projected.elements = append(res.projected.elements, cd)
                 }
-                subjSet[v.selectionId()] = v
+                selectionMap[v.selectionId()] = v
             case *TableDef:
                 v := item.(*TableDef)
                 for _, cd := range v.ColumnDefs() {
                     res.projected.elements = append(res.projected.elements, cd)
                 }
-                subjSet[v.selectionId()] = v
+                selectionMap[v.selectionId()] = v
             case *ColumnDef:
                 v := item.(*ColumnDef)
                 res.projected.elements = append(res.projected.elements, v)
-                subjSet[v.tdef.selectionId()] = v.tdef
+                selectionMap[v.tdef.selectionId()] = v.tdef
         }
     }
-    subjects := make([]Element, len(subjSet))
+    selections := make([]Selection, len(selectionMap))
     x := 0
-    for _, scannable := range subjSet {
-        subjects[x] = scannable
+    for _, sel := range selectionMap {
+        selections[x] = sel
         x++
     }
-    res.subjects = subjects
+    res.selections = selections
     return res
 }
