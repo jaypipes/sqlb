@@ -75,7 +75,7 @@ func TestTableColumnDefs(t *testing.T) {
     }
     td.cdefs = cdefs
 
-    defs := td.ColumnDefs()
+    defs := td.cdefs
 
     assert.Equal(2, len(defs))
     for _, def := range defs {

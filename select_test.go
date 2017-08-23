@@ -522,3 +522,49 @@ func TestSelectGroupOrderLimit(t *testing.T) {
     assert.Equal(expArgCount, sel.ArgCount())
     assert.Equal(exp, sel.String())
 }
+
+func TestSelectJoinSingle(t *testing.T) {
+    assert := assert.New(t)
+
+    users := &TableDef{
+        name: "users",
+        schema: "test",
+    }
+
+    colUserId := &ColumnDef{
+        name: "id",
+        tdef: users,
+    }
+
+    users.cdefs = []*ColumnDef{colUserId}
+
+    articles := &TableDef{
+        name: "articles",
+        schema: "test",
+    }
+
+    colArticleAuthor := &ColumnDef{
+        name: "author",
+        tdef: articles,
+    }
+
+    articles.cdefs = []*ColumnDef{colArticleAuthor}
+
+    j := &JoinClause{
+        left: users,
+        right: articles,
+        onExprs: []*Expression{
+            Equal(colUserId, colArticleAuthor),
+        },
+    }
+
+    sel := Select(j)
+
+    exp := "SELECT id FROM users JOIN articles ON id = author"
+    expLen := len(exp)
+    expArgCount := 0
+
+    assert.Equal(expLen, sel.Size())
+    assert.Equal(expArgCount, sel.ArgCount())
+    assert.Equal(exp, sel.String())
+}
