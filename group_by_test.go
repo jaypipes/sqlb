@@ -27,21 +27,21 @@ func TestGroupByClauseSingle(t *testing.T) {
 
     exp := " GROUP BY users.name"
     expLen := len(exp)
-    expargCount := 0
+    expArgCount := 0
 
     s := ob.size()
     assert.Equal(expLen, s)
 
     argc := ob.argCount()
-    assert.Equal(expargCount, argc)
+    assert.Equal(expArgCount, argc)
 
-    args := make([]interface{}, expargCount)
+    args := make([]interface{}, expArgCount)
     b := make([]byte, s)
     written, numArgs := ob.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expargCount, numArgs)
+    assert.Equal(expArgCount, numArgs)
 }
 
 func TestGroupByClauseMulti(t *testing.T) {
@@ -70,19 +70,19 @@ func TestGroupByClauseMulti(t *testing.T) {
 
     exp := " GROUP BY users.name, users.email"
     expLen := len(exp)
-    expargCount := 0
+    expArgCount := 0
 
     s := ob.size()
     assert.Equal(expLen, s)
 
     argc := ob.argCount()
-    assert.Equal(expargCount, argc)
+    assert.Equal(expArgCount, argc)
 
-    args := make([]interface{}, expargCount)
+    args := make([]interface{}, expArgCount)
     b := make([]byte, s)
     written, numArgs := ob.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expargCount, numArgs)
+    assert.Equal(expArgCount, numArgs)
 }

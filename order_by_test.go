@@ -29,21 +29,21 @@ func TestOrderByClauseSingleAsc(t *testing.T) {
 
     exp := " ORDER BY users.name"
     expLen := len(exp)
-    expargCount := 0
+    expArgCount := 0
 
     s := ob.size()
     assert.Equal(expLen, s)
 
     argc := ob.argCount()
-    assert.Equal(expargCount, argc)
+    assert.Equal(expArgCount, argc)
 
-    args := make([]interface{}, expargCount)
+    args := make([]interface{}, expArgCount)
     b := make([]byte, s)
     written, numArgs := ob.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expargCount, numArgs)
+    assert.Equal(expArgCount, numArgs)
 }
 
 func TestOrderByClauseSingleDesc(t *testing.T) {
@@ -69,21 +69,21 @@ func TestOrderByClauseSingleDesc(t *testing.T) {
 
     exp := " ORDER BY users.name DESC"
     expLen := len(exp)
-    expargCount := 0
+    expArgCount := 0
 
     s := ob.size()
     assert.Equal(expLen, s)
 
     argc := ob.argCount()
-    assert.Equal(expargCount, argc)
+    assert.Equal(expArgCount, argc)
 
-    args := make([]interface{}, expargCount)
+    args := make([]interface{}, expArgCount)
     b := make([]byte, s)
     written, numArgs := ob.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expargCount, numArgs)
+    assert.Equal(expArgCount, numArgs)
 }
 
 func TestOrderByClauseMultiAsc(t *testing.T) {
@@ -115,21 +115,21 @@ func TestOrderByClauseMultiAsc(t *testing.T) {
 
     exp := " ORDER BY users.name, users.email"
     expLen := len(exp)
-    expargCount := 0
+    expArgCount := 0
 
     s := ob.size()
     assert.Equal(expLen, s)
 
     argc := ob.argCount()
-    assert.Equal(expargCount, argc)
+    assert.Equal(expArgCount, argc)
 
-    args := make([]interface{}, expargCount)
+    args := make([]interface{}, expArgCount)
     b := make([]byte, s)
     written, numArgs := ob.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expargCount, numArgs)
+    assert.Equal(expArgCount, numArgs)
 }
 
 func TestOrderByClauseMultiAscDesc(t *testing.T) {
@@ -161,19 +161,19 @@ func TestOrderByClauseMultiAscDesc(t *testing.T) {
 
     exp := " ORDER BY users.name, users.email DESC"
     expLen := len(exp)
-    expargCount := 0
+    expArgCount := 0
 
     s := ob.size()
     assert.Equal(expLen, s)
 
     argc := ob.argCount()
-    assert.Equal(expargCount, argc)
+    assert.Equal(expArgCount, argc)
 
-    args := make([]interface{}, expargCount)
+    args := make([]interface{}, expArgCount)
     b := make([]byte, s)
     written, numArgs := ob.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expargCount, numArgs)
+    assert.Equal(expArgCount, numArgs)
 }

@@ -23,21 +23,21 @@ func TestFuncWithAlias(t *testing.T) {
 
     exp := "MAX(users.created_on) AS max_created_on"
     expLen := len(exp)
-    expargCount := 0
+    expArgCount := 0
 
     s := m.size()
     assert.Equal(expLen, s)
 
     argc := m.argCount()
-    assert.Equal(expargCount, argc)
+    assert.Equal(expArgCount, argc)
 
-    args := make([]interface{}, expargCount)
+    args := make([]interface{}, expArgCount)
     b := make([]byte, s)
     written, numArgs := m.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expargCount, numArgs)
+    assert.Equal(expArgCount, numArgs)
 }
 
 func TestFuncMax(t *testing.T) {
@@ -57,21 +57,21 @@ func TestFuncMax(t *testing.T) {
 
     exp := "MAX(users.created_on)"
     expLen := len(exp)
-    expargCount := 0
+    expArgCount := 0
 
     s := m.size()
     assert.Equal(expLen, s)
 
     argc := m.argCount()
-    assert.Equal(expargCount, argc)
+    assert.Equal(expArgCount, argc)
 
-    args := make([]interface{}, expargCount)
+    args := make([]interface{}, expArgCount)
     b := make([]byte, s)
     written, numArgs := m.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expargCount, numArgs)
+    assert.Equal(expArgCount, numArgs)
 }
 
 func TestFuncMaxColumn(t *testing.T) {
@@ -91,21 +91,21 @@ func TestFuncMaxColumn(t *testing.T) {
 
     exp := "MAX(users.created_on)"
     expLen := len(exp)
-    expargCount := 0
+    expArgCount := 0
 
     s := m.size()
     assert.Equal(expLen, s)
 
     argc := m.argCount()
-    assert.Equal(expargCount, argc)
+    assert.Equal(expArgCount, argc)
 
-    args := make([]interface{}, expargCount)
+    args := make([]interface{}, expArgCount)
     b := make([]byte, s)
     written, numArgs := m.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expargCount, numArgs)
+    assert.Equal(expArgCount, numArgs)
 
     // Test with Column not ColumnDef
     c := &Column{
@@ -118,15 +118,15 @@ func TestFuncMaxColumn(t *testing.T) {
     assert.Equal(expLen, s)
 
     argc = m.argCount()
-    assert.Equal(expargCount, argc)
+    assert.Equal(expArgCount, argc)
 
-    args = make([]interface{}, expargCount)
+    args = make([]interface{}, expArgCount)
     b = make([]byte, s)
     written, numArgs = m.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expargCount, numArgs)
+    assert.Equal(expArgCount, numArgs)
 }
 
 func TestFuncMin(t *testing.T) {
@@ -146,21 +146,21 @@ func TestFuncMin(t *testing.T) {
 
     exp := "MIN(users.created_on)"
     expLen := len(exp)
-    expargCount := 0
+    expArgCount := 0
 
     s := m.size()
     assert.Equal(expLen, s)
 
     argc := m.argCount()
-    assert.Equal(expargCount, argc)
+    assert.Equal(expArgCount, argc)
 
-    args := make([]interface{}, expargCount)
+    args := make([]interface{}, expArgCount)
     b := make([]byte, s)
     written, numArgs := m.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expargCount, numArgs)
+    assert.Equal(expArgCount, numArgs)
 }
 
 func TestFuncMinColumn(t *testing.T) {
@@ -180,21 +180,21 @@ func TestFuncMinColumn(t *testing.T) {
 
     exp := "MIN(users.created_on)"
     expLen := len(exp)
-    expargCount := 0
+    expArgCount := 0
 
     s := m.size()
     assert.Equal(expLen, s)
 
     argc := m.argCount()
-    assert.Equal(expargCount, argc)
+    assert.Equal(expArgCount, argc)
 
-    args := make([]interface{}, expargCount)
+    args := make([]interface{}, expArgCount)
     b := make([]byte, s)
     written, numArgs := m.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expargCount, numArgs)
+    assert.Equal(expArgCount, numArgs)
 
     // Test with Column not ColumnDef
     c := &Column{
@@ -207,15 +207,15 @@ func TestFuncMinColumn(t *testing.T) {
     assert.Equal(expLen, s)
 
     argc = m.argCount()
-    assert.Equal(expargCount, argc)
+    assert.Equal(expArgCount, argc)
 
-    args = make([]interface{}, expargCount)
+    args = make([]interface{}, expArgCount)
     b = make([]byte, s)
     written, numArgs = m.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expargCount, numArgs)
+    assert.Equal(expArgCount, numArgs)
 }
 
 func TestFuncSum(t *testing.T) {
@@ -235,21 +235,21 @@ func TestFuncSum(t *testing.T) {
 
     exp := "SUM(users.created_on)"
     expLen := len(exp)
-    expargCount := 0
+    expArgCount := 0
 
     s := f.size()
     assert.Equal(expLen, s)
 
     argc := f.argCount()
-    assert.Equal(expargCount, argc)
+    assert.Equal(expArgCount, argc)
 
-    args := make([]interface{}, expargCount)
+    args := make([]interface{}, expArgCount)
     b := make([]byte, s)
     written, numArgs := f.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expargCount, numArgs)
+    assert.Equal(expArgCount, numArgs)
 }
 
 func TestFuncSumColumn(t *testing.T) {
@@ -269,21 +269,21 @@ func TestFuncSumColumn(t *testing.T) {
 
     exp := "SUM(users.created_on)"
     expLen := len(exp)
-    expargCount := 0
+    expArgCount := 0
 
     s := f.size()
     assert.Equal(expLen, s)
 
     argc := f.argCount()
-    assert.Equal(expargCount, argc)
+    assert.Equal(expArgCount, argc)
 
-    args := make([]interface{}, expargCount)
+    args := make([]interface{}, expArgCount)
     b := make([]byte, s)
     written, numArgs := f.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expargCount, numArgs)
+    assert.Equal(expArgCount, numArgs)
 
     // Test with Column not ColumnDef
     c := &Column{
@@ -296,15 +296,15 @@ func TestFuncSumColumn(t *testing.T) {
     assert.Equal(expLen, s)
 
     argc = f.argCount()
-    assert.Equal(expargCount, argc)
+    assert.Equal(expArgCount, argc)
 
-    args = make([]interface{}, expargCount)
+    args = make([]interface{}, expArgCount)
     b = make([]byte, s)
     written, numArgs = f.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expargCount, numArgs)
+    assert.Equal(expArgCount, numArgs)
 }
 
 func TestFuncAvg(t *testing.T) {
@@ -324,21 +324,21 @@ func TestFuncAvg(t *testing.T) {
 
     exp := "AVG(users.created_on)"
     expLen := len(exp)
-    expargCount := 0
+    expArgCount := 0
 
     s := f.size()
     assert.Equal(expLen, s)
 
     argc := f.argCount()
-    assert.Equal(expargCount, argc)
+    assert.Equal(expArgCount, argc)
 
-    args := make([]interface{}, expargCount)
+    args := make([]interface{}, expArgCount)
     b := make([]byte, s)
     written, numArgs := f.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expargCount, numArgs)
+    assert.Equal(expArgCount, numArgs)
 }
 
 func TestFuncAvgColumn(t *testing.T) {
@@ -358,21 +358,21 @@ func TestFuncAvgColumn(t *testing.T) {
 
     exp := "AVG(users.created_on)"
     expLen := len(exp)
-    expargCount := 0
+    expArgCount := 0
 
     s := f.size()
     assert.Equal(expLen, s)
 
     argc := f.argCount()
-    assert.Equal(expargCount, argc)
+    assert.Equal(expArgCount, argc)
 
-    args := make([]interface{}, expargCount)
+    args := make([]interface{}, expArgCount)
     b := make([]byte, s)
     written, numArgs := f.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expargCount, numArgs)
+    assert.Equal(expArgCount, numArgs)
 
     // Test with Column not ColumnDef
     c := &Column{
@@ -385,13 +385,13 @@ func TestFuncAvgColumn(t *testing.T) {
     assert.Equal(expLen, s)
 
     argc = f.argCount()
-    assert.Equal(expargCount, argc)
+    assert.Equal(expArgCount, argc)
 
-    args = make([]interface{}, expargCount)
+    args = make([]interface{}, expArgCount)
     b = make([]byte, s)
     written, numArgs = f.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expargCount, numArgs)
+    assert.Equal(expArgCount, numArgs)
 }

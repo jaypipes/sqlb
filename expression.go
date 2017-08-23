@@ -16,7 +16,7 @@ type exprscanInfo []Symbol
 var (
     // A static table containing information used in constructing the
     // expression's SQL string during scan() calls
-    exprscanTable = map[exprType]exprscanInfo{
+    exprScanTable = map[exprType]exprscanInfo{
         EXP_EQUAL: exprscanInfo{
             SYM_ELEMENT, SYM_EQUAL, SYM_ELEMENT,
         },
@@ -84,45 +84,45 @@ func (e *Expression) scan(b []byte, args []interface{}) (int, int) {
 }
 
 func Equal(left interface{}, right interface{}) *Expression {
-    els := toelements(left, right)
+    els := toElements(left, right)
     return &Expression{
-        scanInfo: exprscanTable[EXP_EQUAL],
+        scanInfo: exprScanTable[EXP_EQUAL],
         elements: els,
     }
 }
 
 func NotEqual(left interface{}, right interface{}) *Expression {
-    els := toelements(left, right)
+    els := toElements(left, right)
     return &Expression{
-        scanInfo: exprscanTable[EXP_NEQUAL],
+        scanInfo: exprScanTable[EXP_NEQUAL],
         elements: els,
     }
 }
 
 func And(a *Expression, b *Expression) *Expression {
     return &Expression{
-        scanInfo: exprscanTable[EXP_AND],
+        scanInfo: exprScanTable[EXP_AND],
         elements: []element{a, b},
     }
 }
 
 func Or(a *Expression, b *Expression) *Expression {
     return &Expression{
-        scanInfo: exprscanTable[EXP_OR],
+        scanInfo: exprScanTable[EXP_OR],
         elements: []element{a, b},
     }
 }
 
 func In(subject element, values ...interface{}) *Expression {
     return &Expression{
-        scanInfo: exprscanTable[EXP_IN],
+        scanInfo: exprScanTable[EXP_IN],
         elements: []element{subject, toValueList(values...)},
     }
 }
 
 func Between(a *Expression, b *Expression) *Expression {
     return &Expression{
-        scanInfo: exprscanTable[EXP_BETWEEN],
+        scanInfo: exprScanTable[EXP_BETWEEN],
         elements: []element{a, b},
     }
 }

@@ -13,13 +13,13 @@ func TestValue(t *testing.T) {
 
     exp := "?"
     expLen := len(exp)
-    expargCount := 1
+    expArgCount := 1
 
     s := val.size()
     assert.Equal(expLen, s)
 
     argc := val.argCount()
-    assert.Equal(expargCount, argc)
+    assert.Equal(expArgCount, argc)
 
     args := make([]interface{}, 1)
     b := make([]byte, s)
@@ -28,5 +28,5 @@ func TestValue(t *testing.T) {
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
     assert.Equal("foo", args[0])
-    assert.Equal(expargCount, numArgs)
+    assert.Equal(expArgCount, numArgs)
 }

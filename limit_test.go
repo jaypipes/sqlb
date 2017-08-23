@@ -15,21 +15,21 @@ func TestLimitClause(t *testing.T) {
 
     exp := " LIMIT ?"
     expLen := len(exp)
-    expargCount := 1
+    expArgCount := 1
 
     s := lc.size()
     assert.Equal(expLen, s)
 
     argc := lc.argCount()
-    assert.Equal(expargCount, argc)
+    assert.Equal(expArgCount, argc)
 
-    args := make([]interface{}, expargCount)
+    args := make([]interface{}, expArgCount)
     b := make([]byte, s)
     written, numArgs := lc.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expargCount, numArgs)
+    assert.Equal(expArgCount, numArgs)
     assert.Equal(20, args[0])
 }
 
@@ -44,21 +44,21 @@ func TestLimitClauseWithOffset(t *testing.T) {
 
     exp := " LIMIT ? OFFSET ?"
     expLen := len(exp)
-    expargCount := 2
+    expArgCount := 2
 
     s := lc.size()
     assert.Equal(expLen, s)
 
     argc := lc.argCount()
-    assert.Equal(expargCount, argc)
+    assert.Equal(expArgCount, argc)
 
-    args := make([]interface{}, expargCount)
+    args := make([]interface{}, expArgCount)
     b := make([]byte, s)
     written, numArgs := lc.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expargCount, numArgs)
+    assert.Equal(expArgCount, numArgs)
     assert.Equal(20, args[0])
     assert.Equal(10, args[1])
 }
