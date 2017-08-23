@@ -57,7 +57,7 @@ func TestJoinFuncGenerics(t *testing.T) {
     }
 
     for _, j := range joins {
-        exp := " JOIN users ON author = id"
+        exp := " JOIN users ON articles.author = users.id"
         expLen := len(exp)
         expArgCount := 0
 
@@ -88,7 +88,7 @@ func TestJoinClauseInnerOnEqualSingle(t *testing.T) {
         },
     }
 
-    exp := " JOIN users ON author = id"
+    exp := " JOIN users ON articles.author = users.id"
     expLen := len(exp)
     expArgCount := 0
 
@@ -116,7 +116,7 @@ func TestJoinClauseOnMethod(t *testing.T) {
     }
     j.On(Equal(colArticleAuthor, colUserId))
 
-    exp := " JOIN users ON author = id"
+    exp := " JOIN users ON articles.author = users.id"
     expLen := len(exp)
     expArgCount := 0
 
@@ -186,7 +186,7 @@ func TestJoinClauseInnerOnEqualMulti(t *testing.T) {
         },
     }
 
-    exp := " JOIN users ON author = id AND name = ?"
+    exp := " JOIN users ON articles.author = users.id AND users.name = ?"
     expLen := len(exp)
     expArgCount := 1
 
