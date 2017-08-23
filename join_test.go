@@ -59,21 +59,21 @@ func TestJoinFuncGenerics(t *testing.T) {
     for _, j := range joins {
         exp := " JOIN users ON articles.author = users.id"
         expLen := len(exp)
-        expargCount := 0
+        expArgCount := 0
 
         s := j.size()
         assert.Equal(expLen, s)
 
         argc := j.argCount()
-        assert.Equal(expargCount, argc)
+        assert.Equal(expArgCount, argc)
 
-        args := make([]interface{}, expargCount)
+        args := make([]interface{}, expArgCount)
         b := make([]byte, s)
         written, numArgs := j.scan(b, args)
 
         assert.Equal(s, written)
         assert.Equal(exp, string(b))
-        assert.Equal(expargCount, numArgs)
+        assert.Equal(expArgCount, numArgs)
     }
 }
 
@@ -90,21 +90,21 @@ func TestJoinClauseInnerOnEqualSingle(t *testing.T) {
 
     exp := " JOIN users ON articles.author = users.id"
     expLen := len(exp)
-    expargCount := 0
+    expArgCount := 0
 
     s := j.size()
     assert.Equal(expLen, s)
 
     argc := j.argCount()
-    assert.Equal(expargCount, argc)
+    assert.Equal(expArgCount, argc)
 
-    args := make([]interface{}, expargCount)
+    args := make([]interface{}, expArgCount)
     b := make([]byte, s)
     written, numArgs := j.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expargCount, numArgs)
+    assert.Equal(expArgCount, numArgs)
 }
 
 func TestJoinClauseOnMethod(t *testing.T) {
@@ -118,21 +118,21 @@ func TestJoinClauseOnMethod(t *testing.T) {
 
     exp := " JOIN users ON articles.author = users.id"
     expLen := len(exp)
-    expargCount := 0
+    expArgCount := 0
 
     s := j.size()
     assert.Equal(expLen, s)
 
     argc := j.argCount()
-    assert.Equal(expargCount, argc)
+    assert.Equal(expArgCount, argc)
 
-    args := make([]interface{}, expargCount)
+    args := make([]interface{}, expArgCount)
     b := make([]byte, s)
     written, numArgs := j.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expargCount, numArgs)
+    assert.Equal(expArgCount, numArgs)
 }
 
 func TestJoinClauseAliasedInnerOnEqualSingle(t *testing.T) {
@@ -157,21 +157,21 @@ func TestJoinClauseAliasedInnerOnEqualSingle(t *testing.T) {
 
     exp := " JOIN users AS u ON a.author = u.id"
     expLen := len(exp)
-    expargCount := 0
+    expArgCount := 0
 
     s := j.size()
     assert.Equal(expLen, s)
 
     argc := j.argCount()
-    assert.Equal(expargCount, argc)
+    assert.Equal(expArgCount, argc)
 
-    args := make([]interface{}, expargCount)
+    args := make([]interface{}, expArgCount)
     b := make([]byte, s)
     written, numArgs := j.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expargCount, numArgs)
+    assert.Equal(expArgCount, numArgs)
 }
 
 func TestJoinClauseInnerOnEqualMulti(t *testing.T) {
@@ -188,20 +188,20 @@ func TestJoinClauseInnerOnEqualMulti(t *testing.T) {
 
     exp := " JOIN users ON articles.author = users.id AND users.name = ?"
     expLen := len(exp)
-    expargCount := 1
+    expArgCount := 1
 
     s := j.size()
     assert.Equal(expLen, s)
 
     argc := j.argCount()
-    assert.Equal(expargCount, argc)
+    assert.Equal(expArgCount, argc)
 
-    args := make([]interface{}, expargCount)
+    args := make([]interface{}, expArgCount)
     b := make([]byte, s)
     written, numArgs := j.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
-    assert.Equal(expargCount, numArgs)
+    assert.Equal(expArgCount, numArgs)
     assert.Equal("foo", args[0])
 }

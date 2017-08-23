@@ -197,10 +197,10 @@ func TestWhereSingleEqual(t *testing.T) {
 
     exp := "SELECT users.name FROM users WHERE users.name = ?"
     expLen := len(exp)
-    expargCount := 1
+    expArgCount := 1
 
     assert.Equal(expLen, sel.size())
-    assert.Equal(expargCount, sel.argCount())
+    assert.Equal(expArgCount, sel.argCount())
     assert.Equal(exp, sel.String())
 }
 
@@ -221,10 +221,10 @@ func TestWhereSingleAnd(t *testing.T) {
 
     exp := "SELECT users.name FROM users WHERE users.name != ? AND users.name != ?"
     expLen := len(exp)
-    expargCount := 2
+    expArgCount := 2
 
     assert.Equal(expLen, sel.size())
-    assert.Equal(expargCount, sel.argCount())
+    assert.Equal(expArgCount, sel.argCount())
     assert.Equal(exp, sel.String())
 }
 
@@ -245,10 +245,10 @@ func TestWhereSingleIn(t *testing.T) {
 
     exp := "SELECT users.name FROM users WHERE users.name IN (?, ?)"
     expLen := len(exp)
-    expargCount := 2
+    expArgCount := 2
 
     assert.Equal(expLen, sel.size())
-    assert.Equal(expargCount, sel.argCount())
+    assert.Equal(expArgCount, sel.argCount())
     assert.Equal(exp, sel.String())
 }
 
@@ -270,10 +270,10 @@ func TestWhereMultiNotEqual(t *testing.T) {
 
     exp := "SELECT users.name FROM users WHERE users.name != ? AND users.name != ?"
     expLen := len(exp)
-    expargCount := 2
+    expArgCount := 2
 
     assert.Equal(expLen, sel.size())
-    assert.Equal(expargCount, sel.argCount())
+    assert.Equal(expArgCount, sel.argCount())
     assert.Equal(exp, sel.String())
 }
 
@@ -299,10 +299,10 @@ func TestWhereMultiInAndEqual(t *testing.T) {
 
     exp := "SELECT users.name FROM users WHERE users.name IN (?, ?) AND users.is_author = ?"
     expLen := len(exp)
-    expargCount := 3
+    expArgCount := 3
 
     assert.Equal(expLen, sel.size())
-    assert.Equal(expargCount, sel.argCount())
+    assert.Equal(expArgCount, sel.argCount())
     assert.Equal(exp, sel.String())
 }
 
@@ -328,10 +328,10 @@ func TestSelectLimit(t *testing.T) {
 
     exp := "SELECT users.name FROM users LIMIT ?"
     expLen := len(exp)
-    expargCount := 1
+    expArgCount := 1
 
     assert.Equal(expLen, sel.size())
-    assert.Equal(expargCount, sel.argCount())
+    assert.Equal(expArgCount, sel.argCount())
     assert.Equal(exp, sel.String())
 }
 
@@ -357,10 +357,10 @@ func TestSelectLimitWithOffset(t *testing.T) {
 
     exp := "SELECT users.name FROM users LIMIT ? OFFSET ?"
     expLen := len(exp)
-    expargCount := 2
+    expArgCount := 2
 
     assert.Equal(expLen, sel.size())
-    assert.Equal(expargCount, sel.argCount())
+    assert.Equal(expArgCount, sel.argCount())
     assert.Equal(exp, sel.String())
 }
 
@@ -381,10 +381,10 @@ func TestSelectOrderByAsc(t *testing.T) {
 
     exp := "SELECT users.name FROM users ORDER BY users.name"
     expLen := len(exp)
-    expargCount := 0
+    expArgCount := 0
 
     assert.Equal(expLen, sel.size())
-    assert.Equal(expargCount, sel.argCount())
+    assert.Equal(expArgCount, sel.argCount())
     assert.Equal(exp, sel.String())
 }
 
@@ -410,10 +410,10 @@ func TestSelectOrderByMultiAscDesc(t *testing.T) {
 
     exp := "SELECT users.name FROM users ORDER BY users.name, users.email DESC"
     expLen := len(exp)
-    expargCount := 0
+    expArgCount := 0
 
     assert.Equal(expLen, sel.size())
-    assert.Equal(expargCount, sel.argCount())
+    assert.Equal(expArgCount, sel.argCount())
     assert.Equal(exp, sel.String())
 }
 
@@ -434,11 +434,11 @@ func TestSelectStringArgs(t *testing.T) {
 
     expStr := "SELECT users.name FROM users WHERE users.name IN (?, ?)"
     expLen := len(expStr)
-    expargCount := 2
+    expArgCount := 2
     expArgs := []interface{}{"foo", "bar"}
 
     assert.Equal(expLen, sel.size())
-    assert.Equal(expargCount, sel.argCount())
+    assert.Equal(expArgCount, sel.argCount())
 
     actStr, actArgs := sel.StringArgs()
 
@@ -463,10 +463,10 @@ func TestSelectGroupByAsc(t *testing.T) {
 
     exp := "SELECT users.name FROM users GROUP BY users.name"
     expLen := len(exp)
-    expargCount := 0
+    expArgCount := 0
 
     assert.Equal(expLen, sel.size())
-    assert.Equal(expargCount, sel.argCount())
+    assert.Equal(expArgCount, sel.argCount())
     assert.Equal(exp, sel.String())
 }
 
@@ -492,10 +492,10 @@ func TestSelectGroupByMultiAscDesc(t *testing.T) {
 
     exp := "SELECT users.name FROM users GROUP BY users.name, users.email"
     expLen := len(exp)
-    expargCount := 0
+    expArgCount := 0
 
     assert.Equal(expLen, sel.size())
-    assert.Equal(expargCount, sel.argCount())
+    assert.Equal(expArgCount, sel.argCount())
     assert.Equal(exp, sel.String())
 }
 
@@ -516,10 +516,10 @@ func TestSelectGroupOrderLimit(t *testing.T) {
 
     exp := "SELECT users.name FROM users GROUP BY users.name ORDER BY users.name DESC LIMIT ?"
     expLen := len(exp)
-    expargCount := 1
+    expArgCount := 1
 
     assert.Equal(expLen, sel.size())
-    assert.Equal(expargCount, sel.argCount())
+    assert.Equal(expArgCount, sel.argCount())
     assert.Equal(exp, sel.String())
 }
 
@@ -562,9 +562,9 @@ func TestSelectJoinSingle(t *testing.T) {
 
     exp := "SELECT users.id FROM users JOIN articles ON users.id = articles.author"
     expLen := len(exp)
-    expargCount := 0
+    expArgCount := 0
 
     assert.Equal(expLen, sel.size())
-    assert.Equal(expargCount, sel.argCount())
+    assert.Equal(expArgCount, sel.argCount())
     assert.Equal(exp, sel.String())
 }

@@ -16,7 +16,7 @@ func toId(names ...string) uint64 {
 // Given a slice of interface{} variables, returns a slice of element members.
 // If any of the interface{} variables are *not* of type element already, we
 // construct a Value{} for the variable.
-func toelements(vars ...interface{}) []element {
+func toElements(vars ...interface{}) []element {
     els := make([]element, len(vars))
     for x, v := range vars {
         switch v.(type) {
