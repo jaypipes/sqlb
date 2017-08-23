@@ -1,5 +1,9 @@
 package sqlb
 
+import (
+    "fmt"
+)
+
 type funcId int
 
 const (
@@ -32,6 +36,12 @@ type sqlFunc struct {
     alias string
     scanInfo scanInfo
     elements []Element
+}
+
+func (f *sqlFunc) projectionId() uint64 {
+    // Each construction of a function is unique, so here we cheat and just
+    // return the hash of the struct's address in memory
+    return toId(fmt.Sprintf("%p", f))
 }
 
 func (f *sqlFunc) Alias(alias string) {

@@ -12,8 +12,15 @@ func (t *Table) selectionId() uint64 {
     return t.tdef.selectionId()
 }
 
+func (t *Table) idParts() []string {
+    if t.alias != "" {
+        return []string{t.alias}
+    }
+    return t.tdef.idParts()
+}
+
 func (t *Table) Column(name string) *Column {
-    for _, cdef := range t.tdef.ColumnDefs() {
+    for _, cdef := range t.tdef.cdefs {
         if name == cdef.name {
             return &Column{
                 tbl: t,
@@ -24,10 +31,10 @@ func (t *Table) Column(name string) *Column {
     return nil
 }
 
-func (t *Table) Columns() []*Column {
-    cdefs := t.tdef.ColumnDefs()
+func (t *Table) projections() []Projection {
+    cdefs := t.tdef.cdefs
     ncols := len(cdefs)
-    cols := make([]*Column, ncols)
+    cols := make([]Projection, ncols)
     for x := 0; x < ncols; x++ {
         cols[x] = &Column{
             tbl: t,
@@ -77,6 +84,10 @@ func (td *TableDef) selectionId() uint64 {
     return toId(td.schema, td.name)
 }
 
+func (td *TableDef) idParts() []string {
+    return []string{td.schema, td.name}
+}
+
 func (td *TableDef) Table() *Table {
     return &Table{tdef: td}
 }
@@ -112,6 +123,10 @@ func (td *TableDef) Column(name string) *Column {
     return nil
 }
 
-func (td *TableDef) ColumnDefs() []*ColumnDef {
-    return td.cdefs
+func (td *TableDef) projections() []Projection {
+    res := make([]Projection, len(td.cdefs))
+    for x, cdef := range td.cdefs {
+        res[x] = cdef
+    }
+    return res
 }

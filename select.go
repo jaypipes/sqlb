@@ -1,7 +1,19 @@
 package sqlb
 
-// A Selection is something that produces rows. A table, view, subselect, etc
+// A Projection is something that produces a scalar value. A column, column
+// definition, function, etc.
+type Projection interface {
+    projectionId() uint64
+    // Projections must also implement Element
+    Size() int
+    ArgCount() int
+    Scan([]byte, []interface{}) (int, int)
+}
+
+// A Selection is something that produces rows. A table, table definition,
+// view, subselect, etc
 type Selection interface {
+    projections() []Projection
     selectionId() uint64
     // Selections must also implement Element
     Size() int
@@ -240,13 +252,13 @@ func Select(items ...Element) *SelectClause {
                 }
             case *Table:
                 v := item.(*Table)
-                for _, cd := range v.tdef.ColumnDefs() {
+                for _, cd := range v.tdef.projections() {
                     res.projected.elements = append(res.projected.elements, cd)
                 }
                 selectionMap[v.selectionId()] = v
             case *TableDef:
                 v := item.(*TableDef)
-                for _, cd := range v.ColumnDefs() {
+                for _, cd := range v.projections() {
                     res.projected.elements = append(res.projected.elements, cd)
                 }
                 selectionMap[v.selectionId()] = v
