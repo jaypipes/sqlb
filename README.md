@@ -199,7 +199,7 @@ LIMIT ?`
 
 As you can see above, the minor enhancements to our application of allowing a
 configurable number of articles and filtering by author have already begun to
-make the `getArticles()` function unweildy. The string being generated for our
+make the `getArticles()` function unwieldy. The string being generated for our
 SQL SELECT statement is both more difficult to read and less efficient to
 construct (due to the multiple string concatenations and memory allocations
 being performed). Adding more filtering capability would bring yet more
@@ -319,5 +319,6 @@ func getArticles(numArticles int, byAuthor string) []*Articles {
 ```
 
 No more manually constructing and reconstructing strings or tracking query
-arguments. `sqlb` handles the SQL string construction for you, allowing you to
-write custom query code in a more natural and efficient manner.
+arguments. `sqlb` handles the SQL string construction for you as well as
+properly construct the slice of query arguments, allowing you to write custom
+query code in a more natural and efficient manner.
