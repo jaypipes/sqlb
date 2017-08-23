@@ -21,7 +21,7 @@ func TestFuncWithAlias(t *testing.T) {
 
     m := Max(cd).As("max_created_on")
 
-    exp := "MAX(created_on) AS max_created_on"
+    exp := "MAX(users.created_on) AS max_created_on"
     expLen := len(exp)
     expArgCount := 0
 
@@ -55,7 +55,7 @@ func TestFuncMax(t *testing.T) {
 
     m := Max(cd)
 
-    exp := "MAX(created_on)"
+    exp := "MAX(users.created_on)"
     expLen := len(exp)
     expArgCount := 0
 
@@ -89,7 +89,7 @@ func TestFuncMaxColumn(t *testing.T) {
 
     m := cd.Max()
 
-    exp := "MAX(created_on)"
+    exp := "MAX(users.created_on)"
     expLen := len(exp)
     expArgCount := 0
 
@@ -144,7 +144,7 @@ func TestFuncMin(t *testing.T) {
 
     m := Min(cd)
 
-    exp := "MIN(created_on)"
+    exp := "MIN(users.created_on)"
     expLen := len(exp)
     expArgCount := 0
 
@@ -178,7 +178,7 @@ func TestFuncMinColumn(t *testing.T) {
 
     m := cd.Min()
 
-    exp := "MIN(created_on)"
+    exp := "MIN(users.created_on)"
     expLen := len(exp)
     expArgCount := 0
 
@@ -233,7 +233,7 @@ func TestFuncSum(t *testing.T) {
 
     f := Sum(cd)
 
-    exp := "SUM(created_on)"
+    exp := "SUM(users.created_on)"
     expLen := len(exp)
     expArgCount := 0
 
@@ -267,7 +267,7 @@ func TestFuncSumColumn(t *testing.T) {
 
     f := cd.Sum()
 
-    exp := "SUM(created_on)"
+    exp := "SUM(users.created_on)"
     expLen := len(exp)
     expArgCount := 0
 
@@ -322,7 +322,7 @@ func TestFuncAvg(t *testing.T) {
 
     f := Avg(cd)
 
-    exp := "AVG(created_on)"
+    exp := "AVG(users.created_on)"
     expLen := len(exp)
     expArgCount := 0
 
@@ -356,7 +356,7 @@ func TestFuncAvgColumn(t *testing.T) {
 
     f := cd.Avg()
 
-    exp := "AVG(created_on)"
+    exp := "AVG(users.created_on)"
     expLen := len(exp)
     expArgCount := 0
 

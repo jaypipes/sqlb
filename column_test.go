@@ -24,7 +24,7 @@ func TestColumn(t *testing.T) {
         tbl: td.Table(),
     }
 
-    exp := "name"
+    exp := "users.name"
     expLen := len(exp)
     s := c.Size()
     assert.Equal(expLen, s)
@@ -81,7 +81,7 @@ func TestColumnDefSorts(t *testing.T) {
 
     sc := cd.Asc()
 
-    exp := "name"
+    exp := "users.name"
     expLen := len(exp)
     s := sc.Size()
     assert.Equal(expLen, s)
@@ -94,7 +94,7 @@ func TestColumnDefSorts(t *testing.T) {
 
     sc = cd.Desc()
 
-    exp = "name DESC"
+    exp = "users.name DESC"
     expLen = len(exp)
     s = sc.Size()
     assert.Equal(expLen, s)
@@ -126,7 +126,7 @@ func TestColumnSorts(t *testing.T) {
 
     sc := c.Asc()
 
-    exp := "name"
+    exp := "users.name"
     expLen := len(exp)
     s := sc.Size()
     assert.Equal(expLen, s)
@@ -139,7 +139,7 @@ func TestColumnSorts(t *testing.T) {
 
     sc = c.Desc()
 
-    exp = "name DESC"
+    exp = "users.name DESC"
     expLen = len(exp)
     s = sc.Size()
     assert.Equal(expLen, s)
@@ -170,7 +170,7 @@ func TestColumnAlias(t *testing.T) {
         alias: "user_name",
     }
 
-    exp := "name AS user_name"
+    exp := "users.name AS user_name"
     expLen := len(exp)
     s := c.Size()
     assert.Equal(expLen, s)

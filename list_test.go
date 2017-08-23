@@ -26,7 +26,7 @@ func TestListSingle(t *testing.T) {
 
     cl := &List{elements: []Element{c}}
 
-    exp := "name"
+    exp := "users.name"
     expLen := len(exp)
     s := cl.Size()
     assert.Equal(expLen, s)
@@ -68,7 +68,7 @@ func TestListMulti(t *testing.T) {
 
     cl := &List{elements: []Element{c1, c2}}
 
-    exp := "name, email"
+    exp := "users.name, users.email"
     expLen := len(exp)
     s := cl.Size()
     assert.Equal(expLen, s)

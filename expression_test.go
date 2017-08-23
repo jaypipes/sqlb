@@ -31,7 +31,7 @@ func TestExpressionEqual(t *testing.T) {
         elements: []Element{c, val},
     }
 
-    exp := "name = ?"
+    exp := "users.name = ?"
     expLen := len(exp)
     expArgCount := 1
 
@@ -59,7 +59,7 @@ func TestExpressionEqual(t *testing.T) {
         elements: []Element{val, c},
     }
 
-    exp = "? = name"
+    exp = "? = users.name"
     expLen = len(exp)
     expArgCount = 1
 
@@ -99,7 +99,7 @@ func TestEqualFuncValue(t *testing.T) {
 
     eq := Equal(c, "foo")
 
-    exp := "name = ?"
+    exp := "users.name = ?"
     expLen := len(exp)
     expArgCount := 1
 
@@ -154,7 +154,7 @@ func TestEqualFuncTwoElements(t *testing.T) {
 
     eq := Equal(c1, c2)
 
-    exp := "id = author"
+    exp := "users.id = articles.author"
     expLen := len(exp)
     expArgCount := 0
 
@@ -179,7 +179,7 @@ func TestEqualFuncTwoElements(t *testing.T) {
 
     erev := Equal(c2, c1)
 
-    exp = "author = id"
+    exp = "articles.author = users.id"
     expLen = len(exp)
     expArgCount = 0
 
@@ -224,7 +224,7 @@ func TestExpressionNotEqual(t *testing.T) {
         elements: []Element{c, val},
     }
 
-    exp := "name != ?"
+    exp := "users.name != ?"
     expLen := len(exp)
     expArgCount := 1
 
@@ -264,7 +264,7 @@ func TestNotEqualFuncValue(t *testing.T) {
 
     eq := NotEqual(c, "foo")
 
-    exp := "name != ?"
+    exp := "users.name != ?"
     expLen := len(exp)
     expArgCount := 1
 
@@ -319,7 +319,7 @@ func TestNotEqualFuncTwoElements(t *testing.T) {
 
     eq := NotEqual(c1, c2)
 
-    exp := "id != author"
+    exp := "users.id != articles.author"
     expLen := len(exp)
     expArgCount := 0
 
@@ -344,7 +344,7 @@ func TestNotEqualFuncTwoElements(t *testing.T) {
 
     erev := NotEqual(c2, c1)
 
-    exp = "author != id"
+    exp = "articles.author != users.id"
     expLen = len(exp)
     expArgCount = 0
 
@@ -384,7 +384,7 @@ func TestInSingle(t *testing.T) {
 
     e := In(c, "foo")
 
-    exp := "name IN (?)"
+    exp := "users.name IN (?)"
     expLen := len(exp)
     expArgCount := 1
 
@@ -424,7 +424,7 @@ func TestInMulti(t *testing.T) {
 
     e := In(c, "foo", "bar", 1)
 
-    exp := "name IN (?, ?, ?)"
+    exp := "users.name IN (?, ?, ?)"
     expLen := len(exp)
     expArgCount := 3
 
@@ -473,7 +473,7 @@ func TestAnd(t *testing.T) {
     }
     e := And(ea, eb)
 
-    exp := "name != ? AND name != ?"
+    exp := "users.name != ? AND users.name != ?"
     expLen := len(exp)
     expArgCount := 2
 
@@ -524,7 +524,7 @@ func TestOr(t *testing.T) {
     }
     e := Or(ea, eb)
 
-    exp := "name = ? OR name = ?"
+    exp := "users.name = ? OR users.name = ?"
     expLen := len(exp)
     expArgCount := 2
 

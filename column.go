@@ -29,10 +29,14 @@ func (c *Column) ArgCount() int {
 }
 
 func (c *Column) Size() int {
-    size := c.cdef.Size()
+    size := 0
     if c.tbl.alias != "" {
-        size += len(Symbols[SYM_PERIOD]) + len(c.tbl.alias)
+        size += len(c.tbl.alias)
+    } else {
+        size += len(c.tbl.tdef.name)
     }
+    size += len(Symbols[SYM_PERIOD])
+    size += len(c.cdef.name)
     if c.alias != "" {
         size += len(Symbols[SYM_AS]) + len(c.alias)
     }
@@ -43,10 +47,11 @@ func (c *Column) Scan(b []byte, args []interface{}) (int, int) {
     bw := 0
     if c.tbl.alias != "" {
         bw += copy(b[bw:], c.tbl.alias)
-        bw += copy(b[bw:], Symbols[SYM_PERIOD])
+    } else {
+        bw += copy(b[bw:], c.tbl.tdef.name)
     }
-    cbw, _ := c.cdef.Scan(b[bw:], args)
-    bw += cbw
+    bw += copy(b[bw:], Symbols[SYM_PERIOD])
+    bw += copy(b[bw:], c.cdef.name)
     if c.alias != "" {
         bw += copy(b[bw:], Symbols[SYM_AS])
         bw += copy(b[bw:], c.alias)
@@ -101,11 +106,14 @@ func (cd *ColumnDef) ArgCount() int {
 }
 
 func (cd *ColumnDef) Size() int {
-    return len(cd.name)
+    return len(cd.tdef.name) + len(Symbols[SYM_PERIOD]) + len(cd.name)
 }
 
 func (cd *ColumnDef) Scan(b []byte, args []interface{}) (int, int) {
-    return copy(b, cd.name), 0
+    bw := copy(b, cd.tdef.name)
+    bw += copy(b[bw:], Symbols[SYM_PERIOD])
+    bw += copy(b[bw:], cd.name)
+    return bw, 0
 }
 
 // Generate an aliased Column from a ColumnDef

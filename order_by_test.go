@@ -27,7 +27,7 @@ func TestOrderByClauseSingleAsc(t *testing.T) {
         },
     }
 
-    exp := " ORDER BY name"
+    exp := " ORDER BY users.name"
     expLen := len(exp)
     expArgCount := 0
 
@@ -67,7 +67,7 @@ func TestOrderByClauseSingleDesc(t *testing.T) {
         },
     }
 
-    exp := " ORDER BY name DESC"
+    exp := " ORDER BY users.name DESC"
     expLen := len(exp)
     expArgCount := 0
 
@@ -113,7 +113,7 @@ func TestOrderByClauseMultiAsc(t *testing.T) {
         },
     }
 
-    exp := " ORDER BY name, email"
+    exp := " ORDER BY users.name, users.email"
     expLen := len(exp)
     expArgCount := 0
 
@@ -159,7 +159,7 @@ func TestOrderByClauseMultiAscDesc(t *testing.T) {
         },
     }
 
-    exp := " ORDER BY name, email DESC"
+    exp := " ORDER BY users.name, users.email DESC"
     expLen := len(exp)
     expArgCount := 0
 

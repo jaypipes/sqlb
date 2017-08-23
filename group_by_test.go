@@ -25,7 +25,7 @@ func TestGroupByClauseSingle(t *testing.T) {
         },
     }
 
-    exp := " GROUP BY name"
+    exp := " GROUP BY users.name"
     expLen := len(exp)
     expArgCount := 0
 
@@ -68,7 +68,7 @@ func TestGroupByClauseMulti(t *testing.T) {
         },
     }
 
-    exp := " GROUP BY name, email"
+    exp := " GROUP BY users.name, users.email"
     expLen := len(exp)
     expArgCount := 0
 
