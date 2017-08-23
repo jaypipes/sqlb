@@ -25,6 +25,7 @@ type SelectClause struct {
     alias string
     projected *List
     selections []Selection
+    joins []*JoinClause
     filters []*Expression
     groupBy *GroupByClause
     orderBy *OrderByClause
@@ -35,6 +36,9 @@ func (s *SelectClause) ArgCount() int {
     argc := s.projected.ArgCount()
     for _, sel := range s.selections {
         argc += sel.ArgCount()
+    }
+    for _, join := range s.joins {
+        argc += join.ArgCount()
     }
     for _, filter := range s.filters {
         argc += filter.ArgCount()
@@ -68,6 +72,9 @@ func (s *SelectClause) Size() int {
     }
     if s.alias != "" {
         size += len(Symbols[SYM_AS]) + len(s.alias)
+    }
+    for _, join := range s.joins {
+        size += join.Size()
     }
     nfilters := len(s.filters)
     if nfilters > 0 {
@@ -104,6 +111,11 @@ func (s *SelectClause) Scan(b []byte, args []interface{}) (int, int) {
     if s.alias != "" {
         bw += copy(b[bw:], Symbols[SYM_AS])
         bw += copy(b[bw:], s.alias)
+    }
+    for _, join := range s.joins {
+        jbw, jac := join.Scan(b[bw:], args)
+        bw += jbw
+        ac += jac
     }
     if len(s.filters) > 0 {
         bw += copy(b[bw:], Symbols[SYM_WHERE])
@@ -220,6 +232,19 @@ func (s *SelectClause) Limit(limit int) *SelectClause {
     return s
 }
 
+func containsJoin(s *SelectClause, j *JoinClause) bool {
+    for _, sj := range s.joins {
+        if j == sj {
+            return true
+        }
+    }
+    return false
+}
+
+func addToProjections(s *SelectClause, p Projection) {
+    s.projected.elements = append(s.projected.elements, p)
+}
+
 func Select(items ...Element) *SelectClause {
     // TODO(jaypipes): Make the memory allocation more efficient below by
     // looping through the elements and determining the number of element struct
@@ -237,6 +262,17 @@ func Select(items ...Element) *SelectClause {
     // table metadata to generate a list of all columns in that table.
     for _, item := range items {
         switch item.(type) {
+            case *JoinClause:
+                j := item.(*JoinClause)
+                if ! containsJoin(res, j) {
+                    res.joins = append(res.joins, j)
+                    if _, ok := selectionMap[j.left.selectionId()]; ! ok {
+                        selectionMap[j.left.selectionId()] = j.left
+                        for _, proj := range j.left.projections() {
+                            addToProjections(res, proj)
+                        }
+                    }
+                }
             case *Column:
                 v := item.(*Column)
                 res.projected.elements = append(res.projected.elements, v)
@@ -253,18 +289,18 @@ func Select(items ...Element) *SelectClause {
             case *Table:
                 v := item.(*Table)
                 for _, cd := range v.tdef.projections() {
-                    res.projected.elements = append(res.projected.elements, cd)
+                    addToProjections(res, cd)
                 }
                 selectionMap[v.selectionId()] = v
             case *TableDef:
                 v := item.(*TableDef)
                 for _, cd := range v.projections() {
-                    res.projected.elements = append(res.projected.elements, cd)
+                    addToProjections(res, cd)
                 }
                 selectionMap[v.selectionId()] = v
             case *ColumnDef:
                 v := item.(*ColumnDef)
-                res.projected.elements = append(res.projected.elements, v)
+                addToProjections(res, v)
                 selectionMap[v.tdef.selectionId()] = v.tdef
         }
     }
