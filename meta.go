@@ -41,6 +41,17 @@ func NewMeta(driver string, schemaName string) *Meta {
     }
 }
 
+// Create and return a new TableDef with the given table name.
+func (m *Meta) NewTable(tblName string) *TableDef {
+    td, exists := m.tables[tblName]
+    if exists {
+        return td
+    }
+    td = &TableDef{meta: m, name: tblName}
+    m.tables[tblName] = td
+    return td
+}
+
 func (m *Meta) Table(tblName string) *TableDef {
     return m.tables[tblName]
 }
