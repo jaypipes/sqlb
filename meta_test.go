@@ -54,6 +54,17 @@ func resetDB(driver string, db *sql.DB) {
     }
 }
 
+func TestNewTable(t *testing.T) {
+    assert := assert.New(t)
+
+    m := NewMeta("mysql", "test")
+    td := m.Table("users")
+    assert.Nil(td)
+    td = m.NewTable("users")
+    assert.NotNil(td)
+    assert.Equal(td.meta, m)
+}
+
 func TestReflectMySQL(t *testing.T) {
     dsn, found := os.LookupEnv("SQLB_TESTING_MYSQL_DSN")
     if ! found {
