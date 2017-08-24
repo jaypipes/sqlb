@@ -75,17 +75,17 @@ func (t *Table) As(alias string) *Table {
 }
 
 type TableDef struct {
+    meta *Meta
     name string
-    schema string
     cdefs []*ColumnDef
 }
 
 func (td *TableDef) selectionId() uint64 {
-    return toId(td.schema, td.name)
+    return toId(td.meta.schemaName, td.name)
 }
 
 func (td *TableDef) idParts() []string {
-    return []string{td.schema, td.name}
+    return []string{td.meta.schemaName, td.name}
 }
 
 func (td *TableDef) Table() *Table {

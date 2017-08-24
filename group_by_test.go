@@ -9,19 +9,9 @@ import (
 func TestGroupByClauseSingle(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
     ob := &GroupByClause{
         cols: &List{
-            elements: []element{cd},
+            elements: []element{colUserName},
         },
     }
 
@@ -47,28 +37,13 @@ func TestGroupByClauseSingle(t *testing.T) {
 func TestGroupByClauseMulti(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd1 := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
-    cd2 := &ColumnDef{
-        name: "email",
-        tdef: td,
-    }
-
     ob := &GroupByClause{
         cols: &List{
-            elements: []element{cd1, cd2},
+            elements: []element{colUserId, colUserName},
         },
     }
 
-    exp := " GROUP BY users.name, users.email"
+    exp := " GROUP BY users.id, users.name"
     expLen := len(exp)
     expArgCount := 0
 

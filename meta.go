@@ -30,8 +30,15 @@ ORDER BY c.TABLE_NAME, c.COLUMN_NAME
 
 type Meta struct {
     db *sql.DB
-    tables map[string]*TableDef
     schemaName string
+    tables map[string]*TableDef
+}
+
+func NewMeta(driver string, schemaName string) *Meta {
+    return &Meta{
+        schemaName: schemaName,
+        tables: make(map[string]*TableDef, 0),
+    }
 }
 
 func (m *Meta) Table(tblName string) *TableDef {
@@ -45,20 +52,20 @@ func Reflect(driver string, db *sql.DB, meta *Meta) error {
     if err != nil {
         return err
     }
-    tables := make(map[string]*TableDef, 0)
+    meta.schemaName = schemaName
+    tdefs := make(map[string]*TableDef, 0)
     for rows.Next() {
-        table := &TableDef{schema: schemaName}
-        err = rows.Scan(&table.name)
+        tdef := &TableDef{meta: meta}
+        err = rows.Scan(&tdef.name)
         if err != nil {
             return err
         }
-        tables[table.name] = table
+        tdefs[tdef.name] = tdef
     }
-    if err = fillTableColumnDefs(db, schemaName, &tables); err != nil {
+    if err = fillTableColumnDefs(db, schemaName, &tdefs); err != nil {
         return err
     }
-    meta.schemaName = schemaName
-    meta.tables = tables
+    meta.tables = tdefs
     meta.db = db
     return nil
 }

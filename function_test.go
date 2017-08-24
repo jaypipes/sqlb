@@ -9,14 +9,9 @@ import (
 func TestFuncWithAlias(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
     cd := &ColumnDef{
         name: "created_on",
-        tdef: td,
+        tdef: users,
     }
 
     m := Max(cd).As("max_created_on")
@@ -43,14 +38,9 @@ func TestFuncWithAlias(t *testing.T) {
 func TestFuncMax(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
     cd := &ColumnDef{
         name: "created_on",
-        tdef: td,
+        tdef: users,
     }
 
     m := Max(cd)
@@ -77,14 +67,9 @@ func TestFuncMax(t *testing.T) {
 func TestFuncMaxColumn(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
     cd := &ColumnDef{
         name: "created_on",
-        tdef: td,
+        tdef: users,
     }
 
     m := cd.Max()
@@ -110,7 +95,7 @@ func TestFuncMaxColumn(t *testing.T) {
     // Test with Column not ColumnDef
     c := &Column{
         cdef: cd,
-        tbl: td.Table(),
+        tbl: users.Table(),
     }
     m = c.Max()
 
@@ -132,14 +117,9 @@ func TestFuncMaxColumn(t *testing.T) {
 func TestFuncMin(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
     cd := &ColumnDef{
         name: "created_on",
-        tdef: td,
+        tdef: users,
     }
 
     m := Min(cd)
@@ -166,14 +146,9 @@ func TestFuncMin(t *testing.T) {
 func TestFuncMinColumn(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
     cd := &ColumnDef{
         name: "created_on",
-        tdef: td,
+        tdef: users,
     }
 
     m := cd.Min()
@@ -199,7 +174,7 @@ func TestFuncMinColumn(t *testing.T) {
     // Test with Column not ColumnDef
     c := &Column{
         cdef: cd,
-        tbl: td.Table(),
+        tbl: users.Table(),
     }
     m = c.Min()
 
@@ -221,14 +196,9 @@ func TestFuncMinColumn(t *testing.T) {
 func TestFuncSum(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
     cd := &ColumnDef{
         name: "created_on",
-        tdef: td,
+        tdef: users,
     }
 
     f := Sum(cd)
@@ -255,14 +225,9 @@ func TestFuncSum(t *testing.T) {
 func TestFuncSumColumn(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
     cd := &ColumnDef{
         name: "created_on",
-        tdef: td,
+        tdef: users,
     }
 
     f := cd.Sum()
@@ -288,7 +253,7 @@ func TestFuncSumColumn(t *testing.T) {
     // Test with Column not ColumnDef
     c := &Column{
         cdef: cd,
-        tbl: td.Table(),
+        tbl: users.Table(),
     }
     f = c.Sum()
 
@@ -310,14 +275,9 @@ func TestFuncSumColumn(t *testing.T) {
 func TestFuncAvg(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
     cd := &ColumnDef{
         name: "created_on",
-        tdef: td,
+        tdef: users,
     }
 
     f := Avg(cd)
@@ -344,14 +304,9 @@ func TestFuncAvg(t *testing.T) {
 func TestFuncAvgColumn(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
     cd := &ColumnDef{
         name: "created_on",
-        tdef: td,
+        tdef: users,
     }
 
     f := cd.Avg()
@@ -377,7 +332,7 @@ func TestFuncAvgColumn(t *testing.T) {
     // Test with Column not ColumnDef
     c := &Column{
         cdef: cd,
-        tbl: td.Table(),
+        tbl: users.Table(),
     }
     f = c.Avg()
 

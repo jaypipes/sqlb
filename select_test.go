@@ -9,19 +9,9 @@ import (
 func TestSelectSingleColumn(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
     c := &Column{
-        cdef: cd,
-        tbl: td.Table(),
+        cdef: colUserName,
+        tbl: users.Table(),
     }
 
     sel := Select(c)
@@ -36,19 +26,9 @@ func TestSelectSingleColumn(t *testing.T) {
 func TestSelectSingleColumnWithTableAlias(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
     c := &Column{
-        cdef: cd,
-        tbl: td.As("u"),
+        cdef: colUserName,
+        tbl: users.As("u"),
     }
 
     sel := Select(c)
@@ -63,34 +43,19 @@ func TestSelectSingleColumnWithTableAlias(t *testing.T) {
 func TestSelectMultiColumnsSingleTable(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd1 := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
     c1 := &Column{
-        cdef: cd1,
-        tbl: td.Table(),
-    }
-
-    cd2 := &ColumnDef{
-        name: "email",
-        tdef: td,
+        cdef: colUserId,
+        tbl: users.Table(),
     }
 
     c2 := &Column{
-        cdef: cd2,
-        tbl: td.Table(),
+        cdef: colUserName,
+        tbl: users.Table(),
     }
 
     sel := Select(c1, c2)
 
-    exp := "SELECT users.name, users.email FROM users"
+    exp := "SELECT users.id, users.name FROM users"
     expLen := len(exp)
 
     assert.Equal(expLen, sel.size())
@@ -100,17 +65,7 @@ func TestSelectMultiColumnsSingleTable(t *testing.T) {
 func TestSelectFromColumnDef(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
-    sel := Select(cd)
+    sel := Select(colUserName)
 
     exp := "SELECT users.name FROM users"
     expLen := len(exp)
@@ -122,29 +77,14 @@ func TestSelectFromColumnDef(t *testing.T) {
 func TestSelectFromColumnDefAndColumn(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
+    c := &Column{
+        cdef: colUserName,
+        tbl: users.Table(),
     }
 
-    cd1 := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
+    sel := Select(colUserId, c)
 
-    cd2 := &ColumnDef{
-        name: "email",
-        tdef: td,
-    }
-
-    c2 := &Column{
-        cdef: cd2,
-        tbl: td.Table(),
-    }
-
-    sel := Select(cd1, c2)
-
-    exp := "SELECT users.name, users.email FROM users"
+    exp := "SELECT users.id, users.name FROM users"
     expLen := len(exp)
 
     assert.Equal(expLen, sel.size())
@@ -154,26 +94,9 @@ func TestSelectFromColumnDefAndColumn(t *testing.T) {
 func TestSelectFromTableDef(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
+    sel := Select(users)
 
-    cdefs := []*ColumnDef{
-        &ColumnDef{
-            name: "name",
-            tdef: td,
-        },
-        &ColumnDef{
-            name: "email",
-            tdef: td,
-        },
-    }
-    td.cdefs = cdefs
-
-    sel := Select(td)
-
-    exp := "SELECT users.name, users.email FROM users"
+    exp := "SELECT users.id, users.name FROM users"
     expLen := len(exp)
 
     assert.Equal(expLen, sel.size())
@@ -183,17 +106,7 @@ func TestSelectFromTableDef(t *testing.T) {
 func TestWhereSingleEqual(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
-    sel := Select(cd).Where(Equal(cd, "foo"))
+    sel := Select(colUserName).Where(Equal(colUserName, "foo"))
 
     exp := "SELECT users.name FROM users WHERE users.name = ?"
     expLen := len(exp)
@@ -207,17 +120,11 @@ func TestWhereSingleEqual(t *testing.T) {
 func TestWhereSingleAnd(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
-    sel := Select(cd).Where(And(NotEqual(cd, "foo"), NotEqual(cd, "bar")))
+    cond := And(
+        NotEqual(colUserName, "foo"),
+        NotEqual(colUserName, "bar"),
+    )
+    sel := Select(colUserName).Where(cond)
 
     exp := "SELECT users.name FROM users WHERE users.name != ? AND users.name != ?"
     expLen := len(exp)
@@ -231,17 +138,7 @@ func TestWhereSingleAnd(t *testing.T) {
 func TestWhereSingleIn(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
-    sel := Select(cd).Where(In(cd, "foo", "bar"))
+    sel := Select(colUserName).Where(In(colUserName, "foo", "bar"))
 
     exp := "SELECT users.name FROM users WHERE users.name IN (?, ?)"
     expLen := len(exp)
@@ -255,18 +152,8 @@ func TestWhereSingleIn(t *testing.T) {
 func TestWhereMultiNotEqual(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
-    sel := Select(cd).Where(NotEqual(cd, "foo"))
-    sel = sel.Where(NotEqual(cd, "bar"))
+    sel := Select(colUserName).Where(NotEqual(colUserName, "foo"))
+    sel = sel.Where(NotEqual(colUserName, "bar"))
 
     exp := "SELECT users.name FROM users WHERE users.name != ? AND users.name != ?"
     expLen := len(exp)
@@ -280,22 +167,13 @@ func TestWhereMultiNotEqual(t *testing.T) {
 func TestWhereMultiInAndEqual(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd1 := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
-    cd2 := &ColumnDef{
+    colUserIsAuthor := &ColumnDef{
         name: "is_author",
-        tdef: td,
+        tdef: users,
     }
 
-    sel := Select(cd1).Where(And(In(cd1, "foo", "bar"), Equal(cd2, 1)))
+    cond := And(In(colUserName, "foo", "bar"), Equal(colUserIsAuthor, 1))
+    sel := Select(colUserName).Where(cond)
 
     exp := "SELECT users.name FROM users WHERE users.name IN (?, ?) AND users.is_author = ?"
     expLen := len(exp)
@@ -309,22 +187,7 @@ func TestWhereMultiInAndEqual(t *testing.T) {
 func TestSelectLimit(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
-    c := &Column{
-        cdef: cd,
-        tbl: td.Table(),
-    }
-
-    sel := Select(c).Limit(10)
+    sel := Select(colUserName).Limit(10)
 
     exp := "SELECT users.name FROM users LIMIT ?"
     expLen := len(exp)
@@ -338,22 +201,7 @@ func TestSelectLimit(t *testing.T) {
 func TestSelectLimitWithOffset(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
-    c := &Column{
-        cdef: cd,
-        tbl: td.Table(),
-    }
-
-    sel := Select(c).LimitWithOffset(10, 5)
+    sel := Select(colUserName).LimitWithOffset(10, 5)
 
     exp := "SELECT users.name FROM users LIMIT ? OFFSET ?"
     expLen := len(exp)
@@ -367,17 +215,7 @@ func TestSelectLimitWithOffset(t *testing.T) {
 func TestSelectOrderByAsc(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
-    sel := Select(cd).OrderBy(cd.Asc())
+    sel := Select(colUserName).OrderBy(colUserName.Asc())
 
     exp := "SELECT users.name FROM users ORDER BY users.name"
     expLen := len(exp)
@@ -391,24 +229,9 @@ func TestSelectOrderByAsc(t *testing.T) {
 func TestSelectOrderByMultiAscDesc(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
+    sel := Select(colUserName).OrderBy(colUserId.Asc(), colUserName.Desc())
 
-    cd1 := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
-    cd2 := &ColumnDef{
-        name: "email",
-        tdef: td,
-    }
-
-    sel := Select(cd1).OrderBy(cd1.Asc(), cd2.Desc())
-
-    exp := "SELECT users.name FROM users ORDER BY users.name, users.email DESC"
+    exp := "SELECT users.name FROM users ORDER BY users.id, users.name DESC"
     expLen := len(exp)
     expArgCount := 0
 
@@ -420,17 +243,7 @@ func TestSelectOrderByMultiAscDesc(t *testing.T) {
 func TestSelectStringArgs(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
-    sel := Select(cd).Where(In(cd, "foo", "bar"))
+    sel := Select(colUserName).Where(In(colUserName, "foo", "bar"))
 
     expStr := "SELECT users.name FROM users WHERE users.name IN (?, ?)"
     expLen := len(expStr)
@@ -449,17 +262,7 @@ func TestSelectStringArgs(t *testing.T) {
 func TestSelectGroupByAsc(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
-    sel := Select(cd).GroupBy(cd)
+    sel := Select(colUserName).GroupBy(colUserName)
 
     exp := "SELECT users.name FROM users GROUP BY users.name"
     expLen := len(exp)
@@ -470,27 +273,12 @@ func TestSelectGroupByAsc(t *testing.T) {
     assert.Equal(exp, sel.String())
 }
 
-func TestSelectGroupByMultiAscDesc(t *testing.T) {
+func TestSelectGroupByMultiAsc(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
+    sel := Select(colUserName).GroupBy(colUserId, colUserName)
 
-    cd1 := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
-    cd2 := &ColumnDef{
-        name: "email",
-        tdef: td,
-    }
-
-    sel := Select(cd1).GroupBy(cd1, cd2)
-
-    exp := "SELECT users.name FROM users GROUP BY users.name, users.email"
+    exp := "SELECT users.name FROM users GROUP BY users.id, users.name"
     expLen := len(exp)
     expArgCount := 0
 
@@ -502,17 +290,7 @@ func TestSelectGroupByMultiAscDesc(t *testing.T) {
 func TestSelectGroupOrderLimit(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
-    sel := Select(cd).GroupBy(cd).OrderBy(cd.Desc()).Limit(10)
+    sel := Select(colUserName).GroupBy(colUserName).OrderBy(colUserName.Desc()).Limit(10)
 
     exp := "SELECT users.name FROM users GROUP BY users.name ORDER BY users.name DESC LIMIT ?"
     expLen := len(exp)
@@ -526,30 +304,6 @@ func TestSelectGroupOrderLimit(t *testing.T) {
 func TestSelectJoinSingle(t *testing.T) {
     assert := assert.New(t)
 
-    users := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    colUserId := &ColumnDef{
-        name: "id",
-        tdef: users,
-    }
-
-    users.cdefs = []*ColumnDef{colUserId}
-
-    articles := &TableDef{
-        name: "articles",
-        schema: "test",
-    }
-
-    colArticleAuthor := &ColumnDef{
-        name: "author",
-        tdef: articles,
-    }
-
-    articles.cdefs = []*ColumnDef{colArticleAuthor}
-
     j := &JoinClause{
         left: users,
         right: articles,
@@ -560,7 +314,7 @@ func TestSelectJoinSingle(t *testing.T) {
 
     sel := Select(j)
 
-    exp := "SELECT users.id FROM users JOIN articles ON users.id = articles.author"
+    exp := "SELECT users.id, users.name FROM users JOIN articles ON users.id = articles.author"
     expLen := len(exp)
     expArgCount := 0
 

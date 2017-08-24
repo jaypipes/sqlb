@@ -9,19 +9,9 @@ import (
 func TestListSingle(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
     c := &Column{
-        cdef: cd,
-        tbl: td.Table(),
+        cdef: colUserName,
+        tbl: users.Table(),
     }
 
     cl := &List{elements: []element{c}}
@@ -41,34 +31,19 @@ func TestListSingle(t *testing.T) {
 func TestListMulti(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd1 := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
-    cd2 := &ColumnDef{
-        name: "email",
-        tdef: td,
-    }
-
     c1 := &Column{
-        cdef: cd1,
-        tbl: td.Table(),
+        cdef: colUserId,
+        tbl: users.Table(),
     }
 
     c2:= &Column{
-        cdef: cd2,
-        tbl: td.Table(),
+        cdef: colUserName,
+        tbl: users.Table(),
     }
 
     cl := &List{elements: []element{c1, c2}}
 
-    exp := "users.name, users.email"
+    exp := "users.id, users.name"
     expLen := len(exp)
     s := cl.size()
     assert.Equal(expLen, s)

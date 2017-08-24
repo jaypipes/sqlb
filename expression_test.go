@@ -9,19 +9,9 @@ import (
 func TestExpressionEqual(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
     c := &Column{
-        cdef: cd,
-        tbl: td.Table(),
+        cdef: colUserName,
+        tbl: users.Table(),
     }
 
     val := &Value{value: "foo"}
@@ -82,19 +72,9 @@ func TestExpressionEqual(t *testing.T) {
 func TestEqualFuncValue(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
     c := &Column{
-        cdef: cd,
-        tbl: td.Table(),
+        cdef: colUserName,
+        tbl: users.Table(),
     }
 
     eq := Equal(c, "foo")
@@ -122,33 +102,13 @@ func TestEqualFuncValue(t *testing.T) {
 func TestEqualFuncTwoelements(t *testing.T) {
     assert := assert.New(t)
 
-    users := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    userId := &ColumnDef{
-        name: "id",
-        tdef: users,
-    }
-
     c1 := &Column{
-        cdef: userId,
+        cdef: colUserId,
         tbl: users.Table(),
     }
 
-    articles := &TableDef{
-        name: "articles",
-        schema: "test",
-    }
-
-    author := &ColumnDef{
-        name: "author",
-        tdef: articles,
-    }
-
     c2 := &Column{
-        cdef: author,
+        cdef: colArticleAuthor,
         tbl: articles.Table(),
     }
 
@@ -202,19 +162,9 @@ func TestEqualFuncTwoelements(t *testing.T) {
 func TestExpressionNotEqual(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
     c := &Column{
-        cdef: cd,
-        tbl: td.Table(),
+        cdef: colUserName,
+        tbl: users.Table(),
     }
 
     val := &Value{value: "foo"}
@@ -247,19 +197,9 @@ func TestExpressionNotEqual(t *testing.T) {
 func TestNotEqualFuncValue(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
     c := &Column{
-        cdef: cd,
-        tbl: td.Table(),
+        cdef: colUserName,
+        tbl: users.Table(),
     }
 
     eq := NotEqual(c, "foo")
@@ -287,33 +227,13 @@ func TestNotEqualFuncValue(t *testing.T) {
 func TestNotEqualFuncTwoelements(t *testing.T) {
     assert := assert.New(t)
 
-    users := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    userId := &ColumnDef{
-        name: "id",
-        tdef: users,
-    }
-
     c1 := &Column{
-        cdef: userId,
+        cdef: colUserId,
         tbl: users.Table(),
     }
 
-    articles := &TableDef{
-        name: "articles",
-        schema: "test",
-    }
-
-    author := &ColumnDef{
-        name: "author",
-        tdef: articles,
-    }
-
     c2 := &Column{
-        cdef: author,
+        cdef: colArticleAuthor,
         tbl: articles.Table(),
     }
 
@@ -367,19 +287,9 @@ func TestNotEqualFuncTwoelements(t *testing.T) {
 func TestInSingle(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
     c := &Column{
-        cdef: cd,
-        tbl: td.Table(),
+        cdef: colUserName,
+        tbl: users.Table(),
     }
 
     e := In(c, "foo")
@@ -407,19 +317,9 @@ func TestInSingle(t *testing.T) {
 func TestInMulti(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
     c := &Column{
-        cdef: cd,
-        tbl: td.Table(),
+        cdef: colUserName,
+        tbl: users.Table(),
     }
 
     e := In(c, "foo", "bar", 1)
@@ -447,19 +347,9 @@ func TestInMulti(t *testing.T) {
 func TestAnd(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
     c := &Column{
-        cdef: cd,
-        tbl: td.Table(),
+        cdef: colUserName,
+        tbl: users.Table(),
     }
 
     ea := &Expression{
@@ -498,19 +388,9 @@ func TestAnd(t *testing.T) {
 func TestOr(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
     c := &Column{
-        cdef: cd,
-        tbl: td.Table(),
+        cdef: colUserName,
+        tbl: users.Table(),
     }
 
     ea := &Expression{
