@@ -9,22 +9,13 @@ import (
 func TestTable(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    t1 := &Table{
-        tdef: td,
-    }
-
     exp := "users"
     expLen := len(exp)
-    s := t1.size()
+    s := users.size()
     assert.Equal(expLen, s)
 
     b := make([]byte, s)
-    written, _ := t1.scan(b, nil)
+    written, _ := users.scan(b, nil)
 
     assert.Equal(written, s)
     assert.Equal(exp, string(b))
@@ -33,15 +24,7 @@ func TestTable(t *testing.T) {
 func TestTableAlias(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    t1 := &Table{
-        tdef: td,
-        alias: "u",
-    }
+    t1 := users.As("u")
 
     exp := "users AS u"
     expLen := len(exp)
@@ -60,7 +43,6 @@ func TestTableColumnDefs(t *testing.T) {
 
     td := &TableDef{
         name: "users",
-        schema: "test",
     }
 
     cdefs := []*ColumnDef{
@@ -90,76 +72,29 @@ func TestTableColumnDefs(t *testing.T) {
 func TestTableDefColumn(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
+    c := users.Column("name")
 
-    cdefs := []*ColumnDef{
-        &ColumnDef{
-            name: "id",
-            tdef: td,
-        },
-        &ColumnDef{
-            name: "email",
-            tdef: td,
-        },
-    }
-    td.cdefs = cdefs
-
-    c := td.Column("email")
-
-    assert.Equal(td, c.cdef.tdef)
-    assert.Equal("email", c.cdef.name)
+    assert.Equal(users, c.cdef.tdef)
+    assert.Equal("name", c.cdef.name)
 
     // Check an unknown column name returns nil
-    unknown := td.Column("unknown")
+    unknown := users.Column("unknown")
     assert.Nil(unknown)
 }
 
 func TestTableColumn(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cdefs := []*ColumnDef{
-        &ColumnDef{
-            name: "id",
-            tdef: td,
-        },
-        &ColumnDef{
-            name: "email",
-            tdef: td,
-        },
-    }
-    td.cdefs = cdefs
-
     tbl := &Table{
-        tdef: td,
+        tdef: users,
     }
 
-    c := tbl.Column("email")
+    c := tbl.Column("name")
 
-    assert.Equal(td, c.cdef.tdef)
-    assert.Equal("email", c.cdef.name)
+    assert.Equal(users, c.cdef.tdef)
+    assert.Equal("name", c.cdef.name)
 
     // Check an unknown column name returns nil
     unknown := tbl.Column("unknown")
     assert.Nil(unknown)
-}
-
-func TestTableAs(t *testing.T) {
-    assert := assert.New(t)
-
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    t1 := td.As("u")
-    assert.Equal("u", t1.alias)
-    assert.Equal(td, t1.tdef)
 }

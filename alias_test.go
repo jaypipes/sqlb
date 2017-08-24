@@ -9,19 +9,9 @@ import (
 func TestAsTemplated(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
     c := &Column{
-        cdef: cd,
-        tbl: td.Table(),
+        cdef: colUserName,
+        tbl: users.Table(),
     }
 
     assert.Equal("", c.alias)
@@ -38,13 +28,8 @@ func TestAsTemplated(t *testing.T) {
 func TestAsMethod(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
     t1 := &Table{
-        tdef: td,
+        tdef: users,
     }
 
     assert.Equal("", t1.alias)
@@ -53,14 +38,9 @@ func TestAsMethod(t *testing.T) {
 
     assert.Equal("t", t1.alias)
 
-    cd := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
     c := &Column{
-        cdef: cd,
-        tbl: td.Table(),
+        cdef: colUserName,
+        tbl: users.Table(),
     }
 
     assert.Equal("", c.alias)

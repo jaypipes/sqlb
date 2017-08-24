@@ -9,19 +9,9 @@ import (
 func TestColumn(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
     c := &Column{
-        cdef: cd,
-        tbl: td.Table(),
+        cdef: colUserName,
+        tbl: users.Table(),
     }
 
     exp := "users.name"
@@ -39,19 +29,9 @@ func TestColumn(t *testing.T) {
 func TestColumnWithTableAlias(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
     c := &Column{
-        cdef: cd,
-        tbl: td.As("u"),
+        cdef: colUserName,
+        tbl: users.As("u"),
     }
 
     exp := "u.name"
@@ -69,17 +49,7 @@ func TestColumnWithTableAlias(t *testing.T) {
 func TestColumnDefSorts(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
-    sc := cd.Asc()
+    sc := colUserName.Asc()
 
     exp := "users.name"
     expLen := len(exp)
@@ -92,7 +62,7 @@ func TestColumnDefSorts(t *testing.T) {
     assert.Equal(written, s)
     assert.Equal(exp, string(b))
 
-    sc = cd.Desc()
+    sc = colUserName.Desc()
 
     exp = "users.name DESC"
     expLen = len(exp)
@@ -109,19 +79,9 @@ func TestColumnDefSorts(t *testing.T) {
 func TestColumnSorts(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
     c := &Column{
-        cdef: cd,
-        tbl: td.Table(),
+        cdef: colUserName,
+        tbl: users.Table(),
     }
 
     sc := c.Asc()
@@ -154,19 +114,9 @@ func TestColumnSorts(t *testing.T) {
 func TestColumnAlias(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
     c := &Column{
-        cdef: cd,
-        tbl: td.Table(),
+        cdef: colUserName,
+        tbl: users.Table(),
         alias: "user_name",
     }
 
@@ -185,17 +135,7 @@ func TestColumnAlias(t *testing.T) {
 func TestColumnAs(t *testing.T) {
     assert := assert.New(t)
 
-    td := &TableDef{
-        name: "users",
-        schema: "test",
-    }
-
-    cd := &ColumnDef{
-        name: "name",
-        tdef: td,
-    }
-
-    c := cd.As("n")
+    c := colUserName.As("n")
     assert.Equal("n", c.alias)
-    assert.Equal(cd, c.cdef)
+    assert.Equal(colUserName, c.cdef)
 }

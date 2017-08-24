@@ -89,7 +89,7 @@ func (cd *ColumnDef) projectionId() uint64 {
 }
 
 func (cd *ColumnDef) idParts() []string {
-    return []string{cd.name, cd.tdef.schema, cd.tdef.name}
+    return []string{cd.name, cd.tdef.meta.schemaName, cd.tdef.name}
 }
 
 func (cd *ColumnDef) Column() *Column {
