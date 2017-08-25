@@ -109,18 +109,28 @@ func (td *TableDef) As(alias string) *Table {
     return &Table{tdef: td, alias: alias}
 }
 
-func (td *TableDef) Column(name string) *Column {
+// Return a pointer to a ColumnDef with a name matching the supplied string, or
+// nil if no such column is known
+func (td *TableDef) ColumnDef(name string) *ColumnDef {
     for _, cdef := range td.cdefs {
         if cdef.name == name {
-            return &Column{
-                cdef: cdef,
-                tbl: &Table{
-                    tdef: td,
-                },
-            }
+            return cdef
         }
     }
     return nil
+}
+
+// Returns a pointer to a Column representing an aliasable version of the table
+// column with the supplied name, or nil if no such column definition is known
+func (td *TableDef) Column(name string) *Column {
+    cd := td.ColumnDef(name)
+    if cd == nil {
+        return nil
+    }
+    return &Column{
+        cdef: cd,
+        tbl: td.Table(),
+    }
 }
 
 func (td *TableDef) projections() []projection {
