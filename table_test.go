@@ -6,6 +6,27 @@ import (
     "github.com/stretchr/testify/assert"
 )
 
+func TestTableMeta(t *testing.T) {
+    assert := assert.New(t)
+
+    m := NewMeta("mysql", "test")
+    td := m.TableDef("users")
+    assert.Nil(td)
+    td = m.NewTableDef("users")
+    assert.NotNil(td)
+    assert.Equal(td.meta, m)
+
+    assert.Equal(td, m.TableDef("users"))
+
+    cd := td.ColumnDef("id")
+    assert.Nil(cd)
+
+    cd = td.NewColumnDef("id")
+    assert.NotNil(cd)
+
+    assert.Equal(cd, td.ColumnDef("id"))
+}
+
 func TestTable(t *testing.T) {
     assert := assert.New(t)
 

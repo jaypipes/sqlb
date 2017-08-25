@@ -9,7 +9,7 @@ import (
 var (
     meta = &Meta{
         schemaName: "test",
-        tables: make(map[string]*TableDef, 0),
+        tdefs: make(map[string]*TableDef, 0),
     }
 
     users = &TableDef{
@@ -42,8 +42,8 @@ var (
 func init() {
     users.cdefs = []*ColumnDef{colUserId, colUserName}
     articles.cdefs = []*ColumnDef{colArticleId, colArticleAuthor}
-    meta.tables["users"] = users
-    meta.tables["articles"] = articles
+    meta.tdefs["users"] = users
+    meta.tdefs["articles"] = articles
 }
 
 func TestJoinFuncGenerics(t *testing.T) {

@@ -61,12 +61,12 @@ func main() {
 }
 ```
 
-The `sqlb.Meta` struct has a method `Table(string)` which returns a pointer to
-a `sqlb.TableDef` struct for a table whose name matches the supplied string
+The `sqlb.Meta` struct has a method `TableDef(string)` which returns a pointer
+to a `sqlb.TableDef` struct for a table whose name matches the supplied string
 argument. If no matching table is found, `nil` is returned:
 
 ```go
-    users := meta.Table("users")
+    users := meta.TableDef("users")
     // users == nil
 ```
 
@@ -78,9 +78,98 @@ returns a pointer to a `sqlb.TableDef` struct that's been initialized with the
 name of the table.
 
 ```go
-    users = meta.NewTable("users")
+    users = meta.NewTableDef("users")
+```
+
+A similar process is used to set metadata about a table's column definitions.
+The `sqlb.ColumnDef` struct defines the column name and links a pointer to
+the appropriate `TableDef` struct. To look up a particular column by its name,
+use the `sqlb.TableDef.ColumnDef()` method. If no such column is known, `nil`
+will be returned:
+
+```go
+    colUserId := users.ColumnDef("id")
+    // colUserId == nil
+```
+
+Use the `sqlb.TableDef.NewColumnDef()` method to create and return a new column
+definition:
+
+```go
+    colUserId = users.NewColumnDef("id")
 ```
 
 ### Using `sqlb.Reflect()` to automatically gather metadata
 
 TODO
+
+## Aliasables
+
+When constructing SQL expressions, it's often useful to provide an alias for a
+database object with a long name. For instance, let's say I have a table called
+`organizations` and I want to `SELECT` the `id` and `display_name` columns from
+that table.
+
+In SQL, I would write:
+
+```sql
+SELECT organizations.id, organizations.display_name
+FROM organizations
+```
+
+The SQL language allows the user to specify an **alias** for an object using
+the `AS` keyword. So, if I didn't feel like typing out the word "organizations"
+over and over again, I could alias the organizations table object as "o", like
+so:
+
+```sql
+SELECT o.id, o.display_name
+FROM organizations AS o
+```
+
+Shorter and cleaner, for sure.
+
+In `sqlb`, there are a number of objects that are **aliasable**:
+
+* `Column` structs
+* `Table` structs
+* `Function` structs
+
+Aliasable things may have an alias applied to them with the `SetAlias()` struct
+method:
+
+```go
+    t := meta.Table("organizations")
+    t.SetAlias("o")
+```
+
+if I use the `t` variable in a `sqlb.Select()` call, the SQL output will
+automatically include the table alias for any columns that reference the table.
+
+That said, there's a more convenient way to get a pointer to an aliased
+database object: using the `As()` method on another struct.
+
+As you learned earlier, the `sqlb.Meta` struct contains definitions of tables
+in a database. A `sqlb` user can grab a pointer to one of these `sqlb.TableDef`
+structs by calling the `sqlb.Meta.TableDef()` method, passing in a string for
+the table name to get a definition for:
+
+```go
+    orgsTableDef := meta.TableDef("organizations")
+```
+
+Use the `sqlb.TableDef.As()` method to get a pointer to a `sqlb.Table` struct
+that has had its alias set:
+
+```go
+    orgs := orgsTableDef.As("o")
+```
+
+If you're sure that a particular table exists in the `sqlb.Meta`, you can
+shorten all of the above to just one line:
+
+```go
+    orgs := meta.TableDef("organizations").As("o")
+```
+
+Short and sweet.

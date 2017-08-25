@@ -31,29 +31,37 @@ ORDER BY c.TABLE_NAME, c.COLUMN_NAME
 type Meta struct {
     db *sql.DB
     schemaName string
-    tables map[string]*TableDef
+    tdefs map[string]*TableDef
 }
 
 func NewMeta(driver string, schemaName string) *Meta {
     return &Meta{
         schemaName: schemaName,
-        tables: make(map[string]*TableDef, 0),
+        tdefs: make(map[string]*TableDef, 0),
     }
 }
 
 // Create and return a new TableDef with the given table name.
-func (m *Meta) NewTable(tblName string) *TableDef {
-    td, exists := m.tables[tblName]
+func (m *Meta) NewTableDef(tblName string) *TableDef {
+    td, exists := m.tdefs[tblName]
     if exists {
         return td
     }
     td = &TableDef{meta: m, name: tblName}
-    m.tables[tblName] = td
+    m.tdefs[tblName] = td
     return td
 }
 
-func (m *Meta) Table(tblName string) *TableDef {
-    return m.tables[tblName]
+func (m *Meta) TableDef(tblName string) *TableDef {
+    return m.tdefs[tblName]
+}
+
+func (m *Meta) Table(tblName string) *Table {
+    td, found := m.tdefs[tblName]
+    if ! found {
+        return nil
+    }
+    return td.Table()
 }
 
 func Reflect(driver string, db *sql.DB, meta *Meta) error {
@@ -76,7 +84,7 @@ func Reflect(driver string, db *sql.DB, meta *Meta) error {
     if err = fillTableColumnDefs(db, schemaName, &tdefs); err != nil {
         return err
     }
-    meta.tables = tdefs
+    meta.tdefs = tdefs
     meta.db = db
     return nil
 }
