@@ -56,6 +56,14 @@ func (m *Meta) TableDef(tblName string) *TableDef {
     return m.tdefs[tblName]
 }
 
+func (m *Meta) Table(tblName string) *Table {
+    td, found := m.tdefs[tblName]
+    if ! found {
+        return nil
+    }
+    return td.Table()
+}
+
 func Reflect(driver string, db *sql.DB, meta *Meta) error {
     schemaName := getSchemaName(driver, db)
     // Grab information about all tables in the schema
