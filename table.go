@@ -120,6 +120,19 @@ func (td *TableDef) ColumnDef(name string) *ColumnDef {
     return nil
 }
 
+func (td *TableDef) NewColumnDef(name string) *ColumnDef {
+    cd := td.ColumnDef(name)
+    if cd != nil {
+        return cd
+    }
+    cd = &ColumnDef{
+        name: name,
+        tdef: td,
+    }
+    td.cdefs = append(td.cdefs, cd)
+    return cd
+}
+
 // Returns a pointer to a Column representing an aliasable version of the table
 // column with the supplied name, or nil if no such column definition is known
 func (td *TableDef) Column(name string) *Column {

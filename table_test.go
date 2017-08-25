@@ -15,6 +15,16 @@ func TestTableMeta(t *testing.T) {
     td = m.NewTableDef("users")
     assert.NotNil(td)
     assert.Equal(td.meta, m)
+
+    assert.Equal(td, m.TableDef("users"))
+
+    cd := td.ColumnDef("id")
+    assert.Nil(cd)
+
+    cd = td.NewColumnDef("id")
+    assert.NotNil(cd)
+
+    assert.Equal(cd, td.ColumnDef("id"))
 }
 
 func TestTable(t *testing.T) {
