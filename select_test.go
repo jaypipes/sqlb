@@ -6,101 +6,89 @@ import (
     "github.com/stretchr/testify/assert"
 )
 
-func TestSelectSingleColumn(t *testing.T) {
-    assert := assert.New(t)
-
-    c := &Column{
-        cdef: colUserName,
-        tbl: users.Table(),
-    }
-
-    sel := Select(c)
-
-    exp := "SELECT users.name FROM users"
-    expLen := len(exp)
-
-    assert.Equal(expLen, sel.size())
-    assert.Equal(exp, sel.String())
+type selClauseTest struct {
+    sel *selectClause
+    qs string
+    qargs []interface{}
 }
 
-func TestSelectSingleColumnWithTableAlias(t *testing.T) {
+func TestSelectClause(t *testing.T) {
     assert := assert.New(t)
 
-    c := &Column{
-        cdef: colUserName,
-        tbl: users.As("u"),
+    tests := []selClauseTest{
+        selClauseTest{
+            sel: &selectClause{
+                selections: []selection{users},
+                projected: &List{elements: []element{colUserName}},
+            },
+            qs: "SELECT users.name FROM users",
+        },
+        selClauseTest{
+            sel: &selectClause{
+                selections: []selection{users.Table()},
+                projected: &List{elements: []element{colUserName}},
+            },
+            qs: "SELECT users.name FROM users",
+        },
+        selClauseTest{
+            sel: &selectClause{
+                selections: []selection{users},
+                projected: &List{
+                    elements: []element{
+                        colUserName.Column(),
+                    },
+                },
+            },
+            qs: "SELECT users.name FROM users",
+        },
+        selClauseTest{
+            sel: &selectClause{
+                selections: []selection{users.As("u")},
+                projected: &List{
+                    elements: []element{
+                        users.As("u").Column("name"),
+                    },
+                },
+            },
+            qs: "SELECT u.name FROM users AS u",
+        },
+        selClauseTest{
+            sel: &selectClause{
+                selections: []selection{users},
+                projected: &List{
+                    elements: []element{
+                        colUserId, colUserName,
+                    },
+                },
+            },
+            qs: "SELECT users.id, users.name FROM users",
+        },
+        selClauseTest{
+            sel: &selectClause{
+                selections: []selection{users},
+                projected: &List{
+                    elements: []element{
+                        colUserId, colUserName.Column(),
+                    },
+                },
+            },
+            qs: "SELECT users.id, users.name FROM users",
+        },
     }
+    for _, test := range tests {
+        expLen := len(test.qs)
+        s := test.sel.size()
+        assert.Equal(expLen, s)
 
-    sel := Select(c)
+        expArgc := len(test.qargs)
+        assert.Equal(expArgc, test.sel.argCount())
 
-    exp := "SELECT u.name FROM users AS u"
-    expLen := len(exp)
+        b := make([]byte, s)
+        written, _ := test.sel.scan(b, test.qargs)
 
-    assert.Equal(expLen, sel.size())
-    assert.Equal(exp, sel.String())
-}
-
-func TestSelectMultiColumnsSingleTable(t *testing.T) {
-    assert := assert.New(t)
-
-    c1 := &Column{
-        cdef: colUserId,
-        tbl: users.Table(),
+        assert.Equal(written, s)
+        assert.Equal(test.qs, string(b))
     }
-
-    c2 := &Column{
-        cdef: colUserName,
-        tbl: users.Table(),
-    }
-
-    sel := Select(c1, c2)
-
-    exp := "SELECT users.id, users.name FROM users"
-    expLen := len(exp)
-
-    assert.Equal(expLen, sel.size())
-    assert.Equal(exp, sel.String())
-}
-
-func TestSelectFromColumnDef(t *testing.T) {
-    assert := assert.New(t)
-
-    sel := Select(colUserName)
-
-    exp := "SELECT users.name FROM users"
-    expLen := len(exp)
-
-    assert.Equal(expLen, sel.size())
-    assert.Equal(exp, sel.String())
-}
-
-func TestSelectFromColumnDefAndColumn(t *testing.T) {
-    assert := assert.New(t)
-
-    c := &Column{
-        cdef: colUserName,
-        tbl: users.Table(),
-    }
-
-    sel := Select(colUserId, c)
-
-    exp := "SELECT users.id, users.name FROM users"
-    expLen := len(exp)
-
-    assert.Equal(expLen, sel.size())
-    assert.Equal(exp, sel.String())
-}
-
-func TestSelectFromTableDef(t *testing.T) {
-    assert := assert.New(t)
-
-    sel := Select(users)
-
-    exp := "SELECT users.id, users.name FROM users"
-    expLen := len(exp)
-
-    assert.Equal(expLen, sel.size())
-    assert.Equal(exp, sel.String())
 }
 
 func TestWhereSingleEqual(t *testing.T) {
@@ -295,28 +283,6 @@ func TestSelectGroupOrderLimit(t *testing.T) {
     exp := "SELECT users.name FROM users GROUP BY users.name ORDER BY users.name DESC LIMIT ?"
     expLen := len(exp)
     expArgCount := 1
-
-    assert.Equal(expLen, sel.size())
-    assert.Equal(expArgCount, sel.argCount())
-    assert.Equal(exp, sel.String())
-}
-
-func TestSelectJoinSingle(t *testing.T) {
-    assert := assert.New(t)
-
-    j := &joinClause{
-        left: users,
-        right: articles,
-        onExprs: []*Expression{
-            Equal(colUserId, colArticleAuthor),
-        },
-    }
-
-    sel := Select(j)
-
-    exp := "SELECT users.id, users.name, articles.id, articles.author FROM users JOIN articles ON users.id = articles.author"
-    expLen := len(exp)
-    expArgCount := 0
 
     assert.Equal(expLen, sel.size())
     assert.Equal(expArgCount, sel.argCount())
