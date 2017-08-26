@@ -12,7 +12,7 @@ func TestOrderByClauseSingleAsc(t *testing.T) {
     ob := &OrderByClause{
         cols: &List{
             elements: []element{
-                &SortColumn{el: colUserName},
+                &sortColumn{el: colUserName},
             },
         },
     }
@@ -42,7 +42,7 @@ func TestOrderByClauseSingleDesc(t *testing.T) {
     ob := &OrderByClause{
         cols: &List{
             elements: []element{
-                &SortColumn{el: colUserName, desc: true},
+                &sortColumn{el: colUserName, desc: true},
             },
         },
     }
@@ -72,8 +72,8 @@ func TestOrderByClauseMultiAsc(t *testing.T) {
     ob := &OrderByClause{
         cols: &List{
             elements: []element{
-                &SortColumn{el: colUserId},
-                &SortColumn{el: colUserName},
+                &sortColumn{el: colUserId},
+                &sortColumn{el: colUserName},
             },
         },
     }
@@ -103,8 +103,8 @@ func TestOrderByClauseMultiAscDesc(t *testing.T) {
     ob := &OrderByClause{
         cols: &List{
             elements: []element{
-                &SortColumn{el: colUserId},
-                &SortColumn{el: colUserName, desc: true},
+                &sortColumn{el: colUserId},
+                &sortColumn{el: colUserName, desc: true},
             },
         },
     }

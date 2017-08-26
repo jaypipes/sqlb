@@ -6,10 +6,10 @@ import (
     "github.com/stretchr/testify/assert"
 )
 
-func TestLimitClause(t *testing.T) {
+func TestlimitClause(t *testing.T) {
     assert := assert.New(t)
 
-    lc := &LimitClause{
+    lc := &limitClause{
         limit: 20,
     }
 
@@ -33,10 +33,10 @@ func TestLimitClause(t *testing.T) {
     assert.Equal(20, args[0])
 }
 
-func TestLimitClauseWithOffset(t *testing.T) {
+func TestlimitClauseWithOffset(t *testing.T) {
     assert := assert.New(t)
 
-    lc := &LimitClause{
+    lc := &limitClause{
         limit: 20,
     }
     offset := 10

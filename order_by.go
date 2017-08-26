@@ -1,15 +1,15 @@
 package sqlb
 
-type SortColumn struct {
+type sortColumn struct {
     el element
     desc bool
 }
 
-func (sc *SortColumn) argCount() int {
+func (sc *sortColumn) argCount() int {
     return sc.el.argCount()
 }
 
-func (sc *SortColumn) size() int {
+func (sc *sortColumn) size() int {
     size := sc.el.size()
     if sc.desc {
         size += len(Symbols[SYM_DESC])
@@ -17,7 +17,7 @@ func (sc *SortColumn) size() int {
     return size
 }
 
-func (sc *SortColumn) scan(b []byte, args []interface{}) (int, int) {
+func (sc *sortColumn) scan(b []byte, args []interface{}) (int, int) {
     var bw, ac int
     ebw, eac := sc.el.scan(b[bw:], args[ac:])
     bw += ebw
@@ -52,18 +52,18 @@ func (ob *OrderByClause) scan(b []byte, args []interface{}) (int, int) {
     return bw, ac
 }
 
-func (c *Column) Desc() *SortColumn {
-    return &SortColumn{el: c, desc: true}
+func (c *Column) Desc() *sortColumn {
+    return &sortColumn{el: c, desc: true}
 }
 
-func (c *Column) Asc() *SortColumn {
-    return &SortColumn{el: c}
+func (c *Column) Asc() *sortColumn {
+    return &sortColumn{el: c}
 }
 
-func (c *ColumnDef) Desc() *SortColumn {
-    return &SortColumn{el: c, desc: true}
+func (c *ColumnDef) Desc() *sortColumn {
+    return &sortColumn{el: c, desc: true}
 }
 
-func (c *ColumnDef) Asc() *SortColumn {
-    return &SortColumn{el: c}
+func (c *ColumnDef) Asc() *sortColumn {
+    return &sortColumn{el: c}
 }

@@ -304,7 +304,7 @@ func TestSelectGroupOrderLimit(t *testing.T) {
 func TestSelectJoinSingle(t *testing.T) {
     assert := assert.New(t)
 
-    j := &JoinClause{
+    j := &joinClause{
         left: users,
         right: articles,
         onExprs: []*Expression{

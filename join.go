@@ -6,14 +6,14 @@ const (
     JOIN_INNER joinType = iota
 )
 
-type JoinClause struct {
+type joinClause struct {
     joinType joinType
     left selection
     right selection
     onExprs []*Expression
 }
 
-func (j *JoinClause) argCount() int {
+func (j *joinClause) argCount() int {
     argc := 0
     for _, onExpr := range j.onExprs {
         argc += onExpr.argCount()
@@ -21,7 +21,7 @@ func (j *JoinClause) argCount() int {
     return argc
 }
 
-func (j *JoinClause) size() int {
+func (j *joinClause) size() int {
     size := len(Symbols[SYM_JOIN])
     size += j.right.size()
     nonExprs := len(j.onExprs)
@@ -35,7 +35,7 @@ func (j *JoinClause) size() int {
     return size
 }
 
-func (j *JoinClause) scan(b []byte, args []interface{}) (int, int) {
+func (j *joinClause) scan(b []byte, args []interface{}) (int, int) {
     var bw, ac int
     bw += copy(b[bw:], Symbols[SYM_JOIN])
     pbw, pac := j.right.scan(b[bw:], args)
@@ -55,13 +55,13 @@ func (j *JoinClause) scan(b []byte, args []interface{}) (int, int) {
     return bw, ac
 }
 
-func (j *JoinClause) On(onExprs ...*Expression) *JoinClause {
+func (j *joinClause) On(onExprs ...*Expression) *joinClause {
     for _, onExpr := range onExprs {
         j.onExprs = append(j.onExprs, onExpr)
     }
     return j
 }
 
-func Join(left selection, right selection, onExpr ...*Expression) *JoinClause {
-    return &JoinClause{left: left, right: right, onExprs: onExpr}
+func Join(left selection, right selection, onExpr ...*Expression) *joinClause {
+    return &joinClause{left: left, right: right, onExprs: onExpr}
 }

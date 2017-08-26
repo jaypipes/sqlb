@@ -1,17 +1,17 @@
 package sqlb
 
-type SelectClause struct {
+type selectClause struct {
     alias string
     projected *List
     selections []selection
-    joins []*JoinClause
+    joins []*joinClause
     filters []*Expression
-    groupBy *GroupByClause
+    groupBy *groupByClause
     orderBy *OrderByClause
-    limit *LimitClause
+    limit *limitClause
 }
 
-func (s *SelectClause) argCount() int {
+func (s *selectClause) argCount() int {
     argc := s.projected.argCount()
     for _, sel := range s.selections {
         argc += sel.argCount()
@@ -34,16 +34,16 @@ func (s *SelectClause) argCount() int {
     return argc
 }
 
-func (s *SelectClause) Alias(alias string) {
+func (s *selectClause) Alias(alias string) {
     s.alias = alias
 }
 
-func (s *SelectClause) As(alias string) *SelectClause {
+func (s *selectClause) As(alias string) *selectClause {
     s.Alias(alias)
     return s
 }
 
-func (s *SelectClause) size() int {
+func (s *selectClause) size() int {
     size := len(Symbols[SYM_SELECT]) + len(Symbols[SYM_FROM])
     size += s.projected.size()
     for _, sel := range s.selections {
@@ -75,7 +75,7 @@ func (s *SelectClause) size() int {
     return size
 }
 
-func (s *SelectClause) scan(b []byte, args []interface{}) (int, int) {
+func (s *selectClause) scan(b []byte, args []interface{}) (int, int) {
     var bw, ac int
     bw += copy(b[bw:], Symbols[SYM_SELECT])
     pbw, pac := s.projected.scan(b[bw:], args)
@@ -125,7 +125,7 @@ func (s *SelectClause) scan(b []byte, args []interface{}) (int, int) {
     return bw, ac
 }
 
-func (s *SelectClause) String() string {
+func (s *selectClause) String() string {
     size := s.size()
     argc := s.argCount()
     args := make([]interface{}, argc)
@@ -134,7 +134,7 @@ func (s *SelectClause) String() string {
     return string(b)
 }
 
-func (s *SelectClause) StringArgs() (string, []interface{}) {
+func (s *selectClause) StringArgs() (string, []interface{}) {
     size := s.size()
     argc := s.argCount()
     args := make([]interface{}, argc)
@@ -143,20 +143,20 @@ func (s *SelectClause) StringArgs() (string, []interface{}) {
     return string(b), args
 }
 
-func (s *SelectClause) Where(e *Expression) *SelectClause {
+func (s *selectClause) Where(e *Expression) *selectClause {
     s.filters = append(s.filters, e)
     return s
 }
 
 // Given one or more columns, either set or add to the GROUP BY clause for
-// the SelectClause
-func (s *SelectClause) GroupBy(cols ...Columnar) *SelectClause {
+// the selectClause
+func (s *selectClause) GroupBy(cols ...Columnar) *selectClause {
     if len(cols) == 0 {
         return s
     }
     gb := s.groupBy
     if gb == nil {
-        gb = &GroupByClause{
+        gb = &groupByClause{
             cols: &List{
                 elements: make([]element, len(cols)),
             },
@@ -174,8 +174,8 @@ func (s *SelectClause) GroupBy(cols ...Columnar) *SelectClause {
 }
 
 // Given one or more sort columns, either set or add to the ORDER BY clause for
-// the SelectClause
-func (s *SelectClause) OrderBy(sortCols ...*SortColumn) *SelectClause {
+// the selectClause
+func (s *selectClause) OrderBy(sortCols ...*sortColumn) *selectClause {
     if len(sortCols) == 0 {
         return s
     }
@@ -198,20 +198,20 @@ func (s *SelectClause) OrderBy(sortCols ...*SortColumn) *SelectClause {
     return s
 }
 
-func (s *SelectClause) LimitWithOffset(limit int, offset int) *SelectClause {
-    lc := &LimitClause{limit: limit}
+func (s *selectClause) LimitWithOffset(limit int, offset int) *selectClause {
+    lc := &limitClause{limit: limit}
     lc.offset = &offset
     s.limit = lc
     return s
 }
 
-func (s *SelectClause) Limit(limit int) *SelectClause {
-    lc := &LimitClause{limit: limit}
+func (s *selectClause) Limit(limit int) *selectClause {
+    lc := &limitClause{limit: limit}
     s.limit = lc
     return s
 }
 
-func containsJoin(s *SelectClause, j *JoinClause) bool {
+func containsJoin(s *selectClause, j *joinClause) bool {
     for _, sj := range s.joins {
         if j == sj {
             return true
@@ -220,16 +220,16 @@ func containsJoin(s *SelectClause, j *JoinClause) bool {
     return false
 }
 
-func addToProjections(s *SelectClause, p projection) {
+func addToProjections(s *selectClause, p projection) {
     s.projected.elements = append(s.projected.elements, p)
 }
 
-func Select(items ...element) *SelectClause {
+func Select(items ...element) *selectClause {
     // TODO(jaypipes): Make the memory allocation more efficient below by
     // looping through the elements and determining the number of element struct
     // pointers to allocate instead of just making an empty array of element
     // pointers.
-    res := &SelectClause{
+    res := &selectClause{
         projected: &List{},
     }
 
@@ -238,12 +238,12 @@ func Select(items ...element) *SelectClause {
 
     // For each scannable item we've received in the call, check what concrete
     // type they are and, depending on which type they are, either add them to
-    // the returned SelectClause's projected List or query the underlying
+    // the returned selectClause's projected List or query the underlying
     // table metadata to generate a list of all columns in that table.
     for _, item := range items {
         switch item.(type) {
-            case *JoinClause:
-                j := item.(*JoinClause)
+            case *joinClause:
+                j := item.(*joinClause)
                 if ! containsJoin(res, j) {
                     res.joins = append(res.joins, j)
                     if _, ok := selectionMap[j.left.selectionId()]; ! ok {

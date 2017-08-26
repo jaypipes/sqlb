@@ -6,10 +6,10 @@ import (
     "github.com/stretchr/testify/assert"
 )
 
-func TestGroupByClauseSingle(t *testing.T) {
+func TestgroupByClauseSingle(t *testing.T) {
     assert := assert.New(t)
 
-    ob := &GroupByClause{
+    ob := &groupByClause{
         cols: &List{
             elements: []element{colUserName},
         },
@@ -34,10 +34,10 @@ func TestGroupByClauseSingle(t *testing.T) {
     assert.Equal(expArgCount, numArgs)
 }
 
-func TestGroupByClauseMulti(t *testing.T) {
+func TestgroupByClauseMulti(t *testing.T) {
     assert := assert.New(t)
 
-    ob := &GroupByClause{
+    ob := &groupByClause{
         cols: &List{
             elements: []element{colUserId, colUserName},
         },

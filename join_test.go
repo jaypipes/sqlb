@@ -48,13 +48,13 @@ func init() {
 
 func TestJoinFuncGenerics(t *testing.T) {
     // Test that the sqlb.Join() func can take a *Table or *TableDef and zero
-    // or more *Expression struct pointers and returns a *JoinClause struct
+    // or more *Expression struct pointers and returns a *joinClause struct
     // pointers. Essentially, we're testing the Selection generic interface here
     assert := assert.New(t)
 
     cond := Equal(colArticleAuthor, colUserId)
 
-    joins := []*JoinClause{
+    joins := []*joinClause{
         Join(articles, users, cond),
         Join(articles.Table(), users.Table(), cond),
     }
@@ -80,10 +80,10 @@ func TestJoinFuncGenerics(t *testing.T) {
     }
 }
 
-func TestJoinClauseInnerOnEqualSingle(t *testing.T) {
+func TestjoinClauseInnerOnEqualSingle(t *testing.T) {
     assert := assert.New(t)
 
-    j := &JoinClause{
+    j := &joinClause{
         left: articles.Table(),
         right: users.Table(),
         onExprs: []*Expression{
@@ -110,10 +110,10 @@ func TestJoinClauseInnerOnEqualSingle(t *testing.T) {
     assert.Equal(expArgCount, numArgs)
 }
 
-func TestJoinClauseOnMethod(t *testing.T) {
+func TestjoinClauseOnMethod(t *testing.T) {
     assert := assert.New(t)
 
-    j := &JoinClause{
+    j := &joinClause{
         left: articles.Table(),
         right: users.Table(),
     }
@@ -138,7 +138,7 @@ func TestJoinClauseOnMethod(t *testing.T) {
     assert.Equal(expArgCount, numArgs)
 }
 
-func TestJoinClauseAliasedInnerOnEqualSingle(t *testing.T) {
+func TestjoinClauseAliasedInnerOnEqualSingle(t *testing.T) {
     assert := assert.New(t)
 
     atbl := articles.Table().As("a")
@@ -150,7 +150,7 @@ func TestJoinClauseAliasedInnerOnEqualSingle(t *testing.T) {
     aliasIdCol := utbl.Column("id")
     assert.NotNil(aliasIdCol)
 
-    j := &JoinClause{
+    j := &joinClause{
         left: atbl,
         right: utbl,
         onExprs: []*Expression{
@@ -177,10 +177,10 @@ func TestJoinClauseAliasedInnerOnEqualSingle(t *testing.T) {
     assert.Equal(expArgCount, numArgs)
 }
 
-func TestJoinClauseInnerOnEqualMulti(t *testing.T) {
+func TestjoinClauseInnerOnEqualMulti(t *testing.T) {
     assert := assert.New(t)
 
-    j := &JoinClause{
+    j := &joinClause{
         left: articles.Table(),
         right: users.Table(),
         onExprs: []*Expression{
