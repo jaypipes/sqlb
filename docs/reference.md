@@ -101,7 +101,54 @@ definition:
 
 ### Using `sqlb.Reflect()` to automatically gather metadata
 
-TODO
+The other method of establishing database metadata is to let `sqlb` do it for
+you. The `sqlb.Reflect()` function accepts three arguments: a string describing
+the `database/sql` driver name, a pointer to a `database/sql:DB` struct and a
+pointer to a `sqlb.Meta` struct that you wish to fill with metadata
+information.
+
+The following code demonstrates how to use the `sqlb.Reflect()` function
+properly. We use a MySQL database instance, however simply change the
+DB-specific driver import and driver name passed to `sqlb.Reflect()` to use a
+different database server.
+
+```go
+import (
+    "fmt"
+    "database/sql"
+    _ "github.com/go-sql-driver/mysql"
+)
+
+var (
+    db *sql.DB
+    meta *sqlb.Meta
+)
+
+func main() {
+    // First, set up your database/sql:DB struct using database/sql:Open()
+    db, err := sql.Open("mysql", "user:pass@/blog")
+
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    // Next, ask sqlb.Reflect() to populate the metadata for the DB
+    err = sqlb.Reflect("mysql", db, meta)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    // meta variable is now populate with table and column information for the
+    // "blog" database. Here's some example code that loops through the table
+    // metadata printing out table and column names.
+    for _, td := range meta.TableDefs() {
+        fmt.Printf("Table: %s\n", td.name)
+        for _, cd := range td.ColumnDefs() {
+            fmt.Printf(" Column: %s", cd.name)
+        }
+    }
+}
+```
 
 ## Aliasables
 
