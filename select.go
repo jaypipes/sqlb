@@ -5,7 +5,7 @@ type selectClause struct {
     projected *List
     selections []selection
     joins []*joinClause
-    filters []*Expression
+    where *whereClause
     groupBy *groupByClause
     orderBy *OrderByClause
     limit *limitClause
@@ -19,8 +19,8 @@ func (s *selectClause) argCount() int {
     for _, join := range s.joins {
         argc += join.argCount()
     }
-    for _, filter := range s.filters {
-        argc += filter.argCount()
+    if s.where != nil {
+        argc += s.where.argCount()
     }
     if s.groupBy != nil {
         argc += s.groupBy.argCount()
@@ -55,13 +55,8 @@ func (s *selectClause) size() int {
     for _, join := range s.joins {
         size += join.size()
     }
-    nfilters := len(s.filters)
-    if nfilters > 0 {
-        size += len(Symbols[SYM_WHERE])
-        size += len(Symbols[SYM_AND]) * (nfilters - 1)
-        for _, filter := range s.filters {
-            size += filter.size()
-        }
+    if s.where != nil {
+        size += s.where.size()
     }
     if s.groupBy != nil {
         size += s.groupBy.size()
@@ -96,16 +91,10 @@ func (s *selectClause) scan(b []byte, args []interface{}) (int, int) {
         bw += jbw
         ac += jac
     }
-    if len(s.filters) > 0 {
-        bw += copy(b[bw:], Symbols[SYM_WHERE])
-        for x, filter := range s.filters {
-            if x > 0 {
-                bw += copy(b[bw:], Symbols[SYM_AND])
-            }
-            fbw, fac := filter.scan(b[bw:], args[ac:])
-            bw += fbw
-            ac += fac
-        }
+    if s.where != nil {
+        wbw, wac := s.where.scan(b[bw:], args[ac:])
+        bw += wbw
+        ac += wac
     }
     if s.groupBy != nil {
         gbbw, gbac := s.groupBy.scan(b[bw:], args[ac:])
@@ -144,7 +133,10 @@ func (s *selectClause) StringArgs() (string, []interface{}) {
 }
 
 func (s *selectClause) Where(e *Expression) *selectClause {
-    s.filters = append(s.filters, e)
+    if s.where == nil {
+        s.where = &whereClause{filters: make([]*Expression, 0)}
+    }
+    s.where.filters = append(s.where.filters, e)
     return s
 }
 
