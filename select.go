@@ -220,7 +220,7 @@ func containsJoin(s *SelectClause, j *JoinClause) bool {
     return false
 }
 
-func addToprojections(s *SelectClause, p projection) {
+func addToProjections(s *SelectClause, p projection) {
     s.projected.elements = append(s.projected.elements, p)
 }
 
@@ -234,6 +234,7 @@ func Select(items ...element) *SelectClause {
     }
 
     selectionMap := make(map[uint64]selection, 0)
+    projectionMap := make(map[uint64]projection, 0)
 
     // For each scannable item we've received in the call, check what concrete
     // type they are and, depending on which type they are, either add them to
@@ -248,7 +249,22 @@ func Select(items ...element) *SelectClause {
                     if _, ok := selectionMap[j.left.selectionId()]; ! ok {
                         selectionMap[j.left.selectionId()] = j.left
                         for _, proj := range j.left.projections() {
-                            addToprojections(res, proj)
+                            projId := proj.projectionId()
+                            _, projExists := projectionMap[projId]
+                            if ! projExists {
+                                addToProjections(res, proj)
+                                projectionMap[projId] = proj
+                            }
+                        }
+                    }
+                    if _, ok := selectionMap[j.right.selectionId()]; ! ok {
+                        for _, proj := range j.right.projections() {
+                            projId := proj.projectionId()
+                            _, projExists := projectionMap[projId]
+                            if ! projExists {
+                                addToProjections(res, proj)
+                                projectionMap[projId] = proj
+                            }
                         }
                     }
                 }
@@ -268,18 +284,18 @@ func Select(items ...element) *SelectClause {
             case *Table:
                 v := item.(*Table)
                 for _, cd := range v.tdef.projections() {
-                    addToprojections(res, cd)
+                    addToProjections(res, cd)
                 }
                 selectionMap[v.selectionId()] = v
             case *TableDef:
                 v := item.(*TableDef)
                 for _, cd := range v.projections() {
-                    addToprojections(res, cd)
+                    addToProjections(res, cd)
                 }
                 selectionMap[v.selectionId()] = v
             case *ColumnDef:
                 v := item.(*ColumnDef)
-                addToprojections(res, v)
+                addToProjections(res, v)
                 selectionMap[v.tdef.selectionId()] = v.tdef
         }
     }

@@ -314,7 +314,7 @@ func TestSelectJoinSingle(t *testing.T) {
 
     sel := Select(j)
 
-    exp := "SELECT users.id, users.name FROM users JOIN articles ON users.id = articles.author"
+    exp := "SELECT users.id, users.name, articles.id, articles.author FROM users JOIN articles ON users.id = articles.author"
     expLen := len(exp)
     expArgCount := 0
 
