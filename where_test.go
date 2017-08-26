@@ -41,10 +41,10 @@ func TestWhereClause(t *testing.T) {
                     ),
                 },
             },
-            qs: " WHERE users.name != ? AND users.name != ?",
+            qs: " WHERE (users.name != ? AND users.name != ?)",
             qargs: []interface{}{"foo", "bar"},
         },
-        // Multiple unary expressions should be identical to AND
+        // Multiple unary expressions should be AND'd together
         whereClauseTest{
             c: &whereClause{
                 filters: []*Expression{
@@ -65,7 +65,7 @@ func TestWhereClause(t *testing.T) {
                     ),
                 },
             },
-            qs: " WHERE users.name = ? OR users.name = ?",
+            qs: " WHERE (users.name = ? OR users.name = ?)",
             qargs: []interface{}{"foo", "bar"},
         },
         // An OR and another unary expression
@@ -79,9 +79,27 @@ func TestWhereClause(t *testing.T) {
                     NotEqual(colUserName, "baz"),
                 },
             },
-            // TODO(jaypipes): This is buggy. Should have parens around OR
-            qs: " WHERE users.name = ? OR users.name = ? AND users.name != ?",
+            qs: " WHERE (users.name = ? OR users.name = ?) AND users.name != ?",
             qargs: []interface{}{"foo", "bar", "baz"},
+        },
+        // Two AND expressions OR'd together
+        whereClauseTest{
+            c: &whereClause{
+                filters: []*Expression{
+                    Or(
+                        And(
+                            NotEqual(colUserName, "foo"),
+                            NotEqual(colUserName, "bar"),
+                        ),
+                        And(
+                            NotEqual(colUserName, "baz"),
+                            Equal(colUserId, 1),
+                        ),
+                    ),
+                },
+            },
+            qs: " WHERE ((users.name != ? AND users.name != ?) OR (users.name != ? AND users.id = ?))",
+            qargs: []interface{}{"foo", "bar", "baz", 1},
         },
     }
     for _, test := range tests {

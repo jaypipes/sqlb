@@ -24,10 +24,10 @@ var (
             SYM_ELEMENT, SYM_NEQUAL, SYM_ELEMENT,
         },
         EXP_AND: exprScanInfo{
-            SYM_ELEMENT, SYM_AND, SYM_ELEMENT,
+            SYM_LPAREN, SYM_ELEMENT, SYM_AND, SYM_ELEMENT, SYM_RPAREN,
         },
         EXP_OR: exprScanInfo{
-            SYM_ELEMENT, SYM_OR, SYM_ELEMENT,
+            SYM_LPAREN, SYM_ELEMENT, SYM_OR, SYM_ELEMENT, SYM_RPAREN,
         },
         EXP_IN: exprScanInfo{
             SYM_ELEMENT, SYM_IN, SYM_ELEMENT, SYM_RPAREN,

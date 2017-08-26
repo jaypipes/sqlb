@@ -57,7 +57,7 @@ func TestExpressions(t *testing.T) {
                 NotEqual(colUserName, "foo"),
                 NotEqual(colUserName, "bar"),
             ),
-            qs: "users.name != ? AND users.name != ?",
+            qs: "(users.name != ? AND users.name != ?)",
             qargs: []interface{}{"foo", "bar"},
         },
         // OR expression
@@ -66,7 +66,7 @@ func TestExpressions(t *testing.T) {
                 Equal(colUserName, "foo"),
                 Equal(colUserName, "bar"),
             ),
-            qs: "users.name = ? OR users.name = ?",
+            qs: "(users.name = ? OR users.name = ?)",
             qargs: []interface{}{"foo", "bar"},
         },
         // BETWEEN column and two values
