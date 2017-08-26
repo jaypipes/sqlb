@@ -6,422 +6,82 @@ import (
     "github.com/stretchr/testify/assert"
 )
 
-func TestExpressionEqual(t *testing.T) {
-    assert := assert.New(t)
-
-    c := &Column{
-        cdef: colUserName,
-        tbl: users.Table(),
-    }
-
-    val := &Value{value: "foo"}
-
-    e := &Expression{
-        scanInfo: exprScanTable[EXP_EQUAL],
-        elements: []element{c, val},
-    }
-
-    exp := "users.name = ?"
-    expLen := len(exp)
-    expArgCount := 1
-
-    s := e.size()
-    assert.Equal(expLen, s)
-
-    argc := e.argCount()
-    assert.Equal(expArgCount, argc)
-
-    args := make([]interface{}, 1)
-    b := make([]byte, s)
-    written, numArgs := e.scan(b, args)
-
-    assert.Equal(s, written)
-    assert.Equal(exp, string(b))
-    assert.Equal("foo", args[0])
-    assert.Equal(expArgCount, numArgs)
-
-    // Check that if we reverse the order in which the Expression is constructed,
-    // that our scan() still functions but merely generates the SQL string with
-    // the left and right expression reversed
-
-    erev := &Expression{
-        scanInfo: exprScanTable[EXP_EQUAL],
-        elements: []element{val, c},
-    }
-
-    exp = "? = users.name"
-    expLen = len(exp)
-    expArgCount = 1
-
-    s = erev.size()
-    assert.Equal(expLen, s)
-
-    argc = erev.argCount()
-    assert.Equal(expArgCount, argc)
-
-    args = make([]interface{}, 1)
-    b = make([]byte, s)
-    written, numArgs = erev.scan(b, args)
-
-    assert.Equal(s, written)
-    assert.Equal(exp, string(b))
-    assert.Equal("foo", args[0])
-    assert.Equal(expArgCount, numArgs)
+type expressionTest struct {
+    c *Expression
+    qs string
+    qargs []interface{}
 }
 
-func TestEqualFuncValue(t *testing.T) {
+func TestExpressions(t *testing.T) {
     assert := assert.New(t)
 
-    c := &Column{
-        cdef: colUserName,
-        tbl: users.Table(),
+    tests := []expressionTest{
+        // equal value
+        expressionTest{
+            c: Equal(colUserName, "foo"),
+            qs: "users.name = ?",
+            qargs: []interface{}{"foo"},
+        },
+        // reverse args equal
+        expressionTest{
+            c: Equal("foo", colUserName),
+            qs: "? = users.name",
+            qargs: []interface{}{"foo"},
+        },
+        // equal columns
+        expressionTest{
+            c: Equal(colUserId, colArticleAuthor),
+            qs: "users.id = articles.author",
+        },
+        // not equal value
+        expressionTest{
+            c: NotEqual(colUserName, "foo"),
+            qs: "users.name != ?",
+            qargs: []interface{}{"foo"},
+        },
+        // in single value
+        expressionTest{
+            c: In(colUserName, "foo"),
+            qs: "users.name IN (?)",
+            qargs: []interface{}{"foo"},
+        },
+        // in multi value
+        expressionTest{
+            c: In(colUserName, "foo", "bar", 1),
+            qs: "users.name IN (?, ?, ?)",
+            qargs: []interface{}{"foo", "bar", 1},
+        },
+        // AND expression
+        expressionTest{
+            c: And(
+                NotEqual(colUserName, "foo"),
+                NotEqual(colUserName, "bar"),
+            ),
+            qs: "users.name != ? AND users.name != ?",
+            qargs: []interface{}{"foo", "bar"},
+        },
+        // OR expression
+        expressionTest{
+            c: Or(
+                Equal(colUserName, "foo"),
+                Equal(colUserName, "bar"),
+            ),
+            qs: "users.name = ? OR users.name = ?",
+            qargs: []interface{}{"foo", "bar"},
+        },
     }
+    for _, test := range tests {
+        expLen := len(test.qs)
+        s := test.c.size()
+        assert.Equal(expLen, s)
 
-    eq := Equal(c, "foo")
+        expArgc := len(test.qargs)
+        assert.Equal(expArgc, test.c.argCount())
 
-    exp := "users.name = ?"
-    expLen := len(exp)
-    expArgCount := 1
+        b := make([]byte, s)
+        written, _ := test.c.scan(b, test.qargs)
 
-    s := eq.size()
-    assert.Equal(expLen, s)
-
-    argc := eq.argCount()
-    assert.Equal(expArgCount, argc)
-
-    args := make([]interface{}, 1)
-    b := make([]byte, s)
-    written, numArgs := eq.scan(b, args)
-
-    assert.Equal(s, written)
-    assert.Equal(exp, string(b))
-    assert.Equal("foo", args[0])
-    assert.Equal(expArgCount, numArgs)
-}
-
-func TestEqualFuncTwoelements(t *testing.T) {
-    assert := assert.New(t)
-
-    c1 := &Column{
-        cdef: colUserId,
-        tbl: users.Table(),
+        assert.Equal(written, s)
+        assert.Equal(test.qs, string(b))
     }
-
-    c2 := &Column{
-        cdef: colArticleAuthor,
-        tbl: articles.Table(),
-    }
-
-    eq := Equal(c1, c2)
-
-    exp := "users.id = articles.author"
-    expLen := len(exp)
-    expArgCount := 0
-
-    s := eq.size()
-    assert.Equal(expLen, s)
-
-    argc := eq.argCount()
-    assert.Equal(expArgCount, argc)
-
-    args := make([]interface{}, 0)
-    b := make([]byte, s)
-    written, numArgs := eq.scan(b, args)
-
-    assert.Equal(s, written)
-    assert.Equal(exp, string(b))
-    assert.Equal(expArgCount, numArgs)
-    assert.Equal(0, len(args))
-
-    // Check that if we reverse the order in which the Expression is constructed,
-    // that our scan() still functions but merely generates the SQL string with
-    // the left and right expression reversed
-
-    erev := Equal(c2, c1)
-
-    exp = "articles.author = users.id"
-    expLen = len(exp)
-    expArgCount = 0
-
-    s = erev.size()
-    assert.Equal(expLen, s)
-
-    argc = erev.argCount()
-    assert.Equal(expArgCount, argc)
-
-    args = make([]interface{}, 0)
-    b = make([]byte, s)
-    written, numArgs = erev.scan(b, args)
-
-    assert.Equal(s, written)
-    assert.Equal(exp, string(b))
-    assert.Equal(expArgCount, numArgs)
-    assert.Equal(0, len(args))
-}
-
-func TestExpressionNotEqual(t *testing.T) {
-    assert := assert.New(t)
-
-    c := &Column{
-        cdef: colUserName,
-        tbl: users.Table(),
-    }
-
-    val := &Value{value: "foo"}
-
-    e := &Expression{
-        scanInfo: exprScanTable[EXP_NEQUAL],
-        elements: []element{c, val},
-    }
-
-    exp := "users.name != ?"
-    expLen := len(exp)
-    expArgCount := 1
-
-    s := e.size()
-    assert.Equal(expLen, s)
-
-    argc := e.argCount()
-    assert.Equal(expArgCount, argc)
-
-    args := make([]interface{}, 1)
-    b := make([]byte, s)
-    written, numArgs := e.scan(b, args)
-
-    assert.Equal(s, written)
-    assert.Equal(exp, string(b))
-    assert.Equal("foo", args[0])
-    assert.Equal(expArgCount, numArgs)
-}
-
-func TestNotEqualFuncValue(t *testing.T) {
-    assert := assert.New(t)
-
-    c := &Column{
-        cdef: colUserName,
-        tbl: users.Table(),
-    }
-
-    eq := NotEqual(c, "foo")
-
-    exp := "users.name != ?"
-    expLen := len(exp)
-    expArgCount := 1
-
-    s := eq.size()
-    assert.Equal(expLen, s)
-
-    argc := eq.argCount()
-    assert.Equal(expArgCount, argc)
-
-    args := make([]interface{}, 1)
-    b := make([]byte, s)
-    written, numArgs := eq.scan(b, args)
-
-    assert.Equal(s, written)
-    assert.Equal(exp, string(b))
-    assert.Equal("foo", args[0])
-    assert.Equal(expArgCount, numArgs)
-}
-
-func TestNotEqualFuncTwoelements(t *testing.T) {
-    assert := assert.New(t)
-
-    c1 := &Column{
-        cdef: colUserId,
-        tbl: users.Table(),
-    }
-
-    c2 := &Column{
-        cdef: colArticleAuthor,
-        tbl: articles.Table(),
-    }
-
-    eq := NotEqual(c1, c2)
-
-    exp := "users.id != articles.author"
-    expLen := len(exp)
-    expArgCount := 0
-
-    s := eq.size()
-    assert.Equal(expLen, s)
-
-    argc := eq.argCount()
-    assert.Equal(expArgCount, argc)
-
-    args := make([]interface{}, 0)
-    b := make([]byte, s)
-    written, numArgs := eq.scan(b, args)
-
-    assert.Equal(s, written)
-    assert.Equal(exp, string(b))
-    assert.Equal(expArgCount, numArgs)
-    assert.Equal(0, len(args))
-
-    // Check that if we reverse the order in which the Expression is constructed,
-    // that our scan() still functions but merely generates the SQL string with
-    // the left and right expression reversed
-
-    erev := NotEqual(c2, c1)
-
-    exp = "articles.author != users.id"
-    expLen = len(exp)
-    expArgCount = 0
-
-    s = erev.size()
-    assert.Equal(expLen, s)
-
-    argc = erev.argCount()
-    assert.Equal(expArgCount, argc)
-
-    args = make([]interface{}, 0)
-    b = make([]byte, s)
-    written, numArgs = erev.scan(b, args)
-
-    assert.Equal(s, written)
-    assert.Equal(exp, string(b))
-    assert.Equal(expArgCount, numArgs)
-    assert.Equal(0, len(args))
-}
-
-func TestInSingle(t *testing.T) {
-    assert := assert.New(t)
-
-    c := &Column{
-        cdef: colUserName,
-        tbl: users.Table(),
-    }
-
-    e := In(c, "foo")
-
-    exp := "users.name IN (?)"
-    expLen := len(exp)
-    expArgCount := 1
-
-    s := e.size()
-    assert.Equal(expLen, s)
-
-    argc := e.argCount()
-    assert.Equal(expArgCount, argc)
-
-    args := make([]interface{}, 1)
-    b := make([]byte, s)
-    written, numArgs := e.scan(b, args)
-
-    assert.Equal(s, written)
-    assert.Equal(exp, string(b))
-    assert.Equal(expArgCount, numArgs)
-    assert.Equal(expArgCount, len(args))
-}
-
-func TestInMulti(t *testing.T) {
-    assert := assert.New(t)
-
-    c := &Column{
-        cdef: colUserName,
-        tbl: users.Table(),
-    }
-
-    e := In(c, "foo", "bar", 1)
-
-    exp := "users.name IN (?, ?, ?)"
-    expLen := len(exp)
-    expArgCount := 3
-
-    s := e.size()
-    assert.Equal(expLen, s)
-
-    argc := e.argCount()
-    assert.Equal(expArgCount, argc)
-
-    args := make([]interface{}, 3)
-    b := make([]byte, s)
-    written, numArgs := e.scan(b, args)
-
-    assert.Equal(s, written)
-    assert.Equal(exp, string(b))
-    assert.Equal(expArgCount, numArgs)
-    assert.Equal(expArgCount, len(args))
-}
-
-func TestAnd(t *testing.T) {
-    assert := assert.New(t)
-
-    c := &Column{
-        cdef: colUserName,
-        tbl: users.Table(),
-    }
-
-    ea := &Expression{
-        scanInfo: exprScanTable[EXP_NEQUAL],
-        elements: []element{c, &Value{value: "foo"}},
-    }
-
-    eb := &Expression{
-        scanInfo: exprScanTable[EXP_NEQUAL],
-        elements: []element{c, &Value{value: "bar"}},
-    }
-    e := And(ea, eb)
-
-    exp := "users.name != ? AND users.name != ?"
-    expLen := len(exp)
-    expArgCount := 2
-
-    s := e.size()
-    assert.Equal(expLen, s)
-
-    argc := e.argCount()
-    assert.Equal(expArgCount, argc)
-
-    args := make([]interface{}, expArgCount)
-    b := make([]byte, s)
-    written, numArgs := e.scan(b, args)
-
-    assert.Equal(s, written)
-    assert.Equal(exp, string(b))
-    assert.Equal(expArgCount, numArgs)
-    assert.Equal(expArgCount, len(args))
-    assert.Equal("foo", args[0])
-    assert.Equal("bar", args[1])
-}
-
-func TestOr(t *testing.T) {
-    assert := assert.New(t)
-
-    c := &Column{
-        cdef: colUserName,
-        tbl: users.Table(),
-    }
-
-    ea := &Expression{
-        scanInfo: exprScanTable[EXP_EQUAL],
-        elements: []element{c, &Value{value: "foo"}},
-    }
-
-    eb := &Expression{
-        scanInfo: exprScanTable[EXP_EQUAL],
-        elements: []element{c, &Value{value: "bar"}},
-    }
-    e := Or(ea, eb)
-
-    exp := "users.name = ? OR users.name = ?"
-    expLen := len(exp)
-    expArgCount := 2
-
-    s := e.size()
-    assert.Equal(expLen, s)
-
-    argc := e.argCount()
-    assert.Equal(expArgCount, argc)
-
-    args := make([]interface{}, expArgCount)
-    b := make([]byte, s)
-    written, numArgs := e.scan(b, args)
-
-    assert.Equal(s, written)
-    assert.Equal(exp, string(b))
-    assert.Equal(expArgCount, numArgs)
-    assert.Equal(expArgCount, len(args))
-    assert.Equal("foo", args[0])
-    assert.Equal("bar", args[1])
 }
