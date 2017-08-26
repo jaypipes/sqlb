@@ -120,9 +120,10 @@ func In(subject element, values ...interface{}) *Expression {
     }
 }
 
-func Between(a *Expression, b *Expression) *Expression {
+func Between(subject element, start interface{}, end interface{}) *Expression {
+    els := toElements(subject, start, end)
     return &Expression{
         scanInfo: exprScanTable[EXP_BETWEEN],
-        elements: []element{a, b},
+        elements: els,
     }
 }

@@ -69,6 +69,12 @@ func TestExpressions(t *testing.T) {
             qs: "users.name = ? OR users.name = ?",
             qargs: []interface{}{"foo", "bar"},
         },
+        // BETWEEN column and two values
+        expressionTest{
+            c: Between(colUserName, "foo", "bar"),
+            qs: "users.name BETWEEN ? AND ?",
+            qargs: []interface{}{"foo", "bar"},
+        },
     }
     for _, test := range tests {
         expLen := len(test.qs)
