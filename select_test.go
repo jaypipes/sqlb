@@ -7,7 +7,7 @@ import (
 )
 
 type selClauseTest struct {
-    sel *selectClause
+    c *selectClause
     qs string
     qargs []interface{}
 }
@@ -18,7 +18,7 @@ func TestSelectClause(t *testing.T) {
     tests := []selClauseTest{
         // TableDef and ColumnDef
         selClauseTest{
-            sel: &selectClause{
+            c: &selectClause{
                 selections: []selection{users},
                 projected: &List{elements: []element{colUserName}},
             },
@@ -26,7 +26,7 @@ func TestSelectClause(t *testing.T) {
         },
         // Table and ColumnDef
         selClauseTest{
-            sel: &selectClause{
+            c: &selectClause{
                 selections: []selection{users.Table()},
                 projected: &List{elements: []element{colUserName}},
             },
@@ -34,7 +34,7 @@ func TestSelectClause(t *testing.T) {
         },
         // TableDef and Column
         selClauseTest{
-            sel: &selectClause{
+            c: &selectClause{
                 selections: []selection{users},
                 projected: &List{
                     elements: []element{
@@ -46,7 +46,7 @@ func TestSelectClause(t *testing.T) {
         },
         // aliased Table and Column
         selClauseTest{
-            sel: &selectClause{
+            c: &selectClause{
                 selections: []selection{users.As("u")},
                 projected: &List{
                     elements: []element{
@@ -58,7 +58,7 @@ func TestSelectClause(t *testing.T) {
         },
         // TableDef and mutiple ColumnDef
         selClauseTest{
-            sel: &selectClause{
+            c: &selectClause{
                 selections: []selection{users},
                 projected: &List{
                     elements: []element{
@@ -70,7 +70,7 @@ func TestSelectClause(t *testing.T) {
         },
         // TableDef and mixed Column and ColumnDef
         selClauseTest{
-            sel: &selectClause{
+            c: &selectClause{
                 selections: []selection{users},
                 projected: &List{
                     elements: []element{
@@ -83,14 +83,14 @@ func TestSelectClause(t *testing.T) {
     }
     for _, test := range tests {
         expLen := len(test.qs)
-        s := test.sel.size()
+        s := test.c.size()
         assert.Equal(expLen, s)
 
         expArgc := len(test.qargs)
-        assert.Equal(expArgc, test.sel.argCount())
+        assert.Equal(expArgc, test.c.argCount())
 
         b := make([]byte, s)
-        written, _ := test.sel.scan(b, test.qargs)
+        written, _ := test.c.scan(b, test.qargs)
 
         assert.Equal(written, s)
         assert.Equal(test.qs, string(b))
