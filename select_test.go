@@ -16,6 +16,7 @@ func TestSelectClause(t *testing.T) {
     assert := assert.New(t)
 
     tests := []selClauseTest{
+        // TableDef and ColumnDef
         selClauseTest{
             sel: &selectClause{
                 selections: []selection{users},
@@ -23,6 +24,7 @@ func TestSelectClause(t *testing.T) {
             },
             qs: "SELECT users.name FROM users",
         },
+        // Table and ColumnDef
         selClauseTest{
             sel: &selectClause{
                 selections: []selection{users.Table()},
@@ -30,6 +32,7 @@ func TestSelectClause(t *testing.T) {
             },
             qs: "SELECT users.name FROM users",
         },
+        // TableDef and Column
         selClauseTest{
             sel: &selectClause{
                 selections: []selection{users},
@@ -41,6 +44,7 @@ func TestSelectClause(t *testing.T) {
             },
             qs: "SELECT users.name FROM users",
         },
+        // aliased Table and Column
         selClauseTest{
             sel: &selectClause{
                 selections: []selection{users.As("u")},
@@ -52,6 +56,7 @@ func TestSelectClause(t *testing.T) {
             },
             qs: "SELECT u.name FROM users AS u",
         },
+        // TableDef and mutiple ColumnDef
         selClauseTest{
             sel: &selectClause{
                 selections: []selection{users},
@@ -63,6 +68,7 @@ func TestSelectClause(t *testing.T) {
             },
             qs: "SELECT users.id, users.name FROM users",
         },
+        // TableDef and mixed Column and ColumnDef
         selClauseTest{
             sel: &selectClause{
                 selections: []selection{users},
@@ -99,73 +105,6 @@ func TestWhereSingleEqual(t *testing.T) {
     exp := "SELECT users.name FROM users WHERE users.name = ?"
     expLen := len(exp)
     expArgCount := 1
-
-    assert.Equal(expLen, sel.size())
-    assert.Equal(expArgCount, sel.argCount())
-    assert.Equal(exp, sel.String())
-}
-
-func TestWhereSingleAnd(t *testing.T) {
-    assert := assert.New(t)
-
-    cond := And(
-        NotEqual(colUserName, "foo"),
-        NotEqual(colUserName, "bar"),
-    )
-    sel := Select(colUserName).Where(cond)
-
-    exp := "SELECT users.name FROM users WHERE users.name != ? AND users.name != ?"
-    expLen := len(exp)
-    expArgCount := 2
-
-    assert.Equal(expLen, sel.size())
-    assert.Equal(expArgCount, sel.argCount())
-    assert.Equal(exp, sel.String())
-}
-
-func TestWhereSingleIn(t *testing.T) {
-    assert := assert.New(t)
-
-    sel := Select(colUserName).Where(In(colUserName, "foo", "bar"))
-
-    exp := "SELECT users.name FROM users WHERE users.name IN (?, ?)"
-    expLen := len(exp)
-    expArgCount := 2
-
-    assert.Equal(expLen, sel.size())
-    assert.Equal(expArgCount, sel.argCount())
-    assert.Equal(exp, sel.String())
-}
-
-func TestWhereMultiNotEqual(t *testing.T) {
-    assert := assert.New(t)
-
-    sel := Select(colUserName).Where(NotEqual(colUserName, "foo"))
-    sel = sel.Where(NotEqual(colUserName, "bar"))
-
-    exp := "SELECT users.name FROM users WHERE users.name != ? AND users.name != ?"
-    expLen := len(exp)
-    expArgCount := 2
-
-    assert.Equal(expLen, sel.size())
-    assert.Equal(expArgCount, sel.argCount())
-    assert.Equal(exp, sel.String())
-}
-
-func TestWhereMultiInAndEqual(t *testing.T) {
-    assert := assert.New(t)
-
-    colUserIsAuthor := &ColumnDef{
-        name: "is_author",
-        tdef: users,
-    }
-
-    cond := And(In(colUserName, "foo", "bar"), Equal(colUserIsAuthor, 1))
-    sel := Select(colUserName).Where(cond)
-
-    exp := "SELECT users.name FROM users WHERE users.name IN (?, ?) AND users.is_author = ?"
-    expLen := len(exp)
-    expArgCount := 3
 
     assert.Equal(expLen, sel.size())
     assert.Equal(expArgCount, sel.argCount())
