@@ -28,22 +28,22 @@ func (sc *sortColumn) scan(b []byte, args []interface{}) (int, int) {
     return bw, ac
 }
 
-type OrderByClause struct {
+type orderByClause struct {
     cols *List
 }
 
-func (ob *OrderByClause) argCount() int {
+func (ob *orderByClause) argCount() int {
     argc := 0
     return argc
 }
 
-func (ob *OrderByClause) size() int {
+func (ob *orderByClause) size() int {
     size := len(Symbols[SYM_ORDER_BY])
     size += ob.cols.size()
     return size
 }
 
-func (ob *OrderByClause) scan(b []byte, args []interface{}) (int, int) {
+func (ob *orderByClause) scan(b []byte, args []interface{}) (int, int) {
     var bw, ac int
     bw += copy(b[bw:], Symbols[SYM_ORDER_BY])
     ebw, eac := ob.cols.scan(b[bw:], args[ac:])

@@ -7,7 +7,7 @@ type selectClause struct {
     joins []*joinClause
     where *whereClause
     groupBy *groupByClause
-    orderBy *OrderByClause
+    orderBy *orderByClause
     limit *limitClause
 }
 
@@ -182,7 +182,7 @@ func (s *selectClause) OrderBy(sortCols ...*sortColumn) *selectClause {
     }
     ob := s.orderBy
     if ob == nil {
-        ob = &OrderByClause{
+        ob = &orderByClause{
             cols: &List{
                 elements: make([]element, len(sortCols)),
             },

@@ -113,7 +113,7 @@ func TestSelectClause(t *testing.T) {
                 projected: &List{
                     elements: []element{colUserName},
                 },
-                orderBy: &OrderByClause{
+                orderBy: &orderByClause{
                     cols: &List{
                         elements: []element{
                             colUserName.Desc(),
@@ -154,7 +154,7 @@ func TestSelectClause(t *testing.T) {
                         },
                     },
                 },
-                orderBy: &OrderByClause{
+                orderBy: &orderByClause{
                     cols: &List{
                         elements: []element{
                             colUserName.Desc(),
