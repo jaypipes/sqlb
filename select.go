@@ -38,12 +38,12 @@ func (s *selectClause) argCount() int {
     return argc
 }
 
-func (s *selectClause) Alias(alias string) {
+func (s *selectClause) setAlias(alias string) {
     s.alias = alias
 }
 
 func (s *selectClause) As(alias string) *selectClause {
-    s.Alias(alias)
+    s.setAlias(alias)
     return s
 }
 
