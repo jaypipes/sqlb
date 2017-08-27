@@ -6,205 +6,85 @@ import (
     "github.com/stretchr/testify/assert"
 )
 
-var (
-    meta = &Meta{
-        schemaName: "test",
-        tdefs: make(map[string]*TableDef, 0),
-    }
-
-    users = &TableDef{
-        meta: meta,
-        name: "users",
-    }
-    colUserId = &ColumnDef{
-        name: "id",
-        tdef: users,
-    }
-    colUserName = &ColumnDef{
-        name: "name",
-        tdef: users,
-    }
-
-    articles = &TableDef{
-        meta: meta,
-        name: "articles",
-    }
-    colArticleId = &ColumnDef{
-        name: "id",
-        tdef: articles,
-    }
-    colArticleAuthor = &ColumnDef{
-        name: "author",
-        tdef: articles,
-    }
-)
-
-func init() {
-    users.cdefs = []*ColumnDef{colUserId, colUserName}
-    articles.cdefs = []*ColumnDef{colArticleId, colArticleAuthor}
-    meta.tdefs["users"] = users
-    meta.tdefs["articles"] = articles
+type joinClauseTest struct {
+    c *joinClause
+    qs string
+    qargs []interface{}
 }
 
-func TestJoinFuncGenerics(t *testing.T) {
-    // Test that the sqlb.Join() func can take a *Table or *TableDef and zero
-    // or more *Expression struct pointers and returns a *joinClause struct
-    // pointers. Essentially, we're testing the Selection generic interface here
+func TestJoinClause(t *testing.T) {
     assert := assert.New(t)
 
-    cond := Equal(colArticleAuthor, colUserId)
+    m := testFixtureMeta()
+    users := m.TableDef("users")
+    articles := m.TableDef("articles")
+    colUserId := users.Column("id")
+    colArticleAuthor := articles.Column("author")
 
-    joins := []*joinClause{
-        Join(articles, users, cond),
-        Join(articles.Table(), users.Table(), cond),
+    auCond := Equal(colArticleAuthor, colUserId)
+    uaCond := Equal(colUserId, colArticleAuthor)
+
+    join := &joinClause{
+        left: articles.Table(),
+        right: users.Table(),
+        onExprs: []*Expression{},
     }
-
-    for _, j := range joins {
-        exp := " JOIN users ON articles.author = users.id"
-        expLen := len(exp)
-        expArgCount := 0
-
-        s := j.size()
+    tests := []joinClauseTest{
+        // articles to users table defs
+        joinClauseTest{
+            c: Join(articles, users, auCond),
+            qs: " JOIN users ON articles.author = users.id",
+        },
+        // users to articles table defs
+        joinClauseTest{
+            c: Join(users, articles, uaCond),
+            qs: " JOIN articles ON users.id = articles.author",
+        },
+        // articles to users tables
+        joinClauseTest{
+            c: Join(articles.Table(), users.Table(), auCond),
+            qs: " JOIN users ON articles.author = users.id",
+        },
+        // joinClause.On() method
+        joinClauseTest{
+            c: join.On(auCond),
+            qs: " JOIN users ON articles.author = users.id",
+        },
+        // join an aliased table to non-aliased table
+        joinClauseTest{
+            c: &joinClause{
+                left: articles.As("a"),
+                right: users.Table(),
+                onExprs: []*Expression{
+                    Equal(articles.As("a").Column("author"), colUserId),
+                },
+            },
+            qs: " JOIN users ON a.author = users.id",
+        },
+        // join a non-aliased table to aliased table
+        joinClauseTest{
+            c: &joinClause{
+                left: articles,
+                right: users.As("u"),
+                onExprs: []*Expression{
+                    Equal(colArticleAuthor, users.As("u").Column("id")),
+                },
+            },
+            qs: " JOIN users AS u ON articles.author = u.id",
+        },
+    }
+    for _, test := range tests {
+        expLen := len(test.qs)
+        s := test.c.size()
         assert.Equal(expLen, s)
 
-        argc := j.argCount()
-        assert.Equal(expArgCount, argc)
+        expArgc := len(test.qargs)
+        assert.Equal(expArgc, test.c.argCount())
 
-        args := make([]interface{}, expArgCount)
         b := make([]byte, s)
-        written, numArgs := j.scan(b, args)
+        written, _ := test.c.scan(b, test.qargs)
 
-        assert.Equal(s, written)
-        assert.Equal(exp, string(b))
-        assert.Equal(expArgCount, numArgs)
+        assert.Equal(written, s)
+        assert.Equal(test.qs, string(b))
     }
-}
-
-func TestjoinClauseInnerOnEqualSingle(t *testing.T) {
-    assert := assert.New(t)
-
-    j := &joinClause{
-        left: articles.Table(),
-        right: users.Table(),
-        onExprs: []*Expression{
-            Equal(colArticleAuthor, colUserId),
-        },
-    }
-
-    exp := " JOIN users ON articles.author = users.id"
-    expLen := len(exp)
-    expArgCount := 0
-
-    s := j.size()
-    assert.Equal(expLen, s)
-
-    argc := j.argCount()
-    assert.Equal(expArgCount, argc)
-
-    args := make([]interface{}, expArgCount)
-    b := make([]byte, s)
-    written, numArgs := j.scan(b, args)
-
-    assert.Equal(s, written)
-    assert.Equal(exp, string(b))
-    assert.Equal(expArgCount, numArgs)
-}
-
-func TestjoinClauseOnMethod(t *testing.T) {
-    assert := assert.New(t)
-
-    j := &joinClause{
-        left: articles.Table(),
-        right: users.Table(),
-    }
-    j.On(Equal(colArticleAuthor, colUserId))
-
-    exp := " JOIN users ON articles.author = users.id"
-    expLen := len(exp)
-    expArgCount := 0
-
-    s := j.size()
-    assert.Equal(expLen, s)
-
-    argc := j.argCount()
-    assert.Equal(expArgCount, argc)
-
-    args := make([]interface{}, expArgCount)
-    b := make([]byte, s)
-    written, numArgs := j.scan(b, args)
-
-    assert.Equal(s, written)
-    assert.Equal(exp, string(b))
-    assert.Equal(expArgCount, numArgs)
-}
-
-func TestjoinClauseAliasedInnerOnEqualSingle(t *testing.T) {
-    assert := assert.New(t)
-
-    atbl := articles.Table().As("a")
-    utbl := users.Table().As("u")
-
-    aliasAuthorCol := atbl.Column("author")
-    assert.NotNil(aliasAuthorCol)
-
-    aliasIdCol := utbl.Column("id")
-    assert.NotNil(aliasIdCol)
-
-    j := &joinClause{
-        left: atbl,
-        right: utbl,
-        onExprs: []*Expression{
-            Equal(aliasAuthorCol, aliasIdCol),
-        },
-    }
-
-    exp := " JOIN users AS u ON a.author = u.id"
-    expLen := len(exp)
-    expArgCount := 0
-
-    s := j.size()
-    assert.Equal(expLen, s)
-
-    argc := j.argCount()
-    assert.Equal(expArgCount, argc)
-
-    args := make([]interface{}, expArgCount)
-    b := make([]byte, s)
-    written, numArgs := j.scan(b, args)
-
-    assert.Equal(s, written)
-    assert.Equal(exp, string(b))
-    assert.Equal(expArgCount, numArgs)
-}
-
-func TestjoinClauseInnerOnEqualMulti(t *testing.T) {
-    assert := assert.New(t)
-
-    j := &joinClause{
-        left: articles.Table(),
-        right: users.Table(),
-        onExprs: []*Expression{
-            Equal(colArticleAuthor, colUserId),
-            Equal(colUserName, "foo"),
-        },
-    }
-
-    exp := " JOIN users ON articles.author = users.id AND users.name = ?"
-    expLen := len(exp)
-    expArgCount := 1
-
-    s := j.size()
-    assert.Equal(expLen, s)
-
-    argc := j.argCount()
-    assert.Equal(expArgCount, argc)
-
-    args := make([]interface{}, expArgCount)
-    b := make([]byte, s)
-    written, numArgs := j.scan(b, args)
-
-    assert.Equal(s, written)
-    assert.Equal(exp, string(b))
-    assert.Equal(expArgCount, numArgs)
-    assert.Equal("foo", args[0])
 }

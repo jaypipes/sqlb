@@ -9,6 +9,10 @@ import (
 func TestgroupByClauseSingle(t *testing.T) {
     assert := assert.New(t)
 
+    m := testFixtureMeta()
+    users := m.Table("users")
+    colUserName := users.Column("name")
+
     ob := &groupByClause{
         cols: &List{
             elements: []element{colUserName},
@@ -36,6 +40,11 @@ func TestgroupByClauseSingle(t *testing.T) {
 
 func TestgroupByClauseMulti(t *testing.T) {
     assert := assert.New(t)
+
+    m := testFixtureMeta()
+    users := m.Table("users")
+    colUserName := users.Column("name")
+    colUserId := users.Column("id")
 
     ob := &groupByClause{
         cols: &List{

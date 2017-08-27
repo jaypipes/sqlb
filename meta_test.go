@@ -41,33 +41,33 @@ var (
 )
 
 func testFixtureMeta() *Meta {
-    meta = &Meta{
+    meta := &Meta{
         schemaName: "test",
         tdefs: make(map[string]*TableDef, 0),
     }
 
-    users = &TableDef{
+    users := &TableDef{
         meta: meta,
         name: "users",
     }
-    colUserId = &ColumnDef{
+    colUserId := &ColumnDef{
         name: "id",
         tdef: users,
     }
-    colUserName = &ColumnDef{
+    colUserName := &ColumnDef{
         name: "name",
         tdef: users,
     }
 
-    articles = &TableDef{
+    articles := &TableDef{
         meta: meta,
         name: "articles",
     }
-    colArticleId = &ColumnDef{
+    colArticleId := &ColumnDef{
         name: "id",
         tdef: articles,
     }
-    colArticleAuthor = &ColumnDef{
+    colArticleAuthor := &ColumnDef{
         name: "author",
         tdef: articles,
     }

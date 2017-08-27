@@ -9,12 +9,11 @@ import (
 func TestListSingle(t *testing.T) {
     assert := assert.New(t)
 
-    c := &Column{
-        cdef: colUserName,
-        tbl: users.Table(),
-    }
+    m := testFixtureMeta()
+    users := m.Table("users")
+    colUserName := users.Column("name")
 
-    cl := &List{elements: []element{c}}
+    cl := &List{elements: []element{colUserName}}
 
     exp := "users.name"
     expLen := len(exp)
@@ -31,17 +30,12 @@ func TestListSingle(t *testing.T) {
 func TestListMulti(t *testing.T) {
     assert := assert.New(t)
 
-    c1 := &Column{
-        cdef: colUserId,
-        tbl: users.Table(),
-    }
+    m := testFixtureMeta()
+    users := m.Table("users")
+    colUserId := users.Column("id")
+    colUserName := users.Column("name")
 
-    c2:= &Column{
-        cdef: colUserName,
-        tbl: users.Table(),
-    }
-
-    cl := &List{elements: []element{c1, c2}}
+    cl := &List{elements: []element{colUserId, colUserName}}
 
     exp := "users.id, users.name"
     expLen := len(exp)
