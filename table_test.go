@@ -30,6 +30,9 @@ func TestTableMeta(t *testing.T) {
 func TestTable(t *testing.T) {
     assert := assert.New(t)
 
+    m := testFixtureMeta()
+    users := m.Table("users")
+
     exp := "users"
     expLen := len(exp)
     s := users.size()
@@ -45,15 +48,16 @@ func TestTable(t *testing.T) {
 func TestTableAlias(t *testing.T) {
     assert := assert.New(t)
 
-    t1 := users.As("u")
+    m := testFixtureMeta()
+    u := m.Table("users").As("u")
 
     exp := "users AS u"
     expLen := len(exp)
-    s := t1.size()
+    s := u.size()
     assert.Equal(expLen, s)
 
     b := make([]byte, s)
-    written, _ := t1.scan(b, nil)
+    written, _ := u.scan(b, nil)
 
     assert.Equal(written, s)
     assert.Equal(exp, string(b))
@@ -93,6 +97,9 @@ func TestTableColumnDefs(t *testing.T) {
 func TestTableDefColumn(t *testing.T) {
     assert := assert.New(t)
 
+    m := testFixtureMeta()
+    users := m.TableDef("users")
+
     c := users.Column("name")
 
     assert.Equal(users, c.cdef.tdef)
@@ -106,16 +113,15 @@ func TestTableDefColumn(t *testing.T) {
 func TestTableColumn(t *testing.T) {
     assert := assert.New(t)
 
-    tbl := &Table{
-        tdef: users,
-    }
+    m := testFixtureMeta()
+    users := m.Table("users")
 
-    c := tbl.Column("name")
+    c := users.Column("name")
 
-    assert.Equal(users, c.cdef.tdef)
+    assert.Equal(users.tdef, c.cdef.tdef)
     assert.Equal("name", c.cdef.name)
 
     // Check an unknown column name returns nil
-    unknown := tbl.Column("unknown")
+    unknown := users.Column("unknown")
     assert.Nil(unknown)
 }
