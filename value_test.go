@@ -6,24 +6,24 @@ import (
     "github.com/stretchr/testify/assert"
 )
 
-func TestValue(t *testing.T) {
+func Testvalue(t *testing.T) {
     assert := assert.New(t)
 
-    val := &Value{value: "foo"}
+    v := &value{val: "foo"}
 
     exp := "?"
     expLen := len(exp)
     expArgCount := 1
 
-    s := val.size()
+    s := v.size()
     assert.Equal(expLen, s)
 
-    argc := val.argCount()
+    argc := v.argCount()
     assert.Equal(expArgCount, argc)
 
     args := make([]interface{}, 1)
     b := make([]byte, s)
-    written, numArgs  := val.scan(b, args)
+    written, numArgs  := v.scan(b, args)
 
     assert.Equal(s, written)
     assert.Equal(exp, string(b))
