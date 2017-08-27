@@ -11,6 +11,10 @@ type selectClause struct {
     limit *limitClause
 }
 
+func (s *selectClause) isSubselect() bool {
+    return s.alias != ""
+}
+
 func (s *selectClause) argCount() int {
     argc := s.projected.argCount()
     for _, sel := range s.selections {
@@ -49,9 +53,6 @@ func (s *selectClause) size() int {
     for _, sel := range s.selections {
         size += sel.size()
     }
-    if s.alias != "" {
-        size += len(Symbols[SYM_AS]) + len(s.alias)
-    }
     for _, join := range s.joins {
         size += join.size()
     }
@@ -67,11 +68,18 @@ func (s *selectClause) size() int {
     if s.limit != nil {
         size += s.limit.size()
     }
+    if s.isSubselect() {
+        size += (len(Symbols[SYM_LPAREN]) + len(Symbols[SYM_RPAREN]) +
+                 len(Symbols[SYM_AS]) + len(s.alias))
+    }
     return size
 }
 
 func (s *selectClause) scan(b []byte, args []interface{}) (int, int) {
     var bw, ac int
+    if s.isSubselect() {
+        bw += copy(b[bw:], Symbols[SYM_LPAREN])
+    }
     bw += copy(b[bw:], Symbols[SYM_SELECT])
     pbw, pac := s.projected.scan(b[bw:], args)
     bw += pbw
@@ -81,10 +89,6 @@ func (s *selectClause) scan(b []byte, args []interface{}) (int, int) {
         sbw, sac := sel.scan(b[bw:], args)
         bw += sbw
         ac += sac
-    }
-    if s.alias != "" {
-        bw += copy(b[bw:], Symbols[SYM_AS])
-        bw += copy(b[bw:], s.alias)
     }
     for _, join := range s.joins {
         jbw, jac := join.scan(b[bw:], args)
@@ -110,6 +114,11 @@ func (s *selectClause) scan(b []byte, args []interface{}) (int, int) {
         lbw, lac := s.limit.scan(b[bw:], args[ac:])
         bw += lbw
         ac += lac
+    }
+    if s.isSubselect() {
+        bw += copy(b[bw:], Symbols[SYM_RPAREN])
+        bw += copy(b[bw:], Symbols[SYM_AS])
+        bw += copy(b[bw:], s.alias)
     }
     return bw, ac
 }
