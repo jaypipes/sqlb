@@ -40,6 +40,44 @@ var (
     }
 )
 
+func testFixtureMeta() *Meta {
+    meta = &Meta{
+        schemaName: "test",
+        tdefs: make(map[string]*TableDef, 0),
+    }
+
+    users = &TableDef{
+        meta: meta,
+        name: "users",
+    }
+    colUserId = &ColumnDef{
+        name: "id",
+        tdef: users,
+    }
+    colUserName = &ColumnDef{
+        name: "name",
+        tdef: users,
+    }
+
+    articles = &TableDef{
+        meta: meta,
+        name: "articles",
+    }
+    colArticleId = &ColumnDef{
+        name: "id",
+        tdef: articles,
+    }
+    colArticleAuthor = &ColumnDef{
+        name: "author",
+        tdef: articles,
+    }
+    users.cdefs = []*ColumnDef{colUserId, colUserName}
+    articles.cdefs = []*ColumnDef{colArticleId, colArticleAuthor}
+    meta.tdefs["users"] = users
+    meta.tdefs["articles"] = articles
+    return meta
+}
+
 func resetDB(driver string, db *sql.DB) {
     var stmts []string
     switch driver {

@@ -6,46 +6,30 @@ import (
     "github.com/stretchr/testify/assert"
 )
 
-func TestAsTemplated(t *testing.T) {
+func TestAsFunc(t *testing.T) {
     assert := assert.New(t)
 
-    c := &Column{
-        cdef: colUserName,
-        tbl: users.Table(),
-    }
+    m := testFixtureMeta()
+    c := m.Table("users").Column("name")
 
     assert.Equal("", c.alias)
-
     As(c, "n")
-
     assert.Equal("n", c.alias)
-
     c = c.As("name")
-
     assert.Equal("name", c.alias)
 }
 
 func TestAsMethod(t *testing.T) {
     assert := assert.New(t)
 
-    t1 := &Table{
-        tdef: users,
-    }
+    m := testFixtureMeta()
+    users := m.Table("users")
 
-    assert.Equal("", t1.alias)
-
-    t1 = t1.As("t")
-
-    assert.Equal("t", t1.alias)
-
-    c := &Column{
-        cdef: colUserName,
-        tbl: users.Table(),
-    }
-
+    assert.Equal("", users.alias)
+    u := users.As("u")
+    assert.Equal("u", u.alias)
+    c := m.Table("users").Column("name")
     assert.Equal("", c.alias)
-
     c = c.As("n")
-
     assert.Equal("n", c.alias)
 }
