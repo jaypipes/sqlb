@@ -9,10 +9,8 @@ import (
 func TestColumn(t *testing.T) {
     assert := assert.New(t)
 
-    c := &Column{
-        cdef: colUserName,
-        tbl: users.Table(),
-    }
+    m := testFixtureMeta()
+    c := m.Table("users").Column("name")
 
     exp := "users.name"
     expLen := len(exp)
@@ -29,10 +27,8 @@ func TestColumn(t *testing.T) {
 func TestColumnWithTableAlias(t *testing.T) {
     assert := assert.New(t)
 
-    c := &Column{
-        cdef: colUserName,
-        tbl: users.As("u"),
-    }
+    m := testFixtureMeta()
+    c := m.Table("users").As("u").Column("name")
 
     exp := "u.name"
     expLen := len(exp)
@@ -46,79 +42,11 @@ func TestColumnWithTableAlias(t *testing.T) {
     assert.Equal(exp, string(b))
 }
 
-func TestColumnDefSorts(t *testing.T) {
-    assert := assert.New(t)
-
-    sc := colUserName.Asc()
-
-    exp := "users.name"
-    expLen := len(exp)
-    s := sc.size()
-    assert.Equal(expLen, s)
-
-    b := make([]byte, s)
-    written, _ := sc.scan(b, nil)
-
-    assert.Equal(written, s)
-    assert.Equal(exp, string(b))
-
-    sc = colUserName.Desc()
-
-    exp = "users.name DESC"
-    expLen = len(exp)
-    s = sc.size()
-    assert.Equal(expLen, s)
-
-    b = make([]byte, s)
-    written, _ = sc.scan(b, nil)
-
-    assert.Equal(written, s)
-    assert.Equal(exp, string(b))
-}
-
-func TestColumnSorts(t *testing.T) {
-    assert := assert.New(t)
-
-    c := &Column{
-        cdef: colUserName,
-        tbl: users.Table(),
-    }
-
-    sc := c.Asc()
-
-    exp := "users.name"
-    expLen := len(exp)
-    s := sc.size()
-    assert.Equal(expLen, s)
-
-    b := make([]byte, s)
-    written, _ := sc.scan(b, nil)
-
-    assert.Equal(written, s)
-    assert.Equal(exp, string(b))
-
-    sc = c.Desc()
-
-    exp = "users.name DESC"
-    expLen = len(exp)
-    s = sc.size()
-    assert.Equal(expLen, s)
-
-    b = make([]byte, s)
-    written, _ = sc.scan(b, nil)
-
-    assert.Equal(written, s)
-    assert.Equal(exp, string(b))
-}
-
 func TestColumnAlias(t *testing.T) {
     assert := assert.New(t)
 
-    c := &Column{
-        cdef: colUserName,
-        tbl: users.Table(),
-        alias: "user_name",
-    }
+    m := testFixtureMeta()
+    c := m.Table("users").Column("name").As("user_name")
 
     exp := "users.name AS user_name"
     expLen := len(exp)
@@ -130,12 +58,4 @@ func TestColumnAlias(t *testing.T) {
 
     assert.Equal(written, s)
     assert.Equal(exp, string(b))
-}
-
-func TestColumnAs(t *testing.T) {
-    assert := assert.New(t)
-
-    c := colUserName.As("n")
-    assert.Equal("n", c.alias)
-    assert.Equal(colUserName, c.cdef)
 }
