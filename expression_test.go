@@ -15,6 +15,13 @@ type expressionTest struct {
 func TestExpressions(t *testing.T) {
     assert := assert.New(t)
 
+    m := testFixtureMeta()
+    users := m.Table("users")
+    articles := m.Table("articles")
+    colUserId := users.Column("id")
+    colUserName := users.Column("name")
+    colArticleAuthor := articles.Column("author")
+
     tests := []expressionTest{
         // equal value
         expressionTest{
