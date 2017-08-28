@@ -20,7 +20,7 @@ func TestQuery(t *testing.T) {
     assert.Nil(qargs)
 
     // Modify the underlying SELECT and verify string and args changed
-    sel.Where(Equal(users.Column("id"), 1))
+    q.Where(Equal(users.Column("id"), 1))
     qs, qargs = q.StringArgs()
     assert.Equal("SELECT users.id, users.name FROM users WHERE users.id = ?", qs)
     assert.Equal([]interface{}{1}, qargs)

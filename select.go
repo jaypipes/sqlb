@@ -123,7 +123,7 @@ func (s *selectClause) scan(b []byte, args []interface{}) (int, int) {
     return bw, ac
 }
 
-func (s *selectClause) Where(e *Expression) *selectClause {
+func (s *selectClause) addWhere(e *Expression) *selectClause {
     if s.where == nil {
         s.where = &whereClause{filters: make([]*Expression, 0)}
     }

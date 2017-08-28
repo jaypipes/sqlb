@@ -31,3 +31,8 @@ func (q *Query) StringArgs() (string, []interface{}) {
     q.sel.scan(q.b, q.args)
     return string(q.b), q.args
 }
+
+func (q *Query) Where(e *Expression) *Query {
+    q.sel.addWhere(e)
+    return q
+}
