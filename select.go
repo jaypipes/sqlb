@@ -123,24 +123,6 @@ func (s *selectClause) scan(b []byte, args []interface{}) (int, int) {
     return bw, ac
 }
 
-func (s *selectClause) String() string {
-    size := s.size()
-    argc := s.argCount()
-    args := make([]interface{}, argc)
-    b := make([]byte, size)
-    s.scan(b, args)
-    return string(b)
-}
-
-func (s *selectClause) StringArgs() (string, []interface{}) {
-    size := s.size()
-    argc := s.argCount()
-    args := make([]interface{}, argc)
-    b := make([]byte, size)
-    s.scan(b, args)
-    return string(b), args
-}
-
 func (s *selectClause) Where(e *Expression) *selectClause {
     if s.where == nil {
         s.where = &whereClause{filters: make([]*Expression, 0)}
