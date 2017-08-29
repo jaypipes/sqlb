@@ -25,7 +25,7 @@ func TestQuery(t *testing.T) {
             q: Select(users),
             qs: "SELECT users.id, users.name FROM users",
         },
-        // add WHERE
+        // Simple WHERE
         queryTest{
             q: Select(users).Where(Equal(colUserName, "foo")),
             qs: "SELECT users.id, users.name FROM users WHERE users.name = ?",
@@ -40,6 +40,18 @@ func TestQuery(t *testing.T) {
         queryTest{
             q: Select(users).OrderBy(colUserName.Desc()),
             qs: "SELECT users.id, users.name FROM users ORDER BY users.name DESC",
+        },
+        // Simple LIMIT
+        queryTest{
+            q: Select(users).Limit(10),
+            qs: "SELECT users.id, users.name FROM users LIMIT ?",
+            qargs: []interface{}{10},
+        },
+        // Simple LIMIT with OFFSET
+        queryTest{
+            q: Select(users).LimitWithOffset(10, 20),
+            qs: "SELECT users.id, users.name FROM users LIMIT ? OFFSET ?",
+            qargs: []interface{}{10, 20},
         },
     }
     for _, test := range tests {

@@ -47,6 +47,16 @@ func (q *Query) OrderBy(scols ...*sortColumn) *Query {
     return q
 }
 
+func (q *Query) Limit(limit int) *Query {
+    q.sel.setLimit(limit)
+    return q
+}
+
+func (q *Query) LimitWithOffset(limit int, offset int) *Query {
+    q.sel.setLimitWithOffset(limit, offset)
+    return q
+}
+
 func Select(items ...element) *Query {
     sel := &selectClause{
         projected: &List{},

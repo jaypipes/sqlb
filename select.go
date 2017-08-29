@@ -181,14 +181,14 @@ func (s *selectClause) addOrderBy(sortCols ...*sortColumn) *selectClause {
     return s
 }
 
-func (s *selectClause) LimitWithOffset(limit int, offset int) *selectClause {
+func (s *selectClause) setLimitWithOffset(limit int, offset int) *selectClause {
     lc := &limitClause{limit: limit}
     lc.offset = &offset
     s.limit = lc
     return s
 }
 
-func (s *selectClause) Limit(limit int) *selectClause {
+func (s *selectClause) setLimit(limit int) *selectClause {
     lc := &limitClause{limit: limit}
     s.limit = lc
     return s
