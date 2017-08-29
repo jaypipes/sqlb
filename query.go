@@ -64,7 +64,7 @@ func (q *Query) As(alias string) *Query {
 
 func Select(items ...element) *Query {
     sel := &selectClause{
-        projected: &List{},
+        projected: make([]projection, 0),
     }
 
     selectionMap := make(map[uint64]selection, 0)
@@ -72,7 +72,7 @@ func Select(items ...element) *Query {
 
     // For each scannable item we've received in the call, check what concrete
     // type they are and, depending on which type they are, either add them to
-    // the returned selectClause's projected List or query the underlying
+    // the returned selectClause's projected list or query the underlying
     // table metadata to generate a list of all columns in that table.
     for _, item := range items {
         switch item.(type) {
@@ -104,17 +104,8 @@ func Select(items ...element) *Query {
                 }
             case *Column:
                 v := item.(*Column)
-                sel.projected.elements = append(sel.projected.elements, v)
+                sel.projected = append(sel.projected, v)
                 selectionMap[v.tbl.selectionId()] = v.tbl
-            case *List:
-                v := item.(*List)
-                for _, el := range v.elements {
-                    sel.projected.elements = append(sel.projected.elements, el)
-                    if isColumn(el) {
-                        c := el.(*Column)
-                        selectionMap[c.tbl.selectionId()] = c.tbl
-                    }
-                }
             case *Table:
                 v := item.(*Table)
                 for _, cd := range v.tdef.projections() {

@@ -25,7 +25,7 @@ func TestSelectClause(t *testing.T) {
         selClauseTest{
             c: &selectClause{
                 selections: []selection{users},
-                projected: &List{elements: []element{colUserName}},
+                projected: []projection{colUserName},
             },
             qs: "SELECT users.name FROM users",
         },
@@ -33,7 +33,7 @@ func TestSelectClause(t *testing.T) {
         selClauseTest{
             c: &selectClause{
                 selections: []selection{users.Table()},
-                projected: &List{elements: []element{colUserName}},
+                projected: []projection{colUserName},
             },
             qs: "SELECT users.name FROM users",
         },
@@ -41,11 +41,7 @@ func TestSelectClause(t *testing.T) {
         selClauseTest{
             c: &selectClause{
                 selections: []selection{users},
-                projected: &List{
-                    elements: []element{
-                        colUserName.Column(),
-                    },
-                },
+                projected: []projection{colUserName.Column()},
             },
             qs: "SELECT users.name FROM users",
         },
@@ -53,23 +49,17 @@ func TestSelectClause(t *testing.T) {
         selClauseTest{
             c: &selectClause{
                 selections: []selection{users.As("u")},
-                projected: &List{
-                    elements: []element{
-                        users.As("u").Column("name"),
-                    },
+                projected: []projection{
+                    users.As("u").Column("name"),
                 },
             },
             qs: "SELECT u.name FROM users AS u",
         },
-        // TableDef and mutiple ColumnDef
+        // TableDef and multiple ColumnDef
         selClauseTest{
             c: &selectClause{
                 selections: []selection{users},
-                projected: &List{
-                    elements: []element{
-                        colUserId, colUserName,
-                    },
-                },
+                projected: []projection{colUserId, colUserName},
             },
             qs: "SELECT users.id, users.name FROM users",
         },
@@ -77,11 +67,7 @@ func TestSelectClause(t *testing.T) {
         selClauseTest{
             c: &selectClause{
                 selections: []selection{users},
-                projected: &List{
-                    elements: []element{
-                        colUserId, colUserName.Column(),
-                    },
-                },
+                projected: []projection{colUserId, colUserName.Column()},
             },
             qs: "SELECT users.id, users.name FROM users",
         },
@@ -89,7 +75,7 @@ func TestSelectClause(t *testing.T) {
         selClauseTest{
             c: &selectClause{
                 selections: []selection{users},
-                projected: &List{elements: []element{colUserName}},
+                projected: []projection{colUserName},
                 where: &whereClause{
                     filters: []*Expression{
                         Equal(colUserName, "foo"),
@@ -103,9 +89,7 @@ func TestSelectClause(t *testing.T) {
         selClauseTest{
             c: &selectClause{
                 selections: []selection{users},
-                projected: &List{
-                    elements: []element{colUserName},
-                },
+                projected: []projection{colUserName},
                 limit: &limitClause{limit: 10},
             },
             qs: "SELECT users.name FROM users LIMIT ?",
@@ -115,9 +99,7 @@ func TestSelectClause(t *testing.T) {
         selClauseTest{
             c: &selectClause{
                 selections: []selection{users},
-                projected: &List{
-                    elements: []element{colUserName},
-                },
+                projected: []projection{colUserName},
                 orderBy: &orderByClause{
                     scols: []*sortColumn{colUserName.Desc()},
                 },
@@ -128,9 +110,7 @@ func TestSelectClause(t *testing.T) {
         selClauseTest{
             c: &selectClause{
                 selections: []selection{users},
-                projected: &List{
-                    elements: []element{colUserName},
-                },
+                projected: []projection{colUserName},
                 groupBy: &groupByClause{
                     cols: []projection{colUserName},
                 },
@@ -141,9 +121,7 @@ func TestSelectClause(t *testing.T) {
         selClauseTest{
             c: &selectClause{
                 selections: []selection{users},
-                projected: &List{
-                    elements: []element{colUserName},
-                },
+                projected: []projection{colUserName},
                 groupBy: &groupByClause{
                     cols: []projection{colUserName},
                 },
@@ -160,7 +138,7 @@ func TestSelectClause(t *testing.T) {
             c: &selectClause{
                 alias: "u",
                 selections: []selection{users},
-                projected: &List{elements: []element{colUserName}},
+                projected: []projection{colUserName},
             },
             qs: "(SELECT users.name FROM users) AS u",
         },

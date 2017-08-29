@@ -2,7 +2,7 @@ package sqlb
 
 type selectClause struct {
     alias string
-    projected *List
+    projected []projection
     selections []selection
     joins []*joinClause
     where *whereClause
@@ -16,7 +16,10 @@ func (s *selectClause) isSubselect() bool {
 }
 
 func (s *selectClause) argCount() int {
-    argc := s.projected.argCount()
+    argc := 0
+    for _, p := range s.projected {
+        argc += p.argCount()
+    }
     for _, sel := range s.selections {
         argc += sel.argCount()
     }
@@ -44,7 +47,11 @@ func (s *selectClause) setAlias(alias string) {
 
 func (s *selectClause) size() int {
     size := len(Symbols[SYM_SELECT]) + len(Symbols[SYM_FROM])
-    size += s.projected.size()
+    nprojs := len(s.projected)
+    for _, p := range s.projected {
+        size += p.size()
+    }
+    size += (len(Symbols[SYM_COMMA_WS]) * (nprojs - 1))  // the commas...
     for _, sel := range s.selections {
         size += sel.size()
     }
@@ -76,9 +83,15 @@ func (s *selectClause) scan(b []byte, args []interface{}) (int, int) {
         bw += copy(b[bw:], Symbols[SYM_LPAREN])
     }
     bw += copy(b[bw:], Symbols[SYM_SELECT])
-    pbw, pac := s.projected.scan(b[bw:], args)
-    bw += pbw
-    ac += pac
+    nprojs := len(s.projected)
+    for x, p := range s.projected {
+        pbw, pac := p.scan(b[bw:], args[ac:])
+        bw += pbw
+        ac += pac
+        if x != (nprojs - 1) {
+            bw += copy(b[bw:], Symbols[SYM_COMMA_WS])
+        }
+    }
     bw += copy(b[bw:], Symbols[SYM_FROM])
     for _, sel := range s.selections {
         sbw, sac := sel.scan(b[bw:], args)
@@ -195,5 +208,5 @@ func containsJoin(s *selectClause, j *joinClause) bool {
 }
 
 func addToProjections(s *selectClause, p projection) {
-    s.projected.elements = append(s.projected.elements, p)
+    s.projected = append(s.projected, p)
 }

@@ -29,10 +29,10 @@ func (gb *groupByClause) scan(b []byte, args []interface{}) (int, int) {
         defer reset()
         ebw, eac := c.scan(b[bw:], args[ac:])
         bw += ebw
+        ac += eac
         if x != (ncols - 1) {
             bw += copy(b[bw:], Symbols[SYM_COMMA_WS])
         }
-        ac += eac
     }
     return bw, ac
 }

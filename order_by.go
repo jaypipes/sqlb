@@ -57,10 +57,10 @@ func (ob *orderByClause) scan(b []byte, args []interface{}) (int, int) {
     for x, sc := range ob.scols {
         ebw, eac := sc.scan(b[bw:], args[ac:])
         bw += ebw
+        ac += eac
         if x != (ncols - 1) {
             bw += copy(b[bw:], Symbols[SYM_COMMA_WS])
         }
-        ac += eac
     }
     return bw, ac
 }
