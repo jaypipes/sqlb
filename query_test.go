@@ -31,6 +31,11 @@ func TestQuery(t *testing.T) {
             qs: "SELECT users.id, users.name FROM users WHERE users.name = ?",
             qargs: []interface{}{"foo"},
         },
+        // Simple GROUP BY
+        queryTest{
+            q: Select(users).GroupBy(colUserName),
+            qs: "SELECT users.id, users.name FROM users GROUP BY users.name",
+        },
     }
     for _, test := range tests {
         qs, qargs := test.q.StringArgs()

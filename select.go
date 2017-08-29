@@ -133,7 +133,7 @@ func (s *selectClause) addWhere(e *Expression) *selectClause {
 
 // Given one or more columns, either set or add to the GROUP BY clause for
 // the selectClause
-func (s *selectClause) GroupBy(cols ...Columnar) *selectClause {
+func (s *selectClause) addGroupBy(cols ...Columnar) *selectClause {
     if len(cols) == 0 {
         return s
     }

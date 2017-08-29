@@ -37,6 +37,11 @@ func (q *Query) Where(e *Expression) *Query {
     return q
 }
 
+func (q *Query) GroupBy(cols ...Columnar) *Query {
+    q.sel.addGroupBy(cols...)
+    return q
+}
+
 func Select(items ...element) *Query {
     sel := &selectClause{
         projected: &List{},
