@@ -119,11 +119,7 @@ func TestSelectClause(t *testing.T) {
                     elements: []element{colUserName},
                 },
                 orderBy: &orderByClause{
-                    cols: &List{
-                        elements: []element{
-                            colUserName.Desc(),
-                        },
-                    },
+                    scols: []*sortColumn{colUserName.Desc()},
                 },
             },
             qs: "SELECT users.name FROM users ORDER BY users.name DESC",
@@ -152,11 +148,7 @@ func TestSelectClause(t *testing.T) {
                     cols: []projection{colUserName},
                 },
                 orderBy: &orderByClause{
-                    cols: &List{
-                        elements: []element{
-                            colUserName.Desc(),
-                        },
-                    },
+                    scols: []*sortColumn{colUserName.Desc()},
                 },
                 limit: &limitClause{limit: 10},
             },

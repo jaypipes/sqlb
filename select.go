@@ -158,16 +158,14 @@ func (s *selectClause) addOrderBy(sortCols ...*sortColumn) *selectClause {
     ob := s.orderBy
     if ob == nil {
         ob = &orderByClause{
-            cols: &List{
-                elements: make([]element, len(sortCols)),
-            },
+            scols: make([]*sortColumn, len(sortCols)),
         }
         for x, sc := range sortCols {
-            ob.cols.elements[x] = sc
+            ob.scols[x] = sc
         }
     } else {
         for _, sc := range sortCols {
-            ob.cols.elements = append(ob.cols.elements, sc)
+            ob.scols = append(ob.scols, sc)
         }
     }
     s.orderBy = ob

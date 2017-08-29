@@ -16,64 +16,50 @@ func TestOrderBy(t *testing.T) {
     assert := assert.New(t)
 
     m := testFixtureMeta()
-    users := m.Table("users")
-    colUserId := users.Column("id")
-    colUserName := users.Column("name")
+    users := m.TableDef("users")
+    colUserId := users.ColumnDef("id")
+    colUserName := users.ColumnDef("name")
 
     tests := []orderByTest{
         // column def asc
         orderByTest{
             c: &orderByClause{
-                cols: &List{
-                    elements: []element{
-                        colUserName.Asc(),
-                    },
-                },
+                scols: []*sortColumn{colUserName.Asc()},
             },
             qs: " ORDER BY users.name",
         },
         // column asc
         orderByTest{
             c: &orderByClause{
-                cols: &List{
-                    elements: []element{
-                        colUserName.Column().Asc(),
-                    },
-                },
+                scols: []*sortColumn{colUserName.Column().Asc()},
             },
             qs: " ORDER BY users.name",
         },
         // column def desc
         orderByTest{
             c: &orderByClause{
-                cols: &List{
-                    elements: []element{
-                        colUserName.Desc(),
-                    },
-                },
+                scols: []*sortColumn{colUserName.Desc()},
             },
             qs: " ORDER BY users.name DESC",
         },
         // column desc
         orderByTest{
             c: &orderByClause{
-                cols: &List{
-                    elements: []element{
-                        colUserName.Column().Desc(),
-                    },
-                },
+                scols: []*sortColumn{colUserName.Column().Desc()},
+            },
+            qs: " ORDER BY users.name DESC",
+        },
+        // Aliased column should NOT output alias in ORDER BY
+        orderByTest{
+            c: &orderByClause{
+               scols: []*sortColumn{colUserName.As("user_name").Desc()},
             },
             qs: " ORDER BY users.name DESC",
         },
         // multi column mixed
         orderByTest{
             c: &orderByClause{
-                cols: &List{
-                    elements: []element{
-                        colUserName.Column(),
-                        colUserId.Desc(),
-                    },
-                },
+                scols: []*sortColumn{colUserName.Asc(), colUserId.Column().Desc()},
             },
             qs: " ORDER BY users.name, users.id DESC",
         },
