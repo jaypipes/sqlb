@@ -42,6 +42,11 @@ func (q *Query) GroupBy(cols ...Columnar) *Query {
     return q
 }
 
+func (q *Query) OrderBy(scols ...*sortColumn) *Query {
+    q.sel.addOrderBy(scols...)
+    return q
+}
+
 func Select(items ...element) *Query {
     sel := &selectClause{
         projected: &List{},

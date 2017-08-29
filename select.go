@@ -158,7 +158,7 @@ func (s *selectClause) addGroupBy(cols ...Columnar) *selectClause {
 
 // Given one or more sort columns, either set or add to the ORDER BY clause for
 // the selectClause
-func (s *selectClause) OrderBy(sortCols ...*sortColumn) *selectClause {
+func (s *selectClause) addOrderBy(sortCols ...*sortColumn) *selectClause {
     if len(sortCols) == 0 {
         return s
     }

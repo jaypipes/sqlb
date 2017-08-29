@@ -36,6 +36,11 @@ func TestQuery(t *testing.T) {
             q: Select(users).GroupBy(colUserName),
             qs: "SELECT users.id, users.name FROM users GROUP BY users.name",
         },
+        // Simple ORDER BY
+        queryTest{
+            q: Select(users).OrderBy(colUserName.Desc()),
+            qs: "SELECT users.id, users.name FROM users ORDER BY users.name DESC",
+        },
     }
     for _, test := range tests {
         qs, qargs := test.q.StringArgs()
