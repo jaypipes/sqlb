@@ -53,6 +53,11 @@ func TestQuery(t *testing.T) {
             qs: "SELECT users.id, users.name FROM users LIMIT ? OFFSET ?",
             qargs: []interface{}{10, 20},
         },
+        // Simple sub-SELECT
+        queryTest{
+            q: Select(users).As("u"),
+            qs: "(SELECT users.id, users.name FROM users) AS u",
+        },
     }
     for _, test := range tests {
         qs, qargs := test.q.StringArgs()

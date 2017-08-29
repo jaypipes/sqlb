@@ -57,6 +57,11 @@ func (q *Query) LimitWithOffset(limit int, offset int) *Query {
     return q
 }
 
+func (q *Query) As(alias string) *Query {
+    q.sel.setAlias(alias)
+    return q
+}
+
 func Select(items ...element) *Query {
     sel := &selectClause{
         projected: &List{},

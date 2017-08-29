@@ -42,11 +42,6 @@ func (s *selectClause) setAlias(alias string) {
     s.alias = alias
 }
 
-func (s *selectClause) As(alias string) *selectClause {
-    s.setAlias(alias)
-    return s
-}
-
 func (s *selectClause) size() int {
     size := len(Symbols[SYM_SELECT]) + len(Symbols[SYM_FROM])
     size += s.projected.size()
