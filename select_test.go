@@ -136,11 +136,7 @@ func TestSelectClause(t *testing.T) {
                     elements: []element{colUserName},
                 },
                 groupBy: &groupByClause{
-                    cols: &List{
-                        elements: []element{
-                            colUserName,
-                        },
-                    },
+                    cols: []projection{colUserName},
                 },
             },
             qs: "SELECT users.name FROM users GROUP BY users.name",
@@ -153,11 +149,7 @@ func TestSelectClause(t *testing.T) {
                     elements: []element{colUserName},
                 },
                 groupBy: &groupByClause{
-                    cols: &List{
-                        elements: []element{
-                            colUserName,
-                        },
-                    },
+                    cols: []projection{colUserName},
                 },
                 orderBy: &orderByClause{
                     cols: &List{

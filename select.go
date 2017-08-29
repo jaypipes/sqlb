@@ -128,23 +128,21 @@ func (s *selectClause) addWhere(e *Expression) *selectClause {
 
 // Given one or more columns, either set or add to the GROUP BY clause for
 // the selectClause
-func (s *selectClause) addGroupBy(cols ...Columnar) *selectClause {
+func (s *selectClause) addGroupBy(cols ...projection) *selectClause {
     if len(cols) == 0 {
         return s
     }
     gb := s.groupBy
     if gb == nil {
         gb = &groupByClause{
-            cols: &List{
-                elements: make([]element, len(cols)),
-            },
+            cols: make([]projection, len(cols)),
         }
         for x, c := range cols {
-            gb.cols.elements[x] = c.Column()
+            gb.cols[x] = c
         }
     } else {
         for _, c := range cols {
-            gb.cols.elements = append(gb.cols.elements, c.Column())
+            gb.cols = append(gb.cols, c)
         }
     }
     s.groupBy = gb

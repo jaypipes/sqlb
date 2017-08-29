@@ -21,13 +21,19 @@ type element interface {
 }
 
 // A projection is something that produces a scalar value. A column, column
-// definition, function, etc.
+// definition, function, etc. When appearing in the SELECT clause's projection
+// list, the projection will output itself using the "AS alias" extended
+// notation. When outputting in GROUP BY, ORDER BY or ON clauses, the
+// projection will not include the alias extension
 type projection interface {
     projectionId() uint64
     // projections must also implement element
     size() int
     argCount() int
     scan([]byte, []interface{}) (int, int)
+    // disables the outputting of the "AS alias" extended output. Returns a
+    // function that resets the outputting of the "AS alias" extended output
+    disableAliasScan() func()
 }
 
 // A selection is something that produces rows. A table, table definition,

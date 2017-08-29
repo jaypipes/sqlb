@@ -38,6 +38,12 @@ type sqlFunc struct {
     elements []element
 }
 
+func (f *sqlFunc) disableAliasScan() func() {
+    origAlias := f.alias
+    f.alias = ""
+    return func() {f.alias = origAlias}
+}
+
 func (f *sqlFunc) projectionId() uint64 {
     // Each construction of a function is unique, so here we cheat and just
     // return the hash of the struct's address in memory

@@ -37,7 +37,7 @@ func (q *Query) Where(e *Expression) *Query {
     return q
 }
 
-func (q *Query) GroupBy(cols ...Columnar) *Query {
+func (q *Query) GroupBy(cols ...projection) *Query {
     q.sel.addGroupBy(cols...)
     return q
 }

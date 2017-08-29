@@ -20,6 +20,12 @@ func (c *Column) projectionId() uint64 {
     return toId(args...)
 }
 
+func (c *Column) disableAliasScan() func() {
+    origAlias := c.alias
+    c.alias = ""
+    return func() {c.alias = origAlias}
+}
+
 func (c *Column) Column() *Column {
     return c
 }
@@ -80,6 +86,11 @@ func isColumn(el element) bool {
 type ColumnDef struct {
     name string
     tdef *TableDef
+}
+
+// A column definition isn't aliasable...
+func (cd *ColumnDef) disableAliasScan() func() {
+    return func() {}
 }
 
 func (cd *ColumnDef) projectionId() uint64 {

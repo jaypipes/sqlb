@@ -6,67 +6,55 @@ import (
     "github.com/stretchr/testify/assert"
 )
 
-func TestgroupByClauseSingle(t *testing.T) {
-    assert := assert.New(t)
-
-    m := testFixtureMeta()
-    users := m.Table("users")
-    colUserName := users.Column("name")
-
-    ob := &groupByClause{
-        cols: &List{
-            elements: []element{colUserName},
-        },
-    }
-
-    exp := " GROUP BY users.name"
-    expLen := len(exp)
-    expArgCount := 0
-
-    s := ob.size()
-    assert.Equal(expLen, s)
-
-    argc := ob.argCount()
-    assert.Equal(expArgCount, argc)
-
-    args := make([]interface{}, expArgCount)
-    b := make([]byte, s)
-    written, numArgs := ob.scan(b, args)
-
-    assert.Equal(s, written)
-    assert.Equal(exp, string(b))
-    assert.Equal(expArgCount, numArgs)
+type groupByClauseTest struct {
+    c *groupByClause
+    qs string
+    qargs []interface{}
 }
 
-func TestgroupByClauseMulti(t *testing.T) {
+func TestGroupByClause(t *testing.T) {
     assert := assert.New(t)
 
     m := testFixtureMeta()
-    users := m.Table("users")
-    colUserName := users.Column("name")
+    users := m.TableDef("users")
     colUserId := users.Column("id")
+    colUserName := users.Column("name")
 
-    ob := &groupByClause{
-        cols: &List{
-            elements: []element{colUserId, colUserName},
+    tests := []groupByClauseTest{
+        // Single column
+        groupByClauseTest{
+            c: &groupByClause{
+                cols: []projection{colUserName},
+            },
+            qs: " GROUP BY users.name",
+        },
+        // Multiple columns
+        groupByClauseTest{
+            c: &groupByClause{
+                cols: []projection{colUserName, colUserId},
+            },
+            qs: " GROUP BY users.name, users.id",
+        },
+        // Aliased column should NOT output alias in GROUP BY
+        groupByClauseTest{
+            c: &groupByClause{
+                cols: []projection{colUserName.As("user_name")},
+            },
+            qs: " GROUP BY users.name",
         },
     }
+    for _, test := range tests {
+        expLen := len(test.qs)
+        s := test.c.size()
+        assert.Equal(expLen, s)
 
-    exp := " GROUP BY users.id, users.name"
-    expLen := len(exp)
-    expArgCount := 0
+        expArgc := len(test.qargs)
+        assert.Equal(expArgc, test.c.argCount())
 
-    s := ob.size()
-    assert.Equal(expLen, s)
+        b := make([]byte, s)
+        written, _ := test.c.scan(b, test.qargs)
 
-    argc := ob.argCount()
-    assert.Equal(expArgCount, argc)
-
-    args := make([]interface{}, expArgCount)
-    b := make([]byte, s)
-    written, numArgs := ob.scan(b, args)
-
-    assert.Equal(s, written)
-    assert.Equal(exp, string(b))
-    assert.Equal(expArgCount, numArgs)
+        assert.Equal(written, s)
+        assert.Equal(test.qs, string(b))
+    }
 }
