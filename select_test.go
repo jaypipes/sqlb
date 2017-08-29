@@ -25,7 +25,7 @@ func TestSelectClause(t *testing.T) {
         selClauseTest{
             c: &selectClause{
                 selections: []selection{users},
-                projected: []projection{colUserName},
+                projections: []projection{colUserName},
             },
             qs: "SELECT users.name FROM users",
         },
@@ -33,7 +33,7 @@ func TestSelectClause(t *testing.T) {
         selClauseTest{
             c: &selectClause{
                 selections: []selection{users.Table()},
-                projected: []projection{colUserName},
+                projections: []projection{colUserName},
             },
             qs: "SELECT users.name FROM users",
         },
@@ -41,7 +41,7 @@ func TestSelectClause(t *testing.T) {
         selClauseTest{
             c: &selectClause{
                 selections: []selection{users},
-                projected: []projection{colUserName.Column()},
+                projections: []projection{colUserName.Column()},
             },
             qs: "SELECT users.name FROM users",
         },
@@ -49,7 +49,7 @@ func TestSelectClause(t *testing.T) {
         selClauseTest{
             c: &selectClause{
                 selections: []selection{users.As("u")},
-                projected: []projection{
+                projections: []projection{
                     users.As("u").Column("name"),
                 },
             },
@@ -59,7 +59,7 @@ func TestSelectClause(t *testing.T) {
         selClauseTest{
             c: &selectClause{
                 selections: []selection{users},
-                projected: []projection{colUserId, colUserName},
+                projections: []projection{colUserId, colUserName},
             },
             qs: "SELECT users.id, users.name FROM users",
         },
@@ -67,7 +67,7 @@ func TestSelectClause(t *testing.T) {
         selClauseTest{
             c: &selectClause{
                 selections: []selection{users},
-                projected: []projection{colUserId, colUserName.Column()},
+                projections: []projection{colUserId, colUserName.Column()},
             },
             qs: "SELECT users.id, users.name FROM users",
         },
@@ -75,7 +75,7 @@ func TestSelectClause(t *testing.T) {
         selClauseTest{
             c: &selectClause{
                 selections: []selection{users},
-                projected: []projection{colUserName},
+                projections: []projection{colUserName},
                 where: &whereClause{
                     filters: []*Expression{
                         Equal(colUserName, "foo"),
@@ -89,7 +89,7 @@ func TestSelectClause(t *testing.T) {
         selClauseTest{
             c: &selectClause{
                 selections: []selection{users},
-                projected: []projection{colUserName},
+                projections: []projection{colUserName},
                 limit: &limitClause{limit: 10},
             },
             qs: "SELECT users.name FROM users LIMIT ?",
@@ -99,7 +99,7 @@ func TestSelectClause(t *testing.T) {
         selClauseTest{
             c: &selectClause{
                 selections: []selection{users},
-                projected: []projection{colUserName},
+                projections: []projection{colUserName},
                 orderBy: &orderByClause{
                     scols: []*sortColumn{colUserName.Desc()},
                 },
@@ -110,7 +110,7 @@ func TestSelectClause(t *testing.T) {
         selClauseTest{
             c: &selectClause{
                 selections: []selection{users},
-                projected: []projection{colUserName},
+                projections: []projection{colUserName},
                 groupBy: &groupByClause{
                     cols: []projection{colUserName},
                 },
@@ -121,7 +121,7 @@ func TestSelectClause(t *testing.T) {
         selClauseTest{
             c: &selectClause{
                 selections: []selection{users},
-                projected: []projection{colUserName},
+                projections: []projection{colUserName},
                 groupBy: &groupByClause{
                     cols: []projection{colUserName},
                 },
@@ -138,7 +138,7 @@ func TestSelectClause(t *testing.T) {
             c: &selectClause{
                 alias: "u",
                 selections: []selection{users},
-                projected: []projection{colUserName},
+                projections: []projection{colUserName},
             },
             qs: "(SELECT users.name FROM users) AS u",
         },
