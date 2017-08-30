@@ -50,6 +50,11 @@ func TestFunctions(t *testing.T) {
             c: Count(),
             qs: "COUNT(*)",
         },
+        // COUNT(DISTINCT column)
+        functionTest{
+            c: CountDistinct(colUserName),
+            qs: "COUNT(DISTINCT users.name)",
+        },
     }
     for _, test := range tests {
         expLen := len(test.qs)

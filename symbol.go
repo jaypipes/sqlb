@@ -32,6 +32,7 @@ const (
     SYM_SUM
     SYM_AVG
     SYM_COUNT_STAR
+    SYM_COUNT_DISTINCT
 )
 
 var (
@@ -63,5 +64,6 @@ var (
         SYM_SUM: []byte("SUM("),
         SYM_AVG: []byte("AVG("),
         SYM_COUNT_STAR: []byte("COUNT(*)"),
+        SYM_COUNT_DISTINCT: []byte("COUNT(DISTINCT "),
     }
 )

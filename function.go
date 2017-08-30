@@ -12,6 +12,7 @@ const (
     FUNC_SUM
     FUNC_AVG
     FUNC_COUNT_STAR
+    FUNC_COUNT_DISTINCT
 )
 
 var (
@@ -32,6 +33,9 @@ var (
         },
         FUNC_COUNT_STAR: scanInfo{
             SYM_COUNT_STAR,
+        },
+        FUNC_COUNT_DISTINCT: scanInfo{
+            SYM_COUNT_DISTINCT, SYM_ELEMENT, SYM_RPAREN,
         },
     }
 )
@@ -173,5 +177,12 @@ func (c *ColumnDef) Avg() *sqlFunc {
 func Count() *sqlFunc {
     return &sqlFunc{
         scanInfo: funcscanTable[FUNC_COUNT_STAR],
+    }
+}
+
+func CountDistinct(p projection) *sqlFunc {
+    return &sqlFunc{
+        scanInfo: funcscanTable[FUNC_COUNT_DISTINCT],
+        elements: []element{p.(element)},
     }
 }
