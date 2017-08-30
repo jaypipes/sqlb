@@ -71,10 +71,30 @@ func testFixtureMeta() *Meta {
         name: "author",
         tdef: articles,
     }
+    colArticleState := &ColumnDef{
+        name: "state",
+        tdef: articles,
+    }
+
+    article_states := &TableDef{
+        meta: meta,
+        name: "article_states",
+    }
+    colArticleStateId := &ColumnDef{
+        name: "id",
+        tdef: article_states,
+    }
+    colArticleStateName := &ColumnDef{
+        name: "name",
+        tdef: article_states,
+    }
+
     users.cdefs = []*ColumnDef{colUserId, colUserName}
-    articles.cdefs = []*ColumnDef{colArticleId, colArticleAuthor}
+    articles.cdefs = []*ColumnDef{colArticleId, colArticleAuthor, colArticleState}
+    article_states.cdefs = []*ColumnDef{colArticleStateId, colArticleStateName}
     meta.tdefs["users"] = users
     meta.tdefs["articles"] = articles
+    meta.tdefs["article_states"] = article_states
     return meta
 }
 

@@ -18,10 +18,14 @@ func TestSelectClause(t *testing.T) {
     m := testFixtureMeta()
     users := m.TableDef("users")
     articles := m.TableDef("articles")
-    colUserName := users.Column("name")
-    colUserId := users.Column("id")
-    colArticleId := articles.Column("id")
-    colArticleAuthor := articles.Column("author")
+    article_states := m.TableDef("article_states")
+    colUserName := users.ColumnDef("name")
+    colUserId := users.ColumnDef("id")
+    colArticleId := articles.ColumnDef("id")
+    colArticleAuthor := articles.ColumnDef("author")
+    colArticleState := articles.ColumnDef("state")
+    colArticleStateId := article_states.ColumnDef("id")
+    colArticleStateName := article_states.ColumnDef("name")
 
     tests := []selClauseTest{
         // TableDef and ColumnDef
@@ -161,6 +165,30 @@ func TestSelectClause(t *testing.T) {
                 },
             },
             qs: "SELECT articles.id, users.name AS author FROM articles JOIN users ON articles.author = users.id",
+        },
+        // Multiple joins
+        selClauseTest{
+            c: &selectClause{
+                selections: []selection{articles},
+                projections: []projection{colArticleId, colUserName.As("author"), colArticleStateName.As("state")},
+                joins: []*joinClause{
+                    &joinClause{
+                        left: articles,
+                        right: users,
+                        onExprs: []*Expression{
+                            Equal(colArticleAuthor, colUserId),
+                        },
+                    },
+                    &joinClause{
+                        left: articles,
+                        right: article_states,
+                        onExprs: []*Expression{
+                            Equal(colArticleState, colArticleStateId),
+                        },
+                    },
+                },
+            },
+            qs: "SELECT articles.id, users.name AS author, article_states.name AS state FROM articles JOIN users ON articles.author = users.id JOIN article_states ON articles.state = article_states.id",
         },
     }
     for _, test := range tests {
