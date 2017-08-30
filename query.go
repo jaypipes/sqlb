@@ -62,7 +62,7 @@ func (q *Query) As(alias string) *Query {
     return q
 }
 
-func Select(items ...element) *Query {
+func Select(items ...interface{}) *Query {
     sel := &selectClause{
         projections: make([]projection, 0),
     }
@@ -122,6 +122,12 @@ func Select(items ...element) *Query {
                 v := item.(*ColumnDef)
                 addToProjections(sel, v)
                 selectionMap[v.tdef.selectionId()] = v.tdef
+            default:
+                // Everything else, make it a literal value projection, so, for
+                // instance, a user can do SELECT 1, which is, technically
+                // valid SQL.
+                p := &value{val: item}
+                addToProjections(sel, p)
         }
     }
     selections := make([]selection, len(selectionMap))

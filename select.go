@@ -46,17 +46,22 @@ func (s *selectClause) setAlias(alias string) {
 }
 
 func (s *selectClause) size() int {
-    size := len(Symbols[SYM_SELECT]) + len(Symbols[SYM_FROM])
+    size := len(Symbols[SYM_SELECT])
     nprojs := len(s.projections)
     for _, p := range s.projections {
         size += p.size()
     }
     size += (len(Symbols[SYM_COMMA_WS]) * (nprojs - 1))  // the commas...
-    for _, sel := range s.selections {
-        size += sel.size()
-    }
-    for _, join := range s.joins {
-        size += join.size()
+    nsels := len(s.selections)
+    if nsels > 0 {
+        size += len(Symbols[SYM_FROM])
+        for _, sel := range s.selections {
+            size += sel.size()
+        }
+        size += (len(Symbols[SYM_COMMA_WS]) * (nsels - 1))  // the commas...
+        for _, join := range s.joins {
+            size += join.size()
+        }
     }
     if s.where != nil {
         size += s.where.size()
@@ -92,16 +97,22 @@ func (s *selectClause) scan(b []byte, args []interface{}) (int, int) {
             bw += copy(b[bw:], Symbols[SYM_COMMA_WS])
         }
     }
-    bw += copy(b[bw:], Symbols[SYM_FROM])
-    for _, sel := range s.selections {
-        sbw, sac := sel.scan(b[bw:], args)
-        bw += sbw
-        ac += sac
-    }
-    for _, join := range s.joins {
-        jbw, jac := join.scan(b[bw:], args)
-        bw += jbw
-        ac += jac
+    nsels := len(s.selections)
+    if nsels > 0 {
+        bw += copy(b[bw:], Symbols[SYM_FROM])
+        for x, sel := range s.selections {
+            sbw, sac := sel.scan(b[bw:], args)
+            bw += sbw
+            ac += sac
+            if x != (nsels - 1) {
+                bw += copy(b[bw:], Symbols[SYM_COMMA_WS])
+            }
+        }
+        for _, join := range s.joins {
+            jbw, jac := join.scan(b[bw:], args)
+            bw += jbw
+            ac += jac
+        }
     }
     if s.where != nil {
         wbw, wac := s.where.scan(b[bw:], args[ac:])

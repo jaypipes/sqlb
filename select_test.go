@@ -28,6 +28,35 @@ func TestSelectClause(t *testing.T) {
     colArticleStateName := article_states.ColumnDef("name")
 
     tests := []selClauseTest{
+        // a literal value
+        selClauseTest{
+            c: &selectClause{
+                projections: []projection{&value{val: 1}},
+            },
+            qs: "SELECT ?",
+            qargs: []interface{}{1},
+        },
+        // a literal value aliased
+        selClauseTest{
+            c: &selectClause{
+                projections: []projection{
+                    &value{alias: "foo", val: 1},
+                },
+            },
+            qs: "SELECT ? AS foo",
+            qargs: []interface{}{1},
+        },
+        // two literal values
+        selClauseTest{
+            c: &selectClause{
+                projections: []projection{
+                    &value{val: 1},
+                    &value{val: 1},
+                },
+            },
+            qs: "SELECT ?, ?",
+            qargs: []interface{}{1, 2},
+        },
         // TableDef and ColumnDef
         selClauseTest{
             c: &selectClause{
