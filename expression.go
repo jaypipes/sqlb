@@ -57,6 +57,14 @@ func (e *Expression) size() int {
     for _, sym := range e.scanInfo {
         if sym == SYM_ELEMENT {
             el := e.elements[elidx]
+            // We need to disable alias output for elements that are
+            // projections. We don't want to output, for example,
+            // "ON users.id AS user_id = articles.author"
+            switch el.(type) {
+            case projection:
+                reset := el.(projection).disableAliasScan()
+                defer reset()
+            }
             elidx++
             size += el.size()
         } else {
@@ -72,6 +80,14 @@ func (e *Expression) scan(b []byte, args []interface{}) (int, int) {
     for _, sym := range e.scanInfo {
         if sym == SYM_ELEMENT {
             el := e.elements[elidx]
+            // We need to disable alias output for elements that are
+            // projections. We don't want to output, for example,
+            // "ON users.id AS user_id = articles.author"
+            switch el.(type) {
+            case projection:
+                reset := el.(projection).disableAliasScan()
+                defer reset()
+            }
             elidx++
             ebw, eac := el.scan(b[bw:], args[ac:])
             bw += ebw

@@ -72,6 +72,17 @@ func TestJoinClause(t *testing.T) {
             },
             qs: " JOIN users AS u ON articles.author = u.id",
         },
+        // aliased projections should not include "AS alias" in output
+        joinClauseTest{
+            c: &joinClause{
+                left: articles,
+                right: users,
+                onExprs: []*Expression{
+                    Equal(colArticleAuthor, colUserId.As("user_id")),
+                },
+            },
+            qs: " JOIN users ON articles.author = users.id",
+        },
     }
     for _, test := range tests {
         expLen := len(test.qs)
