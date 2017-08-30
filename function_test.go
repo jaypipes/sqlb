@@ -55,6 +55,11 @@ func TestFunctions(t *testing.T) {
             c: CountDistinct(colUserName),
             qs: "COUNT(DISTINCT users.name)",
         },
+        // Ensure AS alias does not appear for internal projection
+        functionTest{
+            c: CountDistinct(colUserName.As("user_name")),
+            qs: "COUNT(DISTINCT users.name)",
+        },
     }
     for _, test := range tests {
         expLen := len(test.qs)
