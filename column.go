@@ -70,8 +70,11 @@ func (c *Column) setAlias(alias string) {
 }
 
 func (c *Column) As(alias string) *Column {
-    c.setAlias(alias)
-    return c
+    return &Column{
+        alias: alias,
+        tbl: c.tbl,
+        cdef: c.cdef,
+    }
 }
 
 func isColumn(el element) bool {

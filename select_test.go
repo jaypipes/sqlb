@@ -17,8 +17,11 @@ func TestSelectClause(t *testing.T) {
 
     m := testFixtureMeta()
     users := m.TableDef("users")
-    colUserId := users.Column("id")
+    articles := m.TableDef("articles")
     colUserName := users.Column("name")
+    colUserId := users.Column("id")
+    colArticleId := articles.Column("id")
+    colArticleAuthor := articles.Column("author")
 
     tests := []selClauseTest{
         // TableDef and ColumnDef
@@ -141,6 +144,23 @@ func TestSelectClause(t *testing.T) {
                 projections: []projection{colUserName},
             },
             qs: "(SELECT users.name FROM users) AS u",
+        },
+        // Single join
+        selClauseTest{
+            c: &selectClause{
+                selections: []selection{articles},
+                projections: []projection{colArticleId, colUserName.As("author")},
+                joins: []*joinClause{
+                    &joinClause{
+                        left: articles,
+                        right: users,
+                        onExprs: []*Expression{
+                            Equal(colArticleAuthor, colUserId),
+                        },
+                    },
+                },
+            },
+            qs: "SELECT articles.id, users.name AS author FROM articles JOIN users ON articles.author = users.id",
         },
     }
     for _, test := range tests {
