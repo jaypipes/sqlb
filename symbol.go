@@ -31,6 +31,7 @@ const (
     SYM_MIN
     SYM_SUM
     SYM_AVG
+    SYM_COUNT_STAR
 )
 
 var (
@@ -61,5 +62,6 @@ var (
         SYM_MIN: []byte("MIN("),
         SYM_SUM: []byte("SUM("),
         SYM_AVG: []byte("AVG("),
+        SYM_COUNT_STAR: []byte("COUNT(*)"),
     }
 )

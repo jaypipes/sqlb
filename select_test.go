@@ -219,6 +219,14 @@ func TestSelectClause(t *testing.T) {
             },
             qs: "SELECT articles.id, users.name AS author, article_states.name AS state FROM articles JOIN users ON articles.author = users.id JOIN article_states ON articles.state = article_states.id",
         },
+        // Simple COUNT(*) on a table
+        selClauseTest{
+            c: &selectClause{
+                selections: []selection{users},
+                projections: []projection{Count()},
+            },
+            qs: "SELECT COUNT(*) FROM users",
+        },
     }
     for _, test := range tests {
         expLen := len(test.qs)

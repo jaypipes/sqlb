@@ -45,6 +45,11 @@ func TestFunctions(t *testing.T) {
             c: Avg(colUserName),
             qs: "AVG(users.name)",
         },
+        // COUNT(*)
+        functionTest{
+            c: Count(),
+            qs: "COUNT(*)",
+        },
     }
     for _, test := range tests {
         expLen := len(test.qs)

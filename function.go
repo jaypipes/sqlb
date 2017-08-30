@@ -11,6 +11,7 @@ const (
     FUNC_MIN
     FUNC_SUM
     FUNC_AVG
+    FUNC_COUNT_STAR
 )
 
 var (
@@ -28,6 +29,9 @@ var (
         },
         FUNC_AVG: scanInfo{
             SYM_AVG, SYM_ELEMENT, SYM_RPAREN,
+        },
+        FUNC_COUNT_STAR: scanInfo{
+            SYM_COUNT_STAR,
         },
     }
 )
@@ -164,4 +168,10 @@ func (c *Column) Avg() *sqlFunc {
 
 func (c *ColumnDef) Avg() *sqlFunc {
     return Avg(c)
+}
+
+func Count() *sqlFunc {
+    return &sqlFunc{
+        scanInfo: funcscanTable[FUNC_COUNT_STAR],
+    }
 }
