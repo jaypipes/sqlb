@@ -26,6 +26,7 @@ type element interface {
 // notation. When outputting in GROUP BY, ORDER BY or ON clauses, the
 // projection will not include the alias extension
 type projection interface {
+    from() selection
     projectionId() uint64
     // projections must also implement element
     size() int

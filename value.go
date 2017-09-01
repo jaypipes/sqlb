@@ -9,8 +9,13 @@ import (
 // structs but instead helper functions like sqlb.Equal() will construct a
 // value and bind it to the containing element.
 type value struct {
+    sel selection
     alias string
     val interface{}
+}
+
+func (v *value) from() selection {
+    return v.sel
 }
 
 func (v *value) setAlias(alias string) *value {

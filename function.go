@@ -45,9 +45,14 @@ var (
 )
 
 type sqlFunc struct {
+    sel selection
     alias string
     scanInfo scanInfo
     elements []element
+}
+
+func (f *sqlFunc) from() selection {
+    return f.sel
 }
 
 func (f *sqlFunc) disableAliasScan() func() {
@@ -134,10 +139,11 @@ func (f *sqlFunc) scan(b []byte, args []interface{}) (int, int) {
     return bw, ac
 }
 
-func Max(el element) *sqlFunc {
+func Max(p projection) *sqlFunc {
     return &sqlFunc{
         scanInfo: funcScanTable[FUNC_MAX],
-        elements: []element{el},
+        elements: []element{p.(element)},
+        sel: p.from(),
     }
 }
 
@@ -149,10 +155,11 @@ func (c *ColumnDef) Max() *sqlFunc {
     return Max(c)
 }
 
-func Min(el element) *sqlFunc {
+func Min(p projection) *sqlFunc {
     return &sqlFunc{
         scanInfo: funcScanTable[FUNC_MIN],
-        elements: []element{el},
+        elements: []element{p.(element)},
+        sel: p.from(),
     }
 }
 
@@ -164,10 +171,11 @@ func (c *ColumnDef) Min() *sqlFunc {
     return Min(c)
 }
 
-func Sum(el element) *sqlFunc {
+func Sum(p projection) *sqlFunc {
     return &sqlFunc{
         scanInfo: funcScanTable[FUNC_SUM],
-        elements: []element{el},
+        elements: []element{p.(element)},
+        sel: p.from(),
     }
 }
 
@@ -179,10 +187,11 @@ func (c *ColumnDef) Sum() *sqlFunc {
     return Sum(c)
 }
 
-func Avg(el element) *sqlFunc {
+func Avg(p projection) *sqlFunc {
     return &sqlFunc{
         scanInfo: funcScanTable[FUNC_AVG],
-        elements: []element{el},
+        elements: []element{p.(element)},
+        sel: p.from(),
     }
 }
 
@@ -204,6 +213,7 @@ func CountDistinct(p projection) *sqlFunc {
     return &sqlFunc{
         scanInfo: funcScanTable[FUNC_COUNT_DISTINCT],
         elements: []element{p.(element)},
+        sel: p.from(),
     }
 }
 

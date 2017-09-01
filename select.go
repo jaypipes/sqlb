@@ -142,6 +142,11 @@ func (s *selectClause) scan(b []byte, args []interface{}) (int, int) {
     return bw, ac
 }
 
+func (s *selectClause) addJoin(jc *joinClause) *selectClause {
+    s.joins = append(s.joins, jc)
+    return s
+}
+
 func (s *selectClause) addWhere(e *Expression) *selectClause {
     if s.where == nil {
         s.where = &whereClause{filters: make([]*Expression, 0)}
@@ -220,4 +225,21 @@ func containsJoin(s *selectClause, j *joinClause) bool {
 
 func addToProjections(s *selectClause, p projection) {
     s.projections = append(s.projections, p)
+}
+
+func (s *selectClause) removeSelection(toRemove selection) {
+    idx := -1
+    toRemoveId := toRemove.selectionId()
+    for x, sel := range s.selections {
+        if sel.selectionId() == toRemoveId {
+            idx = x
+            break
+        }
+    }
+    if idx == -1 {
+        return
+    }
+    s.selections[len(s.selections) - 1] = s.selections[idx]
+    s.selections[idx] = s.selections[len(s.selections) - 1]
+    s.selections = s.selections[:len(s.selections) - 1]
 }

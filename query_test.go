@@ -11,6 +11,7 @@ type queryTest struct {
     q *Query
     qs string
     qargs []interface{}
+    qe error
 }
 
 func TestQuery(t *testing.T) {
@@ -18,7 +19,11 @@ func TestQuery(t *testing.T) {
 
     m := testFixtureMeta()
     users := m.Table("users")
+    articles := m.TableDef("articles")
+    colUserId := users.Column("id")
     colUserName := users.Column("name")
+    colArticleId := articles.Column("id")
+    colArticleAuthor := articles.Column("author")
 
     tests := []queryTest{
         // Simple FROM
@@ -59,8 +64,21 @@ func TestQuery(t *testing.T) {
             q: Select(users).As("u"),
             qs: "(SELECT users.id, users.name FROM users) AS u",
         },
+        // Simple INNER JOIN
+        queryTest{
+            q: Select(colArticleId, colUserName.As("author")).Join(users, Equal(colArticleAuthor, colUserId)),
+            qs: "SELECT articles.id, users.name AS author FROM articles JOIN users ON articles.author = users.id",
+        },
     }
     for _, test := range tests {
+        if test.qe != nil {
+            assert.Equal(test.qe, test.q.Error())
+            continue
+        } else if test.q.Error() != nil {
+            qe := test.q.Error()
+            assert.Fail(qe.Error())
+            continue
+        }
         qs, qargs := test.q.StringArgs()
         assert.Equal(len(test.qargs), len(qargs))
         assert.Equal(test.qs, qs)

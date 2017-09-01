@@ -10,6 +10,10 @@ type Column struct {
     tbl *Table
 }
 
+func (c *Column) from() selection {
+    return c.tbl
+}
+
 func (c *Column) projectionId() uint64 {
     if c.alias != "" {
         args := c.tbl.idParts()
@@ -89,6 +93,10 @@ func isColumn(el element) bool {
 type ColumnDef struct {
     name string
     tdef *TableDef
+}
+
+func (cd *ColumnDef) from() selection {
+    return cd.tdef
 }
 
 // A column definition isn't aliasable...

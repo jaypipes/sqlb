@@ -1,5 +1,14 @@
 package sqlb
 
+import (
+    "errors"
+    "fmt"
+)
+
+var (
+    ERR_JOIN_INVALID = errors.New("Unable to join selection. Either there was no selection to join to or the target selection was not found.")
+)
+
 type Query struct {
     e error
     b []byte
@@ -68,6 +77,55 @@ func (q *Query) LimitWithOffset(limit int, offset int) *Query {
 
 func (q *Query) As(alias string) *Query {
     q.sel.setAlias(alias)
+    return q
+}
+
+// Join to a supplied selection with the supplied ON expression. If the Query
+// does not yet contain a selectClause OR if the supplied ON expression does
+// not reference any selection that is found in the Query's selectClause, then
+// Query.e will be set to an error.
+func (q *Query) Join(right selection, onExpr *Expression) *Query {
+    if q.sel == nil {
+        q.e = ERR_JOIN_INVALID
+        fmt.Println("No select clause.")
+        return q
+    }
+
+    // Let's first determine which selection is targeted as the LEFT part of
+    // the join.
+    var left selection
+    rightSelId := right.selectionId()
+    for _, el := range onExpr.elements {
+        switch el.(type) {
+            case projection:
+                p := el.(projection)
+                exprSelId := p.from().selectionId()
+                if exprSelId == rightSelId {
+                    continue
+                }
+                // Search through the Query's primary selectClause, looking for
+                // the selection that is referred to be the ON expression.
+                for _, sel := range q.sel.selections {
+                    if sel.selectionId() == exprSelId {
+                        left = sel
+                        break
+                    }
+                }
+                if left != nil {
+                    break
+                }
+        }
+    }
+    if left == nil {
+        q.e = ERR_JOIN_INVALID
+        return q
+    }
+    jc := Join(left, right, onExpr)
+    q.sel.addJoin(jc)
+
+    // Make sure we remove the right-hand selection from the selectClause's
+    // selections collection, since it's in a JOIN clause.
+    q.sel.removeSelection(right)
     return q
 }
 
