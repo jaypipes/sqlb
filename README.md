@@ -1,13 +1,12 @@
-sqlb
-====
+# sqlb[![Build Status](https://travis-ci.org/jaypipes/sqlb.svg?branch=master)](https://travis-ci.org/jaypipes/sqlb)
+
 
 `sqlb` is a Golang library designed for efficiently constructing SQL
 expressions. Instead of hand-constructing strings containing raw SQL, users of
 the `sqlb` library instead construct query expressions and the `sqlb` library
 does the work of producing the raw strings that get sent to a database.
 
-Building SQL expressions, not strings
--------------------------------------
+## Building SQL expressions, not strings
 
 It's best to learn by example, so let's walk through a common way in which
 Golang applications might typically work with an underlying SQL database and
@@ -208,8 +207,7 @@ complexity and reduced code readability.
 
 `sqlb` is designed to solve this problem.
 
-Rewriting our application to use `sqlb`
----------------------------------------
+## Rewriting our application to use `sqlb`
 
 Let's rewrite our example application above to use the `sqlb` library instead
 of manually constructing SQL strings.
