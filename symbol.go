@@ -12,6 +12,7 @@ const (
     SYM_SELECT
     SYM_FROM
     SYM_JOIN
+    SYM_LEFT_JOIN
     SYM_ON
     SYM_WHERE
     SYM_GROUP_BY
@@ -53,6 +54,7 @@ var (
         SYM_SELECT: []byte("SELECT "),
         SYM_FROM: []byte(" FROM "),
         SYM_JOIN: []byte(" JOIN "),
+        SYM_LEFT_JOIN: []byte(" LEFT JOIN "),
         SYM_ON: []byte(" ON "),
         SYM_WHERE: []byte(" WHERE "),
         SYM_GROUP_BY: []byte(" GROUP BY "),

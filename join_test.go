@@ -83,6 +83,23 @@ func TestJoinClause(t *testing.T) {
             },
             qs: " JOIN users ON articles.author = users.id",
         },
+        // Simple outer join manual construction
+        joinClauseTest{
+            c: &joinClause{
+                joinType: JOIN_OUTER,
+                left: articles,
+                right: users,
+                onExprs: []*Expression{
+                    Equal(colArticleAuthor, colUserId),
+                },
+            },
+            qs: " LEFT JOIN users ON articles.author = users.id",
+        },
+        // OuterJoin() function
+        joinClauseTest{
+            c: OuterJoin(articles, users, Equal(colArticleAuthor, colUserId)),
+            qs: " LEFT JOIN users ON articles.author = users.id",
+        },
     }
     for _, test := range tests {
         expLen := len(test.qs)

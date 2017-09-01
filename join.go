@@ -4,6 +4,7 @@ type joinType int
 
 const (
     JOIN_INNER joinType = iota
+    JOIN_OUTER
 )
 
 type joinClause struct {
@@ -22,7 +23,13 @@ func (j *joinClause) argCount() int {
 }
 
 func (j *joinClause) size() int {
-    size := len(Symbols[SYM_JOIN])
+    size := 0
+    switch j.joinType {
+        case JOIN_INNER:
+            size += len(Symbols[SYM_JOIN])
+        case JOIN_OUTER:
+            size += len(Symbols[SYM_LEFT_JOIN])
+    }
     size += j.right.size()
     nonExprs := len(j.onExprs)
     if nonExprs > 0 {
@@ -37,7 +44,12 @@ func (j *joinClause) size() int {
 
 func (j *joinClause) scan(b []byte, args []interface{}) (int, int) {
     var bw, ac int
-    bw += copy(b[bw:], Symbols[SYM_JOIN])
+    switch j.joinType {
+        case JOIN_INNER:
+            bw += copy(b[bw:], Symbols[SYM_JOIN])
+        case JOIN_OUTER:
+            bw += copy(b[bw:], Symbols[SYM_LEFT_JOIN])
+    }
     pbw, pac := j.right.scan(b[bw:], args)
     bw += pbw
     ac += pac
@@ -64,4 +76,13 @@ func (j *joinClause) On(onExprs ...*Expression) *joinClause {
 
 func Join(left selection, right selection, onExpr ...*Expression) *joinClause {
     return &joinClause{left: left, right: right, onExprs: onExpr}
+}
+
+func OuterJoin(left selection, right selection, onExpr ...*Expression) *joinClause {
+    return &joinClause{
+        joinType: JOIN_OUTER,
+        left: left,
+        right: right,
+        onExprs: onExpr,
+    }
 }
