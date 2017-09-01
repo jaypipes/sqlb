@@ -1,6 +1,7 @@
 package sqlb
 
 import (
+    "fmt"
     "testing"
 
     "github.com/stretchr/testify/assert"
@@ -83,4 +84,25 @@ func TestModifyingQueryUpdatesBuffer(t *testing.T) {
     qs, qargs = q.StringArgs()
     assert.Equal("SELECT users.id, users.name FROM users WHERE users.id = ?", qs)
     assert.Equal([]interface{}{1}, qargs)
+}
+
+func TestQueryErrors(t *testing.T) {
+    assert := assert.New(t)
+
+    q := &Query{}
+
+    assert.False(q.IsValid()) // Doesn't have a selectClause yet...
+    assert.Nil(q.Error()) // But there is no error set yet...
+
+    m := testFixtureMeta()
+    users := m.TableDef("users")
+
+    q = Select(users)
+
+    assert.True(q.IsValid())
+    assert.Nil(q.Error())
+
+    q.e = fmt.Errorf("Cannot determine left side of JOIN expression.")
+    assert.False(q.IsValid())
+    assert.NotNil(q.Error())
 }

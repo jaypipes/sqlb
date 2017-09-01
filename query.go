@@ -1,9 +1,18 @@
 package sqlb
 
 type Query struct {
+    e error
     b []byte
     args []interface{}
     sel *selectClause
+}
+
+func (q *Query) IsValid() bool {
+    return q.e == nil &&  q.sel != nil
+}
+
+func (q *Query) Error() error {
+    return q.e
 }
 
 func (q *Query) String() string {
