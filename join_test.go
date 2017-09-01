@@ -83,7 +83,7 @@ func TestJoinClause(t *testing.T) {
             },
             qs: " JOIN users ON articles.author = users.id",
         },
-        // Simple outer join manual construction
+        // simple outer join manual construction
         joinClauseTest{
             c: &joinClause{
                 joinType: JOIN_OUTER,
@@ -99,6 +99,20 @@ func TestJoinClause(t *testing.T) {
         joinClauseTest{
             c: OuterJoin(articles, users, Equal(colArticleAuthor, colUserId)),
             qs: " LEFT JOIN users ON articles.author = users.id",
+        },
+        // cross join manual construction
+        joinClauseTest{
+            c: &joinClause{
+                joinType: JOIN_CROSS,
+                left: articles,
+                right: users,
+            },
+            qs: " CROSS JOIN users",
+        },
+        // CrossJoin() function
+        joinClauseTest{
+            c: CrossJoin(articles, users),
+            qs: " CROSS JOIN users",
         },
     }
     for _, test := range tests {

@@ -5,6 +5,7 @@ type joinType int
 const (
     JOIN_INNER joinType = iota
     JOIN_OUTER
+    JOIN_CROSS
 )
 
 type joinClause struct {
@@ -29,12 +30,14 @@ func (j *joinClause) size() int {
             size += len(Symbols[SYM_JOIN])
         case JOIN_OUTER:
             size += len(Symbols[SYM_LEFT_JOIN])
+        case JOIN_CROSS:
+            size += len(Symbols[SYM_CROSS_JOIN])
     }
     size += j.right.size()
-    nonExprs := len(j.onExprs)
-    if nonExprs > 0 {
+    nexprs := len(j.onExprs)
+    if nexprs > 0 {
         size += len(Symbols[SYM_ON])
-        size += len(Symbols[SYM_AND]) * (nonExprs - 1)
+        size += len(Symbols[SYM_AND]) * (nexprs - 1)
         for _, onExpr := range j.onExprs {
             size += onExpr.size()
         }
@@ -49,11 +52,14 @@ func (j *joinClause) scan(b []byte, args []interface{}) (int, int) {
             bw += copy(b[bw:], Symbols[SYM_JOIN])
         case JOIN_OUTER:
             bw += copy(b[bw:], Symbols[SYM_LEFT_JOIN])
+        case JOIN_CROSS:
+            bw += copy(b[bw:], Symbols[SYM_CROSS_JOIN])
     }
     pbw, pac := j.right.scan(b[bw:], args)
     bw += pbw
     ac += pac
-    if len(j.onExprs) > 0 {
+    nexprs := len(j.onExprs)
+    if nexprs > 0 {
         bw += copy(b[bw:], Symbols[SYM_ON])
         for x, onExpr := range j.onExprs {
             if x > 0 {
@@ -85,4 +91,8 @@ func OuterJoin(left selection, right selection, onExpr ...*Expression) *joinClau
         right: right,
         onExprs: onExpr,
     }
+}
+
+func CrossJoin(left selection, right selection) *joinClause {
+    return &joinClause{joinType: JOIN_CROSS, left: left, right: right}
 }

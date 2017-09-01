@@ -13,6 +13,7 @@ const (
     SYM_FROM
     SYM_JOIN
     SYM_LEFT_JOIN
+    SYM_CROSS_JOIN
     SYM_ON
     SYM_WHERE
     SYM_GROUP_BY
@@ -55,6 +56,7 @@ var (
         SYM_FROM: []byte(" FROM "),
         SYM_JOIN: []byte(" JOIN "),
         SYM_LEFT_JOIN: []byte(" LEFT JOIN "),
+        SYM_CROSS_JOIN: []byte(" CROSS JOIN "),
         SYM_ON: []byte(" ON "),
         SYM_WHERE: []byte(" WHERE "),
         SYM_GROUP_BY: []byte(" GROUP BY "),
