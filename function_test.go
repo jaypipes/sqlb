@@ -60,6 +60,11 @@ func TestFunctions(t *testing.T) {
             c: CountDistinct(colUserName.As("user_name")),
             qs: "COUNT(DISTINCT users.name)",
         },
+        // CAST(col AS type))
+        functionTest{
+            c: Cast(colUserName, SQL_TYPE_TEXT),
+            qs: "CAST(users.name AS TEXT)",
+        },
     }
     for _, test := range tests {
         expLen := len(test.qs)

@@ -13,12 +13,13 @@ const (
     FUNC_AVG
     FUNC_COUNT_STAR
     FUNC_COUNT_DISTINCT
+    FUNC_CAST
 )
 
 var (
     // A static table containing information used in constructing the
     // expression's SQL string during scan() calls
-    funcscanTable = map[funcId]scanInfo{
+    funcScanTable = map[funcId]scanInfo{
         FUNC_MAX: scanInfo{
             SYM_MAX, SYM_ELEMENT, SYM_RPAREN,
         },
@@ -36,6 +37,9 @@ var (
         },
         FUNC_COUNT_DISTINCT: scanInfo{
             SYM_COUNT_DISTINCT, SYM_ELEMENT, SYM_RPAREN,
+        },
+        FUNC_CAST: scanInfo{
+            SYM_CAST, SYM_ELEMENT, SYM_AS, SYM_PLACEHOLDER, SYM_RPAREN,
         },
     }
 )
@@ -132,7 +136,7 @@ func (f *sqlFunc) scan(b []byte, args []interface{}) (int, int) {
 
 func Max(el element) *sqlFunc {
     return &sqlFunc{
-        scanInfo: funcscanTable[FUNC_MAX],
+        scanInfo: funcScanTable[FUNC_MAX],
         elements: []element{el},
     }
 }
@@ -147,7 +151,7 @@ func (c *ColumnDef) Max() *sqlFunc {
 
 func Min(el element) *sqlFunc {
     return &sqlFunc{
-        scanInfo: funcscanTable[FUNC_MIN],
+        scanInfo: funcScanTable[FUNC_MIN],
         elements: []element{el},
     }
 }
@@ -162,7 +166,7 @@ func (c *ColumnDef) Min() *sqlFunc {
 
 func Sum(el element) *sqlFunc {
     return &sqlFunc{
-        scanInfo: funcscanTable[FUNC_SUM],
+        scanInfo: funcScanTable[FUNC_SUM],
         elements: []element{el},
     }
 }
@@ -177,7 +181,7 @@ func (c *ColumnDef) Sum() *sqlFunc {
 
 func Avg(el element) *sqlFunc {
     return &sqlFunc{
-        scanInfo: funcscanTable[FUNC_AVG],
+        scanInfo: funcScanTable[FUNC_AVG],
         elements: []element{el},
     }
 }
@@ -192,13 +196,25 @@ func (c *ColumnDef) Avg() *sqlFunc {
 
 func Count() *sqlFunc {
     return &sqlFunc{
-        scanInfo: funcscanTable[FUNC_COUNT_STAR],
+        scanInfo: funcScanTable[FUNC_COUNT_STAR],
     }
 }
 
 func CountDistinct(p projection) *sqlFunc {
     return &sqlFunc{
-        scanInfo: funcscanTable[FUNC_COUNT_DISTINCT],
+        scanInfo: funcScanTable[FUNC_COUNT_DISTINCT],
+        elements: []element{p.(element)},
+    }
+}
+
+func Cast(p projection, stype SqlType) *sqlFunc {
+    si := make([]Symbol, len(funcScanTable[FUNC_CAST]))
+    copy(si, funcScanTable[FUNC_CAST])
+    // Replace the placeholder with the SQL type's appropriate []byte
+    // representation
+    si[3] = sqlTypeToSymbol[stype]
+    return &sqlFunc{
+        scanInfo: si,
         elements: []element{p.(element)},
     }
 }

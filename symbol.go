@@ -33,6 +33,15 @@ const (
     SYM_AVG
     SYM_COUNT_STAR
     SYM_COUNT_DISTINCT
+    SYM_CAST
+    SYM_TYPE_CHAR
+    SYM_TYPE_VARCHAR
+    SYM_TYPE_BINARY
+    SYM_TYPE_TEXT
+    SYM_TYPE_INT
+    SYM_TYPE_FLOAT
+    SYM_TYPE_DECIMAL
+    SYM_PLACEHOLDER = 9999999999
 )
 
 var (
@@ -65,5 +74,13 @@ var (
         SYM_AVG: []byte("AVG("),
         SYM_COUNT_STAR: []byte("COUNT(*)"),
         SYM_COUNT_DISTINCT: []byte("COUNT(DISTINCT "),
+        SYM_CAST: []byte("CAST("),
+        SYM_TYPE_CHAR: []byte("CHAR"),
+        SYM_TYPE_VARCHAR: []byte("VARCHAR"),
+        SYM_TYPE_TEXT: []byte("TEXT"),
+        SYM_TYPE_INT: []byte("INT"),
+        SYM_TYPE_FLOAT: []byte("FLOAT"),
+        SYM_TYPE_DECIMAL: []byte("DECIMAL"),
+        SYM_TYPE_BINARY: []byte("BINARY"),
     }
 )
