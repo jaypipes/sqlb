@@ -239,7 +239,5 @@ func (s *selectClause) removeSelection(toRemove selection) {
     if idx == -1 {
         return
     }
-    s.selections[len(s.selections) - 1] = s.selections[idx]
-    s.selections[idx] = s.selections[len(s.selections) - 1]
-    s.selections = s.selections[:len(s.selections) - 1]
+    s.selections = append(s.selections[:idx], s.selections[idx + 1:]...)
 }

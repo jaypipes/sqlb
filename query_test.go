@@ -20,10 +20,14 @@ func TestQuery(t *testing.T) {
     m := testFixtureMeta()
     users := m.Table("users")
     articles := m.TableDef("articles")
+    article_states := m.TableDef("article_states")
     colUserId := users.Column("id")
     colUserName := users.Column("name")
     colArticleId := articles.Column("id")
     colArticleAuthor := articles.Column("author")
+    colArticleState := articles.ColumnDef("state")
+    colArticleStateId := article_states.ColumnDef("id")
+    colArticleStateName := article_states.ColumnDef("name")
 
     tests := []queryTest{
         // Simple FROM
@@ -68,6 +72,16 @@ func TestQuery(t *testing.T) {
         queryTest{
             q: Select(colArticleId, colUserName.As("author")).Join(users, Equal(colArticleAuthor, colUserId)),
             qs: "SELECT articles.id, users.name AS author FROM articles JOIN users ON articles.author = users.id",
+        },
+        // Two JOINs using Join() method
+        queryTest{
+            q: Select(
+                colArticleId,
+                colUserName.As("author"),
+                colArticleStateName.As("state"),
+            ).Join(users, Equal(colArticleAuthor, colUserId),
+            ).Join(article_states, Equal(colArticleState, colArticleStateId)),
+            qs: "SELECT articles.id, users.name AS author, article_states.name AS state FROM articles JOIN users ON articles.author = users.id JOIN article_states ON articles.state = article_states.id",
         },
     }
     for _, test := range tests {
