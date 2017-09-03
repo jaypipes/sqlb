@@ -1,9 +1,5 @@
 package sqlb
 
-type Columnar interface {
-    Column() *Column
-}
-
 type Column struct {
     alias string
     cdef *ColumnDef
@@ -78,15 +74,6 @@ func (c *Column) As(alias string) *Column {
         alias: alias,
         tbl: c.tbl,
         cdef: c.cdef,
-    }
-}
-
-func isColumn(el element) bool {
-    switch el.(type) {
-    case *Column:
-        return true
-    default:
-        return false
     }
 }
 
