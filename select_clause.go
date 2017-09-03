@@ -19,7 +19,22 @@ func (s *selectClause) projections() []projection {
     return s.projs
 }
 
-func (s *selectClause) isSubselect() bool {
+func (s *selectClause) isDerivedTable() bool {
+    // A derived table is a SELECT in the FROM clause. It is always aliased and the
+    // projections for a derived table take this alias as their selection alias.
+    //
+    // The projections of a derived table are not the same as the projections
+    // for the SELECT that is being wrapped. For example, given the following
+    // SQL statement:
+    //
+    // SELECT u.id, u.name FROM (
+    //   SELECT users.id, users.name FROM users
+    // ) AS u
+    //
+    // The inner SELECT's projections are columns from the users Table or
+    // TableDef. However, the derived table's projections are separate and
+    // include the alias of the derived table as the selection alias (u instead
+    // of users). 
     return s.alias != ""
 }
 
@@ -83,7 +98,7 @@ func (s *selectClause) size() int {
     if s.limit != nil {
         size += s.limit.size()
     }
-    if s.isSubselect() {
+    if s.isDerivedTable() {
         size += (len(Symbols[SYM_LPAREN]) + len(Symbols[SYM_RPAREN]) +
                  len(Symbols[SYM_AS]) + len(s.alias))
     }
@@ -92,7 +107,7 @@ func (s *selectClause) size() int {
 
 func (s *selectClause) scan(b []byte, args []interface{}) (int, int) {
     var bw, ac int
-    if s.isSubselect() {
+    if s.isDerivedTable() {
         bw += copy(b[bw:], Symbols[SYM_LPAREN])
     }
     bw += copy(b[bw:], Symbols[SYM_SELECT])
@@ -142,7 +157,7 @@ func (s *selectClause) scan(b []byte, args []interface{}) (int, int) {
         bw += lbw
         ac += lac
     }
-    if s.isSubselect() {
+    if s.isDerivedTable() {
         bw += copy(b[bw:], Symbols[SYM_RPAREN])
         bw += copy(b[bw:], Symbols[SYM_AS])
         bw += copy(b[bw:], s.alias)

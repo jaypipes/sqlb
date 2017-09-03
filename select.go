@@ -75,9 +75,19 @@ func (q *SelectQuery) LimitWithOffset(limit int, offset int) *SelectQuery {
     return q
 }
 
+// Returns a pointer to a new SelectQuery that has aliased its inner selection
+// to the supplied name
 func (q *SelectQuery) As(alias string) *SelectQuery {
     q.sel.(*selectClause).setAlias(alias)
-    return q
+    aliasProjs := make([]projection, len(q.sel.(*selectClause).projs))
+    for x, origProj := range q.sel.(*selectClause).projs {
+        aliasProjs[x] = origProj
+    }
+    derived := &selectClause{
+        projs: aliasProjs,
+        selections: []selection{q.sel},
+    }
+    return &SelectQuery{sel: derived}
 }
 
 // Join to a supplied selection with the supplied ON expression. If the SelectQuery

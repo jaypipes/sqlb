@@ -38,7 +38,7 @@ type projection interface {
 }
 
 // A selection is something that produces rows. A table, table definition,
-// view, subselect, etc
+// view, subselect, etc.
 type selection interface {
     projections() []projection
     selectionId() uint64

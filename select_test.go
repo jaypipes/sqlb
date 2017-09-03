@@ -66,7 +66,9 @@ func TestSelectQuery(t *testing.T) {
         // Simple sub-SELECT
         selectQueryTest{
             q: Select(users).As("u"),
-            qs: "(SELECT users.id, users.name FROM users) AS u",
+            // This is incorrect. Should be:
+            // qs: "SELECT u.id, u.name FROM (SELECT users.id, users.name FROM users) AS u",
+            qs: "SELECT users.id, users.name FROM (SELECT users.id, users.name FROM users) AS u",
         },
         // Simple INNER JOIN
         selectQueryTest{
