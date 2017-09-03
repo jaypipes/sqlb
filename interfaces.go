@@ -47,3 +47,12 @@ type selection interface {
     argCount() int
     scan([]byte, []interface{}) (int, int)
 }
+
+// A Query is a placeholder for something that can be asked for the SQL string
+// representation of the underlying query clauses
+type Query interface {
+    IsValid() bool
+    Error() error
+    String() string
+    StringArgs() (string, []interface{})
+}

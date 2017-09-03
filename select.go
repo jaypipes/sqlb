@@ -1,243 +1,208 @@
 package sqlb
 
-type selectClause struct {
-    alias string
-    projections []projection
-    selections []selection
-    joins []*joinClause
-    where *whereClause
-    groupBy *groupByClause
-    orderBy *orderByClause
-    limit *limitClause
+import (
+    "errors"
+    "fmt"
+)
+
+var (
+    ERR_JOIN_INVALID = errors.New("Unable to join selection. Either there was no selection to join to or the target selection was not found.")
+)
+
+type SelectQuery struct {
+    e error
+    b []byte
+    args []interface{}
+    sel selection
 }
 
-func (s *selectClause) isSubselect() bool {
-    return s.alias != ""
+func (q *SelectQuery) IsValid() bool {
+    return q.e == nil &&  q.sel != nil
 }
 
-func (s *selectClause) argCount() int {
-    argc := 0
-    for _, p := range s.projections {
-        argc += p.argCount()
-    }
-    for _, sel := range s.selections {
-        argc += sel.argCount()
-    }
-    for _, join := range s.joins {
-        argc += join.argCount()
-    }
-    if s.where != nil {
-        argc += s.where.argCount()
-    }
-    if s.groupBy != nil {
-        argc += s.groupBy.argCount()
-    }
-    if s.orderBy != nil {
-        argc += s.orderBy.argCount()
-    }
-    if s.limit != nil {
-        argc += s.limit.argCount()
-    }
-    return argc
+func (q *SelectQuery) Error() error {
+    return q.e
 }
 
-func (s *selectClause) setAlias(alias string) {
-    s.alias = alias
+func (q *SelectQuery) String() string {
+    size := q.sel.size()
+    argc := q.sel.argCount()
+    if len(q.args) != argc  {
+        q.args = make([]interface{}, argc)
+    }
+    if len(q.b) != size {
+        q.b = make([]byte, size)
+    }
+    q.sel.scan(q.b, q.args)
+    return string(q.b)
 }
 
-func (s *selectClause) size() int {
-    size := len(Symbols[SYM_SELECT])
-    nprojs := len(s.projections)
-    for _, p := range s.projections {
-        size += p.size()
+func (q *SelectQuery) StringArgs() (string, []interface{}) {
+    size := q.sel.size()
+    argc := q.sel.argCount()
+    if len(q.args) != argc  {
+        q.args = make([]interface{}, argc)
     }
-    size += (len(Symbols[SYM_COMMA_WS]) * (nprojs - 1))  // the commas...
-    nsels := len(s.selections)
-    if nsels > 0 {
-        size += len(Symbols[SYM_FROM])
-        for _, sel := range s.selections {
-            size += sel.size()
-        }
-        size += (len(Symbols[SYM_COMMA_WS]) * (nsels - 1))  // the commas...
-        for _, join := range s.joins {
-            size += join.size()
-        }
+    if len(q.b) != size {
+        q.b = make([]byte, size)
     }
-    if s.where != nil {
-        size += s.where.size()
-    }
-    if s.groupBy != nil {
-        size += s.groupBy.size()
-    }
-    if s.orderBy != nil {
-        size += s.orderBy.size()
-    }
-    if s.limit != nil {
-        size += s.limit.size()
-    }
-    if s.isSubselect() {
-        size += (len(Symbols[SYM_LPAREN]) + len(Symbols[SYM_RPAREN]) +
-                 len(Symbols[SYM_AS]) + len(s.alias))
-    }
-    return size
+    q.sel.scan(q.b, q.args)
+    return string(q.b), q.args
 }
 
-func (s *selectClause) scan(b []byte, args []interface{}) (int, int) {
-    var bw, ac int
-    if s.isSubselect() {
-        bw += copy(b[bw:], Symbols[SYM_LPAREN])
-    }
-    bw += copy(b[bw:], Symbols[SYM_SELECT])
-    nprojs := len(s.projections)
-    for x, p := range s.projections {
-        pbw, pac := p.scan(b[bw:], args[ac:])
-        bw += pbw
-        ac += pac
-        if x != (nprojs - 1) {
-            bw += copy(b[bw:], Symbols[SYM_COMMA_WS])
-        }
-    }
-    nsels := len(s.selections)
-    if nsels > 0 {
-        bw += copy(b[bw:], Symbols[SYM_FROM])
-        for x, sel := range s.selections {
-            sbw, sac := sel.scan(b[bw:], args)
-            bw += sbw
-            ac += sac
-            if x != (nsels - 1) {
-                bw += copy(b[bw:], Symbols[SYM_COMMA_WS])
-            }
-        }
-        for _, join := range s.joins {
-            jbw, jac := join.scan(b[bw:], args)
-            bw += jbw
-            ac += jac
-        }
-    }
-    if s.where != nil {
-        wbw, wac := s.where.scan(b[bw:], args[ac:])
-        bw += wbw
-        ac += wac
-    }
-    if s.groupBy != nil {
-        gbbw, gbac := s.groupBy.scan(b[bw:], args[ac:])
-        bw += gbbw
-        ac += gbac
-    }
-    if s.orderBy != nil {
-        obbw, obac := s.orderBy.scan(b[bw:], args[ac:])
-        bw += obbw
-        ac += obac
-    }
-    if s.limit != nil {
-        lbw, lac := s.limit.scan(b[bw:], args[ac:])
-        bw += lbw
-        ac += lac
-    }
-    if s.isSubselect() {
-        bw += copy(b[bw:], Symbols[SYM_RPAREN])
-        bw += copy(b[bw:], Symbols[SYM_AS])
-        bw += copy(b[bw:], s.alias)
-    }
-    return bw, ac
+func (q *SelectQuery) Where(e *Expression) *SelectQuery {
+    q.sel.(*selectClause).addWhere(e)
+    return q
 }
 
-func (s *selectClause) addJoin(jc *joinClause) *selectClause {
-    s.joins = append(s.joins, jc)
-    return s
+func (q *SelectQuery) GroupBy(cols ...projection) *SelectQuery {
+    q.sel.(*selectClause).addGroupBy(cols...)
+    return q
 }
 
-func (s *selectClause) addWhere(e *Expression) *selectClause {
-    if s.where == nil {
-        s.where = &whereClause{filters: make([]*Expression, 0)}
-    }
-    s.where.filters = append(s.where.filters, e)
-    return s
+func (q *SelectQuery) OrderBy(scols ...*sortColumn) *SelectQuery {
+    q.sel.(*selectClause).addOrderBy(scols...)
+    return q
 }
 
-// Given one or more columns, either set or add to the GROUP BY clause for
-// the selectClause
-func (s *selectClause) addGroupBy(cols ...projection) *selectClause {
-    if len(cols) == 0 {
-        return s
+func (q *SelectQuery) Limit(limit int) *SelectQuery {
+    q.sel.(*selectClause).setLimit(limit)
+    return q
+}
+
+func (q *SelectQuery) LimitWithOffset(limit int, offset int) *SelectQuery {
+    q.sel.(*selectClause).setLimitWithOffset(limit, offset)
+    return q
+}
+
+func (q *SelectQuery) As(alias string) *SelectQuery {
+    q.sel.(*selectClause).setAlias(alias)
+    return q
+}
+
+// Join to a supplied selection with the supplied ON expression. If the SelectQuery
+// does not yet contain a selectClause OR if the supplied ON expression does
+// not reference any selection that is found in the SelectQuery's selectClause, then
+// SelectQuery.e will be set to an error.
+func (q *SelectQuery) Join(right selection, onExpr *Expression) *SelectQuery {
+    if q.sel == nil {
+        q.e = ERR_JOIN_INVALID
+        fmt.Println("No select clause.")
+        return q
     }
-    gb := s.groupBy
-    if gb == nil {
-        gb = &groupByClause{
-            cols: make([]projection, len(cols)),
-        }
-        for x, c := range cols {
-            gb.cols[x] = c
-        }
-    } else {
-        for _, c := range cols {
-            gb.cols = append(gb.cols, c)
+
+    // Let's first determine which selection is targeted as the LEFT part of
+    // the join.
+    var left selection
+    rightSelId := right.selectionId()
+    for _, el := range onExpr.elements {
+        switch el.(type) {
+            case projection:
+                p := el.(projection)
+                exprSelId := p.from().selectionId()
+                if exprSelId == rightSelId {
+                    continue
+                }
+                // Search through the SelectQuery's primary selectClause, looking for
+                // the selection that is referred to be the ON expression.
+                for _, sel := range q.sel.(*selectClause).selections {
+                    if sel.selectionId() == exprSelId {
+                        left = sel
+                        break
+                    }
+                }
+                if left != nil {
+                    break
+                }
         }
     }
-    s.groupBy = gb
-    return s
-}
-
-// Given one or more sort columns, either set or add to the ORDER BY clause for
-// the selectClause
-func (s *selectClause) addOrderBy(sortCols ...*sortColumn) *selectClause {
-    if len(sortCols) == 0 {
-        return s
+    if left == nil {
+        q.e = ERR_JOIN_INVALID
+        return q
     }
-    ob := s.orderBy
-    if ob == nil {
-        ob = &orderByClause{
-            scols: make([]*sortColumn, len(sortCols)),
-        }
-        for x, sc := range sortCols {
-            ob.scols[x] = sc
-        }
-    } else {
-        for _, sc := range sortCols {
-            ob.scols = append(ob.scols, sc)
+    jc := Join(left, right, onExpr)
+    q.sel.(*selectClause).addJoin(jc)
+
+    // Make sure we remove the right-hand selection from the selectClause's
+    // selections collection, since it's in a JOIN clause.
+    q.sel.(*selectClause).removeSelection(right)
+    return q
+}
+
+func Select(items ...interface{}) *SelectQuery {
+    sel := &selectClause{
+        projs: make([]projection, 0),
+    }
+
+    selectionMap := make(map[uint64]selection, 0)
+    projectionMap := make(map[uint64]projection, 0)
+
+    // For each scannable item we've received in the call, check what concrete
+    // type they are and, depending on which type they are, either add them to
+    // the returned selectClause's projections list or query the underlying
+    // table metadata to generate a list of all columns in that table.
+    for _, item := range items {
+        switch item.(type) {
+            case *joinClause:
+                j := item.(*joinClause)
+                if ! containsJoin(sel, j) {
+                    sel.joins = append(sel.joins, j)
+                    if _, ok := selectionMap[j.left.selectionId()]; ! ok {
+                        selectionMap[j.left.selectionId()] = j.left
+                        for _, proj := range j.left.projections() {
+                            projId := proj.projectionId()
+                            _, projExists := projectionMap[projId]
+                            if ! projExists {
+                                addToProjections(sel, proj)
+                                projectionMap[projId] = proj
+                            }
+                        }
+                    }
+                    if _, ok := selectionMap[j.right.selectionId()]; ! ok {
+                        for _, proj := range j.right.projections() {
+                            projId := proj.projectionId()
+                            _, projExists := projectionMap[projId]
+                            if ! projExists {
+                                addToProjections(sel, proj)
+                                projectionMap[projId] = proj
+                            }
+                        }
+                    }
+                }
+            case *Column:
+                v := item.(*Column)
+                sel.projs = append(sel.projs, v)
+                selectionMap[v.tbl.selectionId()] = v.tbl
+            case *Table:
+                v := item.(*Table)
+                for _, cd := range v.tdef.projections() {
+                    addToProjections(sel, cd)
+                }
+                selectionMap[v.selectionId()] = v
+            case *TableDef:
+                v := item.(*TableDef)
+                for _, cd := range v.projections() {
+                    addToProjections(sel, cd)
+                }
+                selectionMap[v.selectionId()] = v
+            case *ColumnDef:
+                v := item.(*ColumnDef)
+                addToProjections(sel, v)
+                selectionMap[v.tdef.selectionId()] = v.tdef
+            default:
+                // Everything else, make it a literal value projection, so, for
+                // instance, a user can do SELECT 1, which is, technically
+                // valid SQL.
+                p := &value{val: item}
+                addToProjections(sel, p)
         }
     }
-    s.orderBy = ob
-    return s
-}
-
-func (s *selectClause) setLimitWithOffset(limit int, offset int) *selectClause {
-    lc := &limitClause{limit: limit}
-    lc.offset = &offset
-    s.limit = lc
-    return s
-}
-
-func (s *selectClause) setLimit(limit int) *selectClause {
-    lc := &limitClause{limit: limit}
-    s.limit = lc
-    return s
-}
-
-func containsJoin(s *selectClause, j *joinClause) bool {
-    for _, sj := range s.joins {
-        if j == sj {
-            return true
-        }
+    selections := make([]selection, len(selectionMap))
+    x := 0
+    for _, sel := range selectionMap {
+        selections[x] = sel
+        x++
     }
-    return false
-}
-
-func addToProjections(s *selectClause, p projection) {
-    s.projections = append(s.projections, p)
-}
-
-func (s *selectClause) removeSelection(toRemove selection) {
-    idx := -1
-    toRemoveId := toRemove.selectionId()
-    for x, sel := range s.selections {
-        if sel.selectionId() == toRemoveId {
-            idx = x
-            break
-        }
-    }
-    if idx == -1 {
-        return
-    }
-    s.selections = append(s.selections[:idx], s.selections[idx + 1:]...)
+    sel.selections = selections
+    return &SelectQuery{sel: sel}
 }
