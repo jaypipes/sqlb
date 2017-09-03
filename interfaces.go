@@ -38,7 +38,7 @@ type projection interface {
 }
 
 // A selection is something that produces rows. A table, table definition,
-// view, subselect, etc
+// view, subselect, etc.
 type selection interface {
     projections() []projection
     selectionId() uint64
@@ -46,4 +46,13 @@ type selection interface {
     size() int
     argCount() int
     scan([]byte, []interface{}) (int, int)
+}
+
+// A Query is a placeholder for something that can be asked for the SQL string
+// representation of the underlying query clauses
+type Query interface {
+    IsValid() bool
+    Error() error
+    String() string
+    StringArgs() (string, []interface{})
 }
