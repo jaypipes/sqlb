@@ -13,7 +13,7 @@ type SelectQuery struct {
     e error
     b []byte
     args []interface{}
-    sel selection
+    sel *selectClause
 }
 
 func (q *SelectQuery) IsValid() bool {
@@ -51,41 +51,40 @@ func (q *SelectQuery) StringArgs() (string, []interface{}) {
 }
 
 func (q *SelectQuery) Where(e *Expression) *SelectQuery {
-    q.sel.(*selectClause).addWhere(e)
+    q.sel.addWhere(e)
     return q
 }
 
 func (q *SelectQuery) GroupBy(cols ...projection) *SelectQuery {
-    q.sel.(*selectClause).addGroupBy(cols...)
+    q.sel.addGroupBy(cols...)
     return q
 }
 
 func (q *SelectQuery) OrderBy(scols ...*sortColumn) *SelectQuery {
-    q.sel.(*selectClause).addOrderBy(scols...)
+    q.sel.addOrderBy(scols...)
     return q
 }
 
 func (q *SelectQuery) Limit(limit int) *SelectQuery {
-    q.sel.(*selectClause).setLimit(limit)
+    q.sel.setLimit(limit)
     return q
 }
 
 func (q *SelectQuery) LimitWithOffset(limit int, offset int) *SelectQuery {
-    q.sel.(*selectClause).setLimitWithOffset(limit, offset)
+    q.sel.setLimitWithOffset(limit, offset)
     return q
 }
 
 // Returns a pointer to a new SelectQuery that has aliased its inner selection
 // to the supplied name
 func (q *SelectQuery) As(alias string) *SelectQuery {
-    q.sel.(*selectClause).setAlias(alias)
-    aliasProjs := make([]projection, len(q.sel.(*selectClause).projs))
-    for x, origProj := range q.sel.(*selectClause).projs {
-        aliasProjs[x] = origProj
-    }
     derived := &selectClause{
-        projs: aliasProjs,
-        selections: []selection{q.sel},
+        selections: []selection{
+            &derivedTable{
+                alias: alias,
+                from: q.sel,
+            },
+        },
     }
     return &SelectQuery{sel: derived}
 }
@@ -115,7 +114,7 @@ func (q *SelectQuery) Join(right selection, onExpr *Expression) *SelectQuery {
                 }
                 // Search through the SelectQuery's primary selectClause, looking for
                 // the selection that is referred to be the ON expression.
-                for _, sel := range q.sel.(*selectClause).selections {
+                for _, sel := range q.sel.selections {
                     if sel.selectionId() == exprSelId {
                         left = sel
                         break
@@ -131,11 +130,11 @@ func (q *SelectQuery) Join(right selection, onExpr *Expression) *SelectQuery {
         return q
     }
     jc := Join(left, right, onExpr)
-    q.sel.(*selectClause).addJoin(jc)
+    q.sel.addJoin(jc)
 
     // Make sure we remove the right-hand selection from the selectClause's
     // selections collection, since it's in a JOIN clause.
-    q.sel.(*selectClause).removeSelection(right)
+    q.sel.removeSelection(right)
     return q
 }
 
@@ -153,6 +152,37 @@ func Select(items ...interface{}) *SelectQuery {
     // table metadata to generate a list of all columns in that table.
     for _, item := range items {
         switch item.(type) {
+            case *SelectQuery:
+                // Project all columns from the subquery to the outer
+                // selectClause
+                sq := item.(*SelectQuery)
+                innerSelClause := sq.sel
+                if len(innerSelClause.selections) == 1 {
+                    innerSelection := innerSelClause.selections[0]
+                    innerSelId := innerSelection.selectionId()
+                    switch innerSelection.(type) {
+                        case *derivedTable:
+                            // If the inner select clause contains a single
+                            // selection and that selection is a derivedTable,
+                            // that means we were called like so:
+                            //
+                            //      Select(Select(...).As("alias"))
+                            //
+                            // This means that we do *not* need to generate a
+                            // derived table but instead simply grab the
+                            // existing derived table as the single selection
+                            // for the outer selectClause and project all the
+                            // derived table's projections out into the outer
+                            // selectClause.
+                            selectionMap[innerSelId] = innerSelection
+                            dt := innerSelection.(*derivedTable)
+                            for _, p := range dt.getAllDerivedColumns() {
+                                pid := p.projectionId()
+                                projectionMap[pid] = p
+                                addToProjections(sel, p)
+                            }
+                    }
+                }
             case *joinClause:
                 j := item.(*joinClause)
                 if ! containsJoin(sel, j) {

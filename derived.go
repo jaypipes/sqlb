@@ -1,6 +1,19 @@
 package sqlb
 
-// A type of selection that represents a SELECT in the FROM clause
+// A derived table is a SELECT in the FROM clause. It is always aliased and the
+// projections for a derived table take this alias as their selection alias.
+//
+// The projections of a derived table are not the same as the projections for
+// the SELECT that is being wrapped. For example, given the following SQL
+// statement:
+//
+// SELECT u.id, u.name FROM (
+//   SELECT users.id, users.name FROM users
+// ) AS u
+//
+// The inner SELECT's projections are columns from the users Table or TableDef.
+// However, the derived table's projections are separate and include the alias
+// of the derived table as the selection alias (u instead of users). 
 type derivedTable struct {
     alias string
     from *selectClause
@@ -8,6 +21,23 @@ type derivedTable struct {
 
 func (dt *derivedTable) selectionId() uint64 {
     return toId(dt.alias)
+}
+
+// Return a collection of derivedColumn projections that have been constructed
+// to refer to this derived table and not have any outer alias
+func (dt *derivedTable) getAllDerivedColumns() []projection {
+    nprojs := len(dt.from.projs)
+    projs := make([]projection, nprojs)
+    for x := 0; x < nprojs; x++ {
+        p := dt.from.projs[x]
+        switch p.(type) {
+            case *Column:
+                projs[x] = &derivedColumn{dt: dt, c: p.(*Column)}
+            case *ColumnDef:
+                projs[x] = &derivedColumn{dt: dt, c: p.(*ColumnDef).Column()}
+        }
+    }
+    return projs
 }
 
 func (dt *derivedTable) projections() []projection {
@@ -129,9 +159,13 @@ func (dc *derivedColumn) argCount() int {
 }
 
 func (dc *derivedColumn) size() int {
-    size := dc.dt.size()
+    size := len(dc.dt.alias)
     size += len(Symbols[SYM_PERIOD])
-    size += dc.c.size()
+    if dc.c.alias != "" {
+        size += len(dc.c.alias)
+    } else {
+        size += len(dc.c.cdef.name)
+    }
     if dc.alias != "" {
         size += len(Symbols[SYM_AS]) + len(dc.alias)
     }
@@ -142,11 +176,11 @@ func (dc *derivedColumn) scan(b []byte, args []interface{}) (int, int) {
     var bw, ac int
     bw += copy(b[bw:], dc.dt.alias)
     bw += copy(b[bw:], Symbols[SYM_PERIOD])
-    reset := dc.c.disableAliasScan()
-    defer reset()
-    cbw, cac := dc.c.scan(b[bw:], args[ac:])
-    bw += cbw
-    ac += cac
+    if dc.c.alias != "" {
+        bw += copy(b[bw:], dc.c.alias)
+    } else {
+        bw += copy(b[bw:], dc.c.cdef.name)
+    }
     if dc.alias != "" {
         bw += copy(b[bw:], Symbols[SYM_AS])
         bw += copy(b[bw:], dc.alias)
