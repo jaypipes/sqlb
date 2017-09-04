@@ -63,12 +63,15 @@ func TestSelectQuery(t *testing.T) {
             qs: "SELECT users.id, users.name FROM users LIMIT ? OFFSET ?",
             qargs: []interface{}{10, 20},
         },
-        // Simple sub-SELECT
+        // Simple named derived table
         selectQueryTest{
-            q: Select(users).As("u"),
-            // This is incorrect. Should be:
-            // qs: "SELECT u.id, u.name FROM (SELECT users.id, users.name FROM users) AS u",
-            qs: "SELECT users.id, users.name FROM (SELECT users.id, users.name FROM users) AS u",
+            q: Select(Select(users).As("u")),
+            qs: "SELECT u.id, u.name FROM (SELECT users.id, users.name FROM users) AS u",
+        },
+        // Simple un-named derived table
+        selectQueryTest{
+            q: Select(Select(users)),
+            qs: "SELECT derived0.id, derived0.name FROM (SELECT users.id, users.name FROM users) AS derived0",
         },
         // Simple INNER JOIN
         selectQueryTest{

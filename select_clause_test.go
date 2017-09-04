@@ -169,15 +169,6 @@ func TestSelectClause(t *testing.T) {
             qs: "SELECT users.name FROM users GROUP BY users.name ORDER BY users.name DESC LIMIT ?",
             qargs: []interface{}{10},
         },
-        // Simple sub-SELECT
-        selClauseTest{
-            c: &selectClause{
-                alias: "u",
-                selections: []selection{users},
-                projs: []projection{colUserName},
-            },
-            qs: "(SELECT users.name FROM users) AS u",
-        },
         // Single join
         selClauseTest{
             c: &selectClause{

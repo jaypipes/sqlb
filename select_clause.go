@@ -1,7 +1,6 @@
 package sqlb
 
 type selectClause struct {
-    alias string
     projs []projection
     selections []selection
     joins []*joinClause
@@ -9,33 +8,6 @@ type selectClause struct {
     groupBy *groupByClause
     orderBy *orderByClause
     limit *limitClause
-}
-
-func (s *selectClause) selectionId() uint64 {
-    return toId(s.alias)
-}
-
-func (s *selectClause) projections() []projection {
-    return s.projs
-}
-
-func (s *selectClause) isDerivedTable() bool {
-    // A derived table is a SELECT in the FROM clause. It is always aliased and the
-    // projections for a derived table take this alias as their selection alias.
-    //
-    // The projections of a derived table are not the same as the projections
-    // for the SELECT that is being wrapped. For example, given the following
-    // SQL statement:
-    //
-    // SELECT u.id, u.name FROM (
-    //   SELECT users.id, users.name FROM users
-    // ) AS u
-    //
-    // The inner SELECT's projections are columns from the users Table or
-    // TableDef. However, the derived table's projections are separate and
-    // include the alias of the derived table as the selection alias (u instead
-    // of users). 
-    return s.alias != ""
 }
 
 func (s *selectClause) argCount() int {
@@ -62,10 +34,6 @@ func (s *selectClause) argCount() int {
         argc += s.limit.argCount()
     }
     return argc
-}
-
-func (s *selectClause) setAlias(alias string) {
-    s.alias = alias
 }
 
 func (s *selectClause) size() int {
@@ -98,18 +66,11 @@ func (s *selectClause) size() int {
     if s.limit != nil {
         size += s.limit.size()
     }
-    if s.isDerivedTable() {
-        size += (len(Symbols[SYM_LPAREN]) + len(Symbols[SYM_RPAREN]) +
-                 len(Symbols[SYM_AS]) + len(s.alias))
-    }
     return size
 }
 
 func (s *selectClause) scan(b []byte, args []interface{}) (int, int) {
     var bw, ac int
-    if s.isDerivedTable() {
-        bw += copy(b[bw:], Symbols[SYM_LPAREN])
-    }
     bw += copy(b[bw:], Symbols[SYM_SELECT])
     nprojs := len(s.projs)
     for x, p := range s.projs {
@@ -156,11 +117,6 @@ func (s *selectClause) scan(b []byte, args []interface{}) (int, int) {
         lbw, lac := s.limit.scan(b[bw:], args[ac:])
         bw += lbw
         ac += lac
-    }
-    if s.isDerivedTable() {
-        bw += copy(b[bw:], Symbols[SYM_RPAREN])
-        bw += copy(b[bw:], Symbols[SYM_AS])
-        bw += copy(b[bw:], s.alias)
     }
     return bw, ac
 }
