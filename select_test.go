@@ -68,6 +68,11 @@ func TestSelectQuery(t *testing.T) {
             q: Select(Select(users).As("u")),
             qs: "SELECT u.id, u.name FROM (SELECT users.id, users.name FROM users) AS u",
         },
+        // Simple un-named derived table
+        selectQueryTest{
+            q: Select(Select(users)),
+            qs: "SELECT derived0.id, derived0.name FROM (SELECT users.id, users.name FROM users) AS derived0",
+        },
         // Simple INNER JOIN
         selectQueryTest{
             q: Select(colArticleId, colUserName.As("author")).Join(users, Equal(colArticleAuthor, colUserId)),

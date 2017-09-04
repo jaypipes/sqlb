@@ -143,6 +143,7 @@ func Select(items ...interface{}) *SelectQuery {
         projs: make([]projection, 0),
     }
 
+    nDerived := 0
     selectionMap := make(map[uint64]selection, 0)
     projectionMap := make(map[uint64]projection, 0)
 
@@ -181,6 +182,25 @@ func Select(items ...interface{}) *SelectQuery {
                                 projectionMap[pid] = p
                                 addToProjections(sel, p)
                             }
+                        default:
+                            // This means we were called like so:
+                            //
+                            //     Select(Select(...))
+                            //
+                            // So we need to construct a derived table manually
+                            // and name it derivedN.
+                            derivedName := fmt.Sprintf("derived%d", nDerived)
+                            dt := &derivedTable{
+                                alias: derivedName,
+                                from: innerSelClause,
+                            }
+                            selectionMap[innerSelId] = dt
+                            for _, p := range dt.getAllDerivedColumns() {
+                                pid := p.projectionId()
+                                projectionMap[pid] = p
+                                addToProjections(sel, p)
+                            }
+                            nDerived++
                     }
                 }
             case *joinClause:
