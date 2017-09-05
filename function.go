@@ -19,6 +19,7 @@ const (
     FUNC_BIT_LENGTH
     FUNC_ASCII
     FUNC_REVERSE
+    FUNC_CONCAT_WS
 )
 
 var (
@@ -60,6 +61,9 @@ var (
         },
         FUNC_REVERSE: scanInfo{
             SYM_REVERSE, SYM_ELEMENT, SYM_RPAREN,
+        },
+        FUNC_CONCAT_WS: scanInfo{
+            SYM_CONCAT_WS, SYM_ELEMENT, SYM_COMMA_WS, SYM_ELEMENT, SYM_RPAREN,
         },
     }
 )
@@ -108,7 +112,8 @@ func (f *sqlFunc) size() int {
     size := 0
     elidx := 0
     for _, sym := range f.scanInfo {
-        if sym == SYM_ELEMENT {
+        switch sym {
+        case SYM_ELEMENT:
             el := f.elements[elidx]
             // We need to disable alias output for elements that are
             // projections. We don't want to output, for example,
@@ -120,7 +125,7 @@ func (f *sqlFunc) size() int {
             }
             elidx++
             size += el.size()
-        } else {
+        default:
             size += len(Symbols[sym])
         }
     }
@@ -327,4 +332,18 @@ func (c *Column) Reverse() *sqlFunc {
 
 func (c *ColumnDef) Reverse() *sqlFunc {
     return Reverse(c)
+}
+
+func ConcatWs(sep string, projs ...projection) *sqlFunc {
+    els := make([]element, len(projs))
+    for x, p := range projs {
+        els[x] = p.(element)
+    }
+    subjects := &List{elements: els}
+    return &sqlFunc{
+        scanInfo: funcScanTable[FUNC_CONCAT_WS],
+        elements: []element{&value{val: sep}, subjects},
+        // TODO(jaypipes): Clearly we need to support >1 selection...
+        sel: projs[0].from(),
+    }
 }

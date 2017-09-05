@@ -65,30 +65,36 @@ func TestFunctions(t *testing.T) {
             c: Cast(colUserName, SQL_TYPE_TEXT),
             qs: "CAST(users.name AS TEXT)",
         },
-        // TRIM column
+        // TRIM
         functionTest{
             c: Trim(colUserName),
             qs: "TRIM(users.name)",
         },
-        // CHAR_LENGTH column
+        // CHAR_LENGTH
         functionTest{
             c: CharLength(colUserName),
             qs: "CHAR_LENGTH(users.name)",
         },
-        // BIT_LENGTH column
+        // BIT_LENGTH
         functionTest{
             c: BitLength(colUserName),
             qs: "BIT_LENGTH(users.name)",
         },
-        // ASCII column
+        // ASCII
         functionTest{
             c: Ascii(colUserName),
             qs: "ASCII(users.name)",
         },
-        // REVERSE column
+        // REVERSE
         functionTest{
             c: Reverse(colUserName),
             qs: "REVERSE(users.name)",
+        },
+        // CONCAT_WS
+        functionTest{
+            c: ConcatWs("-", colUserName, colUserName),
+            qs: "CONCAT_WS(?, users.name, users.name)",
+            qargs: []interface{}{"-"},
         },
     }
     for _, test := range tests {
