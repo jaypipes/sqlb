@@ -18,6 +18,7 @@ const (
     FUNC_CHAR_LENGTH
     FUNC_BIT_LENGTH
     FUNC_ASCII
+    FUNC_REVERSE
 )
 
 var (
@@ -56,6 +57,9 @@ var (
         },
         FUNC_ASCII: scanInfo{
             SYM_ASCII, SYM_ELEMENT, SYM_RPAREN,
+        },
+        FUNC_REVERSE: scanInfo{
+            SYM_REVERSE, SYM_ELEMENT, SYM_RPAREN,
         },
     }
 )
@@ -307,4 +311,20 @@ func (c *Column) Ascii() *sqlFunc {
 
 func (c *ColumnDef) Ascii() *sqlFunc {
     return Ascii(c)
+}
+
+func Reverse(p projection) *sqlFunc {
+    return &sqlFunc{
+        scanInfo: funcScanTable[FUNC_REVERSE],
+        elements: []element{p.(element)},
+        sel: p.from(),
+    }
+}
+
+func (c *Column) Reverse() *sqlFunc {
+    return Reverse(c)
+}
+
+func (c *ColumnDef) Reverse() *sqlFunc {
+    return Reverse(c)
 }

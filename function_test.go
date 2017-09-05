@@ -85,6 +85,11 @@ func TestFunctions(t *testing.T) {
             c: Ascii(colUserName),
             qs: "ASCII(users.name)",
         },
+        // REVERSE column
+        functionTest{
+            c: Reverse(colUserName),
+            qs: "REVERSE(users.name)",
+        },
     }
     for _, test := range tests {
         expLen := len(test.qs)
