@@ -43,6 +43,7 @@ const (
     SYM_BIT_LENGTH
     SYM_ASCII
     SYM_REVERSE
+    SYM_CONCAT
     SYM_CONCAT_WS
     SYM_TYPE_CHAR
     SYM_TYPE_VARCHAR
@@ -92,6 +93,7 @@ var (
         SYM_BIT_LENGTH: []byte("BIT_LENGTH("),
         SYM_ASCII: []byte("ASCII("),
         SYM_REVERSE: []byte("REVERSE("),
+        SYM_CONCAT: []byte("CONCAT("),
         SYM_CONCAT_WS: []byte("CONCAT_WS("),
         SYM_TYPE_CHAR: []byte("CHAR"),
         SYM_TYPE_VARCHAR: []byte("VARCHAR"),

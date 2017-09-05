@@ -90,6 +90,11 @@ func TestFunctions(t *testing.T) {
             c: Reverse(colUserName),
             qs: "REVERSE(users.name)",
         },
+        // CONCAT
+        functionTest{
+            c: Concat(colUserName, colUserName),
+            qs: "CONCAT(users.name, users.name)",
+        },
         // CONCAT_WS
         functionTest{
             c: ConcatWs("-", colUserName, colUserName),
