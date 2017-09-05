@@ -17,6 +17,7 @@ const (
     FUNC_TRIM
     FUNC_CHAR_LENGTH
     FUNC_BIT_LENGTH
+    FUNC_ASCII
 )
 
 var (
@@ -52,6 +53,9 @@ var (
         },
         FUNC_BIT_LENGTH: scanInfo{
             SYM_BIT_LENGTH, SYM_ELEMENT, SYM_RPAREN,
+        },
+        FUNC_ASCII: scanInfo{
+            SYM_ASCII, SYM_ELEMENT, SYM_RPAREN,
         },
     }
 )
@@ -287,4 +291,20 @@ func (c *Column) BitLength() *sqlFunc {
 
 func (c *ColumnDef) BitLength() *sqlFunc {
     return BitLength(c)
+}
+
+func Ascii(p projection) *sqlFunc {
+    return &sqlFunc{
+        scanInfo: funcScanTable[FUNC_ASCII],
+        elements: []element{p.(element)},
+        sel: p.from(),
+    }
+}
+
+func (c *Column) Ascii() *sqlFunc {
+    return Ascii(c)
+}
+
+func (c *ColumnDef) Ascii() *sqlFunc {
+    return Ascii(c)
 }

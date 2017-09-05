@@ -41,6 +41,7 @@ const (
     SYM_TRIM
     SYM_CHAR_LENGTH
     SYM_BIT_LENGTH
+    SYM_ASCII
     SYM_TYPE_CHAR
     SYM_TYPE_VARCHAR
     SYM_TYPE_BINARY
@@ -87,6 +88,7 @@ var (
         SYM_TRIM: []byte("TRIM("),
         SYM_CHAR_LENGTH: []byte("CHAR_LENGTH("),
         SYM_BIT_LENGTH: []byte("BIT_LENGTH("),
+        SYM_ASCII: []byte("ASCII("),
         SYM_TYPE_CHAR: []byte("CHAR"),
         SYM_TYPE_VARCHAR: []byte("VARCHAR"),
         SYM_TYPE_TEXT: []byte("TEXT"),
