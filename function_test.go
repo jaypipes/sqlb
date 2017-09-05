@@ -75,6 +75,11 @@ func TestFunctions(t *testing.T) {
             c: CharLength(colUserName),
             qs: "CHAR_LENGTH(users.name)",
         },
+        // BIT_LENGTH column
+        functionTest{
+            c: BitLength(colUserName),
+            qs: "BIT_LENGTH(users.name)",
+        },
     }
     for _, test := range tests {
         expLen := len(test.qs)

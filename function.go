@@ -16,6 +16,7 @@ const (
     FUNC_CAST
     FUNC_TRIM
     FUNC_CHAR_LENGTH
+    FUNC_BIT_LENGTH
 )
 
 var (
@@ -48,6 +49,9 @@ var (
         },
         FUNC_CHAR_LENGTH: scanInfo{
             SYM_CHAR_LENGTH, SYM_ELEMENT, SYM_RPAREN,
+        },
+        FUNC_BIT_LENGTH: scanInfo{
+            SYM_BIT_LENGTH, SYM_ELEMENT, SYM_RPAREN,
         },
     }
 )
@@ -267,4 +271,20 @@ func (c *Column) CharLength() *sqlFunc {
 
 func (c *ColumnDef) CharLength() *sqlFunc {
     return CharLength(c)
+}
+
+func BitLength(p projection) *sqlFunc {
+    return &sqlFunc{
+        scanInfo: funcScanTable[FUNC_BIT_LENGTH],
+        elements: []element{p.(element)},
+        sel: p.from(),
+    }
+}
+
+func (c *Column) BitLength() *sqlFunc {
+    return BitLength(c)
+}
+
+func (c *ColumnDef) BitLength() *sqlFunc {
+    return BitLength(c)
 }
