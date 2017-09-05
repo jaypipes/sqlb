@@ -65,6 +65,11 @@ func TestFunctions(t *testing.T) {
             c: Cast(colUserName, SQL_TYPE_TEXT),
             qs: "CAST(users.name AS TEXT)",
         },
+        // TRIM column
+        functionTest{
+            c: Trim(colUserName),
+            qs: "TRIM(users.name)",
+        },
     }
     for _, test := range tests {
         expLen := len(test.qs)
