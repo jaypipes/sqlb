@@ -70,6 +70,11 @@ func TestFunctions(t *testing.T) {
             c: Trim(colUserName),
             qs: "TRIM(users.name)",
         },
+        // CHAR_LENGTH column
+        functionTest{
+            c: CharLength(colUserName),
+            qs: "CHAR_LENGTH(users.name)",
+        },
     }
     for _, test := range tests {
         expLen := len(test.qs)
