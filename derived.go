@@ -19,10 +19,6 @@ type derivedTable struct {
     from *selectClause
 }
 
-func (dt *derivedTable) selectionId() uint64 {
-    return toId(dt.alias)
-}
-
 // Return a collection of derivedColumn projections that have been constructed
 // to refer to this derived table and not have any outer alias
 func (dt *derivedTable) getAllDerivedColumns() []projection {

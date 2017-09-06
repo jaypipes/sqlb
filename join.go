@@ -12,15 +12,14 @@ type joinClause struct {
     joinType joinType
     left selection
     right selection
-    onExprs []*Expression
+    on *Expression
 }
 
 func (j *joinClause) argCount() int {
-    argc := 0
-    for _, onExpr := range j.onExprs {
-        argc += onExpr.argCount()
+    if j.on == nil {
+        return 0
     }
-    return argc
+    return j.on.argCount()
 }
 
 func (j *joinClause) size() int {
@@ -32,16 +31,12 @@ func (j *joinClause) size() int {
             size += len(Symbols[SYM_LEFT_JOIN])
         case JOIN_CROSS:
             size += len(Symbols[SYM_CROSS_JOIN])
+            // CROSS JOIN has no ON condition so just short-circuit here
+            return size + j.right.size()
     }
     size += j.right.size()
-    nexprs := len(j.onExprs)
-    if nexprs > 0 {
-        size += len(Symbols[SYM_ON])
-        size += len(Symbols[SYM_AND]) * (nexprs - 1)
-        for _, onExpr := range j.onExprs {
-            size += onExpr.size()
-        }
-    }
+    size += len(Symbols[SYM_ON])
+    size += j.on.size()
     return size
 }
 
@@ -58,38 +53,25 @@ func (j *joinClause) scan(b []byte, args []interface{}) (int, int) {
     pbw, pac := j.right.scan(b[bw:], args)
     bw += pbw
     ac += pac
-    nexprs := len(j.onExprs)
-    if nexprs > 0 {
+    if j.on != nil {
         bw += copy(b[bw:], Symbols[SYM_ON])
-        for x, onExpr := range j.onExprs {
-            if x > 0 {
-                bw += copy(b[bw:], Symbols[SYM_AND])
-            }
-            fbw, fac := onExpr.scan(b[bw:], args[ac:])
-            bw += fbw
-            ac += fac
-        }
+        fbw, fac := j.on.scan(b[bw:], args[ac:])
+        bw += fbw
+        ac += fac
     }
     return bw, ac
 }
 
-func (j *joinClause) On(onExprs ...*Expression) *joinClause {
-    for _, onExpr := range onExprs {
-        j.onExprs = append(j.onExprs, onExpr)
-    }
-    return j
+func Join(left selection, right selection, on *Expression) *joinClause {
+    return &joinClause{left: left, right: right, on: on}
 }
 
-func Join(left selection, right selection, onExpr ...*Expression) *joinClause {
-    return &joinClause{left: left, right: right, onExprs: onExpr}
-}
-
-func OuterJoin(left selection, right selection, onExpr ...*Expression) *joinClause {
+func OuterJoin(left selection, right selection, on *Expression) *joinClause {
     return &joinClause{
         joinType: JOIN_OUTER,
         left: left,
         right: right,
-        onExprs: onExpr,
+        on: on,
     }
 }
 

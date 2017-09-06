@@ -6,7 +6,8 @@ import (
 )
 
 var (
-    ERR_JOIN_INVALID = errors.New("Unable to join selection. Either there was no selection to join to or the target selection was not found.")
+    ERR_JOIN_INVALID_NO_SELECT = errors.New("Unable to join selection. There was no selection to join to.")
+    ERR_JOIN_INVALID_UNKNOWN_TARGET = errors.New("Unable to join selection. Target selection was not found.")
 )
 
 type SelectQuery struct {
@@ -93,29 +94,27 @@ func (q *SelectQuery) As(alias string) *SelectQuery {
 // does not yet contain a selectClause OR if the supplied ON expression does
 // not reference any selection that is found in the SelectQuery's selectClause, then
 // SelectQuery.e will be set to an error.
-func (q *SelectQuery) Join(right selection, onExpr *Expression) *SelectQuery {
-    if q.sel == nil {
-        q.e = ERR_JOIN_INVALID
-        fmt.Println("No select clause.")
+func (q *SelectQuery) Join(right selection, on *Expression) *SelectQuery {
+    if q.sel == nil || len(q.sel.selections) == 0 {
+        q.e = ERR_JOIN_INVALID_NO_SELECT
         return q
     }
 
     // Let's first determine which selection is targeted as the LEFT part of
     // the join.
     var left selection
-    rightSelId := right.selectionId()
-    for _, el := range onExpr.elements {
+    for _, el := range on.elements {
         switch el.(type) {
             case projection:
                 p := el.(projection)
-                exprSelId := p.from().selectionId()
-                if exprSelId == rightSelId {
+                exprSel := p.from()
+                if exprSel == right {
                     continue
                 }
                 // Search through the SelectQuery's primary selectClause, looking for
                 // the selection that is referred to be the ON expression.
                 for _, sel := range q.sel.selections {
-                    if sel.selectionId() == exprSelId {
+                    if sel == exprSel {
                         left = sel
                         break
                     }
@@ -126,10 +125,10 @@ func (q *SelectQuery) Join(right selection, onExpr *Expression) *SelectQuery {
         }
     }
     if left == nil {
-        q.e = ERR_JOIN_INVALID
+        q.e = ERR_JOIN_INVALID_UNKNOWN_TARGET
         return q
     }
-    jc := Join(left, right, onExpr)
+    jc := Join(left, right, on)
     q.sel.addJoin(jc)
 
     // Make sure we remove the right-hand selection from the selectClause's
@@ -144,7 +143,7 @@ func Select(items ...interface{}) *SelectQuery {
     }
 
     nDerived := 0
-    selectionMap := make(map[uint64]selection, 0)
+    selectionMap := make(map[selection]bool, 0)
     projectionMap := make(map[uint64]projection, 0)
 
     // For each scannable item we've received in the call, check what concrete
@@ -159,9 +158,8 @@ func Select(items ...interface{}) *SelectQuery {
                 sq := item.(*SelectQuery)
                 innerSelClause := sq.sel
                 if len(innerSelClause.selections) == 1 {
-                    innerSelection := innerSelClause.selections[0]
-                    innerSelId := innerSelection.selectionId()
-                    switch innerSelection.(type) {
+                    innerSel := innerSelClause.selections[0]
+                    switch innerSel.(type) {
                         case *derivedTable:
                             // If the inner select clause contains a single
                             // selection and that selection is a derivedTable,
@@ -175,8 +173,8 @@ func Select(items ...interface{}) *SelectQuery {
                             // for the outer selectClause and project all the
                             // derived table's projections out into the outer
                             // selectClause.
-                            selectionMap[innerSelId] = innerSelection
-                            dt := innerSelection.(*derivedTable)
+                            selectionMap[innerSel] = true
+                            dt := innerSel.(*derivedTable)
                             for _, p := range dt.getAllDerivedColumns() {
                                 pid := p.projectionId()
                                 projectionMap[pid] = p
@@ -194,7 +192,7 @@ func Select(items ...interface{}) *SelectQuery {
                                 alias: derivedName,
                                 from: innerSelClause,
                             }
-                            selectionMap[innerSelId] = dt
+                            selectionMap[dt] = true
                             for _, p := range dt.getAllDerivedColumns() {
                                 pid := p.projectionId()
                                 projectionMap[pid] = p
@@ -207,8 +205,8 @@ func Select(items ...interface{}) *SelectQuery {
                 j := item.(*joinClause)
                 if ! containsJoin(sel, j) {
                     sel.joins = append(sel.joins, j)
-                    if _, ok := selectionMap[j.left.selectionId()]; ! ok {
-                        selectionMap[j.left.selectionId()] = j.left
+                    if _, ok := selectionMap[j.left]; ! ok {
+                        selectionMap[j.left] = true
                         for _, proj := range j.left.projections() {
                             projId := proj.projectionId()
                             _, projExists := projectionMap[projId]
@@ -218,7 +216,7 @@ func Select(items ...interface{}) *SelectQuery {
                             }
                         }
                     }
-                    if _, ok := selectionMap[j.right.selectionId()]; ! ok {
+                    if _, ok := selectionMap[j.right]; ! ok {
                         for _, proj := range j.right.projections() {
                             projId := proj.projectionId()
                             _, projExists := projectionMap[projId]
@@ -232,23 +230,23 @@ func Select(items ...interface{}) *SelectQuery {
             case *Column:
                 v := item.(*Column)
                 sel.projs = append(sel.projs, v)
-                selectionMap[v.tbl.selectionId()] = v.tbl
+                selectionMap[v.tbl] = true
             case *Table:
                 v := item.(*Table)
                 for _, cd := range v.tdef.projections() {
                     addToProjections(sel, cd)
                 }
-                selectionMap[v.selectionId()] = v
+                selectionMap[v] = true
             case *TableDef:
                 v := item.(*TableDef)
                 for _, cd := range v.projections() {
                     addToProjections(sel, cd)
                 }
-                selectionMap[v.selectionId()] = v
+                selectionMap[v] = true
             case *ColumnDef:
                 v := item.(*ColumnDef)
                 addToProjections(sel, v)
-                selectionMap[v.tdef.selectionId()] = v.tdef
+                selectionMap[v.tdef] = true
             default:
                 // Everything else, make it a literal value projection, so, for
                 // instance, a user can do SELECT 1, which is, technically
@@ -259,7 +257,7 @@ func Select(items ...interface{}) *SelectQuery {
     }
     selections := make([]selection, len(selectionMap))
     x := 0
-    for _, sel := range selectionMap {
+    for sel, _ := range selectionMap {
         selections[x] = sel
         x++
     }

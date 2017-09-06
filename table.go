@@ -5,13 +5,6 @@ type Table struct {
     tdef *TableDef
 }
 
-func (t *Table) selectionId() uint64 {
-    if t.alias != "" {
-        return toId(t.alias)
-    }
-    return t.tdef.selectionId()
-}
-
 func (t *Table) idParts() []string {
     if t.alias != "" {
         return []string{t.alias}
@@ -78,10 +71,6 @@ type TableDef struct {
     meta *Meta
     name string
     cdefs []*ColumnDef
-}
-
-func (td *TableDef) selectionId() uint64 {
-    return toId(td.meta.schemaName, td.name)
 }
 
 func (td *TableDef) idParts() []string {

@@ -208,9 +208,8 @@ func addToProjections(s *selectClause, p projection) {
 
 func (s *selectClause) removeSelection(toRemove selection) {
     idx := -1
-    toRemoveId := toRemove.selectionId()
     for x, sel := range s.selections {
-        if sel.selectionId() == toRemoveId {
+        if sel == toRemove {
             idx = x
             break
         }
