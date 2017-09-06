@@ -24,11 +24,6 @@ func TestJoinClause(t *testing.T) {
     auCond := Equal(colArticleAuthor, colUserId)
     uaCond := Equal(colUserId, colArticleAuthor)
 
-    join := &joinClause{
-        left: articles.Table(),
-        right: users.Table(),
-        onExprs: []*Expression{},
-    }
     tests := []joinClauseTest{
         // articles to users table defs
         joinClauseTest{
@@ -45,19 +40,12 @@ func TestJoinClause(t *testing.T) {
             c: Join(articles.Table(), users.Table(), auCond),
             qs: " JOIN users ON articles.author = users.id",
         },
-        // joinClause.On() method
-        joinClauseTest{
-            c: join.On(auCond),
-            qs: " JOIN users ON articles.author = users.id",
-        },
         // join an aliased table to non-aliased table
         joinClauseTest{
             c: &joinClause{
                 left: articles.As("a"),
                 right: users.Table(),
-                onExprs: []*Expression{
-                    Equal(articles.As("a").Column("author"), colUserId),
-                },
+                on: Equal(articles.As("a").Column("author"), colUserId),
             },
             qs: " JOIN users ON a.author = users.id",
         },
@@ -66,9 +54,7 @@ func TestJoinClause(t *testing.T) {
             c: &joinClause{
                 left: articles,
                 right: users.As("u"),
-                onExprs: []*Expression{
-                    Equal(colArticleAuthor, users.As("u").Column("id")),
-                },
+                on: Equal(colArticleAuthor, users.As("u").Column("id")),
             },
             qs: " JOIN users AS u ON articles.author = u.id",
         },
@@ -77,9 +63,7 @@ func TestJoinClause(t *testing.T) {
             c: &joinClause{
                 left: articles,
                 right: users,
-                onExprs: []*Expression{
-                    Equal(colArticleAuthor, colUserId.As("user_id")),
-                },
+                on: Equal(colArticleAuthor, colUserId.As("user_id")),
             },
             qs: " JOIN users ON articles.author = users.id",
         },
@@ -89,9 +73,7 @@ func TestJoinClause(t *testing.T) {
                 joinType: JOIN_OUTER,
                 left: articles,
                 right: users,
-                onExprs: []*Expression{
-                    Equal(colArticleAuthor, colUserId),
-                },
+                on: Equal(colArticleAuthor, colUserId),
             },
             qs: " LEFT JOIN users ON articles.author = users.id",
         },

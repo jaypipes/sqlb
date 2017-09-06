@@ -178,9 +178,7 @@ func TestSelectClause(t *testing.T) {
                     &joinClause{
                         left: articles,
                         right: users,
-                        onExprs: []*Expression{
-                            Equal(colArticleAuthor, colUserId),
-                        },
+                        on: Equal(colArticleAuthor, colUserId),
                     },
                 },
             },
@@ -195,16 +193,12 @@ func TestSelectClause(t *testing.T) {
                     &joinClause{
                         left: articles,
                         right: users,
-                        onExprs: []*Expression{
-                            Equal(colArticleAuthor, colUserId),
-                        },
+                        on: Equal(colArticleAuthor, colUserId),
                     },
                     &joinClause{
                         left: articles,
                         right: article_states,
-                        onExprs: []*Expression{
-                            Equal(colArticleState, colArticleStateId),
-                        },
+                        on: Equal(colArticleState, colArticleStateId),
                     },
                 },
             },
