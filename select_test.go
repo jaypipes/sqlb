@@ -20,14 +20,14 @@ func TestSelectQuery(t *testing.T) {
     m := testFixtureMeta()
     users := m.Table("users")
     articles := m.Table("articles")
-    article_states := m.Table("article_states")
+    articleStates := m.Table("article_states")
     colUserId := users.Column("id")
     colUserName := users.Column("name")
     colArticleId := articles.Column("id")
     colArticleAuthor := articles.Column("author")
     colArticleState := articles.Column("state")
-    colArticleStateId := article_states.Column("id")
-    colArticleStateName := article_states.Column("name")
+    colArticleStateId := articleStates.Column("id")
+    colArticleStateName := articleStates.Column("name")
 
     tests := []selectQueryTest{
         // Simple FROM
@@ -73,6 +73,16 @@ func TestSelectQuery(t *testing.T) {
             q: Select(Select(users)),
             qs: "SELECT derived0.id, derived0.name FROM (SELECT users.id, users.name FROM users) AS derived0",
         },
+        // Bad JOIN. Can't Join() against no selection
+        selectQueryTest{
+            q: Select().Join(users, Equal(colArticleAuthor, colUserId)),
+            qe: ERR_JOIN_INVALID_NO_SELECT,
+        },
+        // Bad JOIN. Can't Join() against a selection that isn't in the containing SELECT
+        selectQueryTest{
+            q: Select(articleStates).Join(users, Equal(colArticleAuthor, colUserId)),
+            qe: ERR_JOIN_INVALID_UNKNOWN_TARGET,
+        },
         // Simple INNER JOIN
         selectQueryTest{
             q: Select(colArticleId, colUserName.As("author")).Join(users, Equal(colArticleAuthor, colUserId)),
@@ -85,7 +95,7 @@ func TestSelectQuery(t *testing.T) {
                 colUserName.As("author"),
                 colArticleStateName.As("state"),
             ).Join(users, Equal(colArticleAuthor, colUserId),
-            ).Join(article_states, Equal(colArticleState, colArticleStateId)),
+            ).Join(articleStates, Equal(colArticleState, colArticleStateId)),
             qs: "SELECT articles.id, users.name AS author, article_states.name AS state FROM articles JOIN users ON articles.author = users.id JOIN article_states ON articles.state = article_states.id",
         },
     }

@@ -6,7 +6,8 @@ import (
 )
 
 var (
-    ERR_JOIN_INVALID = errors.New("Unable to join selection. Either there was no selection to join to or the target selection was not found.")
+    ERR_JOIN_INVALID_NO_SELECT = errors.New("Unable to join selection. There was no selection to join to.")
+    ERR_JOIN_INVALID_UNKNOWN_TARGET = errors.New("Unable to join selection. Target selection was not found.")
 )
 
 type SelectQuery struct {
@@ -94,9 +95,8 @@ func (q *SelectQuery) As(alias string) *SelectQuery {
 // not reference any selection that is found in the SelectQuery's selectClause, then
 // SelectQuery.e will be set to an error.
 func (q *SelectQuery) Join(right selection, on *Expression) *SelectQuery {
-    if q.sel == nil {
-        q.e = ERR_JOIN_INVALID
-        fmt.Println("No select clause.")
+    if q.sel == nil || len(q.sel.selections) == 0 {
+        q.e = ERR_JOIN_INVALID_NO_SELECT
         return q
     }
 
@@ -125,7 +125,7 @@ func (q *SelectQuery) Join(right selection, on *Expression) *SelectQuery {
         }
     }
     if left == nil {
-        q.e = ERR_JOIN_INVALID
+        q.e = ERR_JOIN_INVALID_UNKNOWN_TARGET
         return q
     }
     jc := Join(left, right, on)
