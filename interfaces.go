@@ -41,7 +41,6 @@ type projection interface {
 // view, subselect, etc.
 type selection interface {
     projections() []projection
-    selectionId() uint64
     // selections must also implement element
     size() int
     argCount() int

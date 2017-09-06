@@ -19,15 +19,15 @@ func TestSelectQuery(t *testing.T) {
 
     m := testFixtureMeta()
     users := m.Table("users")
-    articles := m.TableDef("articles")
-    article_states := m.TableDef("article_states")
+    articles := m.Table("articles")
+    article_states := m.Table("article_states")
     colUserId := users.Column("id")
     colUserName := users.Column("name")
     colArticleId := articles.Column("id")
     colArticleAuthor := articles.Column("author")
-    colArticleState := articles.ColumnDef("state")
-    colArticleStateId := article_states.ColumnDef("id")
-    colArticleStateName := article_states.ColumnDef("name")
+    colArticleState := articles.Column("state")
+    colArticleStateId := article_states.Column("id")
+    colArticleStateName := article_states.Column("name")
 
     tests := []selectQueryTest{
         // Simple FROM
