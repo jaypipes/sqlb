@@ -115,26 +115,32 @@ func (q *SelectQuery) doJoin(
     // Let's first determine which selection is targeted as the LEFT part of
     // the join.
     var left selection
-    for _, el := range on.elements {
-        switch el.(type) {
-            case projection:
-                p := el.(projection)
-                exprSel := p.from()
-                if exprSel == right {
-                    continue
-                }
-                // Search through the SelectQuery's primary selectClause, looking for
-                // the selection that is referred to be the ON expression.
-                for _, sel := range q.sel.selections {
-                    if sel == exprSel {
-                        left = sel
+    if on != nil {
+        for _, el := range on.elements {
+            switch el.(type) {
+                case projection:
+                    p := el.(projection)
+                    exprSel := p.from()
+                    if exprSel == right {
+                        continue
+                    }
+                    // Search through the SelectQuery's primary selectClause, looking for
+                    // the selection that is referred to be the ON expression.
+                    for _, sel := range q.sel.selections {
+                        if sel == exprSel {
+                            left = sel
+                            break
+                        }
+                    }
+                    if left != nil {
                         break
                     }
-                }
-                if left != nil {
-                    break
-                }
+            }
         }
+    } else {
+        // TODO(jaypipes): Handle CROSS JOIN by joining the supplied right
+        // against a derivedTable constructed from the existing SelectQuery.sel
+        // selectClause
     }
     if left == nil {
         q.e = ERR_JOIN_INVALID_UNKNOWN_TARGET
