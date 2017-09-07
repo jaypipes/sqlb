@@ -1,6 +1,7 @@
 package sqlb
 
 import (
+    "errors"
     "database/sql"
     _ "github.com/go-sql-driver/mysql"
     _ "github.com/lib/pq"
@@ -26,6 +27,10 @@ WHERE c.TABLE_SCHEMA = ?
 AND t.TABLE_TYPE = 'BASE TABLE'
 ORDER BY c.TABLE_NAME, c.COLUMN_NAME
 `
+)
+
+var (
+    ERR_NO_META_STRUCT = errors.New("Please pass a pointer to a sqlb.Meta struct")
 )
 
 type Meta struct {
@@ -65,6 +70,9 @@ func (m *Meta) Table(tblName string) *Table {
 }
 
 func Reflect(driver string, db *sql.DB, meta *Meta) error {
+    if meta == nil {
+        return ERR_NO_META_STRUCT
+    }
     schemaName := getSchemaName(driver, db)
     // Grab information about all tables in the schema
     rows, err := db.Query(IS_TABLES, schemaName)

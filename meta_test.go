@@ -143,3 +143,11 @@ func TestReflectMySQL(t *testing.T) {
     assert.NotNil(createdOnCol)
     assert.Equal("created_on", createdOnCol.cdef.name)
 }
+
+func TestReflectErrors(t *testing.T) {
+    assert := assert.New(t)
+
+    err := Reflect("mysql", nil, nil)
+    assert.NotNil(err)
+    assert.Equal(ERR_NO_META_STRUCT, err)
+}
