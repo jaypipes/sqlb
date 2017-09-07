@@ -90,11 +90,23 @@ func (q *SelectQuery) As(alias string) *SelectQuery {
     return &SelectQuery{sel: derived}
 }
 
+func (q *SelectQuery) Join(right selection, on *Expression) *SelectQuery {
+    return q.doJoin(JOIN_INNER, right, on)
+}
+
+func (q *SelectQuery) OuterJoin(right selection, on *Expression) *SelectQuery {
+    return q.doJoin(JOIN_OUTER, right, on)
+}
+
 // Join to a supplied selection with the supplied ON expression. If the SelectQuery
 // does not yet contain a selectClause OR if the supplied ON expression does
 // not reference any selection that is found in the SelectQuery's selectClause, then
 // SelectQuery.e will be set to an error.
-func (q *SelectQuery) Join(right selection, on *Expression) *SelectQuery {
+func (q *SelectQuery) doJoin(
+    jt joinType,
+    right selection,
+    on *Expression,
+) *SelectQuery {
     if q.sel == nil || len(q.sel.selections) == 0 {
         q.e = ERR_JOIN_INVALID_NO_SELECT
         return q
@@ -128,7 +140,12 @@ func (q *SelectQuery) Join(right selection, on *Expression) *SelectQuery {
         q.e = ERR_JOIN_INVALID_UNKNOWN_TARGET
         return q
     }
-    jc := Join(left, right, on)
+    jc := &joinClause{
+        joinType: jt,
+        left: left,
+        right: right,
+        on: on,
+    }
     q.sel.addJoin(jc)
 
     // Make sure we remove the right-hand selection from the selectClause's

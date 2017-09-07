@@ -88,6 +88,11 @@ func TestSelectQuery(t *testing.T) {
             q: Select(colArticleId, colUserName.As("author")).Join(users, Equal(colArticleAuthor, colUserId)),
             qs: "SELECT articles.id, users.name AS author FROM articles JOIN users ON articles.author = users.id",
         },
+        // Simple LEFT JOIN
+        selectQueryTest{
+            q: Select(colArticleId, colUserName.As("author")).OuterJoin(users, Equal(colArticleAuthor, colUserId)),
+            qs: "SELECT articles.id, users.name AS author FROM articles LEFT JOIN users ON articles.author = users.id",
+        },
         // Two JOINs using Join() method
         selectQueryTest{
             q: Select(
