@@ -201,32 +201,6 @@ func Select(items ...interface{}) *SelectQuery {
                             nDerived++
                     }
                 }
-            case *joinClause:
-                j := item.(*joinClause)
-                if ! containsJoin(sel, j) {
-                    sel.joins = append(sel.joins, j)
-                    if _, ok := selectionMap[j.left]; ! ok {
-                        selectionMap[j.left] = true
-                        for _, proj := range j.left.projections() {
-                            projId := proj.projectionId()
-                            _, projExists := projectionMap[projId]
-                            if ! projExists {
-                                addToProjections(sel, proj)
-                                projectionMap[projId] = proj
-                            }
-                        }
-                    }
-                    if _, ok := selectionMap[j.right]; ! ok {
-                        for _, proj := range j.right.projections() {
-                            projId := proj.projectionId()
-                            _, projExists := projectionMap[projId]
-                            if ! projExists {
-                                addToProjections(sel, proj)
-                                projectionMap[projId] = proj
-                            }
-                        }
-                    }
-                }
             case *Column:
                 v := item.(*Column)
                 sel.projs = append(sel.projs, v)
