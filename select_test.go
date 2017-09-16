@@ -152,12 +152,12 @@ func TestNestedSetQueries(t *testing.T) {
     o2 := orgs.As("o2")
 
     o1id := o1.Column("id")
-    o2id := o1.Column("id")
+    o2id := o2.Column("id")
     o1rootid := o1.Column("root_organization_id")
     o2rootid := o2.Column("root_organization_id")
     o1nestedleft := o1.Column("nested_set_left")
-    o2nestedleft := o1.Column("nested_set_left")
-    o2nestedright := o1.Column("nested_set_right")
+    o2nestedleft := o2.Column("nested_set_left")
+    o2nestedright := o2.Column("nested_set_right")
 
     joinCond := And(
         Equal(o1rootid, o2rootid),
@@ -168,10 +168,7 @@ func TestNestedSetQueries(t *testing.T) {
 
     qs, qargs := q.StringArgs()
 
-    // TODO(jaypipes): The correct SQL is this:
-    // expqs := "SELECT o1.id FROM organizations AS o1 JOIN organizations AS o2 ON o1.root_organization_id = o2.root_organization_id AND o1.nested_set_left BETWEEN o2.nested_set_left AND o2.nested_set_right WHERE o2.id = ?"
-    // Uncomment when Issue #49 is fixed.
-    expqs := "SELECT o1.id FROM organizations AS o1 WHERE o1.id = ?"
+    expqs := "SELECT o1.id FROM organizations AS o1 JOIN organizations AS o2 ON (o1.root_organization_id = o2.root_organization_id AND o1.nested_set_left BETWEEN o2.nested_set_left AND o2.nested_set_right) WHERE o2.id = ?"
     expqargs := []interface{}{2}
 
     assert.Equal(expqs, qs)
