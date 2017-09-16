@@ -119,6 +119,62 @@ func TestSelectQuery(t *testing.T) {
     }
 }
 
+func TestNestedSetQueries(t *testing.T) {
+    // ref: https://github.com/jaypipes/sqlb/issues/49
+    assert := assert.New(t)
+
+    m := &Meta{}
+    orgs := &TableDef{
+        meta: m,
+        name: "organizations",
+    }
+    cols := []*ColumnDef{
+        &ColumnDef{
+            tdef: orgs,
+            name: "id",
+        },
+        &ColumnDef{
+            tdef: orgs,
+            name: "root_organization_id",
+        },
+        &ColumnDef{
+            tdef: orgs,
+            name: "nested_set_left",
+        },
+        &ColumnDef{
+            tdef: orgs,
+            name: "nested_set_right",
+        },
+    }
+    orgs.cdefs = cols
+
+    o1 := orgs.As("o1")
+    o2 := orgs.As("o2")
+
+    o1id := o1.Column("id")
+    o2id := o2.Column("id")
+    o1rootid := o1.Column("root_organization_id")
+    o2rootid := o2.Column("root_organization_id")
+    o1nestedleft := o1.Column("nested_set_left")
+    o2nestedleft := o2.Column("nested_set_left")
+    o2nestedright := o2.Column("nested_set_right")
+
+    joinCond := And(
+        Equal(o1rootid, o2rootid),
+        Between(o1nestedleft, o2nestedleft, o2nestedright),
+    )
+    q := Select(o1id).Join(o2, joinCond)
+    q.Where(Equal(o2id, 2))
+
+    qs, qargs := q.StringArgs()
+
+    expqs := "SELECT o1.id FROM organizations AS o1 JOIN organizations AS o2 ON (o1.root_organization_id = o2.root_organization_id AND o1.nested_set_left BETWEEN o2.nested_set_left AND o2.nested_set_right) WHERE o2.id = ?"
+    expqargs := []interface{}{2}
+
+    assert.Equal(expqs, qs)
+    assert.Equal(expqargs, qargs)
+}
+
 func TestModifyingSelectQueryUpdatesBuffer(t *testing.T) {
     assert := assert.New(t)
 

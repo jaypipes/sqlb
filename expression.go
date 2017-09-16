@@ -43,6 +43,18 @@ type Expression struct {
     elements []element
 }
 
+func (e *Expression) referrents() []selection {
+    res := make([]selection, 0)
+    for _, el := range e.elements {
+        switch el.(type) {
+        case projection:
+            p := el.(projection)
+            res = append(res, p.from())
+        }
+    }
+    return res
+}
+
 func (e *Expression) argCount() int {
     ac := 0
     for _, el := range e.elements {

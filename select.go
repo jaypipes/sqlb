@@ -118,16 +118,31 @@ func (q *SelectQuery) doJoin(
     if on != nil {
         for _, el := range on.elements {
             switch el.(type) {
-                case projection:
-                    p := el.(projection)
-                    exprSel := p.from()
-                    if exprSel == right {
+            case projection:
+                p := el.(projection)
+                exprSel := p.from()
+                if exprSel == right {
+                    continue
+                }
+                // Search through the SelectQuery's primary selectClause, looking for
+                // the selection that is referred to be the ON expression.
+                for _, sel := range q.sel.selections {
+                    if sel == exprSel {
+                        left = sel
+                        break
+                    }
+                }
+                if left != nil {
+                    break
+                }
+            case *Expression:
+                expr := el.(*Expression)
+                for _, referrent := range expr.referrents() {
+                    if referrent == right {
                         continue
                     }
-                    // Search through the SelectQuery's primary selectClause, looking for
-                    // the selection that is referred to be the ON expression.
                     for _, sel := range q.sel.selections {
-                        if sel == exprSel {
+                        if sel == referrent {
                             left = sel
                             break
                         }
@@ -135,6 +150,10 @@ func (q *SelectQuery) doJoin(
                     if left != nil {
                         break
                     }
+                }
+                if left != nil {
+                    break
+                }
             }
         }
     } else {
