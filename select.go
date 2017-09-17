@@ -79,19 +79,61 @@ func (q *SelectQuery) LimitWithOffset(limit int, offset int) *SelectQuery {
 // Returns a pointer to a new SelectQuery that has aliased its inner selection
 // to the supplied name
 func (q *SelectQuery) As(alias string) *SelectQuery {
-    derived := &selectClause{
-        selections: []selection{
-            &derivedTable{
-                alias: alias,
-                from: q.sel,
-            },
-        },
+    dt := &derivedTable{
+        alias: alias,
+        from: q.sel,
     }
-    return &SelectQuery{sel: derived}
+    derivedSel := &selectClause{
+        projs: dt.getAllDerivedColumns(),
+        selections: []selection{dt},
+    }
+    return &SelectQuery{sel: derivedSel}
 }
 
-func (q *SelectQuery) Join(right selection, on *Expression) *SelectQuery {
-    return q.doJoin(JOIN_INNER, right, on)
+// Returns the projection of the underlying selectClause that matches the name
+// provided
+func (q *SelectQuery) Column(name string) projection {
+    for _, p := range q.sel.projs {
+        switch p.(type) {
+        case *derivedColumn:
+            dc := p.(*derivedColumn)
+            if dc.alias != "" && dc.alias == name {
+                return dc
+            } else if dc.c.cdef.name == name {
+                return dc
+            }
+        case *Column:
+            c := p.(*Column)
+            if c.alias != "" && c.alias == name {
+                return c
+            } else if c.cdef.name == name {
+                return c
+            }
+        case *ColumnDef:
+            cd := p.(*ColumnDef)
+            if cd.name == name {
+                return cd
+            }
+        case *sqlFunc:
+            f := p.(*sqlFunc)
+            if f.alias != "" && f.alias == name {
+                return f
+            }
+        }
+    }
+    return nil
+}
+
+func (q *SelectQuery) Join(right interface{}, on *Expression) *SelectQuery {
+    var rightSel selection
+    switch right.(type) {
+    case selection:
+        rightSel = right.(selection)
+    case *SelectQuery:
+        // Joining to a derived table
+        rightSel = right.(*SelectQuery).sel.selections[0]
+    }
+    return q.doJoin(JOIN_INNER, rightSel, on)
 }
 
 func (q *SelectQuery) OuterJoin(right selection, on *Expression) *SelectQuery {

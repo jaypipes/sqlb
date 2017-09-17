@@ -29,6 +29,8 @@ func TestSelectQuery(t *testing.T) {
     colArticleStateId := articleStates.Column("id")
     colArticleStateName := articleStates.Column("name")
 
+    subq := Select(colUserId).As("users_derived")
+
     tests := []selectQueryTest{
         // Simple FROM
         selectQueryTest{
@@ -102,6 +104,14 @@ func TestSelectQuery(t *testing.T) {
             ).Join(users, Equal(colArticleAuthor, colUserId),
             ).Join(articleStates, Equal(colArticleState, colArticleStateId)),
             qs: "SELECT articles.id, users.name AS author, article_states.name AS state FROM articles JOIN users ON articles.author = users.id JOIN article_states ON articles.state = article_states.id",
+        },
+        // LEFT JOIN to derived table (subquery in FROM clause)
+        selectQueryTest{
+            q: Select(
+                colUserId,
+                colUserName,
+            ).Join(subq, Equal(colUserId, subq.Column("id"))),
+            qs: "SELECT users.id, users.name FROM users JOIN (SELECT users.id FROM users) AS users_derived ON users.id = users_derived.id",
         },
     }
     for _, test := range tests {
