@@ -9,6 +9,7 @@ const (
     EXP_OR
     EXP_IN
     EXP_BETWEEN
+    EXP_IS_NULL
 )
 
 var (
@@ -32,6 +33,9 @@ var (
         },
         EXP_BETWEEN: scanInfo{
             SYM_ELEMENT, SYM_BETWEEN, SYM_ELEMENT, SYM_AND, SYM_ELEMENT,
+        },
+        EXP_IS_NULL: scanInfo{
+            SYM_ELEMENT, SYM_IS_NULL,
         },
     }
 )
@@ -151,5 +155,12 @@ func Between(subject element, start interface{}, end interface{}) *Expression {
     return &Expression{
         scanInfo: exprScanTable[EXP_BETWEEN],
         elements: els,
+    }
+}
+
+func IsNull(subject element) *Expression {
+    return &Expression{
+        scanInfo: exprScanTable[EXP_IS_NULL],
+        elements: []element{subject},
     }
 }
