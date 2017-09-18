@@ -11,35 +11,33 @@ const (
     EXP_BETWEEN
 )
 
-type exprScanInfo []Symbol
-
 var (
     // A static table containing information used in constructing the
     // expression's SQL string during scan() calls
-    exprScanTable = map[exprType]exprScanInfo{
-        EXP_EQUAL: exprScanInfo{
+    exprScanTable = map[exprType]scanInfo{
+        EXP_EQUAL: scanInfo{
             SYM_ELEMENT, SYM_EQUAL, SYM_ELEMENT,
         },
-        EXP_NEQUAL: exprScanInfo{
+        EXP_NEQUAL: scanInfo{
             SYM_ELEMENT, SYM_NEQUAL, SYM_ELEMENT,
         },
-        EXP_AND: exprScanInfo{
+        EXP_AND: scanInfo{
             SYM_LPAREN, SYM_ELEMENT, SYM_AND, SYM_ELEMENT, SYM_RPAREN,
         },
-        EXP_OR: exprScanInfo{
+        EXP_OR: scanInfo{
             SYM_LPAREN, SYM_ELEMENT, SYM_OR, SYM_ELEMENT, SYM_RPAREN,
         },
-        EXP_IN: exprScanInfo{
+        EXP_IN: scanInfo{
             SYM_ELEMENT, SYM_IN, SYM_ELEMENT, SYM_RPAREN,
         },
-        EXP_BETWEEN: exprScanInfo{
+        EXP_BETWEEN: scanInfo{
             SYM_ELEMENT, SYM_BETWEEN, SYM_ELEMENT, SYM_AND, SYM_ELEMENT,
         },
     }
 )
 
 type Expression struct {
-    scanInfo exprScanInfo
+    scanInfo scanInfo
     elements []element
 }
 
