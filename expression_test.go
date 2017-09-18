@@ -87,6 +87,11 @@ func TestExpressions(t *testing.T) {
             c: IsNull(colUserName),
             qs: "users.name IS NULL",
         },
+        // column IS NOT NULL
+        expressionTest{
+            c: IsNotNull(colUserName),
+            qs: "users.name IS NOT NULL",
+        },
     }
     for _, test := range tests {
         expLen := len(test.qs)
