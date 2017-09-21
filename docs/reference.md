@@ -229,9 +229,12 @@ Short and sweet.
 
 ## Derived tables
 
-Derived tables are subqueries in the `FROM` clause. For example, let's say you
-have the following tables in your database schema representing comments that
-readers have left on your blog:
+Derived tables are subqueries in the `FROM` clause. They are useful when you
+need to join to sets of information that are grouped or ordered differently
+than other data in your `SELECT` expression.
+
+For example, let's say you have the following table in your database schema
+representing comments that readers have left on your blog:
 
 ```sql
 CREATE TABLE comments (
