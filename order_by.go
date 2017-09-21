@@ -80,3 +80,10 @@ func (c *ColumnDef) Desc() *sortColumn {
 func (c *ColumnDef) Asc() *sortColumn {
     return &sortColumn{p: c}
 }
+func (f *sqlFunc) Desc() *sortColumn {
+    return &sortColumn{p: f, desc: true}
+}
+
+func (f *sqlFunc) Asc() *sortColumn {
+    return &sortColumn{p: f}
+}

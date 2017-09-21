@@ -63,6 +63,13 @@ func TestOrderBy(t *testing.T) {
             },
             qs: " ORDER BY users.name, users.id DESC",
         },
+        // sort by a function
+        orderByTest{
+            c: &orderByClause{
+                scols: []*sortColumn{Count().Desc()},
+            },
+            qs: " ORDER BY COUNT(*) DESC",
+        },
     }
     for _, test := range tests {
         expLen := len(test.qs)
