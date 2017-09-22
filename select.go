@@ -136,8 +136,16 @@ func (q *SelectQuery) Join(right interface{}, on *Expression) *SelectQuery {
     return q.doJoin(JOIN_INNER, rightSel, on)
 }
 
-func (q *SelectQuery) OuterJoin(right selection, on *Expression) *SelectQuery {
-    return q.doJoin(JOIN_OUTER, right, on)
+func (q *SelectQuery) OuterJoin(right interface{}, on *Expression) *SelectQuery {
+    var rightSel selection
+    switch right.(type) {
+    case selection:
+        rightSel = right.(selection)
+    case *SelectQuery:
+        // Joining to a derived table
+        rightSel = right.(*SelectQuery).sel.selections[0]
+    }
+    return q.doJoin(JOIN_OUTER, rightSel, on)
 }
 
 // Join to a supplied selection with the supplied ON expression. If the SelectQuery

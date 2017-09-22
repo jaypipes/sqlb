@@ -110,6 +110,14 @@ func TestSelectQuery(t *testing.T) {
             q: Select(
                 colUserId,
                 colUserName,
+            ).OuterJoin(subq, Equal(colUserId, subq.Column("id"))),
+            qs: "SELECT users.id, users.name FROM users LEFT JOIN (SELECT users.id FROM users) AS users_derived ON users.id = users_derived.id",
+        },
+        // JOIN to derived table (subquery in FROM clause)
+        selectQueryTest{
+            q: Select(
+                colUserId,
+                colUserName,
             ).Join(subq, Equal(colUserId, subq.Column("id"))),
             qs: "SELECT users.id, users.name FROM users JOIN (SELECT users.id FROM users) AS users_derived ON users.id = users_derived.id",
         },
