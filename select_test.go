@@ -21,6 +21,7 @@ func TestSelectQuery(t *testing.T) {
     users := m.Table("users")
     articles := m.Table("articles")
     articleStates := m.Table("article_states")
+    userProfiles := m.Table("user_profiles")
     colUserId := users.Column("id")
     colUserName := users.Column("name")
     colArticleId := articles.Column("id")
@@ -28,6 +29,8 @@ func TestSelectQuery(t *testing.T) {
     colArticleState := articles.Column("state")
     colArticleStateId := articleStates.Column("id")
     colArticleStateName := articleStates.Column("name")
+    colUserProfileContent := userProfiles.Column("content")
+    colUserProfileUser := userProfiles.Column("user")
 
     subq := Select(colUserId).As("users_derived")
 
@@ -95,7 +98,7 @@ func TestSelectQuery(t *testing.T) {
             q: Select(colArticleId, colUserName.As("author")).OuterJoin(users, Equal(colArticleAuthor, colUserId)),
             qs: "SELECT articles.id, users.name AS author FROM articles LEFT JOIN users ON articles.author = users.id",
         },
-        // Two JOINs using Join() method
+        // JOIN A to B and A to C
         selectQueryTest{
             q: Select(
                 colArticleId,
@@ -120,6 +123,16 @@ func TestSelectQuery(t *testing.T) {
                 colUserName,
             ).Join(subq, Equal(colUserId, subq.Column("id"))),
             qs: "SELECT users.id, users.name FROM users JOIN (SELECT users.id FROM users) AS users_derived ON users.id = users_derived.id",
+        },
+        // JOIN A to B and B to C
+        selectQueryTest{
+            q: Select(
+                colArticleId,
+                colUserName.As("author"),
+                colUserProfileContent.As("author_profile"),
+            ).Join(users, Equal(colArticleAuthor, colUserId),
+            ).Join(userProfiles, Equal(colUserId, colUserProfileUser)),
+            qs: "SELECT articles.id, users.name AS author, user_profiles.content AS author_profile FROM articles JOIN users ON articles.author = users.id JOIN user_profiles ON users.id = user_profiles.user",
         },
     }
     for _, test := range tests {
@@ -188,6 +201,86 @@ func TestNestedSetQueries(t *testing.T) {
 
     expqs := "SELECT o1.id FROM organizations AS o1 JOIN organizations AS o2 ON (o1.root_organization_id = o2.root_organization_id AND o1.nested_set_left BETWEEN o2.nested_set_left AND o2.nested_set_right) WHERE o2.id = ?"
     expqargs := []interface{}{2}
+
+    assert.Equal(expqs, qs)
+    assert.Equal(expqargs, qargs)
+}
+
+func TestNestedSetWithAdditionalJoin(t *testing.T) {
+    // ref: https://github.com/jaypipes/sqlb/issues/60
+    assert := assert.New(t)
+
+    m := &Meta{}
+    orgs := &TableDef{
+        meta: m,
+        name: "organizations",
+    }
+    orgCols := []*ColumnDef{
+        &ColumnDef{
+            tdef: orgs,
+            name: "id",
+        },
+        &ColumnDef{
+            tdef: orgs,
+            name: "root_organization_id",
+        },
+        &ColumnDef{
+            tdef: orgs,
+            name: "nested_set_left",
+        },
+        &ColumnDef{
+            tdef: orgs,
+            name: "nested_set_right",
+        },
+    }
+    orgs.cdefs = orgCols
+
+    orgUsers := &TableDef{
+        meta: m,
+        name: "organization_users",
+    }
+    orgUsersCols := []*ColumnDef{
+        &ColumnDef{
+            tdef: orgUsers,
+            name: "organization_id",
+        },
+        &ColumnDef{
+            tdef: orgUsers,
+            name: "user_id",
+        },
+    }
+    orgUsers.cdefs = orgUsersCols
+
+    o1 := orgs.As("o1")
+    o2 := orgs.As("o2")
+    ou := orgUsers.As("ou")
+
+    o1id := o1.Column("id")
+    o2id := o2.Column("id")
+    o1rootid := o1.Column("root_organization_id")
+    o2rootid := o2.Column("root_organization_id")
+    o1nestedleft := o1.Column("nested_set_left")
+    o2nestedleft := o2.Column("nested_set_left")
+    o2nestedright := o2.Column("nested_set_right")
+    ouUserId := ou.Column("user_id")
+    ouOrgId := ou.Column("organization_id")
+
+    nestedJoinCond := And(
+        Equal(o1rootid, o2rootid),
+        Between(o1nestedleft, o2nestedleft, o2nestedright),
+    )
+    ouJoin := And(
+        Equal(o2id, ouOrgId),
+        Equal(ouUserId, 1),
+    )
+    q := Select(o1id).Join(o2, nestedJoinCond).Join(ou, ouJoin)
+
+    assert.Nil(q.e)
+
+    qs, qargs := q.StringArgs()
+
+    expqs := "SELECT o1.id FROM organizations AS o1 JOIN organizations AS o2 ON (o1.root_organization_id = o2.root_organization_id AND o1.nested_set_left BETWEEN o2.nested_set_left AND o2.nested_set_right) JOIN organization_users AS ou ON (o2.id = ou.organization_id AND ou.user_id = ?)"
+    expqargs := []interface{}{1}
 
     assert.Equal(expqs, qs)
     assert.Equal(expqargs, qargs)

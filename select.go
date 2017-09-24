@@ -185,6 +185,18 @@ func (q *SelectQuery) doJoin(
                 if left != nil {
                     break
                 }
+                // Now search through the SelectQuery's joinClauses, looking
+                // for a selection that is the left side of the ON expression
+                for _, j := range q.sel.joins {
+                    if j.left == exprSel {
+                        left = j.left
+                    } else if j.right == exprSel {
+                        left = j.right
+                    }
+                }
+                if left != nil {
+                    break
+                }
             case *Expression:
                 expr := el.(*Expression)
                 for _, referrent := range expr.referrents() {
@@ -195,6 +207,18 @@ func (q *SelectQuery) doJoin(
                         if sel == referrent {
                             left = sel
                             break
+                        }
+                    }
+                    if left != nil {
+                        break
+                    }
+                    // Now search through the SelectQuery's joinClauses, looking
+                    // for a selection that is the left side of the ON expression
+                    for _, j := range q.sel.joins {
+                        if j.left == referrent {
+                            left = j.left
+                        } else if j.right == referrent {
+                            left = j.right
                         }
                     }
                     if left != nil {
