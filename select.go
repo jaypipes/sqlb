@@ -337,6 +337,10 @@ func Select(items ...interface{}) *SelectQuery {
                 v := item.(*ColumnDef)
                 addToProjections(sel, v)
                 selectionMap[v.tdef] = true
+            case *sqlFunc:
+                v := item.(*sqlFunc)
+                addToProjections(sel, v)
+                selectionMap[v.sel] = true
             default:
                 // Everything else, make it a literal value projection, so, for
                 // instance, a user can do SELECT 1, which is, technically

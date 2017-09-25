@@ -66,7 +66,7 @@ func TestOrderBy(t *testing.T) {
         // sort by a function
         orderByTest{
             c: &orderByClause{
-                scols: []*sortColumn{Count().Desc()},
+                scols: []*sortColumn{Count(users).Desc()},
             },
             qs: " ORDER BY COUNT(*) DESC",
         },

@@ -208,7 +208,7 @@ func TestSelectClause(t *testing.T) {
         selClauseTest{
             c: &selectClause{
                 selections: []selection{users},
-                projs: []projection{Count()},
+                projs: []projection{Count(users)},
             },
             qs: "SELECT COUNT(*) FROM users",
         },

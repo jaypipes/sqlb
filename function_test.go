@@ -47,7 +47,7 @@ func TestFunctions(t *testing.T) {
         },
         // COUNT(*)
         functionTest{
-            c: Count(),
+            c: Count(users),
             qs: "COUNT(*)",
         },
         // COUNT(DISTINCT column)
