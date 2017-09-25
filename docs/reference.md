@@ -8,6 +8,7 @@ ways.
     1. [Manually specifying metadata](#manually-specifying-metadata)
     1. [Automatically discovering metadata](#automatically-discovering-metadata)
 1. [Aliasables](#aliasables)
+1. [SQL Functions](#sql-functions)
 
 ## Schema and Metadata
 
@@ -222,3 +223,79 @@ shorten all of the above to just one line:
 ```
 
 Short and sweet.
+
+## SQL Functions
+
+`sqlb` supports a number of common SQL functions.
+
+### Aggregate functions
+
+Aggregate functions apply an operation over a group of records. The following
+sections show the `sqlb` library functions, how to use them in your code, and
+the eventual SQL string produced when used in query expression.
+
+#### `Count()` and `CountDistinct()`
+
+When you want to express a count of the total number of records in a matching
+query, use the `sqlb.Count()` function.
+
+```go
+    articles := meta.Table("articles")
+    q := Select(Count(articles))
+    qs, qargs := q.StringArgs()
+```
+
+the `qs` variable would contain the following SQL string:
+
+```sql
+SELECT COUNT(*) FROM articles
+```
+
+You can add an alias to the projected column name for a function using the
+`.As()` method, like so:
+
+```go
+    q := Select(Count(articles).As("num_articles"))
+```
+
+would produce this SQL string:
+
+```sql
+SELECT COUNT(*) AS num_articles FROM articles
+```
+
+If you want to count the number of distinct values of a column, use the
+`sqlb.CountDistinct()` function:
+
+```go
+    articles := meta.Table("articles")
+    q := Select(CountDistinct(articles.Column("author")))
+    qs, qargs := q.StringArgs()
+```
+
+which would produce:
+
+```sql
+SELECT COUNT(DISTINCT author) FROM articles
+```
+
+#### `Sum()`, `Avg()`, `Min()`, and `Max()`
+
+The `sqlb.Sum()`, `sqlb.Avg()`, `sqlb.`Min()`, and `sqlb.Max()` functions
+produce the associated SQL aggregate functions. They all take a single argument
+which cam be a `Column`, `ColumnDef` or the result of another SQL function,
+as these examples show:
+
+
+```go
+    articles := meta.Table("articles")
+    q := Select(Min(articles.Column("created_on").As("earliest_article")))
+    qs, qargs := q.StringArgs()
+```
+
+SQL produced:
+
+```sql
+SELECT MIN(created_on) AS earliest_article FROM articles
+```
+
