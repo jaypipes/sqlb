@@ -232,9 +232,10 @@ func (c *ColumnDef) Avg() *sqlFunc {
     return Avg(c)
 }
 
-func Count() *sqlFunc {
+func Count(sel selection) *sqlFunc {
     return &sqlFunc{
         scanInfo: funcScanTable[FUNC_COUNT_STAR],
+        sel: sel,
     }
 }
 

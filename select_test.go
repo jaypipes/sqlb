@@ -40,6 +40,11 @@ func TestSelectQuery(t *testing.T) {
             q: Select(users),
             qs: "SELECT users.id, users.name FROM users",
         },
+        // Simple SELECT COUNT(*) FROM
+        selectQueryTest{
+            q: Select(Count(users)),
+            qs: "SELECT COUNT(*) FROM users",
+        },
         // Simple WHERE
         selectQueryTest{
             q: Select(users).Where(Equal(colUserName, "foo")),
