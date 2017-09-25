@@ -132,15 +132,12 @@ var (
 
 func main() {
     // First, set up your database/sql:DB struct using database/sql:Open()
-    db, err := sql.Open("mysql", "user:pass@/blog")
-
-    if err != nil {
+    if db, err := sql.Open("mysql", "user:pass@/blog"); err != nil {
         log.Fatal(err)
     }
 
     // Next, ask sqlb.Reflect() to populate the metadata for the DB
-    err = sqlb.Reflect("mysql", db, meta)
-    if err != nil {
+    if err := sqlb.Reflect("mysql", db, meta); err != nil {
         log.Fatal(err)
     }
 

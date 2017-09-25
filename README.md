@@ -226,7 +226,7 @@ func main() {
     if db, err := sql.Open("mysql", DSN); err != nil {
         log.Fatal(err)
     }
-    if db, err := sqlb.Reflect("mysql", db, &meta); err != nil {
+    if err := sqlb.Reflect("mysql", db, &meta); err != nil {
         log.Fatal(err)
     }
 }
