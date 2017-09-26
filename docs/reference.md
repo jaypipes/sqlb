@@ -241,7 +241,7 @@ query, use the `sqlb.Count()` function.
 
 ```go
     articles := meta.Table("articles")
-    q := Select(Count(articles))
+    q := sqlb.Select(Count(articles))
     qs, qargs := q.StringArgs()
 ```
 
@@ -255,7 +255,7 @@ You can add an alias to the projected column name for a function using the
 `.As()` method, like so:
 
 ```go
-    q := Select(Count(articles).As("num_articles"))
+    q := sqlb.Select(sqlb.Count(articles).As("num_articles"))
 ```
 
 would produce this SQL string:
@@ -269,7 +269,7 @@ If you want to count the number of distinct values of a column, use the
 
 ```go
     articles := meta.Table("articles")
-    q := Select(CountDistinct(articles.Column("author")))
+    q := sqlb.Select(sqlb.CountDistinct(articles.Column("author")))
     qs, qargs := q.StringArgs()
 ```
 
@@ -289,7 +289,7 @@ as these examples show:
 
 ```go
     articles := meta.Table("articles")
-    q := Select(Min(articles.Column("created_on").As("earliest_article")))
+    q := sqlb.Select(sqlb.Min(articles.Column("created_on").As("earliest_article")))
     qs, qargs := q.StringArgs()
 ```
 
@@ -299,3 +299,33 @@ SQL produced:
 SELECT MIN(created_on) AS earliest_article FROM articles
 ```
 
+Here's an example that involves a `JOIN` between an `orders` and
+`order\_details` table using the `sqlb.Sum()` call to produce an aliased
+projection of `SUM(od.amount) AS total`_amount` in the resulting SQL string.
+
+```go
+    o := meta.TableDef("orders").As("o")
+    od := meta.TableDef("order_details").As("od")
+    oId := o.ColumnDef("id")
+    oCustomer := o.ColumnDef("customer")
+    odOrderId := od.ColumnDef("order_id")
+    odAmount := od.ColumnDef("amount")
+
+    q := sqlb.Select(
+        oCustomer,
+        sqlb.Sum(odAmount).As("order_total"),
+    )
+    q.Join(od, sqlb.Equal(oId, odOrderId))
+    q.GroupBy(oCustomer)
+    qs, qargs := q.StringArgs()
+```
+
+would produce the following SQL:
+
+```sql
+SELECT o.customer, SUM(od.amount) AS order_total
+FROM orders AS o
+JOIN order_details AS od
+ON o.id = od.order_id
+GROUP BY o.customer
+```
