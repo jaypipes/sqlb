@@ -7,13 +7,6 @@ import (
     "github.com/stretchr/testify/assert"
 )
 
-type selectQueryTest struct {
-    q *SelectQuery
-    qs string
-    qargs []interface{}
-    qe error
-}
-
 func TestSelectQuery(t *testing.T) {
     assert := assert.New(t)
 
@@ -34,77 +27,83 @@ func TestSelectQuery(t *testing.T) {
 
     subq := Select(colUserId).As("users_derived")
 
-    tests := []selectQueryTest{
-        // Simple FROM
-        selectQueryTest{
+    tests := []struct{
+        name string
+        q *SelectQuery
+        qs string
+        qargs []interface{}
+        qe error
+    }{
+        {
+            name: "Simple FROM",
             q: Select(users),
             qs: "SELECT users.id, users.name FROM users",
         },
-        // Simple SELECT COUNT(*) FROM
-        selectQueryTest{
+        {
+            name: "Simple SELECT COUNT(*) FROM",
             q: Select(Count(users)),
             qs: "SELECT COUNT(*) FROM users",
         },
-        // Simple WHERE
-        selectQueryTest{
+        {
+            name: "Simple WHERE",
             q: Select(users).Where(Equal(colUserName, "foo")),
             qs: "SELECT users.id, users.name FROM users WHERE users.name = ?",
             qargs: []interface{}{"foo"},
         },
-        // Simple GROUP BY
-        selectQueryTest{
+        {
+            name: "Simple GROUP BY",
             q: Select(users).GroupBy(colUserName),
             qs: "SELECT users.id, users.name FROM users GROUP BY users.name",
         },
-        // Simple ORDER BY
-        selectQueryTest{
+        {
+            name: "Simple ORDER BY",
             q: Select(users).OrderBy(colUserName.Desc()),
             qs: "SELECT users.id, users.name FROM users ORDER BY users.name DESC",
         },
-        // Simple LIMIT
-        selectQueryTest{
+        {
+            name: "Simple LIMIT",
             q: Select(users).Limit(10),
             qs: "SELECT users.id, users.name FROM users LIMIT ?",
             qargs: []interface{}{10},
         },
-        // Simple LIMIT with OFFSET
-        selectQueryTest{
+        {
+            name: "Simple LIMIT with OFFSET",
             q: Select(users).LimitWithOffset(10, 20),
             qs: "SELECT users.id, users.name FROM users LIMIT ? OFFSET ?",
             qargs: []interface{}{10, 20},
         },
-        // Simple named derived table
-        selectQueryTest{
+        {
+            name: "Simple named derived table",
             q: Select(Select(users).As("u")),
             qs: "SELECT u.id, u.name FROM (SELECT users.id, users.name FROM users) AS u",
         },
-        // Simple un-named derived table
-        selectQueryTest{
+        {
+            name: "Simple un-named derived table",
             q: Select(Select(users)),
             qs: "SELECT derived0.id, derived0.name FROM (SELECT users.id, users.name FROM users) AS derived0",
         },
-        // Bad JOIN. Can't Join() against no selection
-        selectQueryTest{
+        {
+            name: "Bad JOIN. Can't Join() against no selection",
             q: Select().Join(users, Equal(colArticleAuthor, colUserId)),
             qe: ERR_JOIN_INVALID_NO_SELECT,
         },
-        // Bad JOIN. Can't Join() against a selection that isn't in the containing SELECT
-        selectQueryTest{
+        {
+            name: "Bad JOIN. Can't Join() against a selection that isn't in the containing SELECT",
             q: Select(articleStates).Join(users, Equal(colArticleAuthor, colUserId)),
             qe: ERR_JOIN_INVALID_UNKNOWN_TARGET,
         },
-        // Simple INNER JOIN
-        selectQueryTest{
+        {
+            name: "Simple INNER JOIN",
             q: Select(colArticleId, colUserName.As("author")).Join(users, Equal(colArticleAuthor, colUserId)),
             qs: "SELECT articles.id, users.name AS author FROM articles JOIN users ON articles.author = users.id",
         },
-        // Simple LEFT JOIN
-        selectQueryTest{
+        {
+            name: "Simple LEFT JOIN",
             q: Select(colArticleId, colUserName.As("author")).OuterJoin(users, Equal(colArticleAuthor, colUserId)),
             qs: "SELECT articles.id, users.name AS author FROM articles LEFT JOIN users ON articles.author = users.id",
         },
-        // JOIN A to B and A to C
-        selectQueryTest{
+        {
+            name: "JOIN A to B and A to C",
             q: Select(
                 colArticleId,
                 colUserName.As("author"),
@@ -113,24 +112,24 @@ func TestSelectQuery(t *testing.T) {
             ).Join(articleStates, Equal(colArticleState, colArticleStateId)),
             qs: "SELECT articles.id, users.name AS author, article_states.name AS state FROM articles JOIN users ON articles.author = users.id JOIN article_states ON articles.state = article_states.id",
         },
-        // LEFT JOIN to derived table (subquery in FROM clause)
-        selectQueryTest{
+        {
+            name: "LEFT JOIN to derived table (subquery in FROM clause)",
             q: Select(
                 colUserId,
                 colUserName,
             ).OuterJoin(subq, Equal(colUserId, subq.Column("id"))),
             qs: "SELECT users.id, users.name FROM users LEFT JOIN (SELECT users.id FROM users) AS users_derived ON users.id = users_derived.id",
         },
-        // JOIN to derived table (subquery in FROM clause)
-        selectQueryTest{
+        {
+            name: "JOIN to derived table (subquery in FROM clause)",
             q: Select(
                 colUserId,
                 colUserName,
             ).Join(subq, Equal(colUserId, subq.Column("id"))),
             qs: "SELECT users.id, users.name FROM users JOIN (SELECT users.id FROM users) AS users_derived ON users.id = users_derived.id",
         },
-        // JOIN A to B and B to C
-        selectQueryTest{
+        {
+            name: "JOIN A to B and B to C",
             q: Select(
                 colArticleId,
                 colUserName.As("author"),
