@@ -322,6 +322,127 @@ func TestNestedSetWithAdditionalJoin(t *testing.T) {
     assert.Equal(expqargs, qargs)
 }
 
+func TestJoinDerivedWithMultipleSelections(t *testing.T) {
+    // ref: https://github.com/jaypipes/sqlb/issues/68
+    assert := assert.New(t)
+
+    // The SQL we want to generate looks like this:
+    //
+    // SELECT
+    //   o.uuid
+    // FROM organizations AS o
+    // LEFT JOIN organizations AS po
+    //   ON o.parent_organization_id = po.id
+    // LEFT JOIN (
+    //   SELECT o1.id
+    //   FROM organizations AS o1
+    //   JOIN organizations AS o2
+    //     ON o1.root_organization_id = o2.root_organization_id
+    //     AND o1.nested_set_left BETWEEN o2.nested_set_left AND o2.nested_set_right
+    //   JOIN organization_users AS ou
+    //     ON o2.id = ou.organization_id
+    //     AND ou.user_id = ?
+    // ) AS private_orgs
+    //   ON o.id = private_orgs.id
+    // WHERE (
+    //   o.visibility = 1
+    //   OR (o.visibility = 0 AND private_orgs.id IS NOT NULL)
+
+    m := &Meta{}
+    orgs := &TableDef{
+        meta: m,
+        name: "organizations",
+    }
+    orgCols := []*ColumnDef{
+        &ColumnDef{
+            tdef: orgs,
+            name: "id",
+        },
+        &ColumnDef{
+            tdef: orgs,
+            name: "uuid",
+        },
+        &ColumnDef{
+            tdef: orgs,
+            name: "root_organization_id",
+        },
+        &ColumnDef{
+            tdef: orgs,
+            name: "nested_set_left",
+        },
+        &ColumnDef{
+            tdef: orgs,
+            name: "nested_set_right",
+        },
+    }
+    orgs.cdefs = orgCols
+
+    orgUsers := &TableDef{
+        meta: m,
+        name: "organization_users",
+    }
+    orgUsersCols := []*ColumnDef{
+        &ColumnDef{
+            tdef: orgUsers,
+            name: "organization_id",
+        },
+        &ColumnDef{
+            tdef: orgUsers,
+            name: "user_id",
+        },
+    }
+    orgUsers.cdefs = orgUsersCols
+
+    o1 := orgs.As("o1")
+    o2 := orgs.As("o2")
+    ou := orgUsers.As("ou")
+
+    o1id := o1.Column("id")
+    o2id := o2.Column("id")
+    o1rootid := o1.Column("root_organization_id")
+    o2rootid := o2.Column("root_organization_id")
+    o1nestedleft := o1.Column("nested_set_left")
+    o2nestedleft := o2.Column("nested_set_left")
+    o2nestedright := o2.Column("nested_set_right")
+    ouUserId := ou.Column("user_id")
+    ouOrgId := ou.Column("organization_id")
+
+    nestedJoinCond := And(
+        Equal(o1rootid, o2rootid),
+        Between(o1nestedleft, o2nestedleft, o2nestedright),
+    )
+    ouJoin := And(
+        Equal(o2id, ouOrgId),
+        Equal(ouUserId, 1),
+    )
+    subq := Select(o1id).Join(o2, nestedJoinCond).Join(ou, ouJoin).As("derived")
+    subqOrgId := subq.Column("id")
+
+    assert.Nil(subq.e)
+
+    q := Select(
+        orgs.Column("uuid"),
+    ).OuterJoin(
+        subq,
+        Equal(
+            orgs.Column("id"),
+            subqOrgId,
+        ),
+    ).Where(IsNotNull(subqOrgId))
+
+    // assert.Nil(q.e)
+
+    qs, _ := q.StringArgs()
+
+    // This is bug for issue #64. SQL generated should be this:
+    // expqs := "SELECT organizations.uuid FROM organizations LEFT JOIN (SELECT o1.id FROM organizations AS o1 JOIN organizations AS o2 ON (o1.root_organization_id = o2.root_organization_id AND o1.nested_set_left BETWEEN o2.nested_set_left AND o2.nested_set_right) JOIN organization_users AS ou ON (o2.id = ou.organization_id AND ou.user_id = ?) AS derived0 ON organizations.id = derived.id WHERE derived.id IS NOT NULL"
+    expqs := "SELECT organizations.uuid FROM organizations WHERE derived.id IS NOT NULL"
+
+    assert.Equal(expqs, qs)
+    // expqargs := []interface{}{1}
+    // assert.Equal(expqargs, qargs)
+}
+
 func TestModifyingSelectQueryUpdatesBuffer(t *testing.T) {
     assert := assert.New(t)
 
