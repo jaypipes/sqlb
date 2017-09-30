@@ -51,6 +51,17 @@ func TestSelectQuery(t *testing.T) {
             qargs: []interface{}{"foo"},
         },
         {
+            name: "WHERE with an OR expression",
+            q: Select(users).Where(
+                Or(
+                    Equal(colUserName, "foo"),
+                    Equal(colUserName, "bar"),
+                ),
+            ),
+            qs: "SELECT users.id, users.name FROM users WHERE (users.name = ? OR users.name = ?)",
+            qargs: []interface{}{"foo", "bar"},
+        },
+        {
             name: "Simple GROUP BY",
             q: Select(users).GroupBy(colUserName),
             qs: "SELECT users.id, users.name FROM users GROUP BY users.name",
@@ -113,6 +124,18 @@ func TestSelectQuery(t *testing.T) {
             qs: "SELECT articles.id, users.name AS author, article_states.name AS state FROM articles JOIN users ON articles.author = users.id JOIN article_states ON articles.state = article_states.id",
         },
         {
+            name: "LEFT JOIN with WHERE",
+            q: Select(
+                colArticleId, colUserName.As("author"),
+            ).OuterJoin(
+                users,
+                Equal(colArticleAuthor, colUserId),
+            ).Where(
+                IsNull(colArticleAuthor),
+            ),
+            qs: "SELECT articles.id, users.name AS author FROM articles LEFT JOIN users ON articles.author = users.id WHERE articles.author IS NULL",
+        },
+        {
             name: "LEFT JOIN to derived table (subquery in FROM clause)",
             q: Select(
                 colUserId,
@@ -137,6 +160,15 @@ func TestSelectQuery(t *testing.T) {
             ).Join(users, Equal(colArticleAuthor, colUserId),
             ).Join(userProfiles, Equal(colUserId, colUserProfileUser)),
             qs: "SELECT articles.id, users.name AS author, user_profiles.content AS author_profile FROM articles JOIN users ON articles.author = users.id JOIN user_profiles ON users.id = user_profiles.user",
+        },
+        {
+            name: "LEFT JOIN to derived table with WHERE referencing derived table",
+            q: Select(
+                colUserId,
+                colUserName,
+            ).OuterJoin(subq, Equal(colUserId, subq.Column("id"))).Where(Equal(subq.Column("id"), 1)),
+            qs: "SELECT users.id, users.name FROM users LEFT JOIN (SELECT users.id FROM users) AS users_derived ON users.id = users_derived.id WHERE users_derived.id = ?",
+            qargs: []interface{}{1},
         },
     }
     for _, test := range tests {
