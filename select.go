@@ -92,7 +92,7 @@ func (q *SelectQuery) As(alias string) *SelectQuery {
 
 // Returns the projection of the underlying selectClause that matches the name
 // provided
-func (q *SelectQuery) Column(name string) projection {
+func (q *SelectQuery) C(name string) projection {
     for _, p := range q.sel.projs {
         switch p.(type) {
         case *derivedColumn:

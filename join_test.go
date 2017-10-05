@@ -18,8 +18,8 @@ func TestJoinClause(t *testing.T) {
     m := testFixtureMeta()
     users := m.Table("users")
     articles := m.Table("articles")
-    colUserId := users.Column("id")
-    colArticleAuthor := articles.Column("author")
+    colUserId := users.C("id")
+    colArticleAuthor := articles.C("author")
 
     auCond := Equal(colArticleAuthor, colUserId)
     uaCond := Equal(colUserId, colArticleAuthor)
@@ -45,7 +45,7 @@ func TestJoinClause(t *testing.T) {
             c: &joinClause{
                 left: articles.As("a"),
                 right: users,
-                on: Equal(articles.As("a").Column("author"), colUserId),
+                on: Equal(articles.As("a").C("author"), colUserId),
             },
             qs: " JOIN users ON a.author = users.id",
         },
@@ -54,7 +54,7 @@ func TestJoinClause(t *testing.T) {
             c: &joinClause{
                 left: articles,
                 right: users.As("u"),
-                on: Equal(colArticleAuthor, users.As("u").Column("id")),
+                on: Equal(colArticleAuthor, users.As("u").C("id")),
             },
             qs: " JOIN users AS u ON articles.author = u.id",
         },

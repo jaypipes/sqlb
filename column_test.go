@@ -6,11 +6,11 @@ import (
     "github.com/stretchr/testify/assert"
 )
 
-func TestColumn(t *testing.T) {
+func TestC(t *testing.T) {
     assert := assert.New(t)
 
     m := testFixtureMeta()
-    c := m.Table("users").Column("name")
+    c := m.Table("users").C("name")
 
     exp := "users.name"
     expLen := len(exp)
@@ -28,7 +28,7 @@ func TestColumnWithTableAlias(t *testing.T) {
     assert := assert.New(t)
 
     m := testFixtureMeta()
-    c := m.Table("users").As("u").Column("name")
+    c := m.Table("users").As("u").C("name")
 
     exp := "u.name"
     expLen := len(exp)
@@ -46,7 +46,7 @@ func TestColumnAlias(t *testing.T) {
     assert := assert.New(t)
 
     m := testFixtureMeta()
-    c := m.Table("users").Column("name").As("user_name")
+    c := m.Table("users").C("name").As("user_name")
 
     exp := "users.name AS user_name"
     expLen := len(exp)

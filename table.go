@@ -9,7 +9,7 @@ type Table struct {
 
 // Return a pointer to a Column with a name or alias matching the supplied
 // string, or nil if no such column is known
-func (t *Table) Column(name string) *Column {
+func (t *Table) C(name string) *Column {
     for _, c := range t.columns {
         if c.name == name || c.alias == name {
             return c
@@ -19,7 +19,7 @@ func (t *Table) Column(name string) *Column {
 }
 
 func (t *Table) NewColumn(name string) *Column {
-    c := t.Column(name)
+    c := t.C(name)
     if c != nil {
         return c
     }

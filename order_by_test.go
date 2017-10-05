@@ -17,35 +17,21 @@ func TestOrderBy(t *testing.T) {
 
     m := testFixtureMeta()
     users := m.Table("users")
-    colUserId := users.Column("id")
-    colUserName := users.Column("name")
+    colUserId := users.C("id")
+    colUserName := users.C("name")
 
     tests := []orderByTest{
-        // column def asc
+        // column asc
         orderByTest{
             c: &orderByClause{
                 scols: []*sortColumn{colUserName.Asc()},
             },
             qs: " ORDER BY users.name",
         },
-        // column asc
-        orderByTest{
-            c: &orderByClause{
-                scols: []*sortColumn{colUserName.Column().Asc()},
-            },
-            qs: " ORDER BY users.name",
-        },
-        // column def desc
-        orderByTest{
-            c: &orderByClause{
-                scols: []*sortColumn{colUserName.Desc()},
-            },
-            qs: " ORDER BY users.name DESC",
-        },
         // column desc
         orderByTest{
             c: &orderByClause{
-                scols: []*sortColumn{colUserName.Column().Desc()},
+                scols: []*sortColumn{colUserName.Desc()},
             },
             qs: " ORDER BY users.name DESC",
         },
@@ -59,7 +45,7 @@ func TestOrderBy(t *testing.T) {
         // multi column mixed
         orderByTest{
             c: &orderByClause{
-                scols: []*sortColumn{colUserName.Asc(), colUserId.Column().Desc()},
+                scols: []*sortColumn{colUserName.Asc(), colUserId.Desc()},
             },
             qs: " ORDER BY users.name, users.id DESC",
         },

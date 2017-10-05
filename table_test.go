@@ -18,13 +18,13 @@ func TestTableMeta(t *testing.T) {
 
     assert.Equal(td, m.Table("users"))
 
-    cd := td.Column("id")
+    cd := td.C("id")
     assert.Nil(cd)
 
     cd = td.NewColumn("id")
     assert.NotNil(cd)
 
-    assert.Equal(cd, td.Column("id"))
+    assert.Equal(cd, td.C("id"))
 }
 
 func TestTable(t *testing.T) {
@@ -94,18 +94,18 @@ func TestTableColumns(t *testing.T) {
     assert.Equal(defs[1].name, "email")
 }
 
-func TestTableColumn(t *testing.T) {
+func TestTableC(t *testing.T) {
     assert := assert.New(t)
 
     m := testFixtureMeta()
     users := m.Table("users")
 
-    c := users.Column("name")
+    c := users.C("name")
 
     assert.Equal(users, c.tbl)
     assert.Equal("name", c.name)
 
     // Check an unknown column name returns nil
-    unknown := users.Column("unknown")
+    unknown := users.C("unknown")
     assert.Nil(unknown)
 }

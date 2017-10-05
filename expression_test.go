@@ -18,9 +18,9 @@ func TestExpressions(t *testing.T) {
     m := testFixtureMeta()
     users := m.Table("users")
     articles := m.Table("articles")
-    colUserId := users.Column("id")
-    colUserName := users.Column("name")
-    colArticleAuthor := articles.Column("author")
+    colUserId := users.C("id")
+    colUserName := users.C("name")
+    colArticleAuthor := articles.C("author")
 
     tests := []expressionTest{
         // equal value

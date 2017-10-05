@@ -17,7 +17,7 @@ func TestDerived(t *testing.T) {
 
     m := testFixtureMeta()
     users := m.Table("users")
-    colUserName := users.Column("name")
+    colUserName := users.C("name")
 
     tests := []derivedTest{
         // Simple one-column sub-SELECT

@@ -10,7 +10,7 @@ func TestAsFunc(t *testing.T) {
     assert := assert.New(t)
 
     m := testFixtureMeta()
-    c := m.Table("users").Column("name")
+    c := m.Table("users").C("name")
 
     assert.Equal("", c.alias)
     As(c, "n")
@@ -28,7 +28,7 @@ func TestAsMethod(t *testing.T) {
     assert.Equal("", users.alias)
     u := users.As("u")
     assert.Equal("u", u.alias)
-    c := m.Table("users").Column("name")
+    c := m.Table("users").C("name")
     assert.Equal("", c.alias)
     c = c.As("n")
     assert.Equal("n", c.alias)
