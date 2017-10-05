@@ -248,7 +248,7 @@ func getArticles() []*Article {
 
     q := sqlb.Select(articles.C("title"), articles.C("content"),
                      articles.C("created_by"), users.C("name"))
-    q.Join(users, Equal(articles.C("author"), users.C("id)))
+    q.Join(users, Equal(articles.C("author"), users.C("id")))
     q.OrderBy(articles.C("created_by").Desc())
     q.Limit(10)
 
@@ -288,7 +288,7 @@ func getArticles(numArticles int, byAuthor string) []*Articles {
 
     q := sqlb.Select(articles.C("title"), articles.C("content"),
                      articles.C("created_by"), users.C("name"))
-    q.Join(users, Equal(articles.C("author"), users.C("id)))
+    q.Join(users, Equal(articles.C("author"), users.C("id")))
     if byAuthor != "" {
         q.Where(q.Equal(users.C("name"), byAuthor))
     }
