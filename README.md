@@ -246,10 +246,10 @@ func getArticles() []*Article {
     articles := meta.Table("articles")
     users := meta.Table("users")
 
-    q := sqlb.Select(articles.Column("title"), articles.Column("content"),
-                     articles.Column("created_by"), users.Column("name"))
-    q.Join(users, Equal(articles.Column("author"), users.Column("id)))
-    q.OrderBy(articles.Column("created_by").Desc())
+    q := sqlb.Select(articles.C("title"), articles.C("content"),
+                     articles.C("created_by"), users.C("name"))
+    q.Join(users, Equal(articles.C("author"), users.C("id)))
+    q.OrderBy(articles.C("created_by").Desc())
     q.Limit(10)
 
     articles := make([]*Article, 0)
@@ -286,13 +286,13 @@ func getArticles(numArticles int, byAuthor string) []*Articles {
     articles := meta.Table("articles")
     users := meta.Table("users")
 
-    q := sqlb.Select(articles.Column("title"), articles.Column("content"),
-                     articles.Column("created_by"), users.Column("name"))
-    q.Join(users, Equal(articles.Column("author"), users.Column("id)))
+    q := sqlb.Select(articles.C("title"), articles.C("content"),
+                     articles.C("created_by"), users.C("name"))
+    q.Join(users, Equal(articles.C("author"), users.C("id)))
     if byAuthor != "" {
-        q.Where(q.Equal(users.Column("name"), byAuthor))
+        q.Where(q.Equal(users.C("name"), byAuthor))
     }
-    q.OrderBy(articles.Column("created_by").Desc())
+    q.OrderBy(articles.C("created_by").Desc())
     q.Limit(numArticle)
 
     articles := make([]*Article, 0)

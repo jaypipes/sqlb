@@ -81,12 +81,12 @@ u := meta.Table("users")
 a := meta.Table("articles")
 c := meta.Table("comments")
 
-usersId := u.Column("id")
-articlesId := a.Column("id")
-articlesAuthor := a.Column("author")
-articlesIsAuthor := a.Column("is_author")
-commentsArticleId := c.Column("article_id")
-commentsCreatedOn := c.Column("created_on")
+usersId := u.C("id")
+articlesId := a.C("id")
+articlesAuthor := a.C("author")
+articlesIsAuthor := a.C("is_author")
+commentsArticleId := c.C("article_id")
+commentsCreatedOn := c.C("created_on")
 
 // First, build the subquery in the FROM clause (the derived table)
 subq := sqlb.Select(usersId).Join(a, sqlb.Equal(usersId, articlesAuthor))
@@ -97,6 +97,6 @@ subq.As("top_authors")
 
 // Next, build the outer SELECT on the comments table and join to the subselect
 q := sqlb.Select(c).Join(a, sqlb.Equal(commentsArticleId, articlesId))
-q.Join(subq, sqlb.Equal(articlesAuthor, subq.Column("id")))
+q.Join(subq, sqlb.Equal(articlesAuthor, subq.C("id")))
 q.OrderBy(commentsCreatedOn.Desc())
 ```

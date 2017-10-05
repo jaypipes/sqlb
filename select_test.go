@@ -15,15 +15,15 @@ func TestSelectQuery(t *testing.T) {
     articles := m.Table("articles")
     articleStates := m.Table("article_states")
     userProfiles := m.Table("user_profiles")
-    colUserId := users.Column("id")
-    colUserName := users.Column("name")
-    colArticleId := articles.Column("id")
-    colArticleAuthor := articles.Column("author")
-    colArticleState := articles.Column("state")
-    colArticleStateId := articleStates.Column("id")
-    colArticleStateName := articleStates.Column("name")
-    colUserProfileContent := userProfiles.Column("content")
-    colUserProfileUser := userProfiles.Column("user")
+    colUserId := users.C("id")
+    colUserName := users.C("name")
+    colArticleId := articles.C("id")
+    colArticleAuthor := articles.C("author")
+    colArticleState := articles.C("state")
+    colArticleStateId := articleStates.C("id")
+    colArticleStateName := articleStates.C("name")
+    colUserProfileContent := userProfiles.C("content")
+    colUserProfileUser := userProfiles.C("user")
 
     subq := Select(colUserId).As("users_derived")
 
@@ -140,7 +140,7 @@ func TestSelectQuery(t *testing.T) {
             q: Select(
                 colUserId,
                 colUserName,
-            ).OuterJoin(subq, Equal(colUserId, subq.Column("id"))),
+            ).OuterJoin(subq, Equal(colUserId, subq.C("id"))),
             qs: "SELECT users.id, users.name FROM users LEFT JOIN (SELECT users.id FROM users) AS users_derived ON users.id = users_derived.id",
         },
         {
@@ -148,7 +148,7 @@ func TestSelectQuery(t *testing.T) {
             q: Select(
                 colUserId,
                 colUserName,
-            ).Join(subq, Equal(colUserId, subq.Column("id"))),
+            ).Join(subq, Equal(colUserId, subq.C("id"))),
             qs: "SELECT users.id, users.name FROM users JOIN (SELECT users.id FROM users) AS users_derived ON users.id = users_derived.id",
         },
         {
@@ -166,7 +166,7 @@ func TestSelectQuery(t *testing.T) {
             q: Select(
                 colUserId,
                 colUserName,
-            ).OuterJoin(subq, Equal(colUserId, subq.Column("id"))).Where(Equal(subq.Column("id"), 1)),
+            ).OuterJoin(subq, Equal(colUserId, subq.C("id"))).Where(Equal(subq.C("id"), 1)),
             qs: "SELECT users.id, users.name FROM users LEFT JOIN (SELECT users.id FROM users) AS users_derived ON users.id = users_derived.id WHERE users_derived.id = ?",
             qargs: []interface{}{1},
         },
@@ -218,13 +218,13 @@ func TestNestedSetQueries(t *testing.T) {
     o1 := orgs.As("o1")
     o2 := orgs.As("o2")
 
-    o1id := o1.Column("id")
-    o2id := o2.Column("id")
-    o1rootid := o1.Column("root_organization_id")
-    o2rootid := o2.Column("root_organization_id")
-    o1nestedleft := o1.Column("nested_set_left")
-    o2nestedleft := o2.Column("nested_set_left")
-    o2nestedright := o2.Column("nested_set_right")
+    o1id := o1.C("id")
+    o2id := o2.C("id")
+    o1rootid := o1.C("root_organization_id")
+    o2rootid := o2.C("root_organization_id")
+    o1nestedleft := o1.C("nested_set_left")
+    o2nestedleft := o2.C("nested_set_left")
+    o2nestedright := o2.C("nested_set_right")
 
     joinCond := And(
         Equal(o1rootid, o2rootid),
@@ -291,15 +291,15 @@ func TestNestedSetWithAdditionalJoin(t *testing.T) {
     o2 := orgs.As("o2")
     ou := orgUsers.As("ou")
 
-    o1id := o1.Column("id")
-    o2id := o2.Column("id")
-    o1rootid := o1.Column("root_organization_id")
-    o2rootid := o2.Column("root_organization_id")
-    o1nestedleft := o1.Column("nested_set_left")
-    o2nestedleft := o2.Column("nested_set_left")
-    o2nestedright := o2.Column("nested_set_right")
-    ouUserId := ou.Column("user_id")
-    ouOrgId := ou.Column("organization_id")
+    o1id := o1.C("id")
+    o2id := o2.C("id")
+    o1rootid := o1.C("root_organization_id")
+    o2rootid := o2.C("root_organization_id")
+    o1nestedleft := o1.C("nested_set_left")
+    o2nestedleft := o2.C("nested_set_left")
+    o2nestedright := o2.C("nested_set_right")
+    ouUserId := ou.C("user_id")
+    ouOrgId := ou.C("organization_id")
 
     nestedJoinCond := And(
         Equal(o1rootid, o2rootid),
@@ -397,15 +397,15 @@ func TestJoinDerivedWithMultipleSelections(t *testing.T) {
     o2 := orgs.As("o2")
     ou := orgUsers.As("ou")
 
-    o1id := o1.Column("id")
-    o2id := o2.Column("id")
-    o1rootid := o1.Column("root_organization_id")
-    o2rootid := o2.Column("root_organization_id")
-    o1nestedleft := o1.Column("nested_set_left")
-    o2nestedleft := o2.Column("nested_set_left")
-    o2nestedright := o2.Column("nested_set_right")
-    ouUserId := ou.Column("user_id")
-    ouOrgId := ou.Column("organization_id")
+    o1id := o1.C("id")
+    o2id := o2.C("id")
+    o1rootid := o1.C("root_organization_id")
+    o2rootid := o2.C("root_organization_id")
+    o1nestedleft := o1.C("nested_set_left")
+    o2nestedleft := o2.C("nested_set_left")
+    o2nestedright := o2.C("nested_set_right")
+    ouUserId := ou.C("user_id")
+    ouOrgId := ou.C("organization_id")
 
     nestedJoinCond := And(
         Equal(o1rootid, o2rootid),
@@ -416,7 +416,7 @@ func TestJoinDerivedWithMultipleSelections(t *testing.T) {
         Equal(ouUserId, 1),
     )
     subq := Select(o1id).Join(o2, nestedJoinCond).Join(ou, ouJoin).As("derived")
-    subqOrgId := subq.Column("id")
+    subqOrgId := subq.C("id")
 
     assert.Nil(subq.e)
 
@@ -429,11 +429,11 @@ func TestJoinDerivedWithMultipleSelections(t *testing.T) {
     assert.Equal(expqargs, qargs)
 
     q := Select(
-        orgs.Column("uuid"),
+        orgs.C("uuid"),
     ).OuterJoin(
         subq,
         Equal(
-            orgs.Column("id"),
+            orgs.C("id"),
             subqOrgId,
         ),
     ).Where(IsNotNull(subqOrgId))
@@ -462,7 +462,7 @@ func TestModifyingSelectQueryUpdatesBuffer(t *testing.T) {
     assert.Nil(qargs)
 
     // Modify the underlying SELECT and verify string and args changed
-    q.Where(Equal(users.Column("id"), 1))
+    q.Where(Equal(users.C("id"), 1))
     qs, qargs = q.StringArgs()
     assert.Equal("SELECT users.id, users.name FROM users WHERE users.id = ?", qs)
     assert.Equal([]interface{}{1}, qargs)

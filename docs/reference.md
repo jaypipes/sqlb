@@ -90,11 +90,11 @@ name of the table.
 A similar process is used to set metadata about a table's column definitions.
 The `sqlb.Column` struct defines the column name and links a pointer to
 the appropriate `Table` struct. To look up a particular column by its name,
-use the `sqlb.Table.Column()` method. If no such column is known, `nil`
+use the `sqlb.Table.C()` method. If no such column is known, `nil`
 will be returned:
 
 ```go
-    colUserId := users.Column("id")
+    colUserId := users.C("id")
     // colUserId == nil
 ```
 
@@ -269,7 +269,7 @@ If you want to count the number of distinct values of a column, use the
 
 ```go
     articles := meta.Table("articles")
-    q := sqlb.Select(sqlb.CountDistinct(articles.Column("author")))
+    q := sqlb.Select(sqlb.CountDistinct(articles.C("author")))
     qs, qargs := q.StringArgs()
 ```
 
@@ -289,7 +289,7 @@ as these examples show:
 
 ```go
     articles := meta.Table("articles")
-    q := sqlb.Select(sqlb.Min(articles.Column("created_on").As("earliest_article")))
+    q := sqlb.Select(sqlb.Min(articles.C("created_on").As("earliest_article")))
     qs, qargs := q.StringArgs()
 ```
 
@@ -306,10 +306,10 @@ projection of `SUM(od.amount) AS `total\_amount` in the resulting SQL string.
 ```go
     o := meta.Table("orders").As("o")
     od := meta.Table("order_details").As("od")
-    oId := o.Column("id")
-    oCustomer := o.Column("customer")
-    odOrderId := od.Column("order_id")
-    odAmount := od.Column("amount")
+    oId := o.C("id")
+    oCustomer := o.C("customer")
+    odOrderId := od.C("order_id")
+    odAmount := od.C("amount")
 
     q := sqlb.Select(
         oCustomer,

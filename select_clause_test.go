@@ -19,13 +19,13 @@ func TestSelectClause(t *testing.T) {
     users := m.Table("users")
     articles := m.Table("articles")
     article_states := m.Table("article_states")
-    colUserName := users.Column("name")
-    colUserId := users.Column("id")
-    colArticleId := articles.Column("id")
-    colArticleAuthor := articles.Column("author")
-    colArticleState := articles.Column("state")
-    colArticleStateId := article_states.Column("id")
-    colArticleStateName := article_states.Column("name")
+    colUserName := users.C("name")
+    colUserId := users.C("id")
+    colArticleId := articles.C("id")
+    colArticleAuthor := articles.C("author")
+    colArticleState := articles.C("state")
+    colArticleStateId := article_states.C("id")
+    colArticleStateName := article_states.C("name")
 
     tests := []selClauseTest{
         // a literal value
@@ -57,14 +57,6 @@ func TestSelectClause(t *testing.T) {
             qs: "SELECT ?, ?",
             qargs: []interface{}{1, 2},
         },
-        // TableDef and Column
-        selClauseTest{
-            c: &selectClause{
-                selections: []selection{users},
-                projs: []projection{colUserName},
-            },
-            qs: "SELECT users.name FROM users",
-        },
         // Table and Column
         selClauseTest{
             c: &selectClause{
@@ -73,25 +65,17 @@ func TestSelectClause(t *testing.T) {
             },
             qs: "SELECT users.name FROM users",
         },
-        // TableDef and Column
-        selClauseTest{
-            c: &selectClause{
-                selections: []selection{users},
-                projs: []projection{colUserName.Column()},
-            },
-            qs: "SELECT users.name FROM users",
-        },
         // aliased Table and Column
         selClauseTest{
             c: &selectClause{
                 selections: []selection{users.As("u")},
                 projs: []projection{
-                    users.As("u").Column("name"),
+                    users.As("u").C("name"),
                 },
             },
             qs: "SELECT u.name FROM users AS u",
         },
-        // TableDef and multiple Column
+        // Table and multiple Column
         selClauseTest{
             c: &selectClause{
                 selections: []selection{users},
@@ -99,11 +83,11 @@ func TestSelectClause(t *testing.T) {
             },
             qs: "SELECT users.id, users.name FROM users",
         },
-        // TableDef and mixed Column and Column
+        // Table and mixed Column and Column
         selClauseTest{
             c: &selectClause{
                 selections: []selection{users},
-                projs: []projection{colUserId, colUserName.Column()},
+                projs: []projection{colUserId, colUserName},
             },
             qs: "SELECT users.id, users.name FROM users",
         },

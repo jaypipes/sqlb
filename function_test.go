@@ -17,7 +17,7 @@ func TestFunctions(t *testing.T) {
 
     m := testFixtureMeta()
     users := m.Table("users")
-    colUserName := users.Column("name")
+    colUserName := users.C("name")
 
     tests := []functionTest{
         // MAX column

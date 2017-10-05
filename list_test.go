@@ -11,7 +11,7 @@ func TestListSingle(t *testing.T) {
 
     m := testFixtureMeta()
     users := m.Table("users")
-    colUserName := users.Column("name")
+    colUserName := users.C("name")
 
     cl := &List{elements: []element{colUserName}}
 
@@ -32,8 +32,8 @@ func TestListMulti(t *testing.T) {
 
     m := testFixtureMeta()
     users := m.Table("users")
-    colUserId := users.Column("id")
-    colUserName := users.Column("name")
+    colUserId := users.C("id")
+    colUserName := users.C("name")
 
     cl := &List{elements: []element{colUserId, colUserName}}
 
