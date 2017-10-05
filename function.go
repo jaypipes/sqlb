@@ -1,9 +1,5 @@
 package sqlb
 
-import (
-    "fmt"
-)
-
 type funcId int
 
 const (
@@ -87,12 +83,6 @@ func (f *sqlFunc) disableAliasScan() func() {
     origAlias := f.alias
     f.alias = ""
     return func() {f.alias = origAlias}
-}
-
-func (f *sqlFunc) projectionId() uint64 {
-    // Each construction of a function is unique, so here we cheat and just
-    // return the hash of the struct's address in memory
-    return toId(fmt.Sprintf("%p", f))
 }
 
 func (f *sqlFunc) Alias(alias string) {
@@ -180,10 +170,6 @@ func (c *Column) Max() *sqlFunc {
     return Max(c)
 }
 
-func (c *ColumnDef) Max() *sqlFunc {
-    return Max(c)
-}
-
 func Min(p projection) *sqlFunc {
     return &sqlFunc{
         scanInfo: funcScanTable[FUNC_MIN],
@@ -193,10 +179,6 @@ func Min(p projection) *sqlFunc {
 }
 
 func (c *Column) Min() *sqlFunc {
-    return Min(c)
-}
-
-func (c *ColumnDef) Min() *sqlFunc {
     return Min(c)
 }
 
@@ -212,10 +194,6 @@ func (c *Column) Sum() *sqlFunc {
     return Sum(c)
 }
 
-func (c *ColumnDef) Sum() *sqlFunc {
-    return Sum(c)
-}
-
 func Avg(p projection) *sqlFunc {
     return &sqlFunc{
         scanInfo: funcScanTable[FUNC_AVG],
@@ -225,10 +203,6 @@ func Avg(p projection) *sqlFunc {
 }
 
 func (c *Column) Avg() *sqlFunc {
-    return Avg(c)
-}
-
-func (c *ColumnDef) Avg() *sqlFunc {
     return Avg(c)
 }
 
@@ -271,10 +245,6 @@ func (c *Column) Trim() *sqlFunc {
     return Trim(c)
 }
 
-func (c *ColumnDef) Trim() *sqlFunc {
-    return Trim(c)
-}
-
 func CharLength(p projection) *sqlFunc {
     return &sqlFunc{
         scanInfo: funcScanTable[FUNC_CHAR_LENGTH],
@@ -284,10 +254,6 @@ func CharLength(p projection) *sqlFunc {
 }
 
 func (c *Column) CharLength() *sqlFunc {
-    return CharLength(c)
-}
-
-func (c *ColumnDef) CharLength() *sqlFunc {
     return CharLength(c)
 }
 
@@ -303,10 +269,6 @@ func (c *Column) BitLength() *sqlFunc {
     return BitLength(c)
 }
 
-func (c *ColumnDef) BitLength() *sqlFunc {
-    return BitLength(c)
-}
-
 func Ascii(p projection) *sqlFunc {
     return &sqlFunc{
         scanInfo: funcScanTable[FUNC_ASCII],
@@ -319,10 +281,6 @@ func (c *Column) Ascii() *sqlFunc {
     return Ascii(c)
 }
 
-func (c *ColumnDef) Ascii() *sqlFunc {
-    return Ascii(c)
-}
-
 func Reverse(p projection) *sqlFunc {
     return &sqlFunc{
         scanInfo: funcScanTable[FUNC_REVERSE],
@@ -332,10 +290,6 @@ func Reverse(p projection) *sqlFunc {
 }
 
 func (c *Column) Reverse() *sqlFunc {
-    return Reverse(c)
-}
-
-func (c *ColumnDef) Reverse() *sqlFunc {
     return Reverse(c)
 }
 

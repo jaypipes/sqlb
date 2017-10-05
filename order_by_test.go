@@ -16,9 +16,9 @@ func TestOrderBy(t *testing.T) {
     assert := assert.New(t)
 
     m := testFixtureMeta()
-    users := m.TableDef("users")
-    colUserId := users.ColumnDef("id")
-    colUserName := users.ColumnDef("name")
+    users := m.Table("users")
+    colUserId := users.Column("id")
+    colUserName := users.Column("name")
 
     tests := []orderByTest{
         // column def asc

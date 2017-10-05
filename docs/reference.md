@@ -67,42 +67,42 @@ func main() {
 }
 ```
 
-The `sqlb.Meta` struct has a method `TableDef(string)` which returns a pointer
-to a `sqlb.TableDef` struct for a table whose name matches the supplied string
+The `sqlb.Meta` struct has a method `Table(string)` which returns a pointer
+to a `sqlb.Table` struct for a table whose name matches the supplied string
 argument. If no matching table is found, `nil` is returned:
 
 ```go
-    users := meta.TableDef("users")
+    users := meta.Table("users")
     // users == nil
 ```
 
 Since we have yet not told the `meta` struct about any tables in our database,
 the `users` variable above will be `nil`. Let's now tell the `meta` struct
-about the tables in our schema. A `sqlb.TableDef` struct contains metadata
+about the tables in our schema. A `sqlb.Table` struct contains metadata
 about a specific table in a database. The `sqlb.Meta.NewTable()` method
-returns a pointer to a `sqlb.TableDef` struct that's been initialized with the
+returns a pointer to a `sqlb.Table` struct that's been initialized with the
 name of the table.
 
 ```go
-    users = meta.NewTableDef("users")
+    users = meta.NewTable("users")
 ```
 
 A similar process is used to set metadata about a table's column definitions.
-The `sqlb.ColumnDef` struct defines the column name and links a pointer to
-the appropriate `TableDef` struct. To look up a particular column by its name,
-use the `sqlb.TableDef.ColumnDef()` method. If no such column is known, `nil`
+The `sqlb.Column` struct defines the column name and links a pointer to
+the appropriate `Table` struct. To look up a particular column by its name,
+use the `sqlb.Table.Column()` method. If no such column is known, `nil`
 will be returned:
 
 ```go
-    colUserId := users.ColumnDef("id")
+    colUserId := users.Column("id")
     // colUserId == nil
 ```
 
-Use the `sqlb.TableDef.NewColumnDef()` method to create and return a new column
+Use the `sqlb.Table.NewColumn()` method to create and return a new column
 definition:
 
 ```go
-    colUserId = users.NewColumnDef("id")
+    colUserId = users.NewColumn("id")
 ```
 
 ### Automatically discovering metadata
@@ -144,9 +144,9 @@ func main() {
     // meta variable is now populate with table and column information for the
     // "blog" database. Here's some example code that loops through the table
     // metadata printing out table and column names.
-    for _, td := range meta.TableDefs() {
+    for _, td := range meta.Tables() {
         fmt.Printf("Table: %s\n", td.name)
-        for _, cd := range td.ColumnDefs() {
+        for _, cd := range td.Columns() {
             fmt.Printf(" Column: %s", cd.name)
         }
     }
@@ -200,26 +200,26 @@ That said, there's a more convenient way to get a pointer to an aliased
 database object: using the `As()` method on another struct.
 
 As you learned earlier, the `sqlb.Meta` struct contains definitions of tables
-in a database. A `sqlb` user can grab a pointer to one of these `sqlb.TableDef`
-structs by calling the `sqlb.Meta.TableDef()` method, passing in a string for
+in a database. A `sqlb` user can grab a pointer to one of these `sqlb.Table`
+structs by calling the `sqlb.Meta.Table()` method, passing in a string for
 the table name to get a definition for:
 
 ```go
-    orgsTableDef := meta.TableDef("organizations")
+    orgsTable := meta.Table("organizations")
 ```
 
-Use the `sqlb.TableDef.As()` method to get a pointer to a `sqlb.Table` struct
+Use the `sqlb.Table.As()` method to get a pointer to a `sqlb.Table` struct
 that has had its alias set:
 
 ```go
-    orgs := orgsTableDef.As("o")
+    orgs := orgsTable.As("o")
 ```
 
 If you're sure that a particular table exists in the `sqlb.Meta`, you can
 shorten all of the above to just one line:
 
 ```go
-    orgs := meta.TableDef("organizations").As("o")
+    orgs := meta.Table("organizations").As("o")
 ```
 
 Short and sweet.
@@ -283,7 +283,7 @@ SELECT COUNT(DISTINCT author) FROM articles
 
 The `sqlb.Sum()`, `sqlb.Avg()`, `sqlb.`Min()`, and `sqlb.Max()` functions
 produce the associated SQL aggregate functions. They all take a single argument
-which cam be a `Column`, `ColumnDef` or the result of another SQL function,
+which cam be a `Column`, `Column` or the result of another SQL function,
 as these examples show:
 
 
@@ -301,15 +301,15 @@ SELECT MIN(created_on) AS earliest_article FROM articles
 
 Here's an example that involves a `JOIN` between an `orders` and
 `order\_details` table using the `sqlb.Sum()` call to produce an aliased
-projection of `SUM(od.amount) AS total`_amount` in the resulting SQL string.
+projection of `SUM(od.amount) AS `total\_amount` in the resulting SQL string.
 
 ```go
-    o := meta.TableDef("orders").As("o")
-    od := meta.TableDef("order_details").As("od")
-    oId := o.ColumnDef("id")
-    oCustomer := o.ColumnDef("customer")
-    odOrderId := od.ColumnDef("order_id")
-    odAmount := od.ColumnDef("amount")
+    o := meta.Table("orders").As("o")
+    od := meta.Table("order_details").As("od")
+    oId := o.Column("id")
+    oCustomer := o.Column("customer")
+    odOrderId := od.Column("order_id")
+    odAmount := od.Column("amount")
 
     q := sqlb.Select(
         oCustomer,

@@ -16,8 +16,8 @@ func TestJoinClause(t *testing.T) {
     assert := assert.New(t)
 
     m := testFixtureMeta()
-    users := m.TableDef("users")
-    articles := m.TableDef("articles")
+    users := m.Table("users")
+    articles := m.Table("articles")
     colUserId := users.Column("id")
     colArticleAuthor := articles.Column("author")
 
@@ -37,14 +37,14 @@ func TestJoinClause(t *testing.T) {
         },
         // articles to users tables
         joinClauseTest{
-            c: Join(articles.Table(), users.Table(), auCond),
+            c: Join(articles, users, auCond),
             qs: " JOIN users ON articles.author = users.id",
         },
         // join an aliased table to non-aliased table
         joinClauseTest{
             c: &joinClause{
                 left: articles.As("a"),
-                right: users.Table(),
+                right: users,
                 on: Equal(articles.As("a").Column("author"), colUserId),
             },
             qs: " JOIN users ON a.author = users.id",

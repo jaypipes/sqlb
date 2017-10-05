@@ -73,13 +73,6 @@ func (c *Column) Asc() *sortColumn {
     return &sortColumn{p: c}
 }
 
-func (c *ColumnDef) Desc() *sortColumn {
-    return &sortColumn{p: c, desc: true}
-}
-
-func (c *ColumnDef) Asc() *sortColumn {
-    return &sortColumn{p: c}
-}
 func (f *sqlFunc) Desc() *sortColumn {
     return &sortColumn{p: f, desc: true}
 }

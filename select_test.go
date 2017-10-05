@@ -191,29 +191,29 @@ func TestNestedSetQueries(t *testing.T) {
     assert := assert.New(t)
 
     m := &Meta{}
-    orgs := &TableDef{
+    orgs := &Table{
         meta: m,
         name: "organizations",
     }
-    cols := []*ColumnDef{
-        &ColumnDef{
-            tdef: orgs,
+    cols := []*Column{
+        &Column{
+            tbl: orgs,
             name: "id",
         },
-        &ColumnDef{
-            tdef: orgs,
+        &Column{
+            tbl: orgs,
             name: "root_organization_id",
         },
-        &ColumnDef{
-            tdef: orgs,
+        &Column{
+            tbl: orgs,
             name: "nested_set_left",
         },
-        &ColumnDef{
-            tdef: orgs,
+        &Column{
+            tbl: orgs,
             name: "nested_set_right",
         },
     }
-    orgs.cdefs = cols
+    orgs.columns = cols
 
     o1 := orgs.As("o1")
     o2 := orgs.As("o2")
@@ -247,45 +247,45 @@ func TestNestedSetWithAdditionalJoin(t *testing.T) {
     assert := assert.New(t)
 
     m := &Meta{}
-    orgs := &TableDef{
+    orgs := &Table{
         meta: m,
         name: "organizations",
     }
-    orgCols := []*ColumnDef{
-        &ColumnDef{
-            tdef: orgs,
+    orgCols := []*Column{
+        &Column{
+            tbl: orgs,
             name: "id",
         },
-        &ColumnDef{
-            tdef: orgs,
+        &Column{
+            tbl: orgs,
             name: "root_organization_id",
         },
-        &ColumnDef{
-            tdef: orgs,
+        &Column{
+            tbl: orgs,
             name: "nested_set_left",
         },
-        &ColumnDef{
-            tdef: orgs,
+        &Column{
+            tbl: orgs,
             name: "nested_set_right",
         },
     }
-    orgs.cdefs = orgCols
+    orgs.columns = orgCols
 
-    orgUsers := &TableDef{
+    orgUsers := &Table{
         meta: m,
         name: "organization_users",
     }
-    orgUsersCols := []*ColumnDef{
-        &ColumnDef{
-            tdef: orgUsers,
+    orgUsersCols := []*Column{
+        &Column{
+            tbl: orgUsers,
             name: "organization_id",
         },
-        &ColumnDef{
-            tdef: orgUsers,
+        &Column{
+            tbl: orgUsers,
             name: "user_id",
         },
     }
-    orgUsers.cdefs = orgUsersCols
+    orgUsers.columns = orgUsersCols
 
     o1 := orgs.As("o1")
     o2 := orgs.As("o2")
@@ -349,49 +349,49 @@ func TestJoinDerivedWithMultipleSelections(t *testing.T) {
     //   OR (o.visibility = 0 AND private_orgs.id IS NOT NULL)
 
     m := &Meta{}
-    orgs := &TableDef{
+    orgs := &Table{
         meta: m,
         name: "organizations",
     }
-    orgCols := []*ColumnDef{
-        &ColumnDef{
-            tdef: orgs,
+    orgCols := []*Column{
+        &Column{
+            tbl: orgs,
             name: "id",
         },
-        &ColumnDef{
-            tdef: orgs,
+        &Column{
+            tbl: orgs,
             name: "uuid",
         },
-        &ColumnDef{
-            tdef: orgs,
+        &Column{
+            tbl: orgs,
             name: "root_organization_id",
         },
-        &ColumnDef{
-            tdef: orgs,
+        &Column{
+            tbl: orgs,
             name: "nested_set_left",
         },
-        &ColumnDef{
-            tdef: orgs,
+        &Column{
+            tbl: orgs,
             name: "nested_set_right",
         },
     }
-    orgs.cdefs = orgCols
+    orgs.columns = orgCols
 
-    orgUsers := &TableDef{
+    orgUsers := &Table{
         meta: m,
         name: "organization_users",
     }
-    orgUsersCols := []*ColumnDef{
-        &ColumnDef{
-            tdef: orgUsers,
+    orgUsersCols := []*Column{
+        &Column{
+            tbl: orgUsers,
             name: "organization_id",
         },
-        &ColumnDef{
-            tdef: orgUsers,
+        &Column{
+            tbl: orgUsers,
             name: "user_id",
         },
     }
-    orgUsers.cdefs = orgUsersCols
+    orgUsers.columns = orgUsersCols
 
     o1 := orgs.As("o1")
     o2 := orgs.As("o2")
@@ -420,6 +420,14 @@ func TestJoinDerivedWithMultipleSelections(t *testing.T) {
 
     assert.Nil(subq.e)
 
+    qs, qargs := subq.StringArgs()
+
+    expqs := "SELECT derived.id FROM (SELECT o1.id FROM organizations AS o1 JOIN organizations AS o2 ON (o1.root_organization_id = o2.root_organization_id AND o1.nested_set_left BETWEEN o2.nested_set_left AND o2.nested_set_right) JOIN organization_users AS ou ON (o2.id = ou.organization_id AND ou.user_id = ?)) AS derived"
+    expqargs := []interface{}{1}
+
+    assert.Equal(expqs, qs)
+    assert.Equal(expqargs, qargs)
+
     q := Select(
         orgs.Column("uuid"),
     ).OuterJoin(
@@ -430,24 +438,22 @@ func TestJoinDerivedWithMultipleSelections(t *testing.T) {
         ),
     ).Where(IsNotNull(subqOrgId))
 
-    // assert.Nil(q.e)
+    assert.Nil(q.e)
 
-    qs, _ := q.StringArgs()
+    qs, qargs = q.StringArgs()
 
-    // This is bug for issue #64. SQL generated should be this:
-    // expqs := "SELECT organizations.uuid FROM organizations LEFT JOIN (SELECT o1.id FROM organizations AS o1 JOIN organizations AS o2 ON (o1.root_organization_id = o2.root_organization_id AND o1.nested_set_left BETWEEN o2.nested_set_left AND o2.nested_set_right) JOIN organization_users AS ou ON (o2.id = ou.organization_id AND ou.user_id = ?) AS derived0 ON organizations.id = derived.id WHERE derived.id IS NOT NULL"
-    expqs := "SELECT organizations.uuid FROM organizations WHERE derived.id IS NOT NULL"
+    expqs = "SELECT organizations.uuid FROM organizations LEFT JOIN (SELECT o1.id FROM organizations AS o1 JOIN organizations AS o2 ON (o1.root_organization_id = o2.root_organization_id AND o1.nested_set_left BETWEEN o2.nested_set_left AND o2.nested_set_right) JOIN organization_users AS ou ON (o2.id = ou.organization_id AND ou.user_id = ?)) AS derived ON organizations.id = derived.id WHERE derived.id IS NOT NULL"
+    expqargs = []interface{}{1}
 
     assert.Equal(expqs, qs)
-    // expqargs := []interface{}{1}
-    // assert.Equal(expqargs, qargs)
+    assert.Equal(expqargs, qargs)
 }
 
 func TestModifyingSelectQueryUpdatesBuffer(t *testing.T) {
     assert := assert.New(t)
 
     m := testFixtureMeta()
-    users := m.TableDef("users")
+    users := m.Table("users")
 
     q := Select(users)
 
@@ -471,7 +477,7 @@ func TestSelectQueryErrors(t *testing.T) {
     assert.Nil(q.Error()) // But there is no error set yet...
 
     m := testFixtureMeta()
-    users := m.TableDef("users")
+    users := m.Table("users")
 
     q = Select(users)
 

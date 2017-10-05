@@ -16,10 +16,11 @@ type joinClause struct {
 }
 
 func (j *joinClause) argCount() int {
-    if j.on == nil {
-        return 0
+    ac := 0
+    if j.on != nil {
+        ac = j.on.argCount()
     }
-    return j.on.argCount()
+    return ac + j.left.argCount() + j.right.argCount()
 }
 
 func (j *joinClause) size() int {

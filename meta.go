@@ -36,37 +36,33 @@ var (
 type Meta struct {
     db *sql.DB
     schemaName string
-    tdefs map[string]*TableDef
+    tables map[string]*Table
 }
 
 func NewMeta(driver string, schemaName string) *Meta {
     return &Meta{
         schemaName: schemaName,
-        tdefs: make(map[string]*TableDef, 0),
+        tables: make(map[string]*Table, 0),
     }
 }
 
-// Create and return a new TableDef with the given table name.
-func (m *Meta) NewTableDef(tblName string) *TableDef {
-    td, exists := m.tdefs[tblName]
+// Create and return a new Table with the given table name.
+func (m *Meta) NewTable(name string) *Table {
+    t, exists := m.tables[name]
     if exists {
-        return td
+        return t
     }
-    td = &TableDef{meta: m, name: tblName}
-    m.tdefs[tblName] = td
-    return td
+    t = &Table{meta: m, name: name}
+    m.tables[name] = t
+    return t
 }
 
-func (m *Meta) TableDef(tblName string) *TableDef {
-    return m.tdefs[tblName]
-}
-
-func (m *Meta) Table(tblName string) *Table {
-    td, found := m.tdefs[tblName]
+func (m *Meta) Table(name string) *Table {
+    t, found := m.tables[name]
     if ! found {
         return nil
     }
-    return td.Table()
+    return t
 }
 
 func Reflect(driver string, db *sql.DB, meta *Meta) error {
@@ -80,31 +76,31 @@ func Reflect(driver string, db *sql.DB, meta *Meta) error {
         return err
     }
     meta.schemaName = schemaName
-    tdefs := make(map[string]*TableDef, 0)
+    tables := make(map[string]*Table, 0)
     for rows.Next() {
-        tdef := &TableDef{meta: meta}
-        err = rows.Scan(&tdef.name)
+        t := &Table{meta: meta}
+        err = rows.Scan(&t.name)
         if err != nil {
             return err
         }
-        tdefs[tdef.name] = tdef
+        tables[t.name] = t
     }
-    if err = fillTableColumnDefs(db, schemaName, &tdefs); err != nil {
+    if err = fillTableColumns(db, schemaName, &tables); err != nil {
         return err
     }
-    meta.tdefs = tdefs
+    meta.tables = tables
     meta.db = db
     return nil
 }
 
 // Grabs column information from the information schema and populates the
 // supplied map of TableDef descriptors' columns
-func fillTableColumnDefs(db *sql.DB, schemaName string, tdefs *map[string]*TableDef) error {
+func fillTableColumns(db *sql.DB, schemaName string, tables *map[string]*Table) error {
     rows, err := db.Query(IS_COLUMNS, schemaName)
     if err != nil {
         return err
     }
-    var tdef *TableDef
+    var t *Table
     for rows.Next() {
         var tname string
         var cname string
@@ -112,12 +108,12 @@ func fillTableColumnDefs(db *sql.DB, schemaName string, tdefs *map[string]*Table
         if err != nil {
             return err
         }
-        tdef = (*tdefs)[tname]
-        if tdef.cdefs == nil {
-            tdef.cdefs = make([]*ColumnDef, 0)
+        t = (*tables)[tname]
+        if t.columns == nil {
+            t.columns = make([]*Column, 0)
         }
-        cdef := &ColumnDef{tdef: tdef, name: cname}
-        tdef.cdefs = append(tdef.cdefs, cdef)
+        c := &Column{tbl: t, name: cname}
+        t.columns = append(t.columns, c)
     }
     return nil
 }
