@@ -27,7 +27,6 @@ type element interface {
 // projection will not include the alias extension
 type projection interface {
     from() selection
-    projectionId() uint64
     // projections must also implement element
     size() int
     argCount() int

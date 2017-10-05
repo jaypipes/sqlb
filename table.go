@@ -5,13 +5,6 @@ type Table struct {
     tdef *TableDef
 }
 
-func (t *Table) idParts() []string {
-    if t.alias != "" {
-        return []string{t.alias}
-    }
-    return t.tdef.idParts()
-}
-
 func (t *Table) Column(name string) *Column {
     for _, cdef := range t.tdef.cdefs {
         if name == cdef.name {
@@ -71,10 +64,6 @@ type TableDef struct {
     meta *Meta
     name string
     cdefs []*ColumnDef
-}
-
-func (td *TableDef) idParts() []string {
-    return []string{td.meta.schemaName, td.name}
 }
 
 func (td *TableDef) Table() *Table {

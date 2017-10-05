@@ -260,7 +260,6 @@ func Select(items ...interface{}) *SelectQuery {
 
     nDerived := 0
     selectionMap := make(map[selection]bool, 0)
-    projectionMap := make(map[uint64]projection, 0)
 
     // For each scannable item we've received in the call, check what concrete
     // type they are and, depending on which type they are, either add them to
@@ -292,8 +291,6 @@ func Select(items ...interface{}) *SelectQuery {
                             selectionMap[innerSel] = true
                             dt := innerSel.(*derivedTable)
                             for _, p := range dt.getAllDerivedColumns() {
-                                pid := p.projectionId()
-                                projectionMap[pid] = p
                                 addToProjections(sel, p)
                             }
                         default:
@@ -310,8 +307,6 @@ func Select(items ...interface{}) *SelectQuery {
                             }
                             selectionMap[dt] = true
                             for _, p := range dt.getAllDerivedColumns() {
-                                pid := p.projectionId()
-                                projectionMap[pid] = p
                                 addToProjections(sel, p)
                             }
                             nDerived++

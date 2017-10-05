@@ -10,16 +10,6 @@ func (c *Column) from() selection {
     return c.tbl
 }
 
-func (c *Column) projectionId() uint64 {
-    if c.alias != "" {
-        args := c.tbl.idParts()
-        args = append(args, c.alias)
-        return toId(args...)
-    }
-    args := c.cdef.idParts()
-    return toId(args...)
-}
-
 func (c *Column) disableAliasScan() func() {
     origAlias := c.alias
     c.alias = ""
@@ -89,16 +79,6 @@ func (cd *ColumnDef) from() selection {
 // A column definition isn't aliasable...
 func (cd *ColumnDef) disableAliasScan() func() {
     return func() {}
-}
-
-func (cd *ColumnDef) projectionId() uint64 {
-    args := cd.tdef.idParts()
-    args = append(args, cd.name)
-    return toId(args...)
-}
-
-func (cd *ColumnDef) idParts() []string {
-    return []string{cd.name, cd.tdef.meta.schemaName, cd.tdef.name}
 }
 
 func (cd *ColumnDef) Column() *Column {
