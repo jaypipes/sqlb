@@ -77,16 +77,16 @@ simple. The `sqlb.SelectQuery` struct that is returned from the `sqlb.Select()`
 function can be joined to another `sqlb.SelectQuery`, as this example shows:
 
 ```go
-u := meta.TableDef("users")
-a := meta.TableDef("articles")
-c := meta.TableDef("comments")
+u := meta.Table("users")
+a := meta.Table("articles")
+c := meta.Table("comments")
 
-usersId := u.ColumnDef("id")
-articlesId := a.ColumnDef("id")
-articlesAuthor := a.ColumnDef("author")
-articlesIsAuthor := a.ColumnDef("is_author")
-commentsArticleId := c.ColumnDef("article_id")
-commentsCreatedOn := c.ColumnDef("created_on")
+usersId := u.Column("id")
+articlesId := a.Column("id")
+articlesAuthor := a.Column("author")
+articlesIsAuthor := a.Column("is_author")
+commentsArticleId := c.Column("article_id")
+commentsCreatedOn := c.Column("created_on")
 
 // First, build the subquery in the FROM clause (the derived table)
 subq := sqlb.Select(usersId).Join(a, sqlb.Equal(usersId, articlesAuthor))
