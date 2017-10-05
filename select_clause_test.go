@@ -16,16 +16,16 @@ func TestSelectClause(t *testing.T) {
     assert := assert.New(t)
 
     m := testFixtureMeta()
-    users := m.TableDef("users")
-    articles := m.TableDef("articles")
-    article_states := m.TableDef("article_states")
-    colUserName := users.ColumnDef("name")
-    colUserId := users.ColumnDef("id")
-    colArticleId := articles.ColumnDef("id")
-    colArticleAuthor := articles.ColumnDef("author")
-    colArticleState := articles.ColumnDef("state")
-    colArticleStateId := article_states.ColumnDef("id")
-    colArticleStateName := article_states.ColumnDef("name")
+    users := m.Table("users")
+    articles := m.Table("articles")
+    article_states := m.Table("article_states")
+    colUserName := users.Column("name")
+    colUserId := users.Column("id")
+    colArticleId := articles.Column("id")
+    colArticleAuthor := articles.Column("author")
+    colArticleState := articles.Column("state")
+    colArticleStateId := article_states.Column("id")
+    colArticleStateName := article_states.Column("name")
 
     tests := []selClauseTest{
         // a literal value
@@ -57,7 +57,7 @@ func TestSelectClause(t *testing.T) {
             qs: "SELECT ?, ?",
             qargs: []interface{}{1, 2},
         },
-        // TableDef and ColumnDef
+        // TableDef and Column
         selClauseTest{
             c: &selectClause{
                 selections: []selection{users},
@@ -65,10 +65,10 @@ func TestSelectClause(t *testing.T) {
             },
             qs: "SELECT users.name FROM users",
         },
-        // Table and ColumnDef
+        // Table and Column
         selClauseTest{
             c: &selectClause{
-                selections: []selection{users.Table()},
+                selections: []selection{users},
                 projs: []projection{colUserName},
             },
             qs: "SELECT users.name FROM users",
@@ -91,7 +91,7 @@ func TestSelectClause(t *testing.T) {
             },
             qs: "SELECT u.name FROM users AS u",
         },
-        // TableDef and multiple ColumnDef
+        // TableDef and multiple Column
         selClauseTest{
             c: &selectClause{
                 selections: []selection{users},
@@ -99,7 +99,7 @@ func TestSelectClause(t *testing.T) {
             },
             qs: "SELECT users.id, users.name FROM users",
         },
-        // TableDef and mixed Column and ColumnDef
+        // TableDef and mixed Column and Column
         selClauseTest{
             c: &selectClause{
                 selections: []selection{users},

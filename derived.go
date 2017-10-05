@@ -29,8 +29,6 @@ func (dt *derivedTable) getAllDerivedColumns() []projection {
         switch p.(type) {
             case *Column:
                 projs[x] = &derivedColumn{dt: dt, c: p.(*Column)}
-            case *ColumnDef:
-                projs[x] = &derivedColumn{dt: dt, c: p.(*ColumnDef).Column()}
         }
     }
     return projs
@@ -43,14 +41,13 @@ func (dt *derivedTable) projections() []projection {
         p := dt.from.projs[x]
         switch p.(type) {
             case *Column:
-            case *ColumnDef:
         }
     }
     return projs
 }
 
 func (dt *derivedTable) argCount() int {
-    return 0
+    return dt.from.argCount()
 }
 
 func (dt *derivedTable) size() int {
@@ -139,7 +136,7 @@ func (dc *derivedColumn) projectionId() uint64 {
     } else if dc.c.alias != "" {
         args[1] = dc.c.alias
     } else {
-        args[1] = dc.c.cdef.name
+        args[1] = dc.c.name
     }
     return toId(args...)
 }
@@ -160,7 +157,7 @@ func (dc *derivedColumn) size() int {
     if dc.c.alias != "" {
         size += len(dc.c.alias)
     } else {
-        size += len(dc.c.cdef.name)
+        size += len(dc.c.name)
     }
     if dc.alias != "" {
         size += len(Symbols[SYM_AS]) + len(dc.alias)
@@ -175,7 +172,7 @@ func (dc *derivedColumn) scan(b []byte, args []interface{}) (int, int) {
     if dc.c.alias != "" {
         bw += copy(b[bw:], dc.c.alias)
     } else {
-        bw += copy(b[bw:], dc.c.cdef.name)
+        bw += copy(b[bw:], dc.c.name)
     }
     if dc.alias != "" {
         bw += copy(b[bw:], Symbols[SYM_AS])

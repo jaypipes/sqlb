@@ -43,77 +43,77 @@ var (
 func testFixtureMeta() *Meta {
     meta := &Meta{
         schemaName: "test",
-        tdefs: make(map[string]*TableDef, 0),
+        tables: make(map[string]*Table, 0),
     }
 
-    users := &TableDef{
+    users := &Table{
         meta: meta,
         name: "users",
     }
-    colUserId := &ColumnDef{
+    colUserId := &Column{
         name: "id",
-        tdef: users,
+        tbl: users,
     }
-    colUserName := &ColumnDef{
+    colUserName := &Column{
         name: "name",
-        tdef: users,
+        tbl: users,
     }
 
-    articles := &TableDef{
+    articles := &Table{
         meta: meta,
         name: "articles",
     }
-    colArticleId := &ColumnDef{
+    colArticleId := &Column{
         name: "id",
-        tdef: articles,
+        tbl: articles,
     }
-    colArticleAuthor := &ColumnDef{
+    colArticleAuthor := &Column{
         name: "author",
-        tdef: articles,
+        tbl: articles,
     }
-    colArticleState := &ColumnDef{
+    colArticleState := &Column{
         name: "state",
-        tdef: articles,
+        tbl: articles,
     }
 
-    article_states := &TableDef{
+    articleStates := &Table{
         meta: meta,
         name: "article_states",
     }
-    colArticleStateId := &ColumnDef{
+    colArticleStateId := &Column{
         name: "id",
-        tdef: article_states,
+        tbl: articleStates,
     }
-    colArticleStateName := &ColumnDef{
+    colArticleStateName := &Column{
         name: "name",
-        tdef: article_states,
+        tbl: articleStates,
     }
 
-    user_profiles := &TableDef{
+    userProfiles := &Table{
         meta: meta,
         name: "user_profiles",
     }
-    colUserProfileId := &ColumnDef{
+    colUserProfileId := &Column{
         name: "id",
-        tdef: user_profiles,
+        tbl: userProfiles,
     }
-    colUserProfileContent := &ColumnDef{
+    colUserProfileContent := &Column{
         name: "content",
-        tdef: user_profiles,
+        tbl: userProfiles,
     }
-    colUserProfileUser := &ColumnDef{
+    colUserProfileUser := &Column{
         name: "user",
-        tdef: user_profiles,
+        tbl: userProfiles,
     }
 
-    users.cdefs = []*ColumnDef{colUserId, colUserName}
-    articles.cdefs = []*ColumnDef{colArticleId, colArticleAuthor, colArticleState}
-    article_states.cdefs = []*ColumnDef{colArticleStateId, colArticleStateName}
-    user_profiles.cdefs = []*ColumnDef{colUserProfileId, colUserProfileUser, colUserProfileContent}
-    meta.tdefs["users"] = users
-    meta.tdefs["articles"] = articles
-    meta.tdefs["article_states"] = article_states
-    meta.tdefs["user_profiles"] = user_profiles
+    users.columns = []*Column{colUserId, colUserName}
+    articles.columns = []*Column{colArticleId, colArticleAuthor, colArticleState}
+    articleStates.columns = []*Column{colArticleStateId, colArticleStateName}
+    userProfiles.columns = []*Column{colUserProfileId, colUserProfileUser, colUserProfileContent}
+    meta.tables["users"] = users
+    meta.tables["articles"] = articles
+    meta.tables["article_states"] = articleStates
+    meta.tables["user_profiles"] = userProfiles
     return meta
 }
 
@@ -147,20 +147,20 @@ func TestReflectMySQL(t *testing.T) {
     err = Reflect("mysql", db, &meta)
     assert.Nil(err)
 
-    assert.Equal(2, len(meta.tdefs))
+    assert.Equal(2, len(meta.tables))
 
-    artTbl := meta.tdefs["articles"]
-    userTbl := meta.tdefs["users"]
+    artTbl := meta.tables["articles"]
+    userTbl := meta.tables["users"]
 
     assert.Equal("articles", artTbl.name)
     assert.Equal("users", userTbl.name)
 
-    assert.Equal(7, len(userTbl.cdefs))
-    assert.Equal(5, len(artTbl.cdefs))
+    assert.Equal(7, len(userTbl.columns))
+    assert.Equal(5, len(artTbl.columns))
 
     createdOnCol := userTbl.Column("created_on")
     assert.NotNil(createdOnCol)
-    assert.Equal("created_on", createdOnCol.cdef.name)
+    assert.Equal("created_on", createdOnCol.name)
 }
 
 func TestReflectErrors(t *testing.T) {

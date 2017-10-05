@@ -99,20 +99,15 @@ func (q *SelectQuery) Column(name string) projection {
             dc := p.(*derivedColumn)
             if dc.alias != "" && dc.alias == name {
                 return dc
-            } else if dc.c.cdef.name == name {
+            } else if dc.c.name == name {
                 return dc
             }
         case *Column:
             c := p.(*Column)
             if c.alias != "" && c.alias == name {
                 return c
-            } else if c.cdef.name == name {
+            } else if c.name == name {
                 return c
-            }
-        case *ColumnDef:
-            cd := p.(*ColumnDef)
-            if cd.name == name {
-                return cd
             }
         case *sqlFunc:
             f := p.(*sqlFunc)
@@ -318,20 +313,10 @@ func Select(items ...interface{}) *SelectQuery {
                 selectionMap[v.tbl] = true
             case *Table:
                 v := item.(*Table)
-                for _, cd := range v.tdef.projections() {
-                    addToProjections(sel, cd)
+                for _, c := range v.projections() {
+                    addToProjections(sel, c)
                 }
                 selectionMap[v] = true
-            case *TableDef:
-                v := item.(*TableDef)
-                for _, cd := range v.projections() {
-                    addToProjections(sel, cd)
-                }
-                selectionMap[v] = true
-            case *ColumnDef:
-                v := item.(*ColumnDef)
-                addToProjections(sel, v)
-                selectionMap[v.tdef] = true
             case *sqlFunc:
                 v := item.(*sqlFunc)
                 addToProjections(sel, v)

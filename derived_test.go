@@ -16,8 +16,8 @@ func TestDerived(t *testing.T) {
     assert := assert.New(t)
 
     m := testFixtureMeta()
-    users := m.TableDef("users")
-    colUserName := users.ColumnDef("name")
+    users := m.Table("users")
+    colUserName := users.Column("name")
 
     tests := []derivedTest{
         // Simple one-column sub-SELECT

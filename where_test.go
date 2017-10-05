@@ -16,7 +16,7 @@ func TestWhereClause(t *testing.T) {
     assert := assert.New(t)
 
     m := testFixtureMeta()
-    users := m.TableDef("users")
+    users := m.Table("users")
     colUserId := users.Column("id")
     colUserName := users.Column("name")
 
