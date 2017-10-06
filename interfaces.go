@@ -1,9 +1,5 @@
 package sqlb
 
-type aliasable interface {
-    setAlias(string)
-}
-
 type element interface {
     // Returns the number of bytes that the scannable element would consume as
     // a SQL string
