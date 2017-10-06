@@ -21,6 +21,8 @@ const (
     SYM_DESC
     SYM_LIMIT
     SYM_OFFSET
+    SYM_INSERT
+    SYM_VALUES
     SYM_LPAREN
     SYM_RPAREN
     SYM_IN
@@ -75,6 +77,8 @@ var (
         SYM_DESC: []byte(" DESC"),
         SYM_LIMIT: []byte(" LIMIT "),
         SYM_OFFSET: []byte(" OFFSET "),
+        SYM_INSERT: []byte("INSERT INTO "),
+        SYM_VALUES: []byte(") VALUES ("),
         SYM_LPAREN: []byte("("),
         SYM_RPAREN: []byte(")"),
         SYM_IN: []byte(" IN ("),
