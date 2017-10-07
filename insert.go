@@ -79,3 +79,7 @@ func Insert(t *Table, values map[string]interface{}) *InsertQuery {
     }
     return &InsertQuery{stmt: stmt}
 }
+
+func (t *Table) Insert(values map[string]interface{}) *InsertQuery {
+    return Insert(t, values)
+}
