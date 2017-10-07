@@ -56,4 +56,3 @@ func TestInsertQuery(t *testing.T) {
         assert.Equal(test.qs, qs)
     }
 }
-
