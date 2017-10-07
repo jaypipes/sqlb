@@ -40,6 +40,16 @@ func TestInsertStatement(t *testing.T) {
             qs: "INSERT INTO users (id, name) VALUES (?, ?)",
             qargs: []interface{}{nil, "foo"},
         },
+        {
+            name: "Ensure no aliasing in column names",
+            s: &insertStatement{
+                table: users,
+                columns: []*Column{colUserId.As("user_id"), colUserName},
+                values: []interface{}{nil, "foo"},
+            },
+            qs: "INSERT INTO users (id, name) VALUES (?, ?)",
+            qargs: []interface{}{nil, "foo"},
+        },
     }
     for _, test := range tests {
         expLen := len(test.qs)
