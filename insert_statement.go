@@ -13,7 +13,7 @@ func (s *insertStatement) argCount() int {
 }
 
 func (s *insertStatement) size() int {
-    size := len(Symbols[SYM_INSERT]) + s.table.size() + 1 // space after table name
+    size := len(Symbols[SYM_INSERT]) + len(s.table.name) + 1 // space after table name
     ncols := len(s.columns)
     for _, c := range s.columns {
         // We don't add the table identifier or use an alias when outputting
@@ -32,9 +32,8 @@ func (s *insertStatement) size() int {
 func (s *insertStatement) scan(b []byte, args []interface{}) (int, int) {
     var bw, ac int
     bw += copy(b[bw:], Symbols[SYM_INSERT])
-    tbw, tac := s.table.scan(b[bw:], args[ac:])
-    bw += tbw
-    ac += tac
+    // We don't add any table alias when outputting the table identifier
+    bw += copy(b[bw:], s.table.name)
     bw += copy(b[bw:], " ")
     bw += copy(b[bw:], Symbols[SYM_LPAREN])
 
