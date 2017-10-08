@@ -196,7 +196,7 @@ func AddAuthor(name string, email string, profile string) error {
         "is_author": 1,
         "created_on": time.Now().UTC(),
     }
-    q := Insert(meta.Table("users"), values)
+    q := sqlb.Insert(meta.Table("users"), values)
     qs, qargs := q.StringArgs()
 
     tx, err := db.Begin()
@@ -233,6 +233,77 @@ parameters that back the "?" interpolation markers in the SQL string.
 
 The `qs` and `qargs` variables are then used in the calls to the `Tx.Prepare()`
 and `Prepare()` method of the returned value from `Tx.Prepare()`.
+
+## Deleting data from a table
+
+Rows in a table may be deleted from an RDBMS using the `DELETE` SQL statement, which has the form:
+
+```
+DELETE FROM <table>[ WHERE <predicate>]
+```
+
+The `sqlb.Delete()` function can be used to generate a `DELETE` SQL statement.
+`sqlb.Delete()` takes a single argument representing the target table to delete
+rows from. The function returns a pointer to a `DeleteQuery` struct.
+
+The `sqlb.DeleteQuery` struct has a `Where()` method that can be used to add
+the optional `WHERE` clause to the `DELETE` statement, as this example
+demonstrates:
+
+```go
+import (
+    "database/sql"
+    "time"
+
+    "github.com/jaypipes/sqlb"
+)
+
+var (
+    db *sql.DB
+    meta *sqlb.Meta
+)
+
+func DeleteCommentsOlderThan(dt time.Time) error {
+    commentsTbl := meta.Table("comments")
+    q := sqlb.Delete(comments)
+    q.Where(sqlb.LessThan(comments.C("created_on"), dt))
+    qs, qargs := q.StringArgs()
+
+    tx, err := db.Begin()
+    if err != nil {
+        return nil, err
+    }
+    defer tx.Rollback()
+
+    stmt, err := tx.Prepare(qs)
+    if err != nil {
+        err
+    }
+    defer stmt.Close()
+    res, err := stmt.Exec(qargs...)
+    if err != nil {
+        return err
+    }
+    return nil
+}
+```
+
+The variable `q` in the `DeleteCommentsOlderThan()` function above will contain
+a pointer to a `DeleteQuery` struct. We call the `DeleteQuery.Where()` method
+to winnow the records to delete from the comments table to only those comments
+that were created before the supplied `dt` parameter.
+
+Calling `q.StringArgs()` results in two variables being populated: `qs` and
+`qargs`. The `qs` is the SQL string we will pass to our transaction context
+(`tx` variable) `Prepare()` method. The SQL produced will be:
+
+```sql
+DELETE FROM comments WHERE created_on < ?
+```
+
+and the `qargs` variable, which we pass to the `Exec()` method of the prepared
+statement will be a slice of `interface{}` and contain a single element: the
+`dt` variable.
 
 ## Aliasables
 
