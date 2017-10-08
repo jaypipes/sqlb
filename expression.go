@@ -11,6 +11,10 @@ const (
     EXP_BETWEEN
     EXP_IS_NULL
     EXP_IS_NOT_NULL
+    EXP_GREATER
+    EXP_GREATER_EQUAL
+    EXP_LESS
+    EXP_LESS_EQUAL
 )
 
 var (
@@ -40,6 +44,18 @@ var (
         },
         EXP_IS_NOT_NULL: scanInfo{
             SYM_ELEMENT, SYM_IS_NOT_NULL,
+        },
+        EXP_GREATER: scanInfo{
+            SYM_ELEMENT, SYM_GREATER, SYM_ELEMENT,
+        },
+        EXP_GREATER_EQUAL: scanInfo{
+            SYM_ELEMENT, SYM_GREATER_EQUAL, SYM_ELEMENT,
+        },
+        EXP_LESS: scanInfo{
+            SYM_ELEMENT, SYM_LESS, SYM_ELEMENT,
+        },
+        EXP_LESS_EQUAL: scanInfo{
+            SYM_ELEMENT, SYM_LESS_EQUAL, SYM_ELEMENT,
         },
     }
 )
@@ -173,5 +189,37 @@ func IsNotNull(subject element) *Expression {
     return &Expression{
         scanInfo: exprScanTable[EXP_IS_NOT_NULL],
         elements: []element{subject},
+    }
+}
+
+func GreaterThan(left interface{}, right interface{}) *Expression {
+    els := toElements(left, right)
+    return &Expression{
+        scanInfo: exprScanTable[EXP_GREATER],
+        elements: els,
+    }
+}
+
+func GreaterThanOrEqual(left interface{}, right interface{}) *Expression {
+    els := toElements(left, right)
+    return &Expression{
+        scanInfo: exprScanTable[EXP_GREATER_EQUAL],
+        elements: els,
+    }
+}
+
+func LessThan(left interface{}, right interface{}) *Expression {
+    els := toElements(left, right)
+    return &Expression{
+        scanInfo: exprScanTable[EXP_LESS],
+        elements: els,
+    }
+}
+
+func LessThanOrEqual(left interface{}, right interface{}) *Expression {
+    els := toElements(left, right)
+    return &Expression{
+        scanInfo: exprScanTable[EXP_LESS_EQUAL],
+        elements: els,
     }
 }
