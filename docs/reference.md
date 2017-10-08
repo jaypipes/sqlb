@@ -7,7 +7,10 @@ ways.
 1. [Schema and Metadata](#schema-and-metadata)
     1. [Manually specifying metadata](#manually-specifying-metadata)
     1. [Automatically discovering metadata](#automatically-discovering-metadata)
-1. [Inserting data](#inserting-data-into-the-database)
+1. [Modifying data](#modifying-data)
+    1. [Inserting new rows](#inserting-data-into-the-database)
+    1. [Deleting rows](#deleting-data-from-a-table)
+    1. [Updating rows](#updating-data-in-a-table)
 1. [Aliasables](#aliasables)
 1. [SQL Functions](#sql-functions)
 
@@ -154,7 +157,14 @@ func main() {
 }
 ```
 
-## Inserting data into the database
+## Modifying data
+
+The `INSERT`, `DELETE` and `UPDATE` SQL statements are used to add, remove and
+modify records in a table in an RDBMS. The following sections provide example
+code showing how to use various `sqlb` functions to modify data in your
+database.
+
+### Inserting data into the database
 
 Data is added to a table in an RDBMS via the `INSERT` SQL statement, which
 follows the form:
@@ -234,7 +244,7 @@ parameters that back the "?" interpolation markers in the SQL string.
 The `qs` and `qargs` variables are then used in the calls to the `Tx.Prepare()`
 and `Prepare()` method of the returned value from `Tx.Prepare()`.
 
-## Deleting data from a table
+### Deleting data from a table
 
 Rows in a table may be deleted from an RDBMS using the `DELETE` SQL statement, which has the form:
 
@@ -264,7 +274,7 @@ var (
 )
 
 func DeleteCommentsOlderThan(dt time.Time) error {
-    commentsTbl := meta.Table("comments")
+    comments := meta.Table("comments")
     q := sqlb.Delete(comments)
     q.Where(sqlb.LessThan(comments.C("created_on"), dt))
     qs, qargs := q.StringArgs()
@@ -304,6 +314,62 @@ DELETE FROM comments WHERE created_on < ?
 and the `qargs` variable, which we pass to the `Exec()` method of the prepared
 statement will be a slice of `interface{}` and contain a single element: the
 `dt` variable.
+
+### Updating data in a table
+
+Use the `sqlb.Update()` function to construct an `UPDATE` SQL statement that
+can be executed to modify columnar data within a table in your RDBMS.
+
+The `sqlb.Update()` function takes two arguments. The first argument is a
+pointer to a `Table` struct and indicates the target table in the RDBMS. The
+second argument is a `map[string]interface{}` that contains the values that you
+wish to update for named columns in the target table.
+
+```go
+import (
+    "database/sql"
+
+    "github.com/jaypipes/sqlb"
+)
+
+var (
+    db *sql.DB
+    meta *sqlb.Meta
+)
+
+func UpdateUserProfile(userId int64, profile string) error {
+    users := meta.Table("users")
+    newVals := map[string]interface{}{
+        "profile": profile,
+    }
+    q := sqlb.Update(users, newVals)
+    q.Where(sqlb.Equal(users.C("id"), userId)
+    qs, qargs := q.StringArgs()
+
+    tx, err := db.Begin()
+    if err != nil {
+        return nil, err
+    }
+    defer tx.Rollback()
+
+    stmt, err := tx.Prepare(qs)
+    if err != nil {
+        err
+    }
+    defer stmt.Close()
+    res, err := stmt.Exec(qargs...)
+    if err != nil {
+        return err
+    }
+    return nil
+}
+```
+
+The `qs` variable in the above code will contain the following string:
+
+```sql
+UPDATE users SET profile = ? WHERE users.id = ?
+```
 
 ## Aliasables
 
