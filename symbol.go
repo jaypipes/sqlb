@@ -24,6 +24,8 @@ const (
     SYM_INSERT
     SYM_DELETE
     SYM_VALUES
+    SYM_UPDATE
+    SYM_SET
     SYM_LPAREN
     SYM_RPAREN
     SYM_IN
@@ -79,8 +81,10 @@ var (
         SYM_LIMIT: []byte(" LIMIT "),
         SYM_OFFSET: []byte(" OFFSET "),
         SYM_INSERT: []byte("INSERT INTO "),
-        SYM_DELETE: []byte("DELETE FROM "),
         SYM_VALUES: []byte(") VALUES ("),
+        SYM_DELETE: []byte("DELETE FROM "),
+        SYM_UPDATE: []byte("UPDATE "),
+        SYM_SET: []byte(" SET "),
         SYM_LPAREN: []byte("("),
         SYM_RPAREN: []byte(")"),
         SYM_IN: []byte(" IN ("),
