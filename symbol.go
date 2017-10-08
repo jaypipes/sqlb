@@ -22,6 +22,7 @@ const (
     SYM_LIMIT
     SYM_OFFSET
     SYM_INSERT
+    SYM_DELETE
     SYM_VALUES
     SYM_LPAREN
     SYM_RPAREN
@@ -78,6 +79,7 @@ var (
         SYM_LIMIT: []byte(" LIMIT "),
         SYM_OFFSET: []byte(" OFFSET "),
         SYM_INSERT: []byte("INSERT INTO "),
+        SYM_DELETE: []byte("DELETE FROM "),
         SYM_VALUES: []byte(") VALUES ("),
         SYM_LPAREN: []byte("("),
         SYM_RPAREN: []byte(")"),

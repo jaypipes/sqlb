@@ -6,40 +6,35 @@ import (
     "github.com/stretchr/testify/assert"
 )
 
-func TestInsertQuery(t *testing.T) {
+func TestDeleteQuery(t *testing.T) {
     assert := assert.New(t)
 
     m := testFixtureMeta()
     users := m.Table("users")
+    colUserName := users.C("name")
 
     tests := []struct{
         name string
-        q *InsertQuery
+        q *DeleteQuery
         qs string
         qargs []interface{}
         qe error
     }{
         {
-            name: "Values missing",
-            q: Insert(users, nil),
-            qe: ERR_INSERT_NO_VALUES,
+            name: "No target table",
+            q: Delete(nil),
+            qe: ERR_DELETE_NO_TARGET,
         },
         {
-            name: "Unknown column",
-            q: Insert(users, map[string]interface{}{"unknown": 1}),
-            qe: ERR_INSERT_UNKNOWN_COLUMN,
+            name: "DELETE all rows",
+            q: Delete(users),
+            qs: "DELETE FROM users",
         },
         {
-            name: "Simple INSERT",
-            q: Insert(users, map[string]interface{}{"id": 1}),
-            qs: "INSERT INTO users (id) VALUES (?)",
-            qargs: []interface{}{1},
-        },
-        {
-            name: "INSERT using Table.Insert() adapter",
-            q: users.Insert(map[string]interface{}{"id": 1}),
-            qs: "INSERT INTO users (id) VALUES (?)",
-            qargs: []interface{}{1},
+            name: "DELETE simple WHERE",
+            q: Delete(users).Where(Equal(colUserName, "foo")),
+            qs: "DELETE FROM users WHERE users.name = ?",
+            qargs: []interface{}{"foo"},
         },
     }
     for _, test := range tests {
