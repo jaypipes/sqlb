@@ -49,6 +49,11 @@ func (q *DeleteQuery) StringArgs() (string, []interface{}) {
     return string(q.b), q.args
 }
 
+func (q *DeleteQuery) Where(e *Expression) *DeleteQuery {
+    q.stmt.addWhere(e)
+    return q
+}
+
 // Given a table and a map of column name to value for that column to insert,
 // returns an DeleteQuery that will produce an INSERT SQL statement 
 func Delete(t *Table) *DeleteQuery {

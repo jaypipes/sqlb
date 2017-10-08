@@ -35,3 +35,11 @@ func (s *deleteStatement) scan(b []byte, args []interface{}) (int, int) {
     }
     return bw, ac
 }
+
+func (s *deleteStatement) addWhere(e *Expression) *deleteStatement {
+    if s.where == nil {
+        s.where = &whereClause{filters: make([]*Expression, 0)}
+    }
+    s.where.filters = append(s.where.filters, e)
+    return s
+}

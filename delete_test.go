@@ -11,6 +11,7 @@ func TestDeleteQuery(t *testing.T) {
 
     m := testFixtureMeta()
     users := m.Table("users")
+    colUserName := users.C("name")
 
     tests := []struct{
         name string
@@ -28,6 +29,12 @@ func TestDeleteQuery(t *testing.T) {
             name: "DELETE all rows",
             q: Delete(users),
             qs: "DELETE FROM users",
+        },
+        {
+            name: "DELETE simple WHERE",
+            q: Delete(users).Where(Equal(colUserName, "foo")),
+            qs: "DELETE FROM users WHERE users.name = ?",
+            qargs: []interface{}{"foo"},
         },
     }
     for _, test := range tests {
