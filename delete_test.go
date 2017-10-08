@@ -31,6 +31,11 @@ func TestDeleteQuery(t *testing.T) {
             qs: "DELETE FROM users",
         },
         {
+            name: "Table.Delete() variant",
+            q: users.Delete(),
+            qs: "DELETE FROM users",
+        },
+        {
             name: "DELETE simple WHERE",
             q: Delete(users).Where(Equal(colUserName, "foo")),
             qs: "DELETE FROM users WHERE users.name = ?",

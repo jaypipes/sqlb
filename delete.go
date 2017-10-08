@@ -66,3 +66,7 @@ func Delete(t *Table) *DeleteQuery {
     }
     return &DeleteQuery{stmt: stmt}
 }
+
+func (t *Table) Delete() *DeleteQuery {
+    return Delete(t)
+}
