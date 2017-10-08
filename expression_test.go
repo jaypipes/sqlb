@@ -92,6 +92,30 @@ func TestExpressions(t *testing.T) {
             c: IsNotNull(colUserName),
             qs: "users.name IS NOT NULL",
         },
+        // col > value
+        expressionTest{
+            c: GreaterThan(colUserName, "foo"),
+            qs: "users.name > ?",
+            qargs: []interface{}{"foo"},
+        },
+        // col >= value
+        expressionTest{
+            c: GreaterThanOrEqual(colUserName, "foo"),
+            qs: "users.name >= ?",
+            qargs: []interface{}{"foo"},
+        },
+        // col < value
+        expressionTest{
+            c: LessThan(colUserName, "foo"),
+            qs: "users.name < ?",
+            qargs: []interface{}{"foo"},
+        },
+        // col <= value
+        expressionTest{
+            c: LessThanOrEqual(colUserName, "foo"),
+            qs: "users.name <= ?",
+            qargs: []interface{}{"foo"},
+        },
     }
     for _, test := range tests {
         expLen := len(test.qs)

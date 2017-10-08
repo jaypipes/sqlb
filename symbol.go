@@ -34,6 +34,10 @@ const (
     SYM_BETWEEN
     SYM_IS_NULL
     SYM_IS_NOT_NULL
+    SYM_GREATER
+    SYM_GREATER_EQUAL
+    SYM_LESS
+    SYM_LESS_EQUAL
     SYM_MAX
     SYM_MIN
     SYM_SUM
@@ -91,6 +95,10 @@ var (
         SYM_BETWEEN: []byte(" BETWEEN "),
         SYM_IS_NULL: []byte(" IS NULL"),
         SYM_IS_NOT_NULL: []byte(" IS NOT NULL"),
+        SYM_GREATER: []byte(" > "),
+        SYM_GREATER_EQUAL: []byte(" >= "),
+        SYM_LESS: []byte(" < "),
+        SYM_LESS_EQUAL: []byte(" <= "),
         SYM_MAX: []byte("MAX("),
         SYM_MIN: []byte("MIN("),
         SYM_SUM: []byte("SUM("),
