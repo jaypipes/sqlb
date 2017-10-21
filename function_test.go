@@ -101,6 +101,26 @@ func TestFunctions(t *testing.T) {
 			qs:    "CONCAT_WS(?, users.name, users.name)",
 			qargs: []interface{}{"-"},
 		},
+		// NOW
+		functionTest{
+			c:  Now(),
+			qs: "NOW()",
+		},
+		// CURRENT_TIMESTAMP
+		functionTest{
+			c:  CurrentTimestamp(),
+			qs: "CURRENT_TIMESTAMP()",
+		},
+		// CURRENT_TIME
+		functionTest{
+			c:  CurrentTime(),
+			qs: "CURRENT_TIME()",
+		},
+		// CURRENT_DATE
+		functionTest{
+			c:  CurrentDate(),
+			qs: "CURRENT_DATE()",
+		},
 	}
 	for _, test := range tests {
 		expLen := len(test.qs)
