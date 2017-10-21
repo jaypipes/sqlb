@@ -13,60 +13,60 @@ package sqlb
 //
 // The inner SELECT's projections are columns from the users Table or TableDef.
 // However, the derived table's projections are separate and include the alias
-// of the derived table as the selection alias (u instead of users). 
+// of the derived table as the selection alias (u instead of users).
 type derivedTable struct {
-    alias string
-    from *selectClause
+	alias string
+	from  *selectClause
 }
 
 // Return a collection of derivedColumn projections that have been constructed
 // to refer to this derived table and not have any outer alias
 func (dt *derivedTable) getAllDerivedColumns() []projection {
-    nprojs := len(dt.from.projs)
-    projs := make([]projection, nprojs)
-    for x := 0; x < nprojs; x++ {
-        p := dt.from.projs[x]
-        switch p.(type) {
-            case *Column:
-                projs[x] = &derivedColumn{dt: dt, c: p.(*Column)}
-        }
-    }
-    return projs
+	nprojs := len(dt.from.projs)
+	projs := make([]projection, nprojs)
+	for x := 0; x < nprojs; x++ {
+		p := dt.from.projs[x]
+		switch p.(type) {
+		case *Column:
+			projs[x] = &derivedColumn{dt: dt, c: p.(*Column)}
+		}
+	}
+	return projs
 }
 
 func (dt *derivedTable) projections() []projection {
-    nprojs := len(dt.from.projs)
-    projs := make([]projection, nprojs)
-    for x := 0; x < nprojs; x++ {
-        p := dt.from.projs[x]
-        switch p.(type) {
-            case *Column:
-        }
-    }
-    return projs
+	nprojs := len(dt.from.projs)
+	projs := make([]projection, nprojs)
+	for x := 0; x < nprojs; x++ {
+		p := dt.from.projs[x]
+		switch p.(type) {
+		case *Column:
+		}
+	}
+	return projs
 }
 
 func (dt *derivedTable) argCount() int {
-    return dt.from.argCount()
+	return dt.from.argCount()
 }
 
 func (dt *derivedTable) size() int {
-    size := dt.from.size()
-    size += (len(Symbols[SYM_LPAREN]) + len(Symbols[SYM_RPAREN]) +
-             len(Symbols[SYM_AS]) + len(dt.alias))
-    return size
+	size := dt.from.size()
+	size += (len(Symbols[SYM_LPAREN]) + len(Symbols[SYM_RPAREN]) +
+		len(Symbols[SYM_AS]) + len(dt.alias))
+	return size
 }
 
 func (dt *derivedTable) scan(b []byte, args []interface{}) (int, int) {
-    var bw, ac int
-    bw += copy(b[bw:], Symbols[SYM_LPAREN])
-    sbw, sac := dt.from.scan(b[bw:], args[ac:])
-    bw += sbw
-    ac += sac
-    bw += copy(b[bw:], Symbols[SYM_RPAREN])
-    bw += copy(b[bw:], Symbols[SYM_AS])
-    bw += copy(b[bw:], dt.alias)
-    return bw, ac
+	var bw, ac int
+	bw += copy(b[bw:], Symbols[SYM_LPAREN])
+	sbw, sac := dt.from.scan(b[bw:], args[ac:])
+	bw += sbw
+	ac += sac
+	bw += copy(b[bw:], Symbols[SYM_RPAREN])
+	bw += copy(b[bw:], Symbols[SYM_AS])
+	bw += copy(b[bw:], dt.alias)
+	return bw, ac
 }
 
 // A derivedColumn is a type of projection that is produced from a derived
@@ -119,64 +119,64 @@ func (dt *derivedTable) scan(b []byte, args []interface{}) (int, int) {
 //   FROM users
 // ) AS u
 type derivedColumn struct {
-    alias string  // This is the outermost alias
-    c *Column
-    dt *derivedTable
+	alias string // This is the outermost alias
+	c     *Column
+	dt    *derivedTable
 }
 
 func (dc *derivedColumn) from() selection {
-    return dc.dt
+	return dc.dt
 }
 
 func (dc *derivedColumn) projectionId() uint64 {
-    args := make([]string, 2)
-    args[0] = dc.dt.alias
-    if dc.alias != "" {
-        args[1] = dc.alias
-    } else if dc.c.alias != "" {
-        args[1] = dc.c.alias
-    } else {
-        args[1] = dc.c.name
-    }
-    return toId(args...)
+	args := make([]string, 2)
+	args[0] = dc.dt.alias
+	if dc.alias != "" {
+		args[1] = dc.alias
+	} else if dc.c.alias != "" {
+		args[1] = dc.c.alias
+	} else {
+		args[1] = dc.c.name
+	}
+	return toId(args...)
 }
 
 func (dc *derivedColumn) disableAliasScan() func() {
-    origAlias := dc.alias
-    dc.alias = ""
-    return func() {dc.alias = origAlias}
+	origAlias := dc.alias
+	dc.alias = ""
+	return func() { dc.alias = origAlias }
 }
 
 func (dc *derivedColumn) argCount() int {
-    return 0
+	return 0
 }
 
 func (dc *derivedColumn) size() int {
-    size := len(dc.dt.alias)
-    size += len(Symbols[SYM_PERIOD])
-    if dc.c.alias != "" {
-        size += len(dc.c.alias)
-    } else {
-        size += len(dc.c.name)
-    }
-    if dc.alias != "" {
-        size += len(Symbols[SYM_AS]) + len(dc.alias)
-    }
-    return size
+	size := len(dc.dt.alias)
+	size += len(Symbols[SYM_PERIOD])
+	if dc.c.alias != "" {
+		size += len(dc.c.alias)
+	} else {
+		size += len(dc.c.name)
+	}
+	if dc.alias != "" {
+		size += len(Symbols[SYM_AS]) + len(dc.alias)
+	}
+	return size
 }
 
 func (dc *derivedColumn) scan(b []byte, args []interface{}) (int, int) {
-    var bw, ac int
-    bw += copy(b[bw:], dc.dt.alias)
-    bw += copy(b[bw:], Symbols[SYM_PERIOD])
-    if dc.c.alias != "" {
-        bw += copy(b[bw:], dc.c.alias)
-    } else {
-        bw += copy(b[bw:], dc.c.name)
-    }
-    if dc.alias != "" {
-        bw += copy(b[bw:], Symbols[SYM_AS])
-        bw += copy(b[bw:], dc.alias)
-    }
-    return bw, ac
+	var bw, ac int
+	bw += copy(b[bw:], dc.dt.alias)
+	bw += copy(b[bw:], Symbols[SYM_PERIOD])
+	if dc.c.alias != "" {
+		bw += copy(b[bw:], dc.c.alias)
+	} else {
+		bw += copy(b[bw:], dc.c.name)
+	}
+	if dc.alias != "" {
+		bw += copy(b[bw:], Symbols[SYM_AS])
+		bw += copy(b[bw:], dc.alias)
+	}
+	return bw, ac
 }
