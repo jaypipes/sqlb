@@ -17,6 +17,10 @@ const (
 	FUNC_REVERSE
 	FUNC_CONCAT
 	FUNC_CONCAT_WS
+	FUNC_NOW
+	FUNC_CURRENT_TIMESTAMP
+	FUNC_CURRENT_TIME
+	FUNC_CURRENT_DATE
 )
 
 var (
@@ -64,6 +68,18 @@ var (
 		},
 		FUNC_CONCAT_WS: scanInfo{
 			SYM_CONCAT_WS, SYM_ELEMENT, SYM_COMMA_WS, SYM_ELEMENT, SYM_RPAREN,
+		},
+		FUNC_NOW: scanInfo{
+			SYM_NOW,
+		},
+		FUNC_CURRENT_TIMESTAMP: scanInfo{
+			SYM_CURRENT_TIMESTAMP,
+		},
+		FUNC_CURRENT_TIME: scanInfo{
+			SYM_CURRENT_TIME,
+		},
+		FUNC_CURRENT_DATE: scanInfo{
+			SYM_CURRENT_DATE,
 		},
 	}
 )
@@ -318,5 +334,29 @@ func ConcatWs(sep string, projs ...projection) *sqlFunc {
 		elements: []element{&value{val: sep}, subjects},
 		// TODO(jaypipes): Clearly we need to support >1 selection...
 		sel: projs[0].from(),
+	}
+}
+
+func Now() *sqlFunc {
+	return &sqlFunc{
+		scanInfo: funcScanTable[FUNC_NOW],
+	}
+}
+
+func CurrentTimestamp() *sqlFunc {
+	return &sqlFunc{
+		scanInfo: funcScanTable[FUNC_CURRENT_TIMESTAMP],
+	}
+}
+
+func CurrentTime() *sqlFunc {
+	return &sqlFunc{
+		scanInfo: funcScanTable[FUNC_CURRENT_TIME],
+	}
+}
+
+func CurrentDate() *sqlFunc {
+	return &sqlFunc{
+		scanInfo: funcScanTable[FUNC_CURRENT_DATE],
 	}
 }
