@@ -60,6 +60,7 @@ const (
 	SYM_CURRENT_TIMESTAMP
 	SYM_CURRENT_TIME
 	SYM_CURRENT_DATE
+	SYM_EXTRACT
 	SYM_TYPE_CHAR
 	SYM_TYPE_VARCHAR
 	SYM_TYPE_BINARY
@@ -67,70 +68,186 @@ const (
 	SYM_TYPE_INT
 	SYM_TYPE_FLOAT
 	SYM_TYPE_DECIMAL
+	SYM_UNIT_MICROSECOND
+	SYM_UNIT_SECOND
+	SYM_UNIT_MINUTE
+	SYM_UNIT_HOUR
+	SYM_UNIT_DAY
+	SYM_UNIT_WEEK
+	SYM_UNIT_MONTH
+	SYM_UNIT_QUARTER
+	SYM_UNIT_YEAR
+	SYM_UNIT_SECOND_MICROSECOND
+	SYM_UNIT_MINUTE_MICROSECOND
+	SYM_UNIT_MINUTE_SECOND
+	SYM_UNIT_HOUR_MICROSECOND
+	SYM_UNIT_HOUR_SECOND
+	SYM_UNIT_HOUR_MINUTE
+	SYM_UNIT_DAY_MICROSECOND
+	SYM_UNIT_DAY_SECOND
+	SYM_UNIT_DAY_MINUTE
+	SYM_UNIT_DAY_HOUR
+	SYM_UNIT_YEAR_MONTH
 	SYM_PLACEHOLDER = 9999999999
+)
+
+type SqlType int
+
+const (
+	SQL_TYPE_CHAR SqlType = iota
+	SQL_TYPE_INT
+	SQL_TYPE_FLOAT
+	SQL_TYPE_DECIMAL
+	SQL_TYPE_VARCHAR
+	SQL_TYPE_TEXT
+	SQL_TYPE_BINARY
+)
+
+var (
+	sqlTypeToSymbol = map[SqlType]Symbol{
+		SQL_TYPE_CHAR:    SYM_TYPE_CHAR,
+		SQL_TYPE_VARCHAR: SYM_TYPE_VARCHAR,
+		SQL_TYPE_INT:     SYM_TYPE_INT,
+		SQL_TYPE_BINARY:  SYM_TYPE_BINARY,
+		SQL_TYPE_FLOAT:   SYM_TYPE_FLOAT,
+		SQL_TYPE_DECIMAL: SYM_TYPE_DECIMAL,
+		SQL_TYPE_TEXT:    SYM_TYPE_TEXT,
+	}
+)
+
+type IntervalUnit int
+
+const (
+	// Used in the Extract() function
+	UNIT_MICROSECOND IntervalUnit = iota
+	UNIT_SECOND
+	UNIT_MINUTE
+	UNIT_HOUR
+	UNIT_DAY
+	UNIT_WEEK
+	UNIT_MONTH
+	UNIT_QUARTER
+	UNIT_YEAR
+	UNIT_SECOND_MICROSECOND
+	UNIT_MINUTE_MICROSECOND
+	UNIT_MINUTE_SECOND
+	UNIT_HOUR_MICROSECOND
+	UNIT_HOUR_SECOND
+	UNIT_HOUR_MINUTE
+	UNIT_DAY_MICROSECOND
+	UNIT_DAY_SECOND
+	UNIT_DAY_MINUTE
+	UNIT_DAY_HOUR
+	UNIT_YEAR_MONTH
+)
+
+var (
+	intervalUnitToSymbol = map[IntervalUnit]Symbol{
+		UNIT_MICROSECOND:        SYM_UNIT_MICROSECOND,
+		UNIT_SECOND:             SYM_UNIT_SECOND,
+		UNIT_MINUTE:             SYM_UNIT_MINUTE,
+		UNIT_HOUR:               SYM_UNIT_HOUR,
+		UNIT_DAY:                SYM_UNIT_DAY,
+		UNIT_WEEK:               SYM_UNIT_WEEK,
+		UNIT_MONTH:              SYM_UNIT_MONTH,
+		UNIT_QUARTER:            SYM_UNIT_QUARTER,
+		UNIT_YEAR:               SYM_UNIT_SECOND,
+		UNIT_SECOND_MICROSECOND: SYM_UNIT_SECOND_MICROSECOND,
+		UNIT_MINUTE_MICROSECOND: SYM_UNIT_MINUTE_MICROSECOND,
+		UNIT_MINUTE_SECOND:      SYM_UNIT_MINUTE_SECOND,
+		UNIT_HOUR_MICROSECOND:   SYM_UNIT_HOUR_MICROSECOND,
+		UNIT_HOUR_SECOND:        SYM_UNIT_HOUR_SECOND,
+		UNIT_HOUR_MINUTE:        SYM_UNIT_HOUR_MINUTE,
+		UNIT_DAY_MICROSECOND:    SYM_UNIT_DAY_MICROSECOND,
+		UNIT_DAY_SECOND:         SYM_UNIT_DAY_SECOND,
+		UNIT_DAY_MINUTE:         SYM_UNIT_DAY_MINUTE,
+		UNIT_DAY_HOUR:           SYM_UNIT_DAY_HOUR,
+		UNIT_YEAR_MONTH:         SYM_UNIT_YEAR_MONTH,
+	}
 )
 
 var (
 	Symbols = map[Symbol][]byte{
-		SYM_QUEST_MARK:        []byte("?"),
-		SYM_PERIOD:            []byte("."),
-		SYM_AS:                []byte(" AS "),
-		SYM_COMMA_WS:          []byte(", "),
-		SYM_SELECT:            []byte("SELECT "),
-		SYM_FROM:              []byte(" FROM "),
-		SYM_JOIN:              []byte(" JOIN "),
-		SYM_LEFT_JOIN:         []byte(" LEFT JOIN "),
-		SYM_CROSS_JOIN:        []byte(" CROSS JOIN "),
-		SYM_ON:                []byte(" ON "),
-		SYM_WHERE:             []byte(" WHERE "),
-		SYM_GROUP_BY:          []byte(" GROUP BY "),
-		SYM_ORDER_BY:          []byte(" ORDER BY "),
-		SYM_DESC:              []byte(" DESC"),
-		SYM_LIMIT:             []byte(" LIMIT "),
-		SYM_OFFSET:            []byte(" OFFSET "),
-		SYM_INSERT:            []byte("INSERT INTO "),
-		SYM_VALUES:            []byte(") VALUES ("),
-		SYM_DELETE:            []byte("DELETE FROM "),
-		SYM_UPDATE:            []byte("UPDATE "),
-		SYM_SET:               []byte(" SET "),
-		SYM_LPAREN:            []byte("("),
-		SYM_RPAREN:            []byte(")"),
-		SYM_IN:                []byte(" IN ("),
-		SYM_AND:               []byte(" AND "),
-		SYM_OR:                []byte(" OR "),
-		SYM_EQUAL:             []byte(" = "),
-		SYM_NEQUAL:            []byte(" != "),
-		SYM_BETWEEN:           []byte(" BETWEEN "),
-		SYM_IS_NULL:           []byte(" IS NULL"),
-		SYM_IS_NOT_NULL:       []byte(" IS NOT NULL"),
-		SYM_GREATER:           []byte(" > "),
-		SYM_GREATER_EQUAL:     []byte(" >= "),
-		SYM_LESS:              []byte(" < "),
-		SYM_LESS_EQUAL:        []byte(" <= "),
-		SYM_MAX:               []byte("MAX("),
-		SYM_MIN:               []byte("MIN("),
-		SYM_SUM:               []byte("SUM("),
-		SYM_AVG:               []byte("AVG("),
-		SYM_COUNT_STAR:        []byte("COUNT(*)"),
-		SYM_COUNT_DISTINCT:    []byte("COUNT(DISTINCT "),
-		SYM_CAST:              []byte("CAST("),
-		SYM_TRIM:              []byte("TRIM("),
-		SYM_CHAR_LENGTH:       []byte("CHAR_LENGTH("),
-		SYM_BIT_LENGTH:        []byte("BIT_LENGTH("),
-		SYM_ASCII:             []byte("ASCII("),
-		SYM_REVERSE:           []byte("REVERSE("),
-		SYM_CONCAT:            []byte("CONCAT("),
-		SYM_CONCAT_WS:         []byte("CONCAT_WS("),
-		SYM_NOW:               []byte("NOW()"),
-		SYM_CURRENT_TIMESTAMP: []byte("CURRENT_TIMESTAMP()"),
-		SYM_CURRENT_TIME:      []byte("CURRENT_TIME()"),
-		SYM_CURRENT_DATE:      []byte("CURRENT_DATE()"),
-		SYM_TYPE_CHAR:         []byte("CHAR"),
-		SYM_TYPE_VARCHAR:      []byte("VARCHAR"),
-		SYM_TYPE_TEXT:         []byte("TEXT"),
-		SYM_TYPE_INT:          []byte("INT"),
-		SYM_TYPE_FLOAT:        []byte("FLOAT"),
-		SYM_TYPE_DECIMAL:      []byte("DECIMAL"),
-		SYM_TYPE_BINARY:       []byte("BINARY"),
+		SYM_QUEST_MARK:              []byte("?"),
+		SYM_PERIOD:                  []byte("."),
+		SYM_AS:                      []byte(" AS "),
+		SYM_COMMA_WS:                []byte(", "),
+		SYM_SELECT:                  []byte("SELECT "),
+		SYM_FROM:                    []byte(" FROM "),
+		SYM_JOIN:                    []byte(" JOIN "),
+		SYM_LEFT_JOIN:               []byte(" LEFT JOIN "),
+		SYM_CROSS_JOIN:              []byte(" CROSS JOIN "),
+		SYM_ON:                      []byte(" ON "),
+		SYM_WHERE:                   []byte(" WHERE "),
+		SYM_GROUP_BY:                []byte(" GROUP BY "),
+		SYM_ORDER_BY:                []byte(" ORDER BY "),
+		SYM_DESC:                    []byte(" DESC"),
+		SYM_LIMIT:                   []byte(" LIMIT "),
+		SYM_OFFSET:                  []byte(" OFFSET "),
+		SYM_INSERT:                  []byte("INSERT INTO "),
+		SYM_VALUES:                  []byte(") VALUES ("),
+		SYM_DELETE:                  []byte("DELETE FROM "),
+		SYM_UPDATE:                  []byte("UPDATE "),
+		SYM_SET:                     []byte(" SET "),
+		SYM_LPAREN:                  []byte("("),
+		SYM_RPAREN:                  []byte(")"),
+		SYM_IN:                      []byte(" IN ("),
+		SYM_AND:                     []byte(" AND "),
+		SYM_OR:                      []byte(" OR "),
+		SYM_EQUAL:                   []byte(" = "),
+		SYM_NEQUAL:                  []byte(" != "),
+		SYM_BETWEEN:                 []byte(" BETWEEN "),
+		SYM_IS_NULL:                 []byte(" IS NULL"),
+		SYM_IS_NOT_NULL:             []byte(" IS NOT NULL"),
+		SYM_GREATER:                 []byte(" > "),
+		SYM_GREATER_EQUAL:           []byte(" >= "),
+		SYM_LESS:                    []byte(" < "),
+		SYM_LESS_EQUAL:              []byte(" <= "),
+		SYM_MAX:                     []byte("MAX("),
+		SYM_MIN:                     []byte("MIN("),
+		SYM_SUM:                     []byte("SUM("),
+		SYM_AVG:                     []byte("AVG("),
+		SYM_COUNT_STAR:              []byte("COUNT(*)"),
+		SYM_COUNT_DISTINCT:          []byte("COUNT(DISTINCT "),
+		SYM_CAST:                    []byte("CAST("),
+		SYM_TRIM:                    []byte("TRIM("),
+		SYM_CHAR_LENGTH:             []byte("CHAR_LENGTH("),
+		SYM_BIT_LENGTH:              []byte("BIT_LENGTH("),
+		SYM_ASCII:                   []byte("ASCII("),
+		SYM_REVERSE:                 []byte("REVERSE("),
+		SYM_CONCAT:                  []byte("CONCAT("),
+		SYM_CONCAT_WS:               []byte("CONCAT_WS("),
+		SYM_NOW:                     []byte("NOW()"),
+		SYM_CURRENT_TIMESTAMP:       []byte("CURRENT_TIMESTAMP()"),
+		SYM_CURRENT_TIME:            []byte("CURRENT_TIME()"),
+		SYM_CURRENT_DATE:            []byte("CURRENT_DATE()"),
+		SYM_EXTRACT:                 []byte("EXTRACT("),
+		SYM_TYPE_CHAR:               []byte("CHAR"),
+		SYM_TYPE_VARCHAR:            []byte("VARCHAR"),
+		SYM_TYPE_TEXT:               []byte("TEXT"),
+		SYM_TYPE_INT:                []byte("INT"),
+		SYM_TYPE_FLOAT:              []byte("FLOAT"),
+		SYM_TYPE_DECIMAL:            []byte("DECIMAL"),
+		SYM_TYPE_BINARY:             []byte("BINARY"),
+		SYM_UNIT_MICROSECOND:        []byte("MICROSECOND"),
+		SYM_UNIT_SECOND:             []byte("SECOND"),
+		SYM_UNIT_MINUTE:             []byte("MINUTE"),
+		SYM_UNIT_HOUR:               []byte("HOST"),
+		SYM_UNIT_DAY:                []byte("DAY"),
+		SYM_UNIT_WEEK:               []byte("WEEK"),
+		SYM_UNIT_MONTH:              []byte("MONTH"),
+		SYM_UNIT_QUARTER:            []byte("QUARTER"),
+		SYM_UNIT_YEAR:               []byte("YEAR"),
+		SYM_UNIT_SECOND_MICROSECOND: []byte("SECOND_MICROSECOND"),
+		SYM_UNIT_MINUTE_MICROSECOND: []byte("MINUTE_MICROSECOND"),
+		SYM_UNIT_MINUTE_SECOND:      []byte("MINUTE_SECOND"),
+		SYM_UNIT_HOUR_MICROSECOND:   []byte("HOUR_MICROSECOND"),
+		SYM_UNIT_HOUR_SECOND:        []byte("HOUR_SECOND"),
+		SYM_UNIT_HOUR_MINUTE:        []byte("HOUR_MINUTE"),
+		SYM_UNIT_DAY_MICROSECOND:    []byte("DAY_MICROSECOND"),
+		SYM_UNIT_DAY_SECOND:         []byte("DAY_SECOND"),
+		SYM_UNIT_DAY_MINUTE:         []byte("DAY_MINUTE"),
+		SYM_UNIT_DAY_HOUR:           []byte("DAY_HOUR"),
+		SYM_UNIT_YEAR_MONTH:         []byte("YEAR_MONTH"),
 	}
 )

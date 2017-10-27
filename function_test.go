@@ -120,6 +120,11 @@ func TestFunctions(t *testing.T) {
 			c:    CurrentDate(),
 			qs:   "CURRENT_DATE()",
 		},
+		{
+			name: "EXTRACT(unit FROM column)",
+			c:    Extract(colUserName, UNIT_MINUTE_SECOND),
+			qs:   "EXTRACT(MINUTE_SECOND FROM users.name)",
+		},
 	}
 	for _, test := range tests {
 		expLen := len(test.qs)
