@@ -21,6 +21,7 @@ const (
 	FUNC_CURRENT_TIMESTAMP
 	FUNC_CURRENT_TIME
 	FUNC_CURRENT_DATE
+	FUNC_EXTRACT
 )
 
 var (
@@ -80,6 +81,13 @@ var (
 		},
 		FUNC_CURRENT_DATE: scanInfo{
 			SYM_CURRENT_DATE,
+		},
+		// This is the MySQL variant of EXTRACT, which follows the form
+		// EXTRACT(field FROM source). PostgreSQL has a different format for
+		// EXTRACT() which follows the following format:
+		// EXTRACT(field FROM [interval|timestamp] source)
+		FUNC_EXTRACT: scanInfo{
+			SYM_EXTRACT, SYM_PLACEHOLDER, SYM_FROM, SYM_ELEMENT, SYM_RPAREN,
 		},
 	}
 )
@@ -358,5 +366,17 @@ func CurrentTime() *sqlFunc {
 func CurrentDate() *sqlFunc {
 	return &sqlFunc{
 		scanInfo: funcScanTable[FUNC_CURRENT_DATE],
+	}
+}
+
+func Extract(p projection, unit IntervalUnit) *sqlFunc {
+	si := make([]Symbol, len(funcScanTable[FUNC_EXTRACT]))
+	copy(si, funcScanTable[FUNC_EXTRACT])
+	// Replace the placeholder with the interval unit's appropriate []byte
+	// representation
+	si[1] = intervalUnitToSymbol[unit]
+	return &sqlFunc{
+		scanInfo: si,
+		elements: []element{p.(element)},
 	}
 }
