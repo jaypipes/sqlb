@@ -117,10 +117,10 @@ func testFixtureMeta() *Meta {
 	return meta
 }
 
-func resetDB(driver string, db *sql.DB) {
+func resetDB(dialect Dialect, db *sql.DB) {
 	var stmts []string
-	switch driver {
-	case "mysql":
+	switch dialect {
+	case DIALECT_MYSQL:
 		stmts = _MYSQL_DB_INIT
 	}
 	for _, stmt := range stmts {
@@ -141,10 +141,10 @@ func TestReflectMySQL(t *testing.T) {
 	db, err := sql.Open("mysql", dsn)
 	assert.Nil(err)
 
-	resetDB("mysql", db)
+	resetDB(DIALECT_MYSQL, db)
 
 	var meta Meta
-	err = Reflect("mysql", db, &meta)
+	err = Reflect(DIALECT_MYSQL, db, &meta)
 	assert.Nil(err)
 
 	assert.Equal(2, len(meta.tables))
@@ -166,7 +166,7 @@ func TestReflectMySQL(t *testing.T) {
 func TestReflectErrors(t *testing.T) {
 	assert := assert.New(t)
 
-	err := Reflect("mysql", nil, nil)
+	err := Reflect(DIALECT_MYSQL, nil, nil)
 	assert.NotNil(err)
 	assert.Equal(ERR_NO_META_STRUCT, err)
 }
