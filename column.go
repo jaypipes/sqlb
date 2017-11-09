@@ -39,7 +39,7 @@ func (c *Column) size() int {
 	return size
 }
 
-func (c *Column) scan(b []byte, args []interface{}) (int, int) {
+func (c *Column) scan(b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	if c.tbl.alias != "" {
 		bw += copy(b[bw:], c.tbl.alias)
@@ -52,7 +52,7 @@ func (c *Column) scan(b []byte, args []interface{}) (int, int) {
 		bw += copy(b[bw:], Symbols[SYM_AS])
 		bw += copy(b[bw:], c.alias)
 	}
-	return bw, 0
+	return bw
 }
 
 func (c *Column) setAlias(alias string) {

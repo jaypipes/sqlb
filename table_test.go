@@ -39,7 +39,7 @@ func TestTable(t *testing.T) {
 	assert.Equal(expLen, s)
 
 	b := make([]byte, s)
-	written, _ := users.scan(b, nil)
+	written := users.scan(b, nil, nil)
 
 	assert.Equal(written, s)
 	assert.Equal(exp, string(b))
@@ -57,7 +57,7 @@ func TestTableAlias(t *testing.T) {
 	assert.Equal(expLen, s)
 
 	b := make([]byte, s)
-	written, _ := u.scan(b, nil)
+	written := u.scan(b, nil, nil)
 
 	assert.Equal(written, s)
 	assert.Equal(exp, string(b))

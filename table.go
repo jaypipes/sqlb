@@ -51,13 +51,13 @@ func (t *Table) size() int {
 	return size
 }
 
-func (t *Table) scan(b []byte, args []interface{}) (int, int) {
+func (t *Table) scan(b []byte, args []interface{}, curArg *int) int {
 	bw := copy(b, t.name)
 	if t.alias != "" {
 		bw += copy(b[bw:], Symbols[SYM_AS])
 		bw += copy(b[bw:], t.alias)
 	}
-	return bw, 0
+	return bw
 }
 
 func (t *Table) As(alias string) *Table {

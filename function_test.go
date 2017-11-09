@@ -127,17 +127,20 @@ func TestFunctions(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		expLen := len(test.qs)
-		s := test.c.size()
-		assert.Equal(expLen, s)
-
 		expArgc := len(test.qargs)
-		assert.Equal(expArgc, test.c.argCount())
+		argc := test.c.argCount()
+		assert.Equal(expArgc, argc)
 
-		b := make([]byte, s)
-		written, _ := test.c.scan(b, test.qargs)
+		expLen := len(test.qs)
+		size := test.c.size()
+		size += interpolationLength(DIALECT_MYSQL, argc)
+		assert.Equal(expLen, size)
 
-		assert.Equal(written, s)
+		b := make([]byte, size)
+		curArg := 0
+		written := test.c.scan(b, test.qargs, &curArg)
+
+		assert.Equal(written, size)
 		assert.Equal(test.qs, string(b))
 	}
 }

@@ -18,7 +18,7 @@ func TestC(t *testing.T) {
 	assert.Equal(expLen, s)
 
 	b := make([]byte, s)
-	written, _ := c.scan(b, nil)
+	written := c.scan(b, nil, nil)
 
 	assert.Equal(written, s)
 	assert.Equal(exp, string(b))
@@ -36,7 +36,7 @@ func TestColumnWithTableAlias(t *testing.T) {
 	assert.Equal(expLen, s)
 
 	b := make([]byte, s)
-	written, _ := c.scan(b, nil)
+	written := c.scan(b, nil, nil)
 
 	assert.Equal(written, s)
 	assert.Equal(exp, string(b))
@@ -54,7 +54,7 @@ func TestColumnAlias(t *testing.T) {
 	assert.Equal(expLen, s)
 
 	b := make([]byte, s)
-	written, _ := c.scan(b, nil)
+	written := c.scan(b, nil, nil)
 
 	assert.Equal(written, s)
 	assert.Equal(exp, string(b))

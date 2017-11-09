@@ -21,7 +21,7 @@ func TestListSingle(t *testing.T) {
 	assert.Equal(expLen, s)
 
 	b := make([]byte, s)
-	written, _ := cl.scan(b, nil)
+	written := cl.scan(b, nil, nil)
 
 	assert.Equal(written, s)
 	assert.Equal(exp, string(b))
@@ -43,7 +43,7 @@ func TestListMulti(t *testing.T) {
 	assert.Equal(expLen, s)
 
 	b := make([]byte, s)
-	written, _ := cl.scan(b, nil)
+	written := cl.scan(b, nil, nil)
 
 	assert.Equal(written, s)
 	assert.Equal(exp, string(b))

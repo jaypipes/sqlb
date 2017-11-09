@@ -20,8 +20,9 @@ func (s *insertStatement) size() int {
 		// the column names in the <columns> element of the INSERT statement
 		size += len(c.name)
 	}
+	// We don't include interpolation marks in our sizing, since the length
+	// differs with SQL dialects. This is accounted for by callers of scan().
 	size += len(Symbols[SYM_LPAREN]) + len(Symbols[SYM_VALUES])
-	size += len(Symbols[SYM_QUEST_MARK]) * ncols
 	// Two comma-delimited lists of same number of elements (columns and
 	// values)
 	size += 2 * (len(Symbols[SYM_COMMA_WS]) * (ncols - 1)) // the commas...
@@ -29,8 +30,8 @@ func (s *insertStatement) size() int {
 	return size
 }
 
-func (s *insertStatement) scan(b []byte, args []interface{}) (int, int) {
-	var bw, ac int
+func (s *insertStatement) scan(b []byte, args []interface{}, curArg *int) int {
+	bw := 0
 	bw += copy(b[bw:], Symbols[SYM_INSERT])
 	// We don't add any table alias when outputting the table identifier
 	bw += copy(b[bw:], s.table.name)
@@ -48,13 +49,13 @@ func (s *insertStatement) scan(b []byte, args []interface{}) (int, int) {
 	}
 	bw += copy(b[bw:], Symbols[SYM_VALUES])
 	for x, v := range s.values {
-		bw += copy(b[bw:], Symbols[SYM_QUEST_MARK])
-		args[ac] = v
-		ac += 1
+		bw += scanInterpolationMarker(s.table.meta.dialect, b[bw:], *curArg)
+		args[*curArg] = v
+		*curArg++
 		if x != (ncols - 1) {
 			bw += copy(b[bw:], Symbols[SYM_COMMA_WS])
 		}
 	}
 	bw += copy(b[bw:], Symbols[SYM_RPAREN])
-	return bw, ac
+	return bw
 }

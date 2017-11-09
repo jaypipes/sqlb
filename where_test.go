@@ -7,9 +7,6 @@ import (
 )
 
 type whereClauseTest struct {
-	c     *whereClause
-	qs    string
-	qargs []interface{}
 }
 
 func TestWhereClause(t *testing.T) {
@@ -20,14 +17,19 @@ func TestWhereClause(t *testing.T) {
 	colUserId := users.C("id")
 	colUserName := users.C("name")
 
-	tests := []whereClauseTest{
-		// Empty clause
-		whereClauseTest{
-			c:  &whereClause{},
-			qs: "",
+	tests := []struct {
+		name  string
+		c     *whereClause
+		qs    string
+		qargs []interface{}
+	}{
+		{
+			name: "Empty WHERE clause",
+			c:    &whereClause{},
+			qs:   "",
 		},
-		// Single expression
-		whereClauseTest{
+		{
+			name: "Single expression",
 			c: &whereClause{
 				filters: []*Expression{
 					Equal(colUserName, "foo"),
@@ -36,8 +38,8 @@ func TestWhereClause(t *testing.T) {
 			qs:    " WHERE users.name = ?",
 			qargs: []interface{}{"foo"},
 		},
-		// Single AND expression
-		whereClauseTest{
+		{
+			name: "AND expression",
 			c: &whereClause{
 				filters: []*Expression{
 					And(
@@ -49,8 +51,8 @@ func TestWhereClause(t *testing.T) {
 			qs:    " WHERE (users.name != ? AND users.name != ?)",
 			qargs: []interface{}{"foo", "bar"},
 		},
-		// Multiple unary expressions should be AND'd together
-		whereClauseTest{
+		{
+			name: "Multiple unary expressions should be AND'd together",
 			c: &whereClause{
 				filters: []*Expression{
 					NotEqual(colUserName, "foo"),
@@ -60,8 +62,8 @@ func TestWhereClause(t *testing.T) {
 			qs:    " WHERE users.name != ? AND users.name != ?",
 			qargs: []interface{}{"foo", "bar"},
 		},
-		// Single OR expression
-		whereClauseTest{
+		{
+			name: "OR expression",
 			c: &whereClause{
 				filters: []*Expression{
 					Or(
@@ -73,8 +75,8 @@ func TestWhereClause(t *testing.T) {
 			qs:    " WHERE (users.name = ? OR users.name = ?)",
 			qargs: []interface{}{"foo", "bar"},
 		},
-		// An OR and another unary expression
-		whereClauseTest{
+		{
+			name: "OR and another unary expression",
 			c: &whereClause{
 				filters: []*Expression{
 					Or(
@@ -87,8 +89,8 @@ func TestWhereClause(t *testing.T) {
 			qs:    " WHERE (users.name = ? OR users.name = ?) AND users.name != ?",
 			qargs: []interface{}{"foo", "bar", "baz"},
 		},
-		// Two AND expressions OR'd together
-		whereClauseTest{
+		{
+			name: "Two AND expressions OR'd together",
 			c: &whereClause{
 				filters: []*Expression{
 					Or(
@@ -108,17 +110,20 @@ func TestWhereClause(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		expLen := len(test.qs)
-		s := test.c.size()
-		assert.Equal(expLen, s)
-
 		expArgc := len(test.qargs)
-		assert.Equal(expArgc, test.c.argCount())
+		argc := test.c.argCount()
+		assert.Equal(expArgc, argc)
 
-		b := make([]byte, s)
-		written, _ := test.c.scan(b, test.qargs)
+		expLen := len(test.qs)
+		size := test.c.size()
+		size += interpolationLength(DIALECT_MYSQL, argc)
+		assert.Equal(expLen, size)
 
-		assert.Equal(written, s)
+		b := make([]byte, size)
+		curArg := 0
+		written := test.c.scan(b, test.qargs, &curArg)
+
+		assert.Equal(written, size)
 		assert.Equal(test.qs, string(b))
 	}
 }

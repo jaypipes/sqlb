@@ -23,17 +23,15 @@ func (s *deleteStatement) size() int {
 	return size
 }
 
-func (s *deleteStatement) scan(b []byte, args []interface{}) (int, int) {
-	var bw, ac int
+func (s *deleteStatement) scan(b []byte, args []interface{}, curArg *int) int {
+	bw := 0
 	bw += copy(b[bw:], Symbols[SYM_DELETE])
 	// We don't add any table alias when outputting the table identifier
 	bw += copy(b[bw:], s.table.name)
 	if s.where != nil {
-		wbw, wac := s.where.scan(b[bw:], args[ac:])
-		bw += wbw
-		ac += wac
+		bw += s.where.scan(b[bw:], args, curArg)
 	}
-	return bw, ac
+	return bw
 }
 
 func (s *deleteStatement) addWhere(e *Expression) *deleteStatement {

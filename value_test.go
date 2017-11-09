@@ -23,10 +23,10 @@ func Testvalue(t *testing.T) {
 
 	args := make([]interface{}, 1)
 	b := make([]byte, s)
-	written, numArgs := v.scan(b, args)
+	curArg := 0
+	written := v.scan(b, args, &curArg)
 
 	assert.Equal(s, written)
 	assert.Equal(exp, string(b))
 	assert.Equal("foo", args[0])
-	assert.Equal(expArgCount, numArgs)
 }

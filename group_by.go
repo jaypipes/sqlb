@@ -20,19 +20,17 @@ func (gb *groupByClause) size() int {
 	return size + (len(Symbols[SYM_COMMA_WS]) * (ncols - 1)) // the commas...
 }
 
-func (gb *groupByClause) scan(b []byte, args []interface{}) (int, int) {
-	var bw, ac int
+func (gb *groupByClause) scan(b []byte, args []interface{}, curArg *int) int {
+	bw := 0
 	bw += copy(b[bw:], Symbols[SYM_GROUP_BY])
 	ncols := len(gb.cols)
 	for x, c := range gb.cols {
 		reset := c.disableAliasScan()
 		defer reset()
-		ebw, eac := c.scan(b[bw:], args[ac:])
-		bw += ebw
-		ac += eac
+		bw += c.scan(b[bw:], args, curArg)
 		if x != (ncols - 1) {
 			bw += copy(b[bw:], Symbols[SYM_COMMA_WS])
 		}
 	}
-	return bw, ac
+	return bw
 }

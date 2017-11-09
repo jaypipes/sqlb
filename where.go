@@ -25,18 +25,16 @@ func (w *whereClause) size() int {
 	return size
 }
 
-func (w *whereClause) scan(b []byte, args []interface{}) (int, int) {
-	var bw, ac int
+func (w *whereClause) scan(b []byte, args []interface{}, curArg *int) int {
+	bw := 0
 	if len(w.filters) > 0 {
 		bw += copy(b[bw:], Symbols[SYM_WHERE])
 		for x, filter := range w.filters {
 			if x > 0 {
 				bw += copy(b[bw:], Symbols[SYM_AND])
 			}
-			fbw, fac := filter.scan(b[bw:], args[ac:])
-			bw += fbw
-			ac += fac
+			bw += filter.scan(b[bw:], args, curArg)
 		}
 	}
-	return bw, ac
+	return bw
 }

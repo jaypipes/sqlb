@@ -108,8 +108,8 @@ func (e *Expression) size() int {
 	return size
 }
 
-func (e *Expression) scan(b []byte, args []interface{}) (int, int) {
-	bw, ac := 0, 0
+func (e *Expression) scan(b []byte, args []interface{}, curArg *int) int {
+	bw := 0
 	elidx := 0
 	for _, sym := range e.scanInfo {
 		if sym == SYM_ELEMENT {
@@ -123,14 +123,12 @@ func (e *Expression) scan(b []byte, args []interface{}) (int, int) {
 				defer reset()
 			}
 			elidx++
-			ebw, eac := el.scan(b[bw:], args[ac:])
-			bw += ebw
-			ac += eac
+			bw += el.scan(b[bw:], args, curArg)
 		} else {
 			bw += copy(b[bw:], Symbols[sym])
 		}
 	}
-	return bw, ac
+	return bw
 }
 
 func Equal(left interface{}, right interface{}) *Expression {

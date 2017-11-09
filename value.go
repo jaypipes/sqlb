@@ -1,17 +1,14 @@
 package sqlb
 
-import (
-	"fmt"
-)
-
 // A value is a concrete struct wrapper around a constant that implements the
 // scannable interface. Typically, users won't directly construct value
 // structs but instead helper functions like sqlb.Equal() will construct a
 // value and bind it to the containing element.
 type value struct {
-	sel   selection
-	alias string
-	val   interface{}
+	sel     selection
+	alias   string
+	val     interface{}
+	dialect Dialect
 }
 
 func (v *value) from() selection {
@@ -36,30 +33,29 @@ func (v *value) disableAliasScan() func() {
 	return func() { v.alias = origAlias }
 }
 
-func (v *value) projectionId() uint64 {
-	// Each construction of a value is unique, so here we cheat and just
-	// return the hash of the struct's address in memory
-	return toId(fmt.Sprintf("%p", v))
-}
-
 func (v *value) argCount() int {
 	return 1
 }
 
 func (v *value) size() int {
-	size := 1 // the question mark for the value
+	// Due to dialect handling, we do not include the length of interpolation
+	// markers for query parameters. This is calculated separately by the
+	// top-level scanning struct before malloc'ing the buffer to inject the SQL
+	// string into.
+	size := 0
 	if v.alias != "" {
 		size += len(Symbols[SYM_AS]) + len(v.alias)
 	}
 	return size
 }
 
-func (v *value) scan(b []byte, args []interface{}) (int, int) {
-	args[0] = v.val
-	bw := copy(b, Symbols[SYM_QUEST_MARK])
+func (v *value) scan(b []byte, args []interface{}, curArg *int) int {
+	args[*curArg] = v.val
+	bw := scanInterpolationMarker(v.dialect, b, *curArg)
+	*curArg++
 	if v.alias != "" {
 		bw += copy(b[bw:], Symbols[SYM_AS])
 		bw += copy(b[bw:], v.alias)
 	}
-	return bw, 1
+	return bw
 }
