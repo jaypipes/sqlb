@@ -38,6 +38,35 @@ var (
         );
         `,
 	}
+	_POSTGRESQL_DB_INIT = []string{
+		"BEGIN",
+		"DROP TABLE IF EXISTS articles",
+		"DROP TABLE IF EXISTS users",
+		`
+        CREATE TABLE users (
+          id SERIAL NOT NULL,
+          email VARCHAR(100) NOT NULL UNIQUE,
+          name VARCHAR(100) NOT NULL,
+          is_author CHAR(1) NOT NULL,
+          profile TEXT NULL,
+          created_on TIMESTAMP NOT NULL,
+          updated_on TIMESTAMP NOT NULL,
+          PRIMARY KEY (id)
+        )`,
+		`
+        CREATE TABLE articles (
+          id SERIAL NOT NULL,
+          title VARCHAR(200) NOT NULL,
+          content TEXT NOT NULL,
+          created_by INT NOT NULL,
+          published_on TIMESTAMP NULL,
+          PRIMARY KEY (id),
+          CONSTRAINT fk_users FOREIGN KEY (created_by) REFERENCES users (id)
+        );
+        `,
+		"CREATE INDEX ix_title ON articles (title);",
+		"COMMIT",
+	}
 )
 
 func testFixtureMeta() *Meta {
@@ -117,11 +146,13 @@ func testFixtureMeta() *Meta {
 	return meta
 }
 
-func resetDB(driver string, db *sql.DB) {
+func resetDB(dialect Dialect, db *sql.DB) {
 	var stmts []string
-	switch driver {
-	case "mysql":
+	switch dialect {
+	case DIALECT_MYSQL:
 		stmts = _MYSQL_DB_INIT
+	case DIALECT_POSTGRESQL:
+		stmts = _POSTGRESQL_DB_INIT
 	}
 	for _, stmt := range stmts {
 		_, err := db.Exec(stmt)
@@ -141,10 +172,42 @@ func TestReflectMySQL(t *testing.T) {
 	db, err := sql.Open("mysql", dsn)
 	assert.Nil(err)
 
-	resetDB("mysql", db)
+	resetDB(DIALECT_MYSQL, db)
 
 	var meta Meta
-	err = Reflect("mysql", db, &meta)
+	err = Reflect(DIALECT_MYSQL, db, &meta)
+	assert.Nil(err)
+
+	assert.Equal(2, len(meta.tables))
+
+	artTbl := meta.tables["articles"]
+	userTbl := meta.tables["users"]
+
+	assert.Equal("articles", artTbl.name)
+	assert.Equal("users", userTbl.name)
+
+	assert.Equal(7, len(userTbl.columns))
+	assert.Equal(5, len(artTbl.columns))
+
+	createdOnCol := userTbl.C("created_on")
+	assert.NotNil(createdOnCol)
+	assert.Equal("created_on", createdOnCol.name)
+}
+
+func TestReflectPostgreSQL(t *testing.T) {
+	dsn, found := os.LookupEnv("SQLB_TESTING_POSTGRESQL_DSN")
+	if !found {
+		t.Skip("No SQLB_TESTING_POSTGRESQL_DSN environ set")
+	}
+	assert := assert.New(t)
+
+	db, err := sql.Open("postgres", dsn)
+	assert.Nil(err)
+
+	resetDB(DIALECT_POSTGRESQL, db)
+
+	var meta Meta
+	err = Reflect(DIALECT_POSTGRESQL, db, &meta)
 	assert.Nil(err)
 
 	assert.Equal(2, len(meta.tables))
@@ -166,7 +229,7 @@ func TestReflectMySQL(t *testing.T) {
 func TestReflectErrors(t *testing.T) {
 	assert := assert.New(t)
 
-	err := Reflect("mysql", nil, nil)
+	err := Reflect(DIALECT_MYSQL, nil, nil)
 	assert.NotNil(err)
 	assert.Equal(ERR_NO_META_STRUCT, err)
 }

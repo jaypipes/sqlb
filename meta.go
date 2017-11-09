@@ -3,30 +3,16 @@ package sqlb
 import (
 	"database/sql"
 	"errors"
+
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 )
 
+type Dialect int
+
 const (
-	MYSQL_GET_DB = `SELECT DATABASE()`
-	PGSQL_GET_DB = `SELECT CURRENT_DATABASE()`
-	IS_TABLES    = `
-SELECT t.TABLE_NAME
-FROM INFORMATION_SCHEMA.TABLES AS t
-WHERE t.TABLE_TYPE = 'BASE TABLE'
-AND t.TABLE_SCHEMA = ?
-ORDER BY t.TABLE_NAME
-`
-	IS_COLUMNS = `
-SELECT c.TABLE_NAME, c.COLUMN_NAME
-FROM INFORMATION_SCHEMA.COLUMNS AS c
-JOIN INFORMATION_SCHEMA.TABLES AS t
- ON t.TABLE_SCHEMA = c.TABLE_SCHEMA
- AND t.TABLE_NAME = c.TABLE_NAME
-WHERE c.TABLE_SCHEMA = ?
-AND t.TABLE_TYPE = 'BASE TABLE'
-ORDER BY c.TABLE_NAME, c.COLUMN_NAME
-`
+	DIALECT_MYSQL = iota
+	DIALECT_POSTGRESQL
 )
 
 var (
@@ -35,11 +21,12 @@ var (
 
 type Meta struct {
 	db         *sql.DB
+	dialect    Dialect
 	schemaName string
 	tables     map[string]*Table
 }
 
-func NewMeta(driver string, schemaName string) *Meta {
+func NewMeta(dialect Dialect, schemaName string) *Meta {
 	return &Meta{
 		schemaName: schemaName,
 		tables:     make(map[string]*Table, 0),
@@ -65,13 +52,33 @@ func (m *Meta) Table(name string) *Table {
 	return t
 }
 
-func Reflect(driver string, db *sql.DB, meta *Meta) error {
+func Reflect(dialect Dialect, db *sql.DB, meta *Meta) error {
 	if meta == nil {
 		return ERR_NO_META_STRUCT
 	}
-	schemaName := getSchemaName(driver, db)
+	schemaName := getSchemaName(dialect, db)
+	var qs string
+	switch dialect {
+	case DIALECT_MYSQL:
+		qs = `
+SELECT t.TABLE_NAME
+FROM INFORMATION_SCHEMA.TABLES AS t
+WHERE t.TABLE_TYPE = 'BASE TABLE'
+AND t.TABLE_SCHEMA = ?
+ORDER BY t.TABLE_NAME
+`
+	case DIALECT_POSTGRESQL:
+		qs = `
+SELECT t.TABLE_NAME
+FROM INFORMATION_SCHEMA.TABLES AS t
+WHERE t.TABLE_SCHEMA = 'public'
+AND t.TABLE_CATALOG = $1
+AND t.TABLE_TYPE = 'BASE TABLE'
+ORDER BY t.TABLE_NAME
+`
+	}
 	// Grab information about all tables in the schema
-	rows, err := db.Query(IS_TABLES, schemaName)
+	rows, err := db.Query(qs, schemaName)
 	if err != nil {
 		return err
 	}
@@ -85,18 +92,45 @@ func Reflect(driver string, db *sql.DB, meta *Meta) error {
 		}
 		tables[t.name] = t
 	}
-	if err = fillTableColumns(db, schemaName, &tables); err != nil {
+	if err = fillTableColumns(db, dialect, schemaName, &tables); err != nil {
 		return err
 	}
 	meta.tables = tables
 	meta.db = db
+	meta.dialect = dialect
 	return nil
 }
 
 // Grabs column information from the information schema and populates the
 // supplied map of TableDef descriptors' columns
-func fillTableColumns(db *sql.DB, schemaName string, tables *map[string]*Table) error {
-	rows, err := db.Query(IS_COLUMNS, schemaName)
+func fillTableColumns(db *sql.DB, dialect Dialect, schemaName string, tables *map[string]*Table) error {
+	var qs string
+	switch dialect {
+	case DIALECT_MYSQL:
+		qs = `
+SELECT c.TABLE_NAME, c.COLUMN_NAME
+FROM INFORMATION_SCHEMA.COLUMNS AS c
+JOIN INFORMATION_SCHEMA.TABLES AS t
+ ON t.TABLE_SCHEMA = c.TABLE_SCHEMA
+ AND t.TABLE_NAME = c.TABLE_NAME
+WHERE c.TABLE_SCHEMA = ?
+AND t.TABLE_TYPE = 'BASE TABLE'
+ORDER BY c.TABLE_NAME, c.COLUMN_NAME
+`
+	case DIALECT_POSTGRESQL:
+		qs = `
+SELECT c.TABLE_NAME, c.COLUMN_NAME
+FROM INFORMATION_SCHEMA.COLUMNS AS c
+JOIN INFORMATION_SCHEMA.TABLES AS t
+ ON t.TABLE_SCHEMA = c.TABLE_SCHEMA
+ AND t.TABLE_NAME = c.TABLE_NAME
+WHERE c.TABLE_SCHEMA = 'public'
+AND c.TABLE_CATALOG = $1
+AND t.TABLE_TYPE = 'BASE TABLE'
+ORDER BY c.TABLE_NAME, c.COLUMN_NAME
+`
+	}
+	rows, err := db.Query(qs, schemaName)
 	if err != nil {
 		return err
 	}
@@ -119,13 +153,13 @@ func fillTableColumns(db *sql.DB, schemaName string, tables *map[string]*Table) 
 }
 
 // Returns the database schema name given a driver name and a sql.DB handle
-func getSchemaName(driver string, db *sql.DB) string {
+func getSchemaName(dialect Dialect, db *sql.DB) string {
 	var qs string
-	switch driver {
-	case "mysql":
-		qs = MYSQL_GET_DB
-	case "pgsql":
-		qs = PGSQL_GET_DB
+	switch dialect {
+	case DIALECT_MYSQL:
+		qs = "SELECT DATABASE()"
+	case DIALECT_POSTGRESQL:
+		qs = "SELECT CURRENT_DATABASE()"
 	}
 	var schemaName string
 	err := db.QueryRow(qs).Scan(&schemaName)

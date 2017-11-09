@@ -58,8 +58,8 @@ collection of metadata elements. This section demonstrates how you can do so.
 
 The `sqlb.Meta` struct can be used to house metadata about a database schema's
 tables, those tables' columns and relation information. You can create a new
-`sqlb.Meta` using the `sqlb.NewMeta()`function, passing in the name of the
-database driver and the name of the database schema:
+`sqlb.Meta` using the `sqlb.NewMeta()`function, passing in the database dialect
+and the name of the database schema:
 
 ```go
 import (
@@ -67,7 +67,7 @@ import (
 )
 
 func main() {
-    meta := sqlb.NewMeta("mysql", "blog")
+    meta := sqlb.NewMeta(sqlb.DIALECT_MYSQL, "blog")
 }
 ```
 
@@ -112,10 +112,9 @@ definition:
 ### Automatically discovering metadata
 
 The other method of establishing database metadata is to let `sqlb` do it for
-you. The `sqlb.Reflect()` function accepts three arguments: a string describing
-the `database/sql` driver name, a pointer to a `database/sql:DB` struct and a
-pointer to a `sqlb.Meta` struct that you wish to fill with metadata
-information.
+you. The `sqlb.Reflect()` function accepts three arguments: the database
+dialect in use, a pointer to a `database/sql:DB` struct and a pointer to a
+`sqlb.Meta` struct that you wish to fill with metadata information.
 
 The following code demonstrates how to use the `sqlb.Reflect()` function
 properly. We use a MySQL database instance, however simply change the
@@ -141,7 +140,7 @@ func main() {
     }
 
     // Next, ask sqlb.Reflect() to populate the metadata for the DB
-    if err := sqlb.Reflect("mysql", db, meta); err != nil {
+    if err := sqlb.Reflect(sqlb.DIALECT_MYSQL, db, meta); err != nil {
         log.Fatal(err)
     }
 

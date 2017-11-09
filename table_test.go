@@ -9,7 +9,7 @@ import (
 func TestTableMeta(t *testing.T) {
 	assert := assert.New(t)
 
-	m := NewMeta("mysql", "test")
+	m := NewMeta(DIALECT_MYSQL, "test")
 	td := m.Table("users")
 	assert.Nil(td)
 	td = m.NewTable("users")
