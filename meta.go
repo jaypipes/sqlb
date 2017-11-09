@@ -15,28 +15,6 @@ const (
 	DIALECT_POSTGRESQL
 )
 
-const (
-	_MYSQL_GET_DB = `SELECT DATABASE()`
-	_PGSQL_GET_DB = `SELECT CURRENT_DATABASE()`
-	_IS_TABLES    = `
-SELECT t.TABLE_NAME
-FROM INFORMATION_SCHEMA.TABLES AS t
-WHERE t.TABLE_TYPE = 'BASE TABLE'
-AND t.TABLE_SCHEMA = ?
-ORDER BY t.TABLE_NAME
-`
-	_IS_COLUMNS = `
-SELECT c.TABLE_NAME, c.COLUMN_NAME
-FROM INFORMATION_SCHEMA.COLUMNS AS c
-JOIN INFORMATION_SCHEMA.TABLES AS t
- ON t.TABLE_SCHEMA = c.TABLE_SCHEMA
- AND t.TABLE_NAME = c.TABLE_NAME
-WHERE c.TABLE_SCHEMA = ?
-AND t.TABLE_TYPE = 'BASE TABLE'
-ORDER BY c.TABLE_NAME, c.COLUMN_NAME
-`
-)
-
 var (
 	ERR_NO_META_STRUCT = errors.New("Please pass a pointer to a sqlb.Meta struct")
 )
@@ -79,8 +57,28 @@ func Reflect(dialect Dialect, db *sql.DB, meta *Meta) error {
 		return ERR_NO_META_STRUCT
 	}
 	schemaName := getSchemaName(dialect, db)
+	var qs string
+	switch dialect {
+	case DIALECT_MYSQL:
+		qs = `
+SELECT t.TABLE_NAME
+FROM INFORMATION_SCHEMA.TABLES AS t
+WHERE t.TABLE_TYPE = 'BASE TABLE'
+AND t.TABLE_SCHEMA = ?
+ORDER BY t.TABLE_NAME
+`
+	case DIALECT_POSTGRESQL:
+		qs = `
+SELECT t.TABLE_NAME
+FROM INFORMATION_SCHEMA.TABLES AS t
+WHERE t.TABLE_SCHEMA = 'public'
+AND t.TABLE_CATALOG = $1
+AND t.TABLE_TYPE = 'BASE TABLE'
+ORDER BY t.TABLE_NAME
+`
+	}
 	// Grab information about all tables in the schema
-	rows, err := db.Query(_IS_TABLES, schemaName)
+	rows, err := db.Query(qs, schemaName)
 	if err != nil {
 		return err
 	}
@@ -94,7 +92,7 @@ func Reflect(dialect Dialect, db *sql.DB, meta *Meta) error {
 		}
 		tables[t.name] = t
 	}
-	if err = fillTableColumns(db, schemaName, &tables); err != nil {
+	if err = fillTableColumns(db, dialect, schemaName, &tables); err != nil {
 		return err
 	}
 	meta.tables = tables
@@ -105,8 +103,34 @@ func Reflect(dialect Dialect, db *sql.DB, meta *Meta) error {
 
 // Grabs column information from the information schema and populates the
 // supplied map of TableDef descriptors' columns
-func fillTableColumns(db *sql.DB, schemaName string, tables *map[string]*Table) error {
-	rows, err := db.Query(_IS_COLUMNS, schemaName)
+func fillTableColumns(db *sql.DB, dialect Dialect, schemaName string, tables *map[string]*Table) error {
+	var qs string
+	switch dialect {
+	case DIALECT_MYSQL:
+		qs = `
+SELECT c.TABLE_NAME, c.COLUMN_NAME
+FROM INFORMATION_SCHEMA.COLUMNS AS c
+JOIN INFORMATION_SCHEMA.TABLES AS t
+ ON t.TABLE_SCHEMA = c.TABLE_SCHEMA
+ AND t.TABLE_NAME = c.TABLE_NAME
+WHERE c.TABLE_SCHEMA = ?
+AND t.TABLE_TYPE = 'BASE TABLE'
+ORDER BY c.TABLE_NAME, c.COLUMN_NAME
+`
+	case DIALECT_POSTGRESQL:
+		qs = `
+SELECT c.TABLE_NAME, c.COLUMN_NAME
+FROM INFORMATION_SCHEMA.COLUMNS AS c
+JOIN INFORMATION_SCHEMA.TABLES AS t
+ ON t.TABLE_SCHEMA = c.TABLE_SCHEMA
+ AND t.TABLE_NAME = c.TABLE_NAME
+WHERE c.TABLE_SCHEMA = 'public'
+AND c.TABLE_CATALOG = $1
+AND t.TABLE_TYPE = 'BASE TABLE'
+ORDER BY c.TABLE_NAME, c.COLUMN_NAME
+`
+	}
+	rows, err := db.Query(qs, schemaName)
 	if err != nil {
 		return err
 	}
@@ -133,9 +157,9 @@ func getSchemaName(dialect Dialect, db *sql.DB) string {
 	var qs string
 	switch dialect {
 	case DIALECT_MYSQL:
-		qs = _MYSQL_GET_DB
+		qs = "SELECT DATABASE()"
 	case DIALECT_POSTGRESQL:
-		qs = _PGSQL_GET_DB
+		qs = "SELECT CURRENT_DATABASE()"
 	}
 	var schemaName string
 	err := db.QueryRow(qs).Scan(&schemaName)
