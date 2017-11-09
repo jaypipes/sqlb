@@ -25,7 +25,9 @@ func (s *updateStatement) size() int {
 		// the column names in the <columns> element of the INSERT statement
 		size += len(c.name)
 	}
-	size += (len(Symbols[SYM_EQUAL]) + len(Symbols[SYM_QUEST_MARK])) * ncols
+	// NOTE(jaypipes): We do not include the length of interpolation markers,
+	// since that differs based on the SQL dialect
+	size += len(Symbols[SYM_EQUAL]) * ncols
 	// Two comma-delimited lists of same number of elements (columns and
 	// values)
 	size += 2 * (len(Symbols[SYM_COMMA_WS]) * (ncols - 1)) // the commas...
@@ -35,8 +37,8 @@ func (s *updateStatement) size() int {
 	return size
 }
 
-func (s *updateStatement) scan(b []byte, args []interface{}) (int, int) {
-	var bw, ac int
+func (s *updateStatement) scan(b []byte, args []interface{}, curArg *int) int {
+	bw := 0
 	bw += copy(b[bw:], Symbols[SYM_UPDATE])
 	// We don't add any table alias when outputting the table identifier
 	bw += copy(b[bw:], s.table.name)
@@ -49,20 +51,18 @@ func (s *updateStatement) scan(b []byte, args []interface{}) (int, int) {
 		// statement
 		bw += copy(b[bw:], c.name)
 		bw += copy(b[bw:], Symbols[SYM_EQUAL])
-		bw += copy(b[bw:], Symbols[SYM_QUEST_MARK])
-		args[ac] = s.values[x]
-		ac++
+		bw += scanInterpolationMarker(s.table.meta.dialect, b[bw:], *curArg)
+		args[*curArg] = s.values[x]
+		*curArg++
 		if x != (ncols - 1) {
 			bw += copy(b[bw:], Symbols[SYM_COMMA_WS])
 		}
 	}
 
 	if s.where != nil {
-		wbw, wac := s.where.scan(b[bw:], args[ac:])
-		bw += wbw
-		ac += wac
+		bw += s.where.scan(b[bw:], args, curArg)
 	}
-	return bw, ac
+	return bw
 }
 
 func (s *updateStatement) addWhere(e *Expression) *updateStatement {

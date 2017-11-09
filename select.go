@@ -11,10 +11,11 @@ var (
 )
 
 type SelectQuery struct {
-	e    error
-	b    []byte
-	args []interface{}
-	sel  *selectClause
+	e       error
+	b       []byte
+	args    []interface{}
+	sel     *selectClause
+	dialect Dialect
 }
 
 func (q *SelectQuery) IsValid() bool {
@@ -28,26 +29,30 @@ func (q *SelectQuery) Error() error {
 func (q *SelectQuery) String() string {
 	size := q.sel.size()
 	argc := q.sel.argCount()
+	size += interpolationLength(q.dialect, argc)
 	if len(q.args) != argc {
 		q.args = make([]interface{}, argc)
 	}
 	if len(q.b) != size {
 		q.b = make([]byte, size)
 	}
-	q.sel.scan(q.b, q.args)
+	curArg := 0
+	q.sel.scan(q.b, q.args, &curArg)
 	return string(q.b)
 }
 
 func (q *SelectQuery) StringArgs() (string, []interface{}) {
 	size := q.sel.size()
 	argc := q.sel.argCount()
+	size += interpolationLength(q.dialect, argc)
 	if len(q.args) != argc {
 		q.args = make([]interface{}, argc)
 	}
 	if len(q.b) != size {
 		q.b = make([]byte, size)
 	}
-	q.sel.scan(q.b, q.args)
+	curArg := 0
+	q.sel.scan(q.b, q.args, &curArg)
 	return string(q.b), q.args
 }
 
@@ -249,6 +254,7 @@ func (q *SelectQuery) doJoin(
 }
 
 func Select(items ...interface{}) *SelectQuery {
+	sq := &SelectQuery{dialect: DIALECT_UNKNOWN}
 	sel := &selectClause{
 		projs: make([]projection, 0),
 	}
@@ -265,8 +271,9 @@ func Select(items ...interface{}) *SelectQuery {
 		case *SelectQuery:
 			// Project all columns from the subquery to the outer
 			// selectClause
-			sq := item.(*SelectQuery)
-			innerSelClause := sq.sel
+			isq := item.(*SelectQuery)
+			sq.dialect = isq.dialect
+			innerSelClause := isq.sel
 			if len(innerSelClause.selections) == 1 {
 				innerSel := innerSelClause.selections[0]
 				switch innerSel.(type) {
@@ -309,10 +316,12 @@ func Select(items ...interface{}) *SelectQuery {
 			}
 		case *Column:
 			v := item.(*Column)
+			sq.dialect = v.tbl.meta.dialect
 			sel.projs = append(sel.projs, v)
 			selectionMap[v.tbl] = true
 		case *Table:
 			v := item.(*Table)
+			sq.dialect = v.meta.dialect
 			for _, c := range v.projections() {
 				addToProjections(sel, c)
 			}
@@ -336,5 +345,6 @@ func Select(items ...interface{}) *SelectQuery {
 		x++
 	}
 	sel.selections = selections
-	return &SelectQuery{sel: sel}
+	sq.sel = sel
+	return sq
 }

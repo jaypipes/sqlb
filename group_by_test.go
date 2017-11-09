@@ -52,7 +52,8 @@ func TestGroupByClause(t *testing.T) {
 		assert.Equal(expArgc, test.c.argCount())
 
 		b := make([]byte, s)
-		written, _ := test.c.scan(b, test.qargs)
+		curArg := 0
+		written := test.c.scan(b, test.qargs, &curArg)
 
 		assert.Equal(written, s)
 		assert.Equal(test.qs, string(b))

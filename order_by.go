@@ -19,17 +19,15 @@ func (sc *sortColumn) size() int {
 	return size
 }
 
-func (sc *sortColumn) scan(b []byte, args []interface{}) (int, int) {
+func (sc *sortColumn) scan(b []byte, args []interface{}, curArg *int) int {
 	reset := sc.p.disableAliasScan()
 	defer reset()
-	var bw, ac int
-	ebw, eac := sc.p.scan(b[bw:], args[ac:])
-	bw += ebw
-	ac += eac
+	bw := 0
+	bw += sc.p.scan(b[bw:], args, curArg)
 	if sc.desc {
 		bw += copy(b[bw:], Symbols[SYM_DESC])
 	}
-	return bw, ac
+	return bw
 }
 
 type orderByClause struct {
@@ -50,19 +48,17 @@ func (ob *orderByClause) size() int {
 	return size + (len(Symbols[SYM_COMMA_WS]) * (ncols - 1)) // the commas...
 }
 
-func (ob *orderByClause) scan(b []byte, args []interface{}) (int, int) {
-	var bw, ac int
+func (ob *orderByClause) scan(b []byte, args []interface{}, curArg *int) int {
+	bw := 0
 	bw += copy(b[bw:], Symbols[SYM_ORDER_BY])
 	ncols := len(ob.scols)
 	for x, sc := range ob.scols {
-		ebw, eac := sc.scan(b[bw:], args[ac:])
-		bw += ebw
-		ac += eac
+		bw += sc.scan(b[bw:], args, curArg)
 		if x != (ncols - 1) {
 			bw += copy(b[bw:], Symbols[SYM_COMMA_WS])
 		}
 	}
-	return bw, ac
+	return bw
 }
 
 func (c *Column) Desc() *sortColumn {

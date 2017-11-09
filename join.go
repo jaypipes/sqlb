@@ -41,8 +41,8 @@ func (j *joinClause) size() int {
 	return size
 }
 
-func (j *joinClause) scan(b []byte, args []interface{}) (int, int) {
-	var bw, ac int
+func (j *joinClause) scan(b []byte, args []interface{}, curArg *int) int {
+	bw := 0
 	switch j.joinType {
 	case JOIN_INNER:
 		bw += copy(b[bw:], Symbols[SYM_JOIN])
@@ -51,16 +51,12 @@ func (j *joinClause) scan(b []byte, args []interface{}) (int, int) {
 	case JOIN_CROSS:
 		bw += copy(b[bw:], Symbols[SYM_CROSS_JOIN])
 	}
-	pbw, pac := j.right.scan(b[bw:], args)
-	bw += pbw
-	ac += pac
+	bw += j.right.scan(b[bw:], args, curArg)
 	if j.on != nil {
 		bw += copy(b[bw:], Symbols[SYM_ON])
-		fbw, fac := j.on.scan(b[bw:], args[ac:])
-		bw += fbw
-		ac += fac
+		bw += j.on.scan(b[bw:], args, curArg)
 	}
-	return bw, ac
+	return bw
 }
 
 func Join(left selection, right selection, on *Expression) *joinClause {

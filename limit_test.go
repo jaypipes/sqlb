@@ -6,59 +6,63 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestlimitClause(t *testing.T) {
+func TestLimitClause(t *testing.T) {
 	assert := assert.New(t)
 
 	lc := &limitClause{
-		limit: 20,
+		limit:   20,
+		dialect: DIALECT_MYSQL,
 	}
 
 	exp := " LIMIT ?"
-	expLen := len(exp)
 	expArgCount := 1
-
-	s := lc.size()
-	assert.Equal(expLen, s)
 
 	argc := lc.argCount()
 	assert.Equal(expArgCount, argc)
 
-	args := make([]interface{}, expArgCount)
-	b := make([]byte, s)
-	written, numArgs := lc.scan(b, args)
+	size := lc.size()
+	size += interpolationLength(DIALECT_MYSQL, argc)
+	expLen := len(exp)
+	assert.Equal(expLen, size)
 
-	assert.Equal(s, written)
+	args := make([]interface{}, expArgCount)
+	b := make([]byte, size)
+	curArg := 0
+	written := lc.scan(b, args, &curArg)
+
+	assert.Equal(size, written)
 	assert.Equal(exp, string(b))
-	assert.Equal(expArgCount, numArgs)
 	assert.Equal(20, args[0])
 }
 
-func TestlimitClauseWithOffset(t *testing.T) {
+func TestLimitClauseWithOffset(t *testing.T) {
 	assert := assert.New(t)
 
 	lc := &limitClause{
-		limit: 20,
+		limit:   20,
+		dialect: DIALECT_MYSQL,
 	}
 	offset := 10
 	lc.offset = &offset
 
 	exp := " LIMIT ? OFFSET ?"
-	expLen := len(exp)
 	expArgCount := 2
-
-	s := lc.size()
-	assert.Equal(expLen, s)
 
 	argc := lc.argCount()
 	assert.Equal(expArgCount, argc)
 
-	args := make([]interface{}, expArgCount)
-	b := make([]byte, s)
-	written, numArgs := lc.scan(b, args)
+	size := lc.size()
+	size += interpolationLength(DIALECT_MYSQL, argc)
+	expLen := len(exp)
+	assert.Equal(expLen, size)
 
-	assert.Equal(s, written)
+	args := make([]interface{}, expArgCount)
+	b := make([]byte, size)
+	curArg := 0
+	written := lc.scan(b, args, &curArg)
+
+	assert.Equal(size, written)
 	assert.Equal(exp, string(b))
-	assert.Equal(expArgCount, numArgs)
 	assert.Equal(20, args[0])
 	assert.Equal(10, args[1])
 }

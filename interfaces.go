@@ -7,13 +7,10 @@ type element interface {
 	// Returns the number of interface{} arguments that the element will add to
 	// the slice of interface{} arguments passed to Scan()
 	argCount() int
-	// scan takes two slices -- one for the slice of bytes that the
-	// implementation should copy its string representation to and another for
-	// the slice of interface{} values that the element should add its
-	// arguments to -- and returns two ints, one for the number of bytes that
-	// it copied into the byte slice and another for the number of arguments
-	// copied into the arg slice
-	scan([]byte, []interface{}) (int, int)
+	// scan takes two slices and a pointer to an int. The first slice is a slice of bytes that the
+	// implementation should copy its string representation to and the other slice is a slice of interface{} values that the element should add its
+	// arguments to. The pointer to an int is the index of the current argument to be processed. The method returns a single int, the number of bytes written to the buffer.
+	scan([]byte, []interface{}, *int) int
 }
 
 // A projection is something that produces a scalar value. A column, column
@@ -26,7 +23,7 @@ type projection interface {
 	// projections must also implement element
 	size() int
 	argCount() int
-	scan([]byte, []interface{}) (int, int)
+	scan([]byte, []interface{}, *int) int
 	// disables the outputting of the "AS alias" extended output. Returns a
 	// function that resets the outputting of the "AS alias" extended output
 	disableAliasScan() func()
@@ -39,7 +36,7 @@ type selection interface {
 	// selections must also implement element
 	size() int
 	argCount() int
-	scan([]byte, []interface{}) (int, int)
+	scan([]byte, []interface{}, *int) int
 }
 
 // A Query is a placeholder for something that can be asked for the SQL string

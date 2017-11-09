@@ -153,8 +153,8 @@ func (f *sqlFunc) size() int {
 	return size
 }
 
-func (f *sqlFunc) scan(b []byte, args []interface{}) (int, int) {
-	bw, ac := 0, 0
+func (f *sqlFunc) scan(b []byte, args []interface{}, curArg *int) int {
+	bw := 0
 	elidx := 0
 	for _, sym := range f.scanInfo {
 		if sym == SYM_ELEMENT {
@@ -168,9 +168,7 @@ func (f *sqlFunc) scan(b []byte, args []interface{}) (int, int) {
 				defer reset()
 			}
 			elidx++
-			ebw, eac := el.scan(b[bw:], args[ac:])
-			bw += ebw
-			ac += eac
+			bw += el.scan(b[bw:], args, curArg)
 		} else {
 			bw += copy(b[bw:], Symbols[sym])
 		}
@@ -179,7 +177,7 @@ func (f *sqlFunc) scan(b []byte, args []interface{}) (int, int) {
 		bw += copy(b[bw:], Symbols[SYM_AS])
 		bw += copy(b[bw:], f.alias)
 	}
-	return bw, ac
+	return bw
 }
 
 func Max(p projection) *sqlFunc {

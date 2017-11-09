@@ -9,10 +9,11 @@ var (
 )
 
 type DeleteQuery struct {
-	e    error
-	b    []byte
-	args []interface{}
-	stmt *deleteStatement
+	e       error
+	b       []byte
+	args    []interface{}
+	stmt    *deleteStatement
+	dialect Dialect
 }
 
 func (q *DeleteQuery) IsValid() bool {
@@ -26,26 +27,30 @@ func (q *DeleteQuery) Error() error {
 func (q *DeleteQuery) String() string {
 	size := q.stmt.size()
 	argc := q.stmt.argCount()
+	size += interpolationLength(q.dialect, argc)
 	if len(q.args) != argc {
 		q.args = make([]interface{}, argc)
 	}
 	if len(q.b) != size {
 		q.b = make([]byte, size)
 	}
-	q.stmt.scan(q.b, q.args)
+	curArg := 0
+	q.stmt.scan(q.b, q.args, &curArg)
 	return string(q.b)
 }
 
 func (q *DeleteQuery) StringArgs() (string, []interface{}) {
 	size := q.stmt.size()
 	argc := q.stmt.argCount()
+	size += interpolationLength(q.dialect, argc)
 	if len(q.args) != argc {
 		q.args = make([]interface{}, argc)
 	}
 	if len(q.b) != size {
 		q.b = make([]byte, size)
 	}
-	q.stmt.scan(q.b, q.args)
+	curArg := 0
+	q.stmt.scan(q.b, q.args, &curArg)
 	return string(q.b), q.args
 }
 

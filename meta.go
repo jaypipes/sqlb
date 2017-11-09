@@ -8,13 +8,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type Dialect int
-
-const (
-	DIALECT_MYSQL = iota
-	DIALECT_POSTGRESQL
-)
-
 var (
 	ERR_NO_META_STRUCT = errors.New("Please pass a pointer to a sqlb.Meta struct")
 )

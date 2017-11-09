@@ -8,6 +8,7 @@ type selectClause struct {
 	groupBy    *groupByClause
 	orderBy    *orderByClause
 	limit      *limitClause
+	dialect    Dialect
 }
 
 func (s *selectClause) argCount() int {
@@ -69,14 +70,12 @@ func (s *selectClause) size() int {
 	return size
 }
 
-func (s *selectClause) scan(b []byte, args []interface{}) (int, int) {
-	var bw, ac int
+func (s *selectClause) scan(b []byte, args []interface{}, curArg *int) int {
+	bw := 0
 	bw += copy(b[bw:], Symbols[SYM_SELECT])
 	nprojs := len(s.projs)
 	for x, p := range s.projs {
-		pbw, pac := p.scan(b[bw:], args[ac:])
-		bw += pbw
-		ac += pac
+		bw += p.scan(b[bw:], args, curArg)
 		if x != (nprojs - 1) {
 			bw += copy(b[bw:], Symbols[SYM_COMMA_WS])
 		}
@@ -85,40 +84,28 @@ func (s *selectClause) scan(b []byte, args []interface{}) (int, int) {
 	if nsels > 0 {
 		bw += copy(b[bw:], Symbols[SYM_FROM])
 		for x, sel := range s.selections {
-			sbw, sac := sel.scan(b[bw:], args)
-			bw += sbw
-			ac += sac
+			bw += sel.scan(b[bw:], args, curArg)
 			if x != (nsels - 1) {
 				bw += copy(b[bw:], Symbols[SYM_COMMA_WS])
 			}
 		}
 		for _, join := range s.joins {
-			jbw, jac := join.scan(b[bw:], args)
-			bw += jbw
-			ac += jac
+			bw += join.scan(b[bw:], args, curArg)
 		}
 	}
 	if s.where != nil {
-		wbw, wac := s.where.scan(b[bw:], args[ac:])
-		bw += wbw
-		ac += wac
+		bw += s.where.scan(b[bw:], args, curArg)
 	}
 	if s.groupBy != nil {
-		gbbw, gbac := s.groupBy.scan(b[bw:], args[ac:])
-		bw += gbbw
-		ac += gbac
+		bw += s.groupBy.scan(b[bw:], args, curArg)
 	}
 	if s.orderBy != nil {
-		obbw, obac := s.orderBy.scan(b[bw:], args[ac:])
-		bw += obbw
-		ac += obac
+		bw += s.orderBy.scan(b[bw:], args, curArg)
 	}
 	if s.limit != nil {
-		lbw, lac := s.limit.scan(b[bw:], args[ac:])
-		bw += lbw
-		ac += lac
+		bw += s.limit.scan(b[bw:], args, curArg)
 	}
-	return bw, ac
+	return bw
 }
 
 func (s *selectClause) addJoin(jc *joinClause) *selectClause {
@@ -181,14 +168,14 @@ func (s *selectClause) addOrderBy(sortCols ...*sortColumn) *selectClause {
 }
 
 func (s *selectClause) setLimitWithOffset(limit int, offset int) *selectClause {
-	lc := &limitClause{limit: limit}
+	lc := &limitClause{limit: limit, dialect: s.dialect}
 	lc.offset = &offset
 	s.limit = lc
 	return s
 }
 
 func (s *selectClause) setLimit(limit int) *selectClause {
-	lc := &limitClause{limit: limit}
+	lc := &limitClause{limit: limit, dialect: s.dialect}
 	s.limit = lc
 	return s
 }

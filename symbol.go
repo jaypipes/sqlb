@@ -6,6 +6,7 @@ type scanInfo []Symbol
 const (
 	SYM_ELEMENT = iota // Marker for an element that self-scans into the SQL buffer
 	SYM_QUEST_MARK
+	SYM_DOLLAR
 	SYM_PERIOD
 	SYM_AS
 	SYM_COMMA_WS
@@ -169,6 +170,7 @@ var (
 var (
 	Symbols = map[Symbol][]byte{
 		SYM_QUEST_MARK:              []byte("?"),
+		SYM_DOLLAR:                  []byte("$"),
 		SYM_PERIOD:                  []byte("."),
 		SYM_AS:                      []byte(" AS "),
 		SYM_COMMA_WS:                []byte(", "),

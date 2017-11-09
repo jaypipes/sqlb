@@ -57,16 +57,14 @@ func (dt *derivedTable) size() int {
 	return size
 }
 
-func (dt *derivedTable) scan(b []byte, args []interface{}) (int, int) {
-	var bw, ac int
+func (dt *derivedTable) scan(b []byte, args []interface{}, curArg *int) int {
+	bw := 0
 	bw += copy(b[bw:], Symbols[SYM_LPAREN])
-	sbw, sac := dt.from.scan(b[bw:], args[ac:])
-	bw += sbw
-	ac += sac
+	bw += dt.from.scan(b[bw:], args, curArg)
 	bw += copy(b[bw:], Symbols[SYM_RPAREN])
 	bw += copy(b[bw:], Symbols[SYM_AS])
 	bw += copy(b[bw:], dt.alias)
-	return bw, ac
+	return bw
 }
 
 // A derivedColumn is a type of projection that is produced from a derived
@@ -165,8 +163,8 @@ func (dc *derivedColumn) size() int {
 	return size
 }
 
-func (dc *derivedColumn) scan(b []byte, args []interface{}) (int, int) {
-	var bw, ac int
+func (dc *derivedColumn) scan(b []byte, args []interface{}, curArg *int) int {
+	bw := 0
 	bw += copy(b[bw:], dc.dt.alias)
 	bw += copy(b[bw:], Symbols[SYM_PERIOD])
 	if dc.c.alias != "" {
@@ -178,5 +176,5 @@ func (dc *derivedColumn) scan(b []byte, args []interface{}) (int, int) {
 		bw += copy(b[bw:], Symbols[SYM_AS])
 		bw += copy(b[bw:], dc.alias)
 	}
-	return bw, ac
+	return bw
 }

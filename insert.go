@@ -10,10 +10,11 @@ var (
 )
 
 type InsertQuery struct {
-	e    error
-	b    []byte
-	args []interface{}
-	stmt *insertStatement
+	e       error
+	b       []byte
+	args    []interface{}
+	stmt    *insertStatement
+	dialect Dialect
 }
 
 func (q *InsertQuery) IsValid() bool {
@@ -27,26 +28,30 @@ func (q *InsertQuery) Error() error {
 func (q *InsertQuery) String() string {
 	size := q.stmt.size()
 	argc := q.stmt.argCount()
+	size += interpolationLength(q.dialect, argc)
 	if len(q.args) != argc {
 		q.args = make([]interface{}, argc)
 	}
 	if len(q.b) != size {
 		q.b = make([]byte, size)
 	}
-	q.stmt.scan(q.b, q.args)
+	curArg := 0
+	q.stmt.scan(q.b, q.args, &curArg)
 	return string(q.b)
 }
 
 func (q *InsertQuery) StringArgs() (string, []interface{}) {
 	size := q.stmt.size()
 	argc := q.stmt.argCount()
+	size += interpolationLength(q.dialect, argc)
 	if len(q.args) != argc {
 		q.args = make([]interface{}, argc)
 	}
 	if len(q.b) != size {
 		q.b = make([]byte, size)
 	}
-	q.stmt.scan(q.b, q.args)
+	curArg := 0
+	q.stmt.scan(q.b, q.args, &curArg)
 	return string(q.b), q.args
 }
 

@@ -23,16 +23,14 @@ func (l *List) size() int {
 	return size + (len(Symbols[SYM_COMMA_WS]) * (nels - 1)) // the commas...
 }
 
-func (l *List) scan(b []byte, args []interface{}) (int, int) {
-	bw, ac := 0, 0
+func (l *List) scan(b []byte, args []interface{}, curArg *int) int {
+	bw := 0
 	nels := len(l.elements)
 	for x, el := range l.elements {
-		ebw, eac := el.scan(b[bw:], args[ac:])
-		bw += ebw
+		bw += el.scan(b[bw:], args, curArg)
 		if x != (nels - 1) {
 			bw += copy(b[bw:], Symbols[SYM_COMMA_WS])
 		}
-		ac += eac
 	}
-	return bw, ac
+	return bw
 }

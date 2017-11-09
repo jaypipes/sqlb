@@ -41,17 +41,20 @@ func TestDeleteStatement(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		expLen := len(test.qs)
-		s := test.s.size()
-		assert.Equal(expLen, s)
-
 		expArgc := len(test.qargs)
-		assert.Equal(expArgc, test.s.argCount())
+		argc := test.s.argCount()
+		assert.Equal(expArgc, argc)
 
-		b := make([]byte, s)
-		written, _ := test.s.scan(b, test.qargs)
+		expLen := len(test.qs)
+		size := test.s.size()
+		size += interpolationLength(DIALECT_MYSQL, argc)
+		assert.Equal(expLen, size)
 
-		assert.Equal(written, s)
+		b := make([]byte, size)
+		curArg := 0
+		written := test.s.scan(b, test.qargs, &curArg)
+
+		assert.Equal(written, size)
 		assert.Equal(test.qs, string(b))
 	}
 }

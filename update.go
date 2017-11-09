@@ -11,10 +11,11 @@ var (
 )
 
 type UpdateQuery struct {
-	e    error
-	b    []byte
-	args []interface{}
-	stmt *updateStatement
+	e       error
+	b       []byte
+	args    []interface{}
+	stmt    *updateStatement
+	dialect Dialect
 }
 
 func (q *UpdateQuery) IsValid() bool {
@@ -28,26 +29,30 @@ func (q *UpdateQuery) Error() error {
 func (q *UpdateQuery) String() string {
 	size := q.stmt.size()
 	argc := q.stmt.argCount()
+	size += interpolationLength(q.dialect, argc)
 	if len(q.args) != argc {
 		q.args = make([]interface{}, argc)
 	}
 	if len(q.b) != size {
 		q.b = make([]byte, size)
 	}
-	q.stmt.scan(q.b, q.args)
+	curArg := 0
+	q.stmt.scan(q.b, q.args, &curArg)
 	return string(q.b)
 }
 
 func (q *UpdateQuery) StringArgs() (string, []interface{}) {
 	size := q.stmt.size()
 	argc := q.stmt.argCount()
+	size += interpolationLength(q.dialect, argc)
 	if len(q.args) != argc {
 		q.args = make([]interface{}, argc)
 	}
 	if len(q.b) != size {
 		q.b = make([]byte, size)
 	}
-	q.stmt.scan(q.b, q.args)
+	curArg := 0
+	q.stmt.scan(q.b, q.args, &curArg)
 	return string(q.b), q.args
 }
 
@@ -86,5 +91,5 @@ func Update(t *Table, values map[string]interface{}) *UpdateQuery {
 		columns: cols,
 		values:  vals,
 	}
-	return &UpdateQuery{stmt: stmt}
+	return &UpdateQuery{stmt: stmt, dialect: t.meta.dialect}
 }
