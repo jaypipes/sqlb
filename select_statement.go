@@ -1,6 +1,6 @@
 package sqlb
 
-type selectClause struct {
+type selectStatement struct {
 	projs      []projection
 	selections []selection
 	joins      []*joinClause
@@ -11,7 +11,7 @@ type selectClause struct {
 	dialect    Dialect
 }
 
-func (s *selectClause) argCount() int {
+func (s *selectStatement) argCount() int {
 	argc := 0
 	for _, p := range s.projs {
 		argc += p.argCount()
@@ -37,7 +37,7 @@ func (s *selectClause) argCount() int {
 	return argc
 }
 
-func (s *selectClause) size() int {
+func (s *selectStatement) size() int {
 	size := len(Symbols[SYM_SELECT])
 	nprojs := len(s.projs)
 	for _, p := range s.projs {
@@ -70,7 +70,7 @@ func (s *selectClause) size() int {
 	return size
 }
 
-func (s *selectClause) scan(b []byte, args []interface{}, curArg *int) int {
+func (s *selectStatement) scan(b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	bw += copy(b[bw:], Symbols[SYM_SELECT])
 	nprojs := len(s.projs)
@@ -108,12 +108,12 @@ func (s *selectClause) scan(b []byte, args []interface{}, curArg *int) int {
 	return bw
 }
 
-func (s *selectClause) addJoin(jc *joinClause) *selectClause {
+func (s *selectStatement) addJoin(jc *joinClause) *selectStatement {
 	s.joins = append(s.joins, jc)
 	return s
 }
 
-func (s *selectClause) addWhere(e *Expression) *selectClause {
+func (s *selectStatement) addWhere(e *Expression) *selectStatement {
 	if s.where == nil {
 		s.where = &whereClause{filters: make([]*Expression, 0)}
 	}
@@ -122,8 +122,8 @@ func (s *selectClause) addWhere(e *Expression) *selectClause {
 }
 
 // Given one or more columns, either set or add to the GROUP BY clause for
-// the selectClause
-func (s *selectClause) addGroupBy(cols ...projection) *selectClause {
+// the selectStatement
+func (s *selectStatement) addGroupBy(cols ...projection) *selectStatement {
 	if len(cols) == 0 {
 		return s
 	}
@@ -145,8 +145,8 @@ func (s *selectClause) addGroupBy(cols ...projection) *selectClause {
 }
 
 // Given one or more sort columns, either set or add to the ORDER BY clause for
-// the selectClause
-func (s *selectClause) addOrderBy(sortCols ...*sortColumn) *selectClause {
+// the selectStatement
+func (s *selectStatement) addOrderBy(sortCols ...*sortColumn) *selectStatement {
 	if len(sortCols) == 0 {
 		return s
 	}
@@ -167,20 +167,20 @@ func (s *selectClause) addOrderBy(sortCols ...*sortColumn) *selectClause {
 	return s
 }
 
-func (s *selectClause) setLimitWithOffset(limit int, offset int) *selectClause {
+func (s *selectStatement) setLimitWithOffset(limit int, offset int) *selectStatement {
 	lc := &limitClause{limit: limit, dialect: s.dialect}
 	lc.offset = &offset
 	s.limit = lc
 	return s
 }
 
-func (s *selectClause) setLimit(limit int) *selectClause {
+func (s *selectStatement) setLimit(limit int) *selectStatement {
 	lc := &limitClause{limit: limit, dialect: s.dialect}
 	s.limit = lc
 	return s
 }
 
-func containsJoin(s *selectClause, j *joinClause) bool {
+func containsJoin(s *selectStatement, j *joinClause) bool {
 	for _, sj := range s.joins {
 		if j == sj {
 			return true
@@ -189,11 +189,11 @@ func containsJoin(s *selectClause, j *joinClause) bool {
 	return false
 }
 
-func addToProjections(s *selectClause, p projection) {
+func addToProjections(s *selectStatement, p projection) {
 	s.projs = append(s.projs, p)
 }
 
-func (s *selectClause) removeSelection(toRemove selection) {
+func (s *selectStatement) removeSelection(toRemove selection) {
 	idx := -1
 	for x, sel := range s.selections {
 		if sel == toRemove {

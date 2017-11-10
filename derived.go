@@ -16,7 +16,7 @@ package sqlb
 // of the derived table as the selection alias (u instead of users).
 type derivedTable struct {
 	alias string
-	from  *selectClause
+	from  *selectStatement
 }
 
 // Return a collection of derivedColumn projections that have been constructed
