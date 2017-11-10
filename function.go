@@ -97,6 +97,7 @@ type sqlFunc struct {
 	alias    string
 	scanInfo scanInfo
 	elements []element
+	dialect  Dialect
 }
 
 func (f *sqlFunc) from() selection {
