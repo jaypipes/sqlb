@@ -19,6 +19,10 @@ type derivedTable struct {
 	from  *selectStatement
 }
 
+func (dt *derivedTable) setDialect(dialect Dialect) {
+	dt.from.setDialect(dialect)
+}
+
 // Return a collection of derivedColumn projections that have been constructed
 // to refer to this derived table and not have any outer alias
 func (dt *derivedTable) getAllDerivedColumns() []projection {
@@ -120,6 +124,11 @@ type derivedColumn struct {
 	alias string // This is the outermost alias
 	c     *Column
 	dt    *derivedTable
+}
+
+func (dc *derivedColumn) setDialect(dialect Dialect) {
+	dc.c.setDialect(dialect)
+	dc.dt.setDialect(dialect)
 }
 
 func (dc *derivedColumn) from() selection {

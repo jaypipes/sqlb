@@ -4,6 +4,14 @@ type groupByClause struct {
 	cols []projection
 }
 
+// Sets the statement's dialect and pushes the dialect down into any of the
+// statement's sub-clauses
+func (gb *groupByClause) setDialect(dialect Dialect) {
+	for _, c := range gb.cols {
+		c.(element).setDialect(dialect)
+	}
+}
+
 func (gb *groupByClause) argCount() int {
 	argc := 0
 	return argc

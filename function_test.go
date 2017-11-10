@@ -92,16 +92,6 @@ func TestFunctions(t *testing.T) {
 			},
 		},
 		{
-			name: "TRIM(column)",
-			c:    Trim(colUserName),
-			qs: map[Dialect]string{
-				DIALECT_MYSQL: "TRIM(users.name)",
-				// Should be:
-				// DIALECT_POSTGRESQL: "BTRIM(users.name)",
-				DIALECT_POSTGRESQL: "TRIM(users.name)",
-			},
-		},
-		{
 			name: "CHAR_LENGTH(column)",
 			c:    CharLength(colUserName),
 			qs: map[Dialect]string{

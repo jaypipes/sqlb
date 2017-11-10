@@ -4,6 +4,14 @@ type whereClause struct {
 	filters []*Expression
 }
 
+// Sets the statement's dialect and pushes the dialect down into any of the
+// statement's sub-clauses
+func (w *whereClause) setDialect(dialect Dialect) {
+	for _, filter := range w.filters {
+		filter.setDialect(dialect)
+	}
+}
+
 func (w *whereClause) argCount() int {
 	argc := 0
 	for _, filter := range w.filters {

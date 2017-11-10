@@ -7,6 +7,14 @@ type Table struct {
 	columns []*Column
 }
 
+// Sets the statement's dialect and pushes the dialect down into any of the
+// statement's sub-clauses
+func (t *Table) setDialect(dialect Dialect) {
+	for _, c := range t.columns {
+		c.setDialect(dialect)
+	}
+}
+
 // Return a pointer to a Column with a name or alias matching the supplied
 // string, or nil if no such column is known
 func (t *Table) C(name string) *Column {

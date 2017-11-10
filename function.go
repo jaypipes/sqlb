@@ -10,7 +10,6 @@ const (
 	FUNC_COUNT_STAR
 	FUNC_COUNT_DISTINCT
 	FUNC_CAST
-	FUNC_TRIM
 	FUNC_CHAR_LENGTH
 	FUNC_BIT_LENGTH
 	FUNC_ASCII
@@ -48,9 +47,6 @@ var (
 		},
 		FUNC_CAST: scanInfo{
 			SYM_CAST, SYM_ELEMENT, SYM_AS, SYM_PLACEHOLDER, SYM_RPAREN,
-		},
-		FUNC_TRIM: scanInfo{
-			SYM_TRIM, SYM_ELEMENT, SYM_RPAREN,
 		},
 		FUNC_CHAR_LENGTH: scanInfo{
 			SYM_CHAR_LENGTH, SYM_ELEMENT, SYM_RPAREN,
@@ -267,18 +263,6 @@ func Cast(p projection, stype SqlType) *sqlFunc {
 		scanInfo: si,
 		elements: []element{p.(element)},
 	}
-}
-
-func Trim(p projection) *sqlFunc {
-	return &sqlFunc{
-		scanInfo: funcScanTable[FUNC_TRIM],
-		elements: []element{p.(element)},
-		sel:      p.from(),
-	}
-}
-
-func (c *Column) Trim() *sqlFunc {
-	return Trim(c)
 }
 
 func CharLength(p projection) *sqlFunc {

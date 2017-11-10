@@ -6,6 +6,10 @@ type limitClause struct {
 	dialect Dialect
 }
 
+func (lc *limitClause) setDialect(dialect Dialect) {
+	lc.dialect = dialect
+}
+
 func (lc *limitClause) argCount() int {
 	if lc.offset == nil {
 		return 1

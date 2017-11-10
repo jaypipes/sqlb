@@ -11,6 +11,24 @@ type selectStatement struct {
 	dialect    Dialect
 }
 
+// Sets the statement's dialect and pushes the dialect down into any of the
+// statement's sub-clauses
+func (s *selectStatement) setDialect(dialect Dialect) {
+	s.dialect = dialect
+	if s.where != nil {
+		s.where.setDialect(dialect)
+	}
+	if s.groupBy != nil {
+		s.groupBy.setDialect(dialect)
+	}
+	if s.orderBy != nil {
+		s.orderBy.setDialect(dialect)
+	}
+	if s.limit != nil {
+		s.limit.setDialect(dialect)
+	}
+}
+
 func (s *selectStatement) argCount() int {
 	argc := 0
 	for _, p := range s.projs {
