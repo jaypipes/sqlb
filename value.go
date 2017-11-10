@@ -11,6 +11,12 @@ type value struct {
 	dialect Dialect
 }
 
+// Sets the statement's dialect and pushes the dialect down into any of the
+// statement's sub-clauses
+func (v *value) setDialect(dialect Dialect) {
+	v.dialect = dialect
+}
+
 func (v *value) from() selection {
 	return v.sel
 }

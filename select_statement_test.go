@@ -23,13 +23,13 @@ func TestSelectClause(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		c     *selectClause
+		s     *selectStatement
 		qs    string
 		qargs []interface{}
 	}{
 		{
 			name: "A literal value",
-			c: &selectClause{
+			s: &selectStatement{
 				projs: []projection{&value{val: 1}},
 			},
 			qs:    "SELECT ?",
@@ -37,7 +37,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "A literal value aliased",
-			c: &selectClause{
+			s: &selectStatement{
 				projs: []projection{
 					&value{alias: "foo", val: 1},
 				},
@@ -47,7 +47,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "Two literal values",
-			c: &selectClause{
+			s: &selectStatement{
 				projs: []projection{
 					&value{val: 1},
 					&value{val: 1},
@@ -58,7 +58,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "Table and column",
-			c: &selectClause{
+			s: &selectStatement{
 				selections: []selection{users},
 				projs:      []projection{colUserName},
 			},
@@ -66,7 +66,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "aliased Table and Column",
-			c: &selectClause{
+			s: &selectStatement{
 				selections: []selection{users.As("u")},
 				projs: []projection{
 					users.As("u").C("name"),
@@ -76,7 +76,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "Table and multiple Column",
-			c: &selectClause{
+			s: &selectStatement{
 				selections: []selection{users},
 				projs:      []projection{colUserId, colUserName},
 			},
@@ -84,7 +84,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "Simple WHERE",
-			c: &selectClause{
+			s: &selectStatement{
 				selections: []selection{users},
 				projs:      []projection{colUserName},
 				where: &whereClause{
@@ -98,7 +98,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "Simple LIMIT",
-			c: &selectClause{
+			s: &selectStatement{
 				selections: []selection{users},
 				projs:      []projection{colUserName},
 				limit:      &limitClause{limit: 10},
@@ -108,7 +108,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "Simple ORDER BY",
-			c: &selectClause{
+			s: &selectStatement{
 				selections: []selection{users},
 				projs:      []projection{colUserName},
 				orderBy: &orderByClause{
@@ -119,7 +119,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "Simple GROUP BY",
-			c: &selectClause{
+			s: &selectStatement{
 				selections: []selection{users},
 				projs:      []projection{colUserName},
 				groupBy: &groupByClause{
@@ -130,7 +130,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "GROUP BY, ORDER BY and LIMIT",
-			c: &selectClause{
+			s: &selectStatement{
 				selections: []selection{users},
 				projs:      []projection{colUserName},
 				groupBy: &groupByClause{
@@ -146,7 +146,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "Single JOIN",
-			c: &selectClause{
+			s: &selectStatement{
 				selections: []selection{articles},
 				projs:      []projection{colArticleId, colUserName.As("author")},
 				joins: []*joinClause{
@@ -161,7 +161,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "Multiple JOINs",
-			c: &selectClause{
+			s: &selectStatement{
 				selections: []selection{articles},
 				projs:      []projection{colArticleId, colUserName.As("author"), colArticleStateName.As("state")},
 				joins: []*joinClause{
@@ -181,7 +181,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "COUNT(*) on a table",
-			c: &selectClause{
+			s: &selectStatement{
 				selections: []selection{users},
 				projs:      []projection{Count(users)},
 			},
@@ -190,17 +190,17 @@ func TestSelectClause(t *testing.T) {
 	}
 	for _, test := range tests {
 		expArgc := len(test.qargs)
-		argc := test.c.argCount()
+		argc := test.s.argCount()
 		assert.Equal(expArgc, argc)
 
 		expLen := len(test.qs)
-		size := test.c.size()
+		size := test.s.size()
 		size += interpolationLength(DIALECT_MYSQL, argc)
 		assert.Equal(expLen, size)
 
 		b := make([]byte, size)
 		curArg := 0
-		written := test.c.scan(b, test.qargs, &curArg)
+		written := test.s.scan(b, test.qargs, &curArg)
 
 		assert.Equal(written, size)
 		assert.Equal(test.qs, string(b))

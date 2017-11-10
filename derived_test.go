@@ -23,7 +23,7 @@ func TestDerived(t *testing.T) {
 		// Simple one-column sub-SELECT
 		derivedTest{
 			c: &derivedTable{
-				from: &selectClause{
+				from: &selectStatement{
 					projs: []projection{
 						colUserName,
 					},

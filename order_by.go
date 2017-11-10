@@ -5,6 +5,12 @@ type sortColumn struct {
 	desc bool
 }
 
+// Sets the statement's dialect and pushes the dialect down into any of the
+// statement's sub-clauses
+func (sc *sortColumn) setDialect(dialect Dialect) {
+	// TODO(jaypipes): Anything to do here?)
+}
+
 func (sc *sortColumn) argCount() int {
 	return sc.p.argCount()
 }
@@ -32,6 +38,14 @@ func (sc *sortColumn) scan(b []byte, args []interface{}, curArg *int) int {
 
 type orderByClause struct {
 	scols []*sortColumn
+}
+
+// Sets the statement's dialect and pushes the dialect down into any of the
+// statement's sub-clauses
+func (ob *orderByClause) setDialect(dialect Dialect) {
+	for _, sc := range ob.scols {
+		sc.setDialect(dialect)
+	}
 }
 
 func (ob *orderByClause) argCount() int {

@@ -1,9 +1,16 @@
 package sqlb
 
 type Column struct {
-	alias string
-	name  string
-	tbl   *Table
+	alias   string
+	name    string
+	tbl     *Table
+	dialect Dialect
+}
+
+// Sets the statement's dialect and pushes the dialect down into any of the
+// statement's sub-clauses
+func (c *Column) setDialect(dialect Dialect) {
+	c.dialect = dialect
 }
 
 func (c *Column) from() selection {

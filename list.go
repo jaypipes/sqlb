@@ -6,6 +6,14 @@ type List struct {
 	elements []element
 }
 
+// Sets the statement's dialect and pushes the dialect down into any of the
+// statement's sub-clauses
+func (l *List) setDialect(dialect Dialect) {
+	for _, el := range l.elements {
+		el.setDialect(dialect)
+	}
+}
+
 func (l *List) argCount() int {
 	ac := 0
 	for _, el := range l.elements {

@@ -16,7 +16,11 @@ package sqlb
 // of the derived table as the selection alias (u instead of users).
 type derivedTable struct {
 	alias string
-	from  *selectClause
+	from  *selectStatement
+}
+
+func (dt *derivedTable) setDialect(dialect Dialect) {
+	dt.from.setDialect(dialect)
 }
 
 // Return a collection of derivedColumn projections that have been constructed
@@ -120,6 +124,11 @@ type derivedColumn struct {
 	alias string // This is the outermost alias
 	c     *Column
 	dt    *derivedTable
+}
+
+func (dc *derivedColumn) setDialect(dialect Dialect) {
+	dc.c.setDialect(dialect)
+	dc.dt.setDialect(dialect)
 }
 
 func (dc *derivedColumn) from() selection {

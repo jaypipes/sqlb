@@ -63,6 +63,16 @@ var (
 type Expression struct {
 	scanInfo scanInfo
 	elements []element
+	dialect  Dialect
+}
+
+// Sets the Expression's dialect and pushes the dialect down into any of the
+// Expression's elements
+func (e *Expression) setDialect(dialect Dialect) {
+	e.dialect = dialect
+	for _, el := range e.elements {
+		el.setDialect(dialect)
+	}
 }
 
 func (e *Expression) referrents() []selection {
