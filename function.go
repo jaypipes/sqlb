@@ -100,6 +100,19 @@ type sqlFunc struct {
 	dialect  Dialect
 }
 
+// Sets the sqlFunc's dialect and pushes the dialect down into any of the
+// sqlFunc's elements
+func (f *sqlFunc) setDialect(dialect Dialect) {
+	f.dialect = dialect
+	for _, el := range f.elements {
+		switch el.(type) {
+		case *value:
+			v := el.(*value)
+			v.dialect = dialect
+		}
+	}
+}
+
 func (f *sqlFunc) from() selection {
 	return f.sel
 }

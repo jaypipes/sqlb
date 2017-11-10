@@ -201,7 +201,7 @@ func TestFunctions(t *testing.T) {
 
 		// Test each SQL dialect output
 		for dialect, qs := range test.qs {
-			test.c.dialect = dialect
+			test.c.setDialect(dialect)
 			expLen := len(qs)
 			size := test.c.size()
 			size += interpolationLength(dialect, argc)
