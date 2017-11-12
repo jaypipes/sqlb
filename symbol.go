@@ -48,8 +48,7 @@ const (
 	SYM_COUNT_STAR
 	SYM_COUNT_DISTINCT
 	SYM_CAST
-	// TODO(jaypipes): Note that in PostreSQL, this is BTRIM(). We need a way
-	// to translate to DB dialects based on a driver.
+	SYM_BTRIM
 	SYM_TRIM
 	SYM_CHAR_LENGTH
 	SYM_BIT_LENGTH
@@ -212,6 +211,7 @@ var (
 		SYM_COUNT_STAR:              []byte("COUNT(*)"),
 		SYM_COUNT_DISTINCT:          []byte("COUNT(DISTINCT "),
 		SYM_CAST:                    []byte("CAST("),
+		SYM_BTRIM:                   []byte("BTRIM("),
 		SYM_TRIM:                    []byte("TRIM("),
 		SYM_CHAR_LENGTH:             []byte("CHAR_LENGTH("),
 		SYM_BIT_LENGTH:              []byte("BIT_LENGTH("),

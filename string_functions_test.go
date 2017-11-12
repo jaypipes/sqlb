@@ -23,10 +23,8 @@ func TestStringFunctions(t *testing.T) {
 			name: "TRIM(column)",
 			el:   Trim(colUserName),
 			qs: map[Dialect]string{
-				DIALECT_MYSQL: "TRIM(users.name)",
-				// Should be:
-				// DIALECT_POSTGRESQL: "BTRIM(users.name)",
-				DIALECT_POSTGRESQL: "TRIM(users.name)",
+				DIALECT_MYSQL:      "TRIM(users.name)",
+				DIALECT_POSTGRESQL: "BTRIM(users.name)",
 			},
 		},
 	}
