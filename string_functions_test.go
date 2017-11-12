@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestStringFunctions(t *testing.T) {
+func TestTrimFunctions(t *testing.T) {
 	assert := assert.New(t)
 
 	m := testFixtureMeta()
@@ -20,11 +20,27 @@ func TestStringFunctions(t *testing.T) {
 		qargs []interface{}
 	}{
 		{
-			name: "TRIM(column)",
+			name: "TRIM(column) or BTRIM(column)",
 			el:   Trim(colUserName),
 			qs: map[Dialect]string{
 				DIALECT_MYSQL:      "TRIM(users.name)",
 				DIALECT_POSTGRESQL: "BTRIM(users.name)",
+			},
+		},
+		{
+			name: "LTRIM(column) or TRIM(LEADING FROM column)",
+			el:   LTrim(colUserName),
+			qs: map[Dialect]string{
+				DIALECT_MYSQL:      "LTRIM(users.name)",
+				DIALECT_POSTGRESQL: "TRIM(LEADING FROM users.name)",
+			},
+		},
+		{
+			name: "RTRIM(column) or TRIM(TRAILING FROM column)",
+			el:   RTrim(colUserName),
+			qs: map[Dialect]string{
+				DIALECT_MYSQL:      "RTRIM(users.name)",
+				DIALECT_POSTGRESQL: "TRIM(TRAILING FROM users.name)",
 			},
 		},
 	}
