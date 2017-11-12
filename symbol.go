@@ -50,6 +50,11 @@ const (
 	SYM_CAST
 	SYM_BTRIM
 	SYM_TRIM
+	SYM_LTRIM
+	SYM_RTRIM
+	SYM_LEADING
+	SYM_TRAILING
+	SYM_BOTH
 	SYM_CHAR_LENGTH
 	SYM_BIT_LENGTH
 	SYM_ASCII
@@ -213,6 +218,11 @@ var (
 		SYM_CAST:                    []byte("CAST("),
 		SYM_BTRIM:                   []byte("BTRIM("),
 		SYM_TRIM:                    []byte("TRIM("),
+		SYM_LTRIM:                   []byte("LTRIM("),
+		SYM_RTRIM:                   []byte("RTRIM("),
+		SYM_LEADING:                 []byte("LEADING"),
+		SYM_TRAILING:                []byte("TRAILING"),
+		SYM_BOTH:                    []byte("BOTH"),
 		SYM_CHAR_LENGTH:             []byte("CHAR_LENGTH("),
 		SYM_BIT_LENGTH:              []byte("BIT_LENGTH("),
 		SYM_ASCII:                   []byte("ASCII("),
