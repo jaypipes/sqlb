@@ -43,7 +43,14 @@ func (f *trimFunc) argCount() int {
 }
 
 func (f *trimFunc) size() int {
-	size := len(Symbols[SYM_TRIM]) + len(Symbols[SYM_RPAREN])
+	size := 0
+	switch f.dialect {
+	case DIALECT_POSTGRESQL:
+		size += len(Symbols[SYM_BTRIM])
+	default:
+		size += len(Symbols[SYM_TRIM])
+	}
+	size += len(Symbols[SYM_RPAREN])
 	// We need to disable alias output for elements that are
 	// projections. We don't want to output, for example,
 	// "ON users.id AS user_id = articles.author"
@@ -60,8 +67,13 @@ func (f *trimFunc) size() int {
 }
 
 func (f *trimFunc) scan(b []byte, args []interface{}, curArg *int) int {
-	// TODO(jaypipes): Handle dialect differences
-	bw := copy(b, Symbols[SYM_TRIM])
+	bw := 0
+	switch f.dialect {
+	case DIALECT_POSTGRESQL:
+		bw += copy(b[bw:], Symbols[SYM_BTRIM])
+	default:
+		bw += copy(b[bw:], Symbols[SYM_TRIM])
+	}
 	// We need to disable alias output for elements that are
 	// projections. We don't want to output, for example,
 	// "ON users.id AS user_id = articles.author"
