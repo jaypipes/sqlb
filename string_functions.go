@@ -1,14 +1,24 @@
 package sqlb
 
+type TrimLocation int
+
+const (
+	TRIM_BOTH TrimLocation = iota
+	TRIM_TRAILING
+	TRIM_LEADING
+)
+
 type trimFunc struct {
-	sel     selection
-	alias   string
-	subject element
-	dialect Dialect
+	sel      selection
+	alias    string
+	subject  element
+	dialect  Dialect
+	chars    []byte
+	location TrimLocation
 }
 
-// Sets the sqlFunc's dialect and pushes the dialect down into any of the
-// sqlFunc's elements
+// Sets the element's dialect and pushes the dialect down into any of the
+// sub-elements
 func (f *trimFunc) setDialect(dialect Dialect) {
 	f.dialect = dialect
 	switch f.subject.(type) {
@@ -91,10 +101,13 @@ func (f *trimFunc) scan(b []byte, args []interface{}, curArg *int) int {
 	return bw
 }
 
+// Returns a struct that will output the TRIM() SQL function, trimming leading
+// and trailing whitespace from the supplied projection
 func Trim(p projection) *trimFunc {
 	return &trimFunc{
-		subject: p.(element),
-		sel:     p.from(),
+		subject:  p.(element),
+		sel:      p.from(),
+		location: TRIM_BOTH,
 	}
 }
 
