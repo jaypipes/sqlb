@@ -27,7 +27,7 @@ package sqlb
 //		TRIM(TRAILING FROM string)
 // Remove longest string containing any character in chars from before
 // and after string:
-//		TRIM(chars FROM string)
+//		BTRIM(string, chars)
 // Remove longest string containing any character in chars from before
 // string:
 //		TRIM(LEADING chars FROM string)
@@ -48,7 +48,7 @@ type trimFunc struct {
 	alias    string
 	subject  element
 	dialect  Dialect
-	chars    []byte
+	chars    string
 	location TrimLocation
 }
 
@@ -86,7 +86,11 @@ func (f *trimFunc) As(alias string) *trimFunc {
 }
 
 func (f *trimFunc) argCount() int {
-	return f.subject.argCount()
+	argc := f.subject.argCount()
+	if f.chars != "" {
+		argc++
+	}
+	return argc
 }
 
 // Helper function that returns the non-subject, non-interpolation size of the
@@ -95,7 +99,7 @@ func trimFuncSizeMySQL(f *trimFunc) int {
 	size := 0
 	switch f.location {
 	case TRIM_LEADING:
-		if f.chars == nil {
+		if f.chars == "" {
 			// LTRIM(string)
 			size = len(Symbols[SYM_LTRIM])
 		} else {
@@ -104,7 +108,7 @@ func trimFuncSizeMySQL(f *trimFunc) int {
 				len(Symbols[SYM_FROM]) + 1)
 		}
 	case TRIM_TRAILING:
-		if f.chars == nil {
+		if f.chars == "" {
 			// LTRIM(string)
 			size = len(Symbols[SYM_RTRIM])
 		} else {
@@ -113,12 +117,12 @@ func trimFuncSizeMySQL(f *trimFunc) int {
 				len(Symbols[SYM_FROM]) + 1)
 		}
 	case TRIM_BOTH:
-		if f.chars == nil {
+		if f.chars == "" {
 			// TRIM(string)
 			size = len(Symbols[SYM_TRIM])
 		} else {
 			// TRIM(remstr FROM string)
-			size = len(Symbols[SYM_TRIM]) + len(Symbols[SYM_FROM]) + 1
+			size = len(Symbols[SYM_TRIM]) + len(Symbols[SYM_FROM])
 		}
 	}
 	return size
@@ -131,38 +135,42 @@ func trimFuncScanMySQL(f *trimFunc, b []byte, args []interface{}, curArg *int) i
 	bw := 0
 	switch f.location {
 	case TRIM_LEADING:
-		if f.chars == nil {
+		if f.chars == "" {
 			bw += copy(b[bw:], Symbols[SYM_LTRIM])
 		} else {
 			bw += copy(b[bw:], Symbols[SYM_TRIM])
 			bw += copy(b[bw:], Symbols[SYM_LEADING])
-			args[*curArg] = string(f.chars)
-			*curArg++
 			bw += copy(b[bw:], []byte{' '})
+			bw += scanInterpolationMarker(f.dialect, b[bw:], *curArg)
+			args[*curArg] = f.chars
+			*curArg++
 			bw += copy(b[bw:], Symbols[SYM_FROM])
 		}
+		bw += trimFuncScanSubject(f, b[bw:], args, curArg)
 	case TRIM_TRAILING:
-		if f.chars == nil {
+		if f.chars == "" {
 			bw += copy(b[bw:], Symbols[SYM_RTRIM])
 		} else {
 			bw += copy(b[bw:], Symbols[SYM_TRIM])
 			bw += copy(b[bw:], Symbols[SYM_TRAILING])
-			args[*curArg] = string(f.chars)
-			*curArg++
 			bw += copy(b[bw:], []byte{' '})
+			bw += scanInterpolationMarker(f.dialect, b[bw:], *curArg)
+			args[*curArg] = f.chars
+			*curArg++
 			bw += copy(b[bw:], Symbols[SYM_FROM])
 		}
+		bw += trimFuncScanSubject(f, b[bw:], args, curArg)
 	case TRIM_BOTH:
-		if f.chars == nil {
+		if f.chars == "" {
 			bw += copy(b[bw:], Symbols[SYM_TRIM])
 		} else {
 			bw += copy(b[bw:], Symbols[SYM_TRIM])
-			bw += copy(b[bw:], Symbols[SYM_BOTH])
-			args[*curArg] = string(f.chars)
+			bw += scanInterpolationMarker(f.dialect, b[bw:], *curArg)
+			args[*curArg] = f.chars
 			*curArg++
-			bw += copy(b[bw:], []byte{' '})
 			bw += copy(b[bw:], Symbols[SYM_FROM])
 		}
+		bw += trimFuncScanSubject(f, b[bw:], args, curArg)
 	}
 	return bw
 }
@@ -176,7 +184,7 @@ func trimFuncSizePostgreSQL(f *trimFunc) int {
 		// TRIM(LEADING FROM string)
 		size = (len(Symbols[SYM_TRIM]) + len(Symbols[SYM_LEADING]) +
 			len(Symbols[SYM_FROM]))
-		if f.chars != nil {
+		if f.chars != "" {
 			// TRIM(LEADING chars FROM string)
 			size += 1
 		}
@@ -184,18 +192,17 @@ func trimFuncSizePostgreSQL(f *trimFunc) int {
 		// TRIM(TRAILING FROM string)
 		size = (len(Symbols[SYM_TRIM]) + len(Symbols[SYM_TRAILING]) +
 			len(Symbols[SYM_FROM]))
-		if f.chars != nil {
+		if f.chars != "" {
 			// TRIM(TRAILING chars FROM string)
 			size += 1
 		}
 	case TRIM_BOTH:
-		if f.chars == nil {
+		if f.chars == "" {
 			// BTRIM(string)
 			size = len(Symbols[SYM_BTRIM])
 		} else {
-			// TRIM(BOTH chars FROM string)
-			size = (len(Symbols[SYM_TRIM]) + len(Symbols[SYM_BOTH]) +
-				len(Symbols[SYM_FROM]) + 1)
+			// BTRIM(string, chars)
+			size = len(Symbols[SYM_BTRIM]) + len(Symbols[SYM_COMMA_WS])
 		}
 	}
 	return size
@@ -210,34 +217,49 @@ func trimFuncScanPostgreSQL(f *trimFunc, b []byte, args []interface{}, curArg *i
 	case TRIM_LEADING:
 		bw += copy(b[bw:], Symbols[SYM_TRIM])
 		bw += copy(b[bw:], Symbols[SYM_LEADING])
-		if f.chars != nil {
-			args[*curArg] = string(f.chars)
-			*curArg++
+		if f.chars != "" {
 			bw += copy(b[bw:], []byte{' '})
+			bw += scanInterpolationMarker(f.dialect, b[bw:], *curArg)
+			args[*curArg] = f.chars
+			*curArg++
 		}
 		bw += copy(b[bw:], Symbols[SYM_FROM])
+		bw += trimFuncScanSubject(f, b[bw:], args, curArg)
 	case TRIM_TRAILING:
 		bw += copy(b[bw:], Symbols[SYM_TRIM])
 		bw += copy(b[bw:], Symbols[SYM_TRAILING])
-		if f.chars != nil {
-			args[*curArg] = string(f.chars)
-			*curArg++
+		if f.chars != "" {
 			bw += copy(b[bw:], []byte{' '})
+			bw += scanInterpolationMarker(f.dialect, b[bw:], *curArg)
+			args[*curArg] = f.chars
+			*curArg++
 		}
 		bw += copy(b[bw:], Symbols[SYM_FROM])
+		bw += trimFuncScanSubject(f, b[bw:], args, curArg)
 	case TRIM_BOTH:
-		if f.chars == nil {
-			bw += copy(b[bw:], Symbols[SYM_BTRIM])
-		} else {
-			bw += copy(b[bw:], Symbols[SYM_TRIM])
-			bw += copy(b[bw:], Symbols[SYM_BOTH])
-			args[*curArg] = string(f.chars)
+		bw += copy(b[bw:], Symbols[SYM_BTRIM])
+		bw += trimFuncScanSubject(f, b[bw:], args, curArg)
+		if f.chars != "" {
+			bw += copy(b[bw:], Symbols[SYM_COMMA_WS])
+			bw += scanInterpolationMarker(f.dialect, b[bw:], *curArg)
+			args[*curArg] = f.chars
 			*curArg++
-			bw += copy(b[bw:], []byte{' '})
-			bw += copy(b[bw:], Symbols[SYM_FROM])
 		}
 	}
 	return bw
+}
+
+// Scan in the subject of the TRIM() function
+func trimFuncScanSubject(f *trimFunc, b []byte, args []interface{}, curArg *int) int {
+	// We need to disable alias output for elements that are
+	// projections. We don't want to output, for example,
+	// "ON users.id AS user_id = TRIM(articles.author)"
+	switch f.subject.(type) {
+	case projection:
+		reset := f.subject.(projection).disableAliasScan()
+		defer reset()
+	}
+	return f.subject.scan(b, args, curArg)
 }
 
 func (f *trimFunc) size() int {
@@ -251,7 +273,7 @@ func (f *trimFunc) size() int {
 	size += len(Symbols[SYM_RPAREN])
 	// We need to disable alias output for elements that are
 	// projections. We don't want to output, for example,
-	// "ON users.id AS user_id = articles.author"
+	// "ON users.id AS user_id = TRIM(articles.author)"
 	switch f.subject.(type) {
 	case projection:
 		reset := f.subject.(projection).disableAliasScan()
@@ -272,15 +294,6 @@ func (f *trimFunc) scan(b []byte, args []interface{}, curArg *int) int {
 	default:
 		bw += trimFuncScanMySQL(f, b[bw:], args, curArg)
 	}
-	// We need to disable alias output for elements that are
-	// projections. We don't want to output, for example,
-	// "ON users.id AS user_id = articles.author"
-	switch f.subject.(type) {
-	case projection:
-		reset := f.subject.(projection).disableAliasScan()
-		defer reset()
-	}
-	bw += f.subject.scan(b[bw:], args, curArg)
 	bw += copy(b[bw:], Symbols[SYM_RPAREN])
 	if f.alias != "" {
 		bw += copy(b[bw:], Symbols[SYM_AS])
@@ -335,6 +348,58 @@ func RTrim(p projection) *trimFunc {
 
 func (c *Column) RTrim() *trimFunc {
 	f := LTrim(c)
+	f.setDialect(c.tbl.meta.dialect)
+	return f
+}
+
+// Returns a struct that will output the TRIM() SQL function, trimming leading
+// and trailing specified characters from the supplied projection
+func TrimChars(p projection, chars string) *trimFunc {
+	return &trimFunc{
+		subject:  p.(element),
+		sel:      p.from(),
+		location: TRIM_BOTH,
+		chars:    chars,
+	}
+}
+
+func (c *Column) TrimChars(chars string) *trimFunc {
+	f := TrimChars(c, chars)
+	f.setDialect(c.tbl.meta.dialect)
+	return f
+}
+
+// Returns a struct that will output the TRIM(LEADING chars FROM column) SQL
+// function, trimming leading specified characters from the supplied projection
+func LTrimChars(p projection, chars string) *trimFunc {
+	return &trimFunc{
+		subject:  p.(element),
+		sel:      p.from(),
+		location: TRIM_LEADING,
+		chars:    chars,
+	}
+}
+
+func (c *Column) LTrimChars(chars string) *trimFunc {
+	f := LTrimChars(c, chars)
+	f.setDialect(c.tbl.meta.dialect)
+	return f
+}
+
+// Returns a struct that will output the TRIM(TRAILING chars FROM column) SQL
+// function, trimming trailing specified characters from the supplied
+// projection
+func RTrimChars(p projection, chars string) *trimFunc {
+	return &trimFunc{
+		subject:  p.(element),
+		sel:      p.from(),
+		location: TRIM_TRAILING,
+		chars:    chars,
+	}
+}
+
+func (c *Column) RTrimChars(chars string) *trimFunc {
+	f := RTrimChars(c, chars)
 	f.setDialect(c.tbl.meta.dialect)
 	return f
 }
