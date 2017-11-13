@@ -140,9 +140,10 @@ func trimFuncScanMySQL(f *trimFunc, b []byte, args []interface{}, curArg *int) i
 		} else {
 			bw += copy(b[bw:], Symbols[SYM_TRIM])
 			bw += copy(b[bw:], Symbols[SYM_LEADING])
+			bw += copy(b[bw:], []byte{' '})
+			bw += scanInterpolationMarker(f.dialect, b[bw:], *curArg)
 			args[*curArg] = f.chars
 			*curArg++
-			bw += copy(b[bw:], []byte{' '})
 			bw += copy(b[bw:], Symbols[SYM_FROM])
 		}
 		bw += trimFuncScanSubject(f, b[bw:], args, curArg)
@@ -152,9 +153,10 @@ func trimFuncScanMySQL(f *trimFunc, b []byte, args []interface{}, curArg *int) i
 		} else {
 			bw += copy(b[bw:], Symbols[SYM_TRIM])
 			bw += copy(b[bw:], Symbols[SYM_TRAILING])
+			bw += copy(b[bw:], []byte{' '})
+			bw += scanInterpolationMarker(f.dialect, b[bw:], *curArg)
 			args[*curArg] = f.chars
 			*curArg++
-			bw += copy(b[bw:], []byte{' '})
 			bw += copy(b[bw:], Symbols[SYM_FROM])
 		}
 		bw += trimFuncScanSubject(f, b[bw:], args, curArg)
@@ -216,9 +218,10 @@ func trimFuncScanPostgreSQL(f *trimFunc, b []byte, args []interface{}, curArg *i
 		bw += copy(b[bw:], Symbols[SYM_TRIM])
 		bw += copy(b[bw:], Symbols[SYM_LEADING])
 		if f.chars != "" {
+			bw += copy(b[bw:], []byte{' '})
+			bw += scanInterpolationMarker(f.dialect, b[bw:], *curArg)
 			args[*curArg] = f.chars
 			*curArg++
-			bw += copy(b[bw:], []byte{' '})
 		}
 		bw += copy(b[bw:], Symbols[SYM_FROM])
 		bw += trimFuncScanSubject(f, b[bw:], args, curArg)
@@ -226,9 +229,10 @@ func trimFuncScanPostgreSQL(f *trimFunc, b []byte, args []interface{}, curArg *i
 		bw += copy(b[bw:], Symbols[SYM_TRIM])
 		bw += copy(b[bw:], Symbols[SYM_TRAILING])
 		if f.chars != "" {
+			bw += copy(b[bw:], []byte{' '})
+			bw += scanInterpolationMarker(f.dialect, b[bw:], *curArg)
 			args[*curArg] = f.chars
 			*curArg++
-			bw += copy(b[bw:], []byte{' '})
 		}
 		bw += copy(b[bw:], Symbols[SYM_FROM])
 		bw += trimFuncScanSubject(f, b[bw:], args, curArg)
@@ -349,7 +353,7 @@ func (c *Column) RTrim() *trimFunc {
 }
 
 // Returns a struct that will output the TRIM() SQL function, trimming leading
-// and trailing whitespace from the supplied projection
+// and trailing specified characters from the supplied projection
 func TrimChars(p projection, chars string) *trimFunc {
 	return &trimFunc{
 		subject:  p.(element),
@@ -361,6 +365,41 @@ func TrimChars(p projection, chars string) *trimFunc {
 
 func (c *Column) TrimChars(chars string) *trimFunc {
 	f := TrimChars(c, chars)
+	f.setDialect(c.tbl.meta.dialect)
+	return f
+}
+
+// Returns a struct that will output the TRIM(LEADING chars FROM column) SQL
+// function, trimming leading specified characters from the supplied projection
+func LTrimChars(p projection, chars string) *trimFunc {
+	return &trimFunc{
+		subject:  p.(element),
+		sel:      p.from(),
+		location: TRIM_LEADING,
+		chars:    chars,
+	}
+}
+
+func (c *Column) LTrimChars(chars string) *trimFunc {
+	f := LTrimChars(c, chars)
+	f.setDialect(c.tbl.meta.dialect)
+	return f
+}
+
+// Returns a struct that will output the TRIM(TRAILING chars FROM column) SQL
+// function, trimming trailing specified characters from the supplied
+// projection
+func RTrimChars(p projection, chars string) *trimFunc {
+	return &trimFunc{
+		subject:  p.(element),
+		sel:      p.from(),
+		location: TRIM_TRAILING,
+		chars:    chars,
+	}
+}
+
+func (c *Column) RTrimChars(chars string) *trimFunc {
+	f := RTrimChars(c, chars)
 	f.setDialect(c.tbl.meta.dialect)
 	return f
 }
