@@ -43,6 +43,15 @@ func TestTrimFunctions(t *testing.T) {
 				DIALECT_POSTGRESQL: "TRIM(TRAILING FROM users.name)",
 			},
 		},
+		{
+			name: "TRIM(remstr FROM column) OR BTRIM(column, chars)",
+			el:   TrimChars(colUserName, "xyz"),
+			qs: map[Dialect]string{
+				DIALECT_MYSQL:      "TRIM(? FROM users.name)",
+				DIALECT_POSTGRESQL: "BTRIM(users.name, $1)",
+			},
+			qargs: []interface{}{"xyz"},
+		},
 	}
 	for _, test := range tests {
 		expArgc := len(test.qargs)
@@ -58,11 +67,15 @@ func TestTrimFunctions(t *testing.T) {
 			assert.Equal(expLen, size)
 
 			b := make([]byte, size)
+			args := make([]interface{}, argc)
 			curArg := 0
-			written := test.el.scan(b, test.qargs, &curArg)
+			written := test.el.scan(b, args, &curArg)
 
 			assert.Equal(written, size)
 			assert.Equal(qs, string(b))
+			if expArgc > 0 {
+				assert.Equal(args, test.qargs)
+			}
 		}
 	}
 }
