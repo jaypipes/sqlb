@@ -574,8 +574,8 @@ the RDBMS in use. Examples of output are included below for supported dialects.
 The following table shows the SQL string that is returned from `sel.String()`
 for each `sqlb` string function and the supported RDBMS dialects.
 
-| `sqlb` function | RDBMS dialect | `qs` contents | `qargs` contents |
-| --------------- | ------------- | ------------- | ---------------- |
+| `sqlb` function | RDBMS dialect | `qs` contents |
+| --------------- | ------------- | ------------- |
 | `Trim(colName)` | MySQL         | `SELECT TRIM(users.name) FROM users` |
 | `Trim(colName)` | PostgreSQL    | `SELECT BTRIM(users.name) FROM users` |
 | `LTrim(colName)` | MySQL         | `SELECT LTRIM(users.name) FROM users` |
