@@ -8,6 +8,15 @@ var defaultFormatOptions = &FormatOptions{
 	SeparateClauseWith: " ",
 }
 
+type ElementSizes struct {
+	// The number of interface{} arguments that the element will add to the
+	// slice of interface{} arguments that will eventually be constructed for
+	// the Query
+	ArgCount int
+	// The number of bytes in the output buffer to represent this element
+	BufferSize int
+}
+
 // The struct that holds information about the formatting and dialect of the
 // output SQL that sqlb writes to the output buffer
 type sqlScanner struct {
@@ -20,8 +29,18 @@ func (s *sqlScanner) scan(b []byte, args []interface{}, scannables ...Scannable)
 	scannables[0].scan(b, args, &curArg)
 }
 
-// Returns the length (in bytes) of the interpolation markers, which depends on
-// the dialect in use when constructing the SQL buffer
-func (s *sqlScanner) interpolationLength(argc int) int {
-	return interpolationLength(s.dialect, argc)
+func (s *sqlScanner) size(elements ...element) *ElementSizes {
+	buflen := 0
+	argc := 0
+
+	for _, el := range elements {
+		argc += el.argCount()
+		buflen += el.size()
+	}
+	buflen += interpolationLength(s.dialect, argc)
+
+	return &ElementSizes{
+		ArgCount:   argc,
+		BufferSize: buflen,
+	}
 }

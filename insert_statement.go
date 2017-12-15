@@ -8,6 +8,8 @@ type insertStatement struct {
 	values  []interface{}
 }
 
+func (s *insertStatement) setDialect(dialect Dialect) {}
+
 func (s *insertStatement) argCount() int {
 	return len(s.values)
 }

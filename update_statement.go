@@ -9,6 +9,8 @@ type updateStatement struct {
 	where   *whereClause
 }
 
+func (s *updateStatement) setDialect(dialect Dialect) {}
+
 func (s *updateStatement) argCount() int {
 	argc := len(s.values)
 	if s.where != nil {

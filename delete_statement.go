@@ -7,6 +7,8 @@ type deleteStatement struct {
 	where *whereClause
 }
 
+func (s *deleteStatement) setDialect(dialect Dialect) {}
+
 func (s *deleteStatement) argCount() int {
 	argc := 0
 	if s.where != nil {

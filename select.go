@@ -27,28 +27,24 @@ func (q *SelectQuery) Error() error {
 }
 
 func (q *SelectQuery) String() string {
-	size := q.sel.size()
-	argc := q.sel.argCount()
-	size += q.scanner.interpolationLength(argc)
-	if len(q.args) != argc {
-		q.args = make([]interface{}, argc)
+	sizes := q.scanner.size(q.sel)
+	if len(q.args) != sizes.ArgCount {
+		q.args = make([]interface{}, sizes.ArgCount)
 	}
-	if len(q.b) != size {
-		q.b = make([]byte, size)
+	if len(q.b) != sizes.BufferSize {
+		q.b = make([]byte, sizes.BufferSize)
 	}
 	q.scanner.scan(q.b, q.args, q.sel)
 	return string(q.b)
 }
 
 func (q *SelectQuery) StringArgs() (string, []interface{}) {
-	size := q.sel.size()
-	argc := q.sel.argCount()
-	size += q.scanner.interpolationLength(argc)
-	if len(q.args) != argc {
-		q.args = make([]interface{}, argc)
+	sizes := q.scanner.size(q.sel)
+	if len(q.args) != sizes.ArgCount {
+		q.args = make([]interface{}, sizes.ArgCount)
 	}
-	if len(q.b) != size {
-		q.b = make([]byte, size)
+	if len(q.b) != sizes.BufferSize {
+		q.b = make([]byte, sizes.BufferSize)
 	}
 	q.scanner.scan(q.b, q.args, q.sel)
 	return string(q.b), q.args

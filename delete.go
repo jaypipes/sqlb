@@ -25,28 +25,24 @@ func (q *DeleteQuery) Error() error {
 }
 
 func (q *DeleteQuery) String() string {
-	size := q.stmt.size()
-	argc := q.stmt.argCount()
-	size += q.scanner.interpolationLength(argc)
-	if len(q.args) != argc {
-		q.args = make([]interface{}, argc)
+	sizes := q.scanner.size(q.stmt)
+	if len(q.args) != sizes.ArgCount {
+		q.args = make([]interface{}, sizes.ArgCount)
 	}
-	if len(q.b) != size {
-		q.b = make([]byte, size)
+	if len(q.b) != sizes.BufferSize {
+		q.b = make([]byte, sizes.BufferSize)
 	}
 	q.scanner.scan(q.b, q.args, q.stmt)
 	return string(q.b)
 }
 
 func (q *DeleteQuery) StringArgs() (string, []interface{}) {
-	size := q.stmt.size()
-	argc := q.stmt.argCount()
-	size += q.scanner.interpolationLength(argc)
-	if len(q.args) != argc {
-		q.args = make([]interface{}, argc)
+	sizes := q.scanner.size(q.stmt)
+	if len(q.args) != sizes.ArgCount {
+		q.args = make([]interface{}, sizes.ArgCount)
 	}
-	if len(q.b) != size {
-		q.b = make([]byte, size)
+	if len(q.b) != sizes.BufferSize {
+		q.b = make([]byte, sizes.BufferSize)
 	}
 	q.scanner.scan(q.b, q.args, q.stmt)
 	return string(q.b), q.args
