@@ -26,7 +26,10 @@ type sqlScanner struct {
 
 func (s *sqlScanner) scan(b []byte, args []interface{}, scannables ...Scannable) {
 	curArg := 0
-	scannables[0].scan(b, args, &curArg)
+
+	for _, scannable := range scannables {
+		scannable.scan(b, args, &curArg)
+	}
 }
 
 func (s *sqlScanner) size(elements ...element) *ElementSizes {
