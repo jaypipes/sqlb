@@ -42,6 +42,12 @@ func TestUpdateQuery(t *testing.T) {
 			qargs: []interface{}{"foo"},
 		},
 		{
+			name:  "UPDATE no WHERE using Table.Update()",
+			q:     users.Update(map[string]interface{}{"name": "foo"}),
+			qs:    "UPDATE users SET name = ?",
+			qargs: []interface{}{"foo"},
+		},
+		{
 			name: "UPDATE simple WHERE",
 			q: Update(users, map[string]interface{}{"name": "bar"}).Where(
 				Equal(colUserName, "foo"),

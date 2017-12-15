@@ -15,7 +15,7 @@ type UpdateQuery struct {
 	b       []byte
 	args    []interface{}
 	stmt    *updateStatement
-	dialect Dialect
+	scanner *sqlScanner
 }
 
 func (q *UpdateQuery) IsValid() bool {
@@ -27,32 +27,26 @@ func (q *UpdateQuery) Error() error {
 }
 
 func (q *UpdateQuery) String() string {
-	size := q.stmt.size()
-	argc := q.stmt.argCount()
-	size += interpolationLength(q.dialect, argc)
-	if len(q.args) != argc {
-		q.args = make([]interface{}, argc)
+	sizes := q.scanner.size(q.stmt)
+	if len(q.args) != sizes.ArgCount {
+		q.args = make([]interface{}, sizes.ArgCount)
 	}
-	if len(q.b) != size {
-		q.b = make([]byte, size)
+	if len(q.b) != sizes.BufferSize {
+		q.b = make([]byte, sizes.BufferSize)
 	}
-	curArg := 0
-	q.stmt.scan(q.b, q.args, &curArg)
+	q.scanner.scan(q.b, q.args, q.stmt)
 	return string(q.b)
 }
 
 func (q *UpdateQuery) StringArgs() (string, []interface{}) {
-	size := q.stmt.size()
-	argc := q.stmt.argCount()
-	size += interpolationLength(q.dialect, argc)
-	if len(q.args) != argc {
-		q.args = make([]interface{}, argc)
+	sizes := q.scanner.size(q.stmt)
+	if len(q.args) != sizes.ArgCount {
+		q.args = make([]interface{}, sizes.ArgCount)
 	}
-	if len(q.b) != size {
-		q.b = make([]byte, size)
+	if len(q.b) != sizes.BufferSize {
+		q.b = make([]byte, sizes.BufferSize)
 	}
-	curArg := 0
-	q.stmt.scan(q.b, q.args, &curArg)
+	q.scanner.scan(q.b, q.args, q.stmt)
 	return string(q.b), q.args
 }
 
@@ -86,10 +80,21 @@ func Update(t *Table, values map[string]interface{}) *UpdateQuery {
 		x++
 	}
 
+	scanner := &sqlScanner{
+		dialect: t.meta.dialect,
+		format:  defaultFormatOptions,
+	}
 	stmt := &updateStatement{
 		table:   t,
 		columns: cols,
 		values:  vals,
 	}
-	return &UpdateQuery{stmt: stmt, dialect: t.meta.dialect}
+	return &UpdateQuery{
+		stmt:    stmt,
+		scanner: scanner,
+	}
+}
+
+func (t *Table) Update(values map[string]interface{}) *UpdateQuery {
+	return Update(t, values)
 }

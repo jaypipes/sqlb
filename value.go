@@ -5,16 +5,9 @@ package sqlb
 // structs but instead helper functions like sqlb.Equal() will construct a
 // value and bind it to the containing element.
 type value struct {
-	sel     selection
-	alias   string
-	val     interface{}
-	dialect Dialect
-}
-
-// Sets the statement's dialect and pushes the dialect down into any of the
-// statement's sub-clauses
-func (v *value) setDialect(dialect Dialect) {
-	v.dialect = dialect
+	sel   selection
+	alias string
+	val   interface{}
 }
 
 func (v *value) from() selection {
@@ -43,7 +36,7 @@ func (v *value) argCount() int {
 	return 1
 }
 
-func (v *value) size() int {
+func (v *value) size(scanner *sqlScanner) int {
 	// Due to dialect handling, we do not include the length of interpolation
 	// markers for query parameters. This is calculated separately by the
 	// top-level scanning struct before malloc'ing the buffer to inject the SQL
@@ -55,9 +48,9 @@ func (v *value) size() int {
 	return size
 }
 
-func (v *value) scan(b []byte, args []interface{}, curArg *int) int {
+func (v *value) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
 	args[*curArg] = v.val
-	bw := scanInterpolationMarker(v.dialect, b, *curArg)
+	bw := scanInterpolationMarker(scanner.dialect, b, *curArg)
 	*curArg++
 	if v.alias != "" {
 		bw += copy(b[bw:], Symbols[SYM_AS])

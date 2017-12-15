@@ -12,7 +12,7 @@ func (s *insertStatement) argCount() int {
 	return len(s.values)
 }
 
-func (s *insertStatement) size() int {
+func (s *insertStatement) size(scanner *sqlScanner) int {
 	size := len(Symbols[SYM_INSERT]) + len(s.table.name) + 1 // space after table name
 	ncols := len(s.columns)
 	for _, c := range s.columns {
@@ -30,7 +30,7 @@ func (s *insertStatement) size() int {
 	return size
 }
 
-func (s *insertStatement) scan(b []byte, args []interface{}, curArg *int) int {
+func (s *insertStatement) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	bw += copy(b[bw:], Symbols[SYM_INSERT])
 	// We don't add any table alias when outputting the table identifier
@@ -49,7 +49,7 @@ func (s *insertStatement) scan(b []byte, args []interface{}, curArg *int) int {
 	}
 	bw += copy(b[bw:], Symbols[SYM_VALUES])
 	for x, v := range s.values {
-		bw += scanInterpolationMarker(s.table.meta.dialect, b[bw:], *curArg)
+		bw += scanInterpolationMarker(scanner.dialect, b[bw:], *curArg)
 		args[*curArg] = v
 		*curArg++
 		if x != (ncols - 1) {

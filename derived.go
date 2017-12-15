@@ -19,10 +19,6 @@ type derivedTable struct {
 	from  *selectStatement
 }
 
-func (dt *derivedTable) setDialect(dialect Dialect) {
-	dt.from.setDialect(dialect)
-}
-
 // Return a collection of derivedColumn projections that have been constructed
 // to refer to this derived table and not have any outer alias
 func (dt *derivedTable) getAllDerivedColumns() []projection {
@@ -54,17 +50,17 @@ func (dt *derivedTable) argCount() int {
 	return dt.from.argCount()
 }
 
-func (dt *derivedTable) size() int {
-	size := dt.from.size()
+func (dt *derivedTable) size(scanner *sqlScanner) int {
+	size := dt.from.size(scanner)
 	size += (len(Symbols[SYM_LPAREN]) + len(Symbols[SYM_RPAREN]) +
 		len(Symbols[SYM_AS]) + len(dt.alias))
 	return size
 }
 
-func (dt *derivedTable) scan(b []byte, args []interface{}, curArg *int) int {
+func (dt *derivedTable) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	bw += copy(b[bw:], Symbols[SYM_LPAREN])
-	bw += dt.from.scan(b[bw:], args, curArg)
+	bw += dt.from.scan(scanner, b[bw:], args, curArg)
 	bw += copy(b[bw:], Symbols[SYM_RPAREN])
 	bw += copy(b[bw:], Symbols[SYM_AS])
 	bw += copy(b[bw:], dt.alias)
@@ -126,26 +122,8 @@ type derivedColumn struct {
 	dt    *derivedTable
 }
 
-func (dc *derivedColumn) setDialect(dialect Dialect) {
-	dc.c.setDialect(dialect)
-	dc.dt.setDialect(dialect)
-}
-
 func (dc *derivedColumn) from() selection {
 	return dc.dt
-}
-
-func (dc *derivedColumn) projectionId() uint64 {
-	args := make([]string, 2)
-	args[0] = dc.dt.alias
-	if dc.alias != "" {
-		args[1] = dc.alias
-	} else if dc.c.alias != "" {
-		args[1] = dc.c.alias
-	} else {
-		args[1] = dc.c.name
-	}
-	return toId(args...)
 }
 
 func (dc *derivedColumn) disableAliasScan() func() {
@@ -158,7 +136,7 @@ func (dc *derivedColumn) argCount() int {
 	return 0
 }
 
-func (dc *derivedColumn) size() int {
+func (dc *derivedColumn) size(scanner *sqlScanner) int {
 	size := len(dc.dt.alias)
 	size += len(Symbols[SYM_PERIOD])
 	if dc.c.alias != "" {
@@ -172,7 +150,7 @@ func (dc *derivedColumn) size() int {
 	return size
 }
 
-func (dc *derivedColumn) scan(b []byte, args []interface{}, curArg *int) int {
+func (dc *derivedColumn) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	bw += copy(b[bw:], dc.dt.alias)
 	bw += copy(b[bw:], Symbols[SYM_PERIOD])

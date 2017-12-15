@@ -5,6 +5,7 @@ type scanInfo []Symbol
 
 const (
 	SYM_ELEMENT = iota // Marker for an element that self-scans into the SQL buffer
+	SYM_SPACE
 	SYM_QUEST_MARK
 	SYM_DOLLAR
 	SYM_PERIOD
@@ -174,12 +175,13 @@ var (
 var (
 	Symbols = map[Symbol][]byte{
 		SYM_QUEST_MARK:              []byte("?"),
+		SYM_SPACE:                   []byte(" "),
 		SYM_DOLLAR:                  []byte("$"),
 		SYM_PERIOD:                  []byte("."),
 		SYM_AS:                      []byte(" AS "),
 		SYM_COMMA_WS:                []byte(", "),
 		SYM_SELECT:                  []byte("SELECT "),
-		SYM_FROM:                    []byte(" FROM "),
+		SYM_FROM:                    []byte("FROM "),
 		SYM_JOIN:                    []byte(" JOIN "),
 		SYM_LEFT_JOIN:               []byte(" LEFT JOIN "),
 		SYM_CROSS_JOIN:              []byte(" CROSS JOIN "),

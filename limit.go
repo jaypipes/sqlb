@@ -1,13 +1,8 @@
 package sqlb
 
 type limitClause struct {
-	limit   int
-	offset  *int
-	dialect Dialect
-}
-
-func (lc *limitClause) setDialect(dialect Dialect) {
-	lc.dialect = dialect
+	limit  int
+	offset *int
 }
 
 func (lc *limitClause) argCount() int {
@@ -17,7 +12,7 @@ func (lc *limitClause) argCount() int {
 	return 2
 }
 
-func (lc *limitClause) size() int {
+func (lc *limitClause) size(scanner *sqlScanner) int {
 	// Due to dialect handling, we do not include the length of interpolation
 	// markers for query parameters. This is calculated separately by the
 	// top-level scanning struct before malloc'ing the buffer to inject the SQL
@@ -29,15 +24,15 @@ func (lc *limitClause) size() int {
 	return size
 }
 
-func (lc *limitClause) scan(b []byte, args []interface{}, curArg *int) int {
+func (lc *limitClause) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	bw += copy(b[bw:], Symbols[SYM_LIMIT])
-	bw += scanInterpolationMarker(lc.dialect, b[bw:], *curArg)
+	bw += scanInterpolationMarker(scanner.dialect, b[bw:], *curArg)
 	args[*curArg] = lc.limit
 	*curArg++
 	if lc.offset != nil {
 		bw += copy(b[bw:], Symbols[SYM_OFFSET])
-		bw += scanInterpolationMarker(lc.dialect, b[bw:], *curArg)
+		bw += scanInterpolationMarker(scanner.dialect, b[bw:], *curArg)
 		args[*curArg] = *lc.offset
 		*curArg++
 	}

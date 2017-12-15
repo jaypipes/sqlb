@@ -15,7 +15,7 @@ func Testvalue(t *testing.T) {
 	expLen := len(exp)
 	expArgCount := 1
 
-	s := v.size()
+	s := v.size(defaultScanner)
 	assert.Equal(expLen, s)
 
 	argc := v.argCount()
@@ -24,7 +24,7 @@ func Testvalue(t *testing.T) {
 	args := make([]interface{}, 1)
 	b := make([]byte, s)
 	curArg := 0
-	written := v.scan(b, args, &curArg)
+	written := v.scan(defaultScanner, b, args, &curArg)
 
 	assert.Equal(s, written)
 	assert.Equal(exp, string(b))

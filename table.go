@@ -7,14 +7,6 @@ type Table struct {
 	columns []*Column
 }
 
-// Sets the statement's dialect and pushes the dialect down into any of the
-// statement's sub-clauses
-func (t *Table) setDialect(dialect Dialect) {
-	for _, c := range t.columns {
-		c.setDialect(dialect)
-	}
-}
-
 // Return a pointer to a Column with a name or alias matching the supplied
 // string, or nil if no such column is known
 func (t *Table) C(name string) *Column {
@@ -51,7 +43,7 @@ func (t *Table) argCount() int {
 	return 0
 }
 
-func (t *Table) size() int {
+func (t *Table) size(scanner *sqlScanner) int {
 	size := len(t.name)
 	if t.alias != "" {
 		size += len(Symbols[SYM_AS]) + len(t.alias)
@@ -59,7 +51,7 @@ func (t *Table) size() int {
 	return size
 }
 
-func (t *Table) scan(b []byte, args []interface{}, curArg *int) int {
+func (t *Table) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
 	bw := copy(b, t.name)
 	if t.alias != "" {
 		bw += copy(b[bw:], Symbols[SYM_AS])

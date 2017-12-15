@@ -17,11 +17,11 @@ func TestListSingle(t *testing.T) {
 
 	exp := "users.name"
 	expLen := len(exp)
-	s := cl.size()
+	s := cl.size(defaultScanner)
 	assert.Equal(expLen, s)
 
 	b := make([]byte, s)
-	written := cl.scan(b, nil, nil)
+	written := cl.scan(defaultScanner, b, nil, nil)
 
 	assert.Equal(written, s)
 	assert.Equal(exp, string(b))
@@ -39,11 +39,11 @@ func TestListMulti(t *testing.T) {
 
 	exp := "users.id, users.name"
 	expLen := len(exp)
-	s := cl.size()
+	s := cl.size(defaultScanner)
 	assert.Equal(expLen, s)
 
 	b := make([]byte, s)
-	written := cl.scan(b, nil, nil)
+	written := cl.scan(defaultScanner, b, nil, nil)
 
 	assert.Equal(written, s)
 	assert.Equal(exp, string(b))

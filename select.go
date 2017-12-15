@@ -15,7 +15,7 @@ type SelectQuery struct {
 	b       []byte
 	args    []interface{}
 	sel     *selectStatement
-	dialect Dialect
+	scanner *sqlScanner
 }
 
 func (q *SelectQuery) IsValid() bool {
@@ -27,32 +27,26 @@ func (q *SelectQuery) Error() error {
 }
 
 func (q *SelectQuery) String() string {
-	size := q.sel.size()
-	argc := q.sel.argCount()
-	size += interpolationLength(q.dialect, argc)
-	if len(q.args) != argc {
-		q.args = make([]interface{}, argc)
+	sizes := q.scanner.size(q.sel)
+	if len(q.args) != sizes.ArgCount {
+		q.args = make([]interface{}, sizes.ArgCount)
 	}
-	if len(q.b) != size {
-		q.b = make([]byte, size)
+	if len(q.b) != sizes.BufferSize {
+		q.b = make([]byte, sizes.BufferSize)
 	}
-	curArg := 0
-	q.sel.scan(q.b, q.args, &curArg)
+	q.scanner.scan(q.b, q.args, q.sel)
 	return string(q.b)
 }
 
 func (q *SelectQuery) StringArgs() (string, []interface{}) {
-	size := q.sel.size()
-	argc := q.sel.argCount()
-	size += interpolationLength(q.dialect, argc)
-	if len(q.args) != argc {
-		q.args = make([]interface{}, argc)
+	sizes := q.scanner.size(q.sel)
+	if len(q.args) != sizes.ArgCount {
+		q.args = make([]interface{}, sizes.ArgCount)
 	}
-	if len(q.b) != size {
-		q.b = make([]byte, size)
+	if len(q.b) != sizes.BufferSize {
+		q.b = make([]byte, sizes.BufferSize)
 	}
-	curArg := 0
-	q.sel.scan(q.b, q.args, &curArg)
+	q.scanner.scan(q.b, q.args, q.sel)
 	return string(q.b), q.args
 }
 
@@ -92,7 +86,7 @@ func (q *SelectQuery) As(alias string) *SelectQuery {
 		projs:      dt.getAllDerivedColumns(),
 		selections: []selection{dt},
 	}
-	return &SelectQuery{sel: derivedSel}
+	return &SelectQuery{sel: derivedSel, scanner: q.scanner}
 }
 
 // Returns the projection of the underlying selectStatement that matches the name
@@ -254,7 +248,13 @@ func (q *SelectQuery) doJoin(
 }
 
 func Select(items ...interface{}) *SelectQuery {
-	sq := &SelectQuery{dialect: DIALECT_UNKNOWN}
+	scanner := &sqlScanner{
+		dialect: DIALECT_UNKNOWN,
+		format:  defaultFormatOptions,
+	}
+	sq := &SelectQuery{
+		scanner: scanner,
+	}
 	sel := &selectStatement{
 		projs: make([]projection, 0),
 	}
@@ -272,7 +272,7 @@ func Select(items ...interface{}) *SelectQuery {
 			// Project all columns from the subquery to the outer
 			// selectStatement
 			isq := item.(*SelectQuery)
-			sq.dialect = isq.dialect
+			sq.scanner = isq.scanner
 			innerSelClause := isq.sel
 			if len(innerSelClause.selections) == 1 {
 				innerSel := innerSelClause.selections[0]
@@ -316,12 +316,14 @@ func Select(items ...interface{}) *SelectQuery {
 			}
 		case *Column:
 			v := item.(*Column)
-			sq.dialect = v.tbl.meta.dialect
+			// Set scanner's dialect based on supplied meta's dialect
+			sq.scanner.dialect = v.tbl.meta.dialect
 			sel.projs = append(sel.projs, v)
 			selectionMap[v.tbl] = true
 		case *Table:
 			v := item.(*Table)
-			sq.dialect = v.meta.dialect
+			// Set scanner's dialect based on supplied meta's dialect
+			sq.scanner.dialect = v.meta.dialect
 			for _, c := range v.projections() {
 				addToProjections(sel, c)
 			}

@@ -123,13 +123,13 @@ func TestExpressions(t *testing.T) {
 		assert.Equal(expArgc, argc)
 
 		expLen := len(test.qs)
-		size := test.c.size()
+		size := test.c.size(defaultScanner)
 		size += interpolationLength(DIALECT_MYSQL, argc)
 		assert.Equal(expLen, size)
 
 		b := make([]byte, size)
 		curArg := 0
-		written := test.c.scan(b, test.qargs, &curArg)
+		written := test.c.scan(defaultScanner, b, test.qargs, &curArg)
 
 		assert.Equal(written, size)
 		assert.Equal(test.qs, string(b))

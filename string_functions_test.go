@@ -78,16 +78,18 @@ func TestTrimFunctions(t *testing.T) {
 
 		// Test each SQL dialect output
 		for dialect, qs := range test.qs {
-			test.el.setDialect(dialect)
+			scanner := &sqlScanner{
+				dialect: dialect,
+			}
 			expLen := len(qs)
-			size := test.el.size()
+			size := test.el.size(scanner)
 			size += interpolationLength(dialect, argc)
 			assert.Equal(expLen, size)
 
 			b := make([]byte, size)
 			args := make([]interface{}, argc)
 			curArg := 0
-			written := test.el.scan(b, args, &curArg)
+			written := test.el.scan(scanner, b, args, &curArg)
 
 			assert.Equal(written, size)
 			assert.Equal(qs, string(b))

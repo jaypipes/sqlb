@@ -99,7 +99,7 @@ func TestJoinClause(t *testing.T) {
 	}
 	for _, test := range tests {
 		expLen := len(test.qs)
-		s := test.c.size()
+		s := test.c.size(defaultScanner)
 		assert.Equal(expLen, s)
 
 		expArgc := len(test.qargs)
@@ -107,7 +107,7 @@ func TestJoinClause(t *testing.T) {
 
 		b := make([]byte, s)
 		curArg := 0
-		written := test.c.scan(b, test.qargs, &curArg)
+		written := test.c.scan(defaultScanner, b, test.qargs, &curArg)
 
 		assert.Equal(written, s)
 		assert.Equal(test.qs, string(b))

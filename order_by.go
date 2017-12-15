@@ -5,31 +5,25 @@ type sortColumn struct {
 	desc bool
 }
 
-// Sets the statement's dialect and pushes the dialect down into any of the
-// statement's sub-clauses
-func (sc *sortColumn) setDialect(dialect Dialect) {
-	// TODO(jaypipes): Anything to do here?)
-}
-
 func (sc *sortColumn) argCount() int {
 	return sc.p.argCount()
 }
 
-func (sc *sortColumn) size() int {
+func (sc *sortColumn) size(scanner *sqlScanner) int {
 	reset := sc.p.disableAliasScan()
 	defer reset()
-	size := sc.p.size()
+	size := sc.p.size(scanner)
 	if sc.desc {
 		size += len(Symbols[SYM_DESC])
 	}
 	return size
 }
 
-func (sc *sortColumn) scan(b []byte, args []interface{}, curArg *int) int {
+func (sc *sortColumn) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
 	reset := sc.p.disableAliasScan()
 	defer reset()
 	bw := 0
-	bw += sc.p.scan(b[bw:], args, curArg)
+	bw += sc.p.scan(scanner, b[bw:], args, curArg)
 	if sc.desc {
 		bw += copy(b[bw:], Symbols[SYM_DESC])
 	}
@@ -40,34 +34,26 @@ type orderByClause struct {
 	scols []*sortColumn
 }
 
-// Sets the statement's dialect and pushes the dialect down into any of the
-// statement's sub-clauses
-func (ob *orderByClause) setDialect(dialect Dialect) {
-	for _, sc := range ob.scols {
-		sc.setDialect(dialect)
-	}
-}
-
 func (ob *orderByClause) argCount() int {
 	argc := 0
 	return argc
 }
 
-func (ob *orderByClause) size() int {
+func (ob *orderByClause) size(scanner *sqlScanner) int {
 	size := len(Symbols[SYM_ORDER_BY])
 	ncols := len(ob.scols)
 	for _, sc := range ob.scols {
-		size += sc.size()
+		size += sc.size(scanner)
 	}
 	return size + (len(Symbols[SYM_COMMA_WS]) * (ncols - 1)) // the commas...
 }
 
-func (ob *orderByClause) scan(b []byte, args []interface{}, curArg *int) int {
+func (ob *orderByClause) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	bw += copy(b[bw:], Symbols[SYM_ORDER_BY])
 	ncols := len(ob.scols)
 	for x, sc := range ob.scols {
-		bw += sc.scan(b[bw:], args, curArg)
+		bw += sc.scan(scanner, b[bw:], args, curArg)
 		if x != (ncols - 1) {
 			bw += copy(b[bw:], Symbols[SYM_COMMA_WS])
 		}

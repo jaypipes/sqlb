@@ -14,7 +14,7 @@ type InsertQuery struct {
 	b       []byte
 	args    []interface{}
 	stmt    *insertStatement
-	dialect Dialect
+	scanner *sqlScanner
 }
 
 func (q *InsertQuery) IsValid() bool {
@@ -26,32 +26,26 @@ func (q *InsertQuery) Error() error {
 }
 
 func (q *InsertQuery) String() string {
-	size := q.stmt.size()
-	argc := q.stmt.argCount()
-	size += interpolationLength(q.dialect, argc)
-	if len(q.args) != argc {
-		q.args = make([]interface{}, argc)
+	sizes := q.scanner.size(q.stmt)
+	if len(q.args) != sizes.ArgCount {
+		q.args = make([]interface{}, sizes.ArgCount)
 	}
-	if len(q.b) != size {
-		q.b = make([]byte, size)
+	if len(q.b) != sizes.BufferSize {
+		q.b = make([]byte, sizes.BufferSize)
 	}
-	curArg := 0
-	q.stmt.scan(q.b, q.args, &curArg)
+	q.scanner.scan(q.b, q.args, q.stmt)
 	return string(q.b)
 }
 
 func (q *InsertQuery) StringArgs() (string, []interface{}) {
-	size := q.stmt.size()
-	argc := q.stmt.argCount()
-	size += interpolationLength(q.dialect, argc)
-	if len(q.args) != argc {
-		q.args = make([]interface{}, argc)
+	sizes := q.scanner.size(q.stmt)
+	if len(q.args) != sizes.ArgCount {
+		q.args = make([]interface{}, sizes.ArgCount)
 	}
-	if len(q.b) != size {
-		q.b = make([]byte, size)
+	if len(q.b) != sizes.BufferSize {
+		q.b = make([]byte, sizes.BufferSize)
 	}
-	curArg := 0
-	q.stmt.scan(q.b, q.args, &curArg)
+	q.scanner.scan(q.b, q.args, q.stmt)
 	return string(q.b), q.args
 }
 
@@ -77,12 +71,19 @@ func Insert(t *Table, values map[string]interface{}) *InsertQuery {
 		x++
 	}
 
+	scanner := &sqlScanner{
+		dialect: t.meta.dialect,
+		format:  defaultFormatOptions,
+	}
 	stmt := &insertStatement{
 		table:   t,
 		columns: cols,
 		values:  vals,
 	}
-	return &InsertQuery{stmt: stmt}
+	return &InsertQuery{
+		stmt:    stmt,
+		scanner: scanner,
+	}
 }
 
 func (t *Table) Insert(values map[string]interface{}) *InsertQuery {
