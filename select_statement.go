@@ -8,13 +8,13 @@ type selectStatement struct {
 	groupBy    *groupByClause
 	orderBy    *orderByClause
 	limit      *limitClause
-	dialect    Dialect
+	scanner    *sqlScanner
 }
 
 // Sets the statement's dialect and pushes the dialect down into any of the
 // statement's sub-clauses
 func (s *selectStatement) setDialect(dialect Dialect) {
-	s.dialect = dialect
+	s.scanner.dialect = dialect
 	if s.where != nil {
 		s.where.setDialect(dialect)
 	}
@@ -186,14 +186,14 @@ func (s *selectStatement) addOrderBy(sortCols ...*sortColumn) *selectStatement {
 }
 
 func (s *selectStatement) setLimitWithOffset(limit int, offset int) *selectStatement {
-	lc := &limitClause{limit: limit, dialect: s.dialect}
+	lc := &limitClause{limit: limit, dialect: s.scanner.dialect}
 	lc.offset = &offset
 	s.limit = lc
 	return s
 }
 
 func (s *selectStatement) setLimit(limit int) *selectStatement {
-	lc := &limitClause{limit: limit, dialect: s.dialect}
+	lc := &limitClause{limit: limit, dialect: s.scanner.dialect}
 	s.limit = lc
 	return s
 }

@@ -1,5 +1,15 @@
 package sqlb
 
+type Scannable interface {
+	// scan takes two slices and a pointer to an int. The first slice is a
+	// slice of bytes that the implementation should copy its string
+	// representation to and the other slice is a slice of interface{} values
+	// that the element should add its arguments to. The pointer to an int is
+	// the index of the current argument to be processed. The method returns a
+	// single int, the number of bytes written to the buffer.
+	scan([]byte, []interface{}, *int) int
+}
+
 type element interface {
 	// Returns the number of bytes that the scannable element would consume as
 	// a SQL string
