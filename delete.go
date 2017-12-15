@@ -13,7 +13,7 @@ type DeleteQuery struct {
 	b       []byte
 	args    []interface{}
 	stmt    *deleteStatement
-	dialect Dialect
+	scanner *sqlScanner
 }
 
 func (q *DeleteQuery) IsValid() bool {
@@ -27,30 +27,28 @@ func (q *DeleteQuery) Error() error {
 func (q *DeleteQuery) String() string {
 	size := q.stmt.size()
 	argc := q.stmt.argCount()
-	size += interpolationLength(q.dialect, argc)
+	size += q.scanner.interpolationLength(argc)
 	if len(q.args) != argc {
 		q.args = make([]interface{}, argc)
 	}
 	if len(q.b) != size {
 		q.b = make([]byte, size)
 	}
-	curArg := 0
-	q.stmt.scan(q.b, q.args, &curArg)
+	q.scanner.scan(q.b, q.args, q.stmt)
 	return string(q.b)
 }
 
 func (q *DeleteQuery) StringArgs() (string, []interface{}) {
 	size := q.stmt.size()
 	argc := q.stmt.argCount()
-	size += interpolationLength(q.dialect, argc)
+	size += q.scanner.interpolationLength(argc)
 	if len(q.args) != argc {
 		q.args = make([]interface{}, argc)
 	}
 	if len(q.b) != size {
 		q.b = make([]byte, size)
 	}
-	curArg := 0
-	q.stmt.scan(q.b, q.args, &curArg)
+	q.scanner.scan(q.b, q.args, q.stmt)
 	return string(q.b), q.args
 }
 
@@ -66,10 +64,17 @@ func Delete(t *Table) *DeleteQuery {
 		return &DeleteQuery{e: ERR_DELETE_NO_TARGET}
 	}
 
+	scanner := &sqlScanner{
+		dialect: t.meta.dialect,
+		format:  defaultFormatOptions,
+	}
 	stmt := &deleteStatement{
 		table: t,
 	}
-	return &DeleteQuery{stmt: stmt}
+	return &DeleteQuery{
+		stmt:    stmt,
+		scanner: scanner,
+	}
 }
 
 func (t *Table) Delete() *DeleteQuery {

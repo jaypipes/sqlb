@@ -15,7 +15,13 @@ type sqlScanner struct {
 	format  *FormatOptions
 }
 
-func (w *sqlScanner) scan(b []byte, args []interface{}, scannables ...Scannable) {
+func (s *sqlScanner) scan(b []byte, args []interface{}, scannables ...Scannable) {
 	curArg := 0
 	scannables[0].scan(b, args, &curArg)
+}
+
+// Returns the length (in bytes) of the interpolation markers, which depends on
+// the dialect in use when constructing the SQL buffer
+func (s *sqlScanner) interpolationLength(argc int) int {
+	return interpolationLength(s.dialect, argc)
 }

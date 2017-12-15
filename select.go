@@ -29,7 +29,7 @@ func (q *SelectQuery) Error() error {
 func (q *SelectQuery) String() string {
 	size := q.sel.size()
 	argc := q.sel.argCount()
-	size += interpolationLength(q.scanner.dialect, argc)
+	size += q.scanner.interpolationLength(argc)
 	if len(q.args) != argc {
 		q.args = make([]interface{}, argc)
 	}
@@ -43,7 +43,7 @@ func (q *SelectQuery) String() string {
 func (q *SelectQuery) StringArgs() (string, []interface{}) {
 	size := q.sel.size()
 	argc := q.sel.argCount()
-	size += interpolationLength(q.scanner.dialect, argc)
+	size += q.scanner.interpolationLength(argc)
 	if len(q.args) != argc {
 		q.args = make([]interface{}, argc)
 	}
