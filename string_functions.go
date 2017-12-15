@@ -92,7 +92,7 @@ func trimFuncSizeMySQL(f *trimFunc) int {
 		} else {
 			// TRIM(LEADING remstr FROM string)
 			size = (len(Symbols[SYM_TRIM]) + len(Symbols[SYM_LEADING]) +
-				len(Symbols[SYM_FROM]) + 1)
+				len(Symbols[SYM_FROM]) + 2)
 		}
 	case TRIM_TRAILING:
 		if f.chars == "" {
@@ -101,7 +101,7 @@ func trimFuncSizeMySQL(f *trimFunc) int {
 		} else {
 			// TRIM(TRAILING remstr FROM string)
 			size = (len(Symbols[SYM_TRIM]) + len(Symbols[SYM_TRAILING]) +
-				len(Symbols[SYM_FROM]) + 1)
+				len(Symbols[SYM_FROM]) + 2)
 		}
 	case TRIM_BOTH:
 		if f.chars == "" {
@@ -109,7 +109,7 @@ func trimFuncSizeMySQL(f *trimFunc) int {
 			size = len(Symbols[SYM_TRIM])
 		} else {
 			// TRIM(remstr FROM string)
-			size = len(Symbols[SYM_TRIM]) + len(Symbols[SYM_FROM])
+			size = len(Symbols[SYM_TRIM]) + len(Symbols[SYM_FROM]) + 1
 		}
 	}
 	return size
@@ -127,10 +127,11 @@ func trimFuncScanMySQL(f *trimFunc, scanner *sqlScanner, b []byte, args []interf
 		} else {
 			bw += copy(b[bw:], Symbols[SYM_TRIM])
 			bw += copy(b[bw:], Symbols[SYM_LEADING])
-			bw += copy(b[bw:], []byte{' '})
+			bw += copy(b[bw:], " ")
 			bw += scanInterpolationMarker(DIALECT_MYSQL, b[bw:], *curArg)
 			args[*curArg] = f.chars
 			*curArg++
+			bw += copy(b[bw:], " ")
 			bw += copy(b[bw:], Symbols[SYM_FROM])
 		}
 		bw += trimFuncScanSubject(f, scanner, b[bw:], args, curArg)
@@ -140,10 +141,11 @@ func trimFuncScanMySQL(f *trimFunc, scanner *sqlScanner, b []byte, args []interf
 		} else {
 			bw += copy(b[bw:], Symbols[SYM_TRIM])
 			bw += copy(b[bw:], Symbols[SYM_TRAILING])
-			bw += copy(b[bw:], []byte{' '})
+			bw += copy(b[bw:], " ")
 			bw += scanInterpolationMarker(DIALECT_MYSQL, b[bw:], *curArg)
 			args[*curArg] = f.chars
 			*curArg++
+			bw += copy(b[bw:], " ")
 			bw += copy(b[bw:], Symbols[SYM_FROM])
 		}
 		bw += trimFuncScanSubject(f, scanner, b[bw:], args, curArg)
@@ -155,6 +157,7 @@ func trimFuncScanMySQL(f *trimFunc, scanner *sqlScanner, b []byte, args []interf
 			bw += scanInterpolationMarker(DIALECT_MYSQL, b[bw:], *curArg)
 			args[*curArg] = f.chars
 			*curArg++
+			bw += copy(b[bw:], " ")
 			bw += copy(b[bw:], Symbols[SYM_FROM])
 		}
 		bw += trimFuncScanSubject(f, scanner, b[bw:], args, curArg)
@@ -170,7 +173,7 @@ func trimFuncSizePostgreSQL(f *trimFunc) int {
 	case TRIM_LEADING:
 		// TRIM(LEADING FROM string)
 		size = (len(Symbols[SYM_TRIM]) + len(Symbols[SYM_LEADING]) +
-			len(Symbols[SYM_FROM]))
+			len(Symbols[SYM_FROM]) + 1)
 		if f.chars != "" {
 			// TRIM(LEADING chars FROM string)
 			size += 1
@@ -178,7 +181,7 @@ func trimFuncSizePostgreSQL(f *trimFunc) int {
 	case TRIM_TRAILING:
 		// TRIM(TRAILING FROM string)
 		size = (len(Symbols[SYM_TRIM]) + len(Symbols[SYM_TRAILING]) +
-			len(Symbols[SYM_FROM]))
+			len(Symbols[SYM_FROM]) + 1)
 		if f.chars != "" {
 			// TRIM(TRAILING chars FROM string)
 			size += 1
@@ -205,22 +208,24 @@ func trimFuncScanPostgreSQL(f *trimFunc, scanner *sqlScanner, b []byte, args []i
 		bw += copy(b[bw:], Symbols[SYM_TRIM])
 		bw += copy(b[bw:], Symbols[SYM_LEADING])
 		if f.chars != "" {
-			bw += copy(b[bw:], []byte{' '})
+			bw += copy(b[bw:], " ")
 			bw += scanInterpolationMarker(DIALECT_POSTGRESQL, b[bw:], *curArg)
 			args[*curArg] = f.chars
 			*curArg++
 		}
+		bw += copy(b[bw:], " ")
 		bw += copy(b[bw:], Symbols[SYM_FROM])
 		bw += trimFuncScanSubject(f, scanner, b[bw:], args, curArg)
 	case TRIM_TRAILING:
 		bw += copy(b[bw:], Symbols[SYM_TRIM])
 		bw += copy(b[bw:], Symbols[SYM_TRAILING])
 		if f.chars != "" {
-			bw += copy(b[bw:], []byte{' '})
+			bw += copy(b[bw:], " ")
 			bw += scanInterpolationMarker(DIALECT_POSTGRESQL, b[bw:], *curArg)
 			args[*curArg] = f.chars
 			*curArg++
 		}
+		bw += copy(b[bw:], " ")
 		bw += copy(b[bw:], Symbols[SYM_FROM])
 		bw += trimFuncScanSubject(f, scanner, b[bw:], args, curArg)
 	case TRIM_BOTH:

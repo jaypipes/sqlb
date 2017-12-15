@@ -45,6 +45,7 @@ func (s *selectStatement) size(scanner *sqlScanner) int {
 	size += (len(Symbols[SYM_COMMA_WS]) * (nprojs - 1)) // the commas...
 	nsels := len(s.selections)
 	if nsels > 0 {
+		size += len(scanner.format.SeparateClauseWith)
 		size += len(Symbols[SYM_FROM])
 		for _, sel := range s.selections {
 			size += sel.size(scanner)
@@ -81,6 +82,7 @@ func (s *selectStatement) scan(scanner *sqlScanner, b []byte, args []interface{}
 	}
 	nsels := len(s.selections)
 	if nsels > 0 {
+		bw += copy(b[bw:], scanner.format.SeparateClauseWith)
 		bw += copy(b[bw:], Symbols[SYM_FROM])
 		for x, sel := range s.selections {
 			bw += sel.scan(scanner, b[bw:], args, curArg)

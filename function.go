@@ -83,7 +83,7 @@ var (
 		// EXTRACT() which follows the following format:
 		// EXTRACT(field FROM [interval|timestamp] source)
 		FUNC_EXTRACT: scanInfo{
-			SYM_EXTRACT, SYM_PLACEHOLDER, SYM_FROM, SYM_ELEMENT, SYM_RPAREN,
+			SYM_EXTRACT, SYM_PLACEHOLDER, SYM_SPACE, SYM_FROM, SYM_ELEMENT, SYM_RPAREN,
 		},
 	}
 )
