@@ -126,19 +126,6 @@ func (dc *derivedColumn) from() selection {
 	return dc.dt
 }
 
-func (dc *derivedColumn) projectionId() uint64 {
-	args := make([]string, 2)
-	args[0] = dc.dt.alias
-	if dc.alias != "" {
-		args[1] = dc.alias
-	} else if dc.c.alias != "" {
-		args[1] = dc.c.alias
-	} else {
-		args[1] = dc.c.name
-	}
-	return toId(args...)
-}
-
 func (dc *derivedColumn) disableAliasScan() func() {
 	origAlias := dc.alias
 	dc.alias = ""
