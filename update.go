@@ -98,3 +98,7 @@ func Update(t *Table, values map[string]interface{}) *UpdateQuery {
 		scanner: scanner,
 	}
 }
+
+func (t *Table) Update(values map[string]interface{}) *UpdateQuery {
+	return Update(t, values)
+}
