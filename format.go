@@ -8,6 +8,11 @@ var defaultFormatOptions = &FormatOptions{
 	SeparateClauseWith: " ",
 }
 
+var defaultScanner = &sqlScanner{
+	dialect: DIALECT_MYSQL,
+	format:  defaultFormatOptions,
+}
+
 type ElementSizes struct {
 	// The number of interface{} arguments that the element will add to the
 	// slice of interface{} arguments that will eventually be constructed for
@@ -28,7 +33,7 @@ func (s *sqlScanner) scan(b []byte, args []interface{}, scannables ...Scannable)
 	curArg := 0
 
 	for _, scannable := range scannables {
-		scannable.scan(b, args, &curArg)
+		scannable.scan(s, b, args, &curArg)
 	}
 }
 
@@ -38,7 +43,7 @@ func (s *sqlScanner) size(elements ...element) *ElementSizes {
 
 	for _, el := range elements {
 		argc += el.argCount()
-		buflen += el.size()
+		buflen += el.size(s)
 	}
 	buflen += interpolationLength(s.dialect, argc)
 

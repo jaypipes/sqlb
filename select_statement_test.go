@@ -194,13 +194,13 @@ func TestSelectClause(t *testing.T) {
 		assert.Equal(expArgc, argc)
 
 		expLen := len(test.qs)
-		size := test.s.size()
+		size := test.s.size(defaultScanner)
 		size += interpolationLength(DIALECT_MYSQL, argc)
 		assert.Equal(expLen, size)
 
 		b := make([]byte, size)
 		curArg := 0
-		written := test.s.scan(b, test.qargs, &curArg)
+		written := test.s.scan(defaultScanner, b, test.qargs, &curArg)
 
 		assert.Equal(written, size)
 		assert.Equal(test.qs, string(b))

@@ -93,20 +93,6 @@ type sqlFunc struct {
 	alias    string
 	scanInfo scanInfo
 	elements []element
-	dialect  Dialect
-}
-
-// Sets the sqlFunc's dialect and pushes the dialect down into any of the
-// sqlFunc's elements
-func (f *sqlFunc) setDialect(dialect Dialect) {
-	f.dialect = dialect
-	for _, el := range f.elements {
-		switch el.(type) {
-		case *value:
-			v := el.(*value)
-			v.dialect = dialect
-		}
-	}
 }
 
 func (f *sqlFunc) from() selection {
@@ -136,7 +122,7 @@ func (e *sqlFunc) argCount() int {
 	return ac
 }
 
-func (f *sqlFunc) size() int {
+func (f *sqlFunc) size(scanner *sqlScanner) int {
 	size := 0
 	elidx := 0
 	for _, sym := range f.scanInfo {
@@ -152,7 +138,7 @@ func (f *sqlFunc) size() int {
 				defer reset()
 			}
 			elidx++
-			size += el.size()
+			size += el.size(scanner)
 		default:
 			size += len(Symbols[sym])
 		}
@@ -163,7 +149,7 @@ func (f *sqlFunc) size() int {
 	return size
 }
 
-func (f *sqlFunc) scan(b []byte, args []interface{}, curArg *int) int {
+func (f *sqlFunc) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	elidx := 0
 	for _, sym := range f.scanInfo {
@@ -178,7 +164,7 @@ func (f *sqlFunc) scan(b []byte, args []interface{}, curArg *int) int {
 				defer reset()
 			}
 			elidx++
-			bw += el.scan(b[bw:], args, curArg)
+			bw += el.scan(scanner, b[bw:], args, curArg)
 		} else {
 			bw += copy(b[bw:], Symbols[sym])
 		}

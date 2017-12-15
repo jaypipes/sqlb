@@ -8,25 +8,6 @@ type selectStatement struct {
 	groupBy    *groupByClause
 	orderBy    *orderByClause
 	limit      *limitClause
-	scanner    *sqlScanner
-}
-
-// Sets the statement's dialect and pushes the dialect down into any of the
-// statement's sub-clauses
-func (s *selectStatement) setDialect(dialect Dialect) {
-	s.scanner.dialect = dialect
-	if s.where != nil {
-		s.where.setDialect(dialect)
-	}
-	if s.groupBy != nil {
-		s.groupBy.setDialect(dialect)
-	}
-	if s.orderBy != nil {
-		s.orderBy.setDialect(dialect)
-	}
-	if s.limit != nil {
-		s.limit.setDialect(dialect)
-	}
 }
 
 func (s *selectStatement) argCount() int {
@@ -55,45 +36,45 @@ func (s *selectStatement) argCount() int {
 	return argc
 }
 
-func (s *selectStatement) size() int {
+func (s *selectStatement) size(scanner *sqlScanner) int {
 	size := len(Symbols[SYM_SELECT])
 	nprojs := len(s.projs)
 	for _, p := range s.projs {
-		size += p.size()
+		size += p.size(scanner)
 	}
 	size += (len(Symbols[SYM_COMMA_WS]) * (nprojs - 1)) // the commas...
 	nsels := len(s.selections)
 	if nsels > 0 {
 		size += len(Symbols[SYM_FROM])
 		for _, sel := range s.selections {
-			size += sel.size()
+			size += sel.size(scanner)
 		}
 		size += (len(Symbols[SYM_COMMA_WS]) * (nsels - 1)) // the commas...
 		for _, join := range s.joins {
-			size += join.size()
+			size += join.size(scanner)
 		}
 	}
 	if s.where != nil {
-		size += s.where.size()
+		size += s.where.size(scanner)
 	}
 	if s.groupBy != nil {
-		size += s.groupBy.size()
+		size += s.groupBy.size(scanner)
 	}
 	if s.orderBy != nil {
-		size += s.orderBy.size()
+		size += s.orderBy.size(scanner)
 	}
 	if s.limit != nil {
-		size += s.limit.size()
+		size += s.limit.size(scanner)
 	}
 	return size
 }
 
-func (s *selectStatement) scan(b []byte, args []interface{}, curArg *int) int {
+func (s *selectStatement) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	bw += copy(b[bw:], Symbols[SYM_SELECT])
 	nprojs := len(s.projs)
 	for x, p := range s.projs {
-		bw += p.scan(b[bw:], args, curArg)
+		bw += p.scan(scanner, b[bw:], args, curArg)
 		if x != (nprojs - 1) {
 			bw += copy(b[bw:], Symbols[SYM_COMMA_WS])
 		}
@@ -102,26 +83,26 @@ func (s *selectStatement) scan(b []byte, args []interface{}, curArg *int) int {
 	if nsels > 0 {
 		bw += copy(b[bw:], Symbols[SYM_FROM])
 		for x, sel := range s.selections {
-			bw += sel.scan(b[bw:], args, curArg)
+			bw += sel.scan(scanner, b[bw:], args, curArg)
 			if x != (nsels - 1) {
 				bw += copy(b[bw:], Symbols[SYM_COMMA_WS])
 			}
 		}
 		for _, join := range s.joins {
-			bw += join.scan(b[bw:], args, curArg)
+			bw += join.scan(scanner, b[bw:], args, curArg)
 		}
 	}
 	if s.where != nil {
-		bw += s.where.scan(b[bw:], args, curArg)
+		bw += s.where.scan(scanner, b[bw:], args, curArg)
 	}
 	if s.groupBy != nil {
-		bw += s.groupBy.scan(b[bw:], args, curArg)
+		bw += s.groupBy.scan(scanner, b[bw:], args, curArg)
 	}
 	if s.orderBy != nil {
-		bw += s.orderBy.scan(b[bw:], args, curArg)
+		bw += s.orderBy.scan(scanner, b[bw:], args, curArg)
 	}
 	if s.limit != nil {
-		bw += s.limit.scan(b[bw:], args, curArg)
+		bw += s.limit.scan(scanner, b[bw:], args, curArg)
 	}
 	return bw
 }
@@ -186,14 +167,14 @@ func (s *selectStatement) addOrderBy(sortCols ...*sortColumn) *selectStatement {
 }
 
 func (s *selectStatement) setLimitWithOffset(limit int, offset int) *selectStatement {
-	lc := &limitClause{limit: limit, dialect: s.scanner.dialect}
+	lc := &limitClause{limit: limit}
 	lc.offset = &offset
 	s.limit = lc
 	return s
 }
 
 func (s *selectStatement) setLimit(limit int) *selectStatement {
-	lc := &limitClause{limit: limit, dialect: s.scanner.dialect}
+	lc := &limitClause{limit: limit}
 	s.limit = lc
 	return s
 }

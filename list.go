@@ -6,14 +6,6 @@ type List struct {
 	elements []element
 }
 
-// Sets the statement's dialect and pushes the dialect down into any of the
-// statement's sub-clauses
-func (l *List) setDialect(dialect Dialect) {
-	for _, el := range l.elements {
-		el.setDialect(dialect)
-	}
-}
-
 func (l *List) argCount() int {
 	ac := 0
 	for _, el := range l.elements {
@@ -22,20 +14,20 @@ func (l *List) argCount() int {
 	return ac
 }
 
-func (l *List) size() int {
+func (l *List) size(scanner *sqlScanner) int {
 	nels := len(l.elements)
 	size := 0
 	for _, el := range l.elements {
-		size += el.size()
+		size += el.size(scanner)
 	}
 	return size + (len(Symbols[SYM_COMMA_WS]) * (nels - 1)) // the commas...
 }
 
-func (l *List) scan(b []byte, args []interface{}, curArg *int) int {
+func (l *List) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	nels := len(l.elements)
 	for x, el := range l.elements {
-		bw += el.scan(b[bw:], args, curArg)
+		bw += el.scan(scanner, b[bw:], args, curArg)
 		if x != (nels - 1) {
 			bw += copy(b[bw:], Symbols[SYM_COMMA_WS])
 		}

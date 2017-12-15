@@ -10,8 +10,7 @@ func TestLimitClause(t *testing.T) {
 	assert := assert.New(t)
 
 	lc := &limitClause{
-		limit:   20,
-		dialect: DIALECT_MYSQL,
+		limit: 20,
 	}
 
 	exp := " LIMIT ?"
@@ -20,7 +19,7 @@ func TestLimitClause(t *testing.T) {
 	argc := lc.argCount()
 	assert.Equal(expArgCount, argc)
 
-	size := lc.size()
+	size := lc.size(defaultScanner)
 	size += interpolationLength(DIALECT_MYSQL, argc)
 	expLen := len(exp)
 	assert.Equal(expLen, size)
@@ -28,7 +27,7 @@ func TestLimitClause(t *testing.T) {
 	args := make([]interface{}, expArgCount)
 	b := make([]byte, size)
 	curArg := 0
-	written := lc.scan(b, args, &curArg)
+	written := lc.scan(defaultScanner, b, args, &curArg)
 
 	assert.Equal(size, written)
 	assert.Equal(exp, string(b))
@@ -39,8 +38,7 @@ func TestLimitClauseWithOffset(t *testing.T) {
 	assert := assert.New(t)
 
 	lc := &limitClause{
-		limit:   20,
-		dialect: DIALECT_MYSQL,
+		limit: 20,
 	}
 	offset := 10
 	lc.offset = &offset
@@ -51,7 +49,7 @@ func TestLimitClauseWithOffset(t *testing.T) {
 	argc := lc.argCount()
 	assert.Equal(expArgCount, argc)
 
-	size := lc.size()
+	size := lc.size(defaultScanner)
 	size += interpolationLength(DIALECT_MYSQL, argc)
 	expLen := len(exp)
 	assert.Equal(expLen, size)
@@ -59,7 +57,7 @@ func TestLimitClauseWithOffset(t *testing.T) {
 	args := make([]interface{}, expArgCount)
 	b := make([]byte, size)
 	curArg := 0
-	written := lc.scan(b, args, &curArg)
+	written := lc.scan(defaultScanner, b, args, &curArg)
 
 	assert.Equal(size, written)
 	assert.Equal(exp, string(b))

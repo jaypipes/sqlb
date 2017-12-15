@@ -7,8 +7,6 @@ type deleteStatement struct {
 	where *whereClause
 }
 
-func (s *deleteStatement) setDialect(dialect Dialect) {}
-
 func (s *deleteStatement) argCount() int {
 	argc := 0
 	if s.where != nil {
@@ -17,21 +15,21 @@ func (s *deleteStatement) argCount() int {
 	return argc
 }
 
-func (s *deleteStatement) size() int {
+func (s *deleteStatement) size(scanner *sqlScanner) int {
 	size := len(Symbols[SYM_DELETE]) + len(s.table.name)
 	if s.where != nil {
-		size += s.where.size()
+		size += s.where.size(scanner)
 	}
 	return size
 }
 
-func (s *deleteStatement) scan(b []byte, args []interface{}, curArg *int) int {
+func (s *deleteStatement) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	bw += copy(b[bw:], Symbols[SYM_DELETE])
 	// We don't add any table alias when outputting the table identifier
 	bw += copy(b[bw:], s.table.name)
 	if s.where != nil {
-		bw += s.where.scan(b[bw:], args, curArg)
+		bw += s.where.scan(scanner, b[bw:], args, curArg)
 	}
 	return bw
 }

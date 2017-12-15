@@ -191,15 +191,17 @@ func TestFunctions(t *testing.T) {
 
 		// Test each SQL dialect output
 		for dialect, qs := range test.qs {
-			test.c.setDialect(dialect)
+			scanner := &sqlScanner{
+				dialect: dialect,
+			}
 			expLen := len(qs)
-			size := test.c.size()
+			size := test.c.size(scanner)
 			size += interpolationLength(dialect, argc)
 			assert.Equal(expLen, size)
 
 			b := make([]byte, size)
 			curArg := 0
-			written := test.c.scan(b, test.qargs, &curArg)
+			written := test.c.scan(scanner, b, test.qargs, &curArg)
 
 			assert.Equal(written, size)
 			assert.Equal(qs, string(b))

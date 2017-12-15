@@ -47,20 +47,8 @@ type trimFunc struct {
 	sel      selection
 	alias    string
 	subject  element
-	dialect  Dialect
 	chars    string
 	location TrimLocation
-}
-
-// Sets the element's dialect and pushes the dialect down into any of the
-// sub-elements
-func (f *trimFunc) setDialect(dialect Dialect) {
-	f.dialect = dialect
-	switch f.subject.(type) {
-	case *value:
-		v := f.subject.(*value)
-		v.dialect = dialect
-	}
 }
 
 func (f *trimFunc) from() selection {
@@ -78,7 +66,6 @@ func (f *trimFunc) As(alias string) *trimFunc {
 		sel:      f.sel,
 		alias:    alias,
 		subject:  f.subject,
-		dialect:  f.dialect,
 		location: f.location,
 		chars:    f.chars,
 	}
@@ -131,7 +118,7 @@ func trimFuncSizeMySQL(f *trimFunc) int {
 // Helper function that scans into the supplied SQL []byte buffer for the
 // TRIM/BTRIM() SQL function for MySQL
 // TRIM() function for MySQL variants
-func trimFuncScanMySQL(f *trimFunc, b []byte, args []interface{}, curArg *int) int {
+func trimFuncScanMySQL(f *trimFunc, scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	switch f.location {
 	case TRIM_LEADING:
@@ -141,12 +128,12 @@ func trimFuncScanMySQL(f *trimFunc, b []byte, args []interface{}, curArg *int) i
 			bw += copy(b[bw:], Symbols[SYM_TRIM])
 			bw += copy(b[bw:], Symbols[SYM_LEADING])
 			bw += copy(b[bw:], []byte{' '})
-			bw += scanInterpolationMarker(f.dialect, b[bw:], *curArg)
+			bw += scanInterpolationMarker(DIALECT_MYSQL, b[bw:], *curArg)
 			args[*curArg] = f.chars
 			*curArg++
 			bw += copy(b[bw:], Symbols[SYM_FROM])
 		}
-		bw += trimFuncScanSubject(f, b[bw:], args, curArg)
+		bw += trimFuncScanSubject(f, scanner, b[bw:], args, curArg)
 	case TRIM_TRAILING:
 		if f.chars == "" {
 			bw += copy(b[bw:], Symbols[SYM_RTRIM])
@@ -154,23 +141,23 @@ func trimFuncScanMySQL(f *trimFunc, b []byte, args []interface{}, curArg *int) i
 			bw += copy(b[bw:], Symbols[SYM_TRIM])
 			bw += copy(b[bw:], Symbols[SYM_TRAILING])
 			bw += copy(b[bw:], []byte{' '})
-			bw += scanInterpolationMarker(f.dialect, b[bw:], *curArg)
+			bw += scanInterpolationMarker(DIALECT_MYSQL, b[bw:], *curArg)
 			args[*curArg] = f.chars
 			*curArg++
 			bw += copy(b[bw:], Symbols[SYM_FROM])
 		}
-		bw += trimFuncScanSubject(f, b[bw:], args, curArg)
+		bw += trimFuncScanSubject(f, scanner, b[bw:], args, curArg)
 	case TRIM_BOTH:
 		if f.chars == "" {
 			bw += copy(b[bw:], Symbols[SYM_TRIM])
 		} else {
 			bw += copy(b[bw:], Symbols[SYM_TRIM])
-			bw += scanInterpolationMarker(f.dialect, b[bw:], *curArg)
+			bw += scanInterpolationMarker(DIALECT_MYSQL, b[bw:], *curArg)
 			args[*curArg] = f.chars
 			*curArg++
 			bw += copy(b[bw:], Symbols[SYM_FROM])
 		}
-		bw += trimFuncScanSubject(f, b[bw:], args, curArg)
+		bw += trimFuncScanSubject(f, scanner, b[bw:], args, curArg)
 	}
 	return bw
 }
@@ -211,7 +198,7 @@ func trimFuncSizePostgreSQL(f *trimFunc) int {
 // Helper function that scans into the supplied SQL []byte buffer for the
 // TRIM/BTRIM() SQL function for PostgreSQL
 // TRIM() function for PostgreSQL variants
-func trimFuncScanPostgreSQL(f *trimFunc, b []byte, args []interface{}, curArg *int) int {
+func trimFuncScanPostgreSQL(f *trimFunc, scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	switch f.location {
 	case TRIM_LEADING:
@@ -219,29 +206,29 @@ func trimFuncScanPostgreSQL(f *trimFunc, b []byte, args []interface{}, curArg *i
 		bw += copy(b[bw:], Symbols[SYM_LEADING])
 		if f.chars != "" {
 			bw += copy(b[bw:], []byte{' '})
-			bw += scanInterpolationMarker(f.dialect, b[bw:], *curArg)
+			bw += scanInterpolationMarker(DIALECT_POSTGRESQL, b[bw:], *curArg)
 			args[*curArg] = f.chars
 			*curArg++
 		}
 		bw += copy(b[bw:], Symbols[SYM_FROM])
-		bw += trimFuncScanSubject(f, b[bw:], args, curArg)
+		bw += trimFuncScanSubject(f, scanner, b[bw:], args, curArg)
 	case TRIM_TRAILING:
 		bw += copy(b[bw:], Symbols[SYM_TRIM])
 		bw += copy(b[bw:], Symbols[SYM_TRAILING])
 		if f.chars != "" {
 			bw += copy(b[bw:], []byte{' '})
-			bw += scanInterpolationMarker(f.dialect, b[bw:], *curArg)
+			bw += scanInterpolationMarker(DIALECT_POSTGRESQL, b[bw:], *curArg)
 			args[*curArg] = f.chars
 			*curArg++
 		}
 		bw += copy(b[bw:], Symbols[SYM_FROM])
-		bw += trimFuncScanSubject(f, b[bw:], args, curArg)
+		bw += trimFuncScanSubject(f, scanner, b[bw:], args, curArg)
 	case TRIM_BOTH:
 		bw += copy(b[bw:], Symbols[SYM_BTRIM])
-		bw += trimFuncScanSubject(f, b[bw:], args, curArg)
+		bw += trimFuncScanSubject(f, scanner, b[bw:], args, curArg)
 		if f.chars != "" {
 			bw += copy(b[bw:], Symbols[SYM_COMMA_WS])
-			bw += scanInterpolationMarker(f.dialect, b[bw:], *curArg)
+			bw += scanInterpolationMarker(DIALECT_POSTGRESQL, b[bw:], *curArg)
 			args[*curArg] = f.chars
 			*curArg++
 		}
@@ -250,7 +237,7 @@ func trimFuncScanPostgreSQL(f *trimFunc, b []byte, args []interface{}, curArg *i
 }
 
 // Scan in the subject of the TRIM() function
-func trimFuncScanSubject(f *trimFunc, b []byte, args []interface{}, curArg *int) int {
+func trimFuncScanSubject(f *trimFunc, scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
 	// We need to disable alias output for elements that are
 	// projections. We don't want to output, for example,
 	// "ON users.id AS user_id = TRIM(articles.author)"
@@ -259,12 +246,12 @@ func trimFuncScanSubject(f *trimFunc, b []byte, args []interface{}, curArg *int)
 		reset := f.subject.(projection).disableAliasScan()
 		defer reset()
 	}
-	return f.subject.scan(b, args, curArg)
+	return f.subject.scan(scanner, b, args, curArg)
 }
 
-func (f *trimFunc) size() int {
+func (f *trimFunc) size(scanner *sqlScanner) int {
 	size := 0
-	switch f.dialect {
+	switch scanner.dialect {
 	case DIALECT_POSTGRESQL:
 		size = trimFuncSizePostgreSQL(f)
 	default:
@@ -279,20 +266,20 @@ func (f *trimFunc) size() int {
 		reset := f.subject.(projection).disableAliasScan()
 		defer reset()
 	}
-	size += f.subject.size()
+	size += f.subject.size(scanner)
 	if f.alias != "" {
 		size += len(Symbols[SYM_AS]) + len(f.alias)
 	}
 	return size
 }
 
-func (f *trimFunc) scan(b []byte, args []interface{}, curArg *int) int {
+func (f *trimFunc) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
-	switch f.dialect {
+	switch scanner.dialect {
 	case DIALECT_POSTGRESQL:
-		bw += trimFuncScanPostgreSQL(f, b[bw:], args, curArg)
+		bw += trimFuncScanPostgreSQL(f, scanner, b[bw:], args, curArg)
 	default:
-		bw += trimFuncScanMySQL(f, b[bw:], args, curArg)
+		bw += trimFuncScanMySQL(f, scanner, b[bw:], args, curArg)
 	}
 	bw += copy(b[bw:], Symbols[SYM_RPAREN])
 	if f.alias != "" {
@@ -314,7 +301,6 @@ func Trim(p projection) *trimFunc {
 
 func (c *Column) Trim() *trimFunc {
 	f := Trim(c)
-	f.setDialect(c.tbl.meta.dialect)
 	return f
 }
 
@@ -331,7 +317,6 @@ func LTrim(p projection) *trimFunc {
 
 func (c *Column) LTrim() *trimFunc {
 	f := LTrim(c)
-	f.setDialect(c.tbl.meta.dialect)
 	return f
 }
 
@@ -348,7 +333,6 @@ func RTrim(p projection) *trimFunc {
 
 func (c *Column) RTrim() *trimFunc {
 	f := LTrim(c)
-	f.setDialect(c.tbl.meta.dialect)
 	return f
 }
 
@@ -365,7 +349,6 @@ func TrimChars(p projection, chars string) *trimFunc {
 
 func (c *Column) TrimChars(chars string) *trimFunc {
 	f := TrimChars(c, chars)
-	f.setDialect(c.tbl.meta.dialect)
 	return f
 }
 
@@ -382,7 +365,6 @@ func LTrimChars(p projection, chars string) *trimFunc {
 
 func (c *Column) LTrimChars(chars string) *trimFunc {
 	f := LTrimChars(c, chars)
-	f.setDialect(c.tbl.meta.dialect)
 	return f
 }
 
@@ -400,6 +382,5 @@ func RTrimChars(p projection, chars string) *trimFunc {
 
 func (c *Column) RTrimChars(chars string) *trimFunc {
 	f := RTrimChars(c, chars)
-	f.setDialect(c.tbl.meta.dialect)
 	return f
 }

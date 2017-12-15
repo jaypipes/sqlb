@@ -23,7 +23,7 @@ func (j *joinClause) argCount() int {
 	return ac + j.left.argCount() + j.right.argCount()
 }
 
-func (j *joinClause) size() int {
+func (j *joinClause) size(scanner *sqlScanner) int {
 	size := 0
 	switch j.joinType {
 	case JOIN_INNER:
@@ -33,15 +33,15 @@ func (j *joinClause) size() int {
 	case JOIN_CROSS:
 		size += len(Symbols[SYM_CROSS_JOIN])
 		// CROSS JOIN has no ON condition so just short-circuit here
-		return size + j.right.size()
+		return size + j.right.size(scanner)
 	}
-	size += j.right.size()
+	size += j.right.size(scanner)
 	size += len(Symbols[SYM_ON])
-	size += j.on.size()
+	size += j.on.size(scanner)
 	return size
 }
 
-func (j *joinClause) scan(b []byte, args []interface{}, curArg *int) int {
+func (j *joinClause) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	switch j.joinType {
 	case JOIN_INNER:
@@ -51,10 +51,10 @@ func (j *joinClause) scan(b []byte, args []interface{}, curArg *int) int {
 	case JOIN_CROSS:
 		bw += copy(b[bw:], Symbols[SYM_CROSS_JOIN])
 	}
-	bw += j.right.scan(b[bw:], args, curArg)
+	bw += j.right.scan(scanner, b[bw:], args, curArg)
 	if j.on != nil {
 		bw += copy(b[bw:], Symbols[SYM_ON])
-		bw += j.on.scan(b[bw:], args, curArg)
+		bw += j.on.scan(scanner, b[bw:], args, curArg)
 	}
 	return bw
 }

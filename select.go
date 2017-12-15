@@ -85,7 +85,6 @@ func (q *SelectQuery) As(alias string) *SelectQuery {
 	derivedSel := &selectStatement{
 		projs:      dt.getAllDerivedColumns(),
 		selections: []selection{dt},
-		scanner:    q.scanner,
 	}
 	return &SelectQuery{sel: derivedSel, scanner: q.scanner}
 }
@@ -257,8 +256,7 @@ func Select(items ...interface{}) *SelectQuery {
 		scanner: scanner,
 	}
 	sel := &selectStatement{
-		projs:   make([]projection, 0),
-		scanner: scanner,
+		projs: make([]projection, 0),
 	}
 
 	nDerived := 0

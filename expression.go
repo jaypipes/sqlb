@@ -63,16 +63,6 @@ var (
 type Expression struct {
 	scanInfo scanInfo
 	elements []element
-	dialect  Dialect
-}
-
-// Sets the Expression's dialect and pushes the dialect down into any of the
-// Expression's elements
-func (e *Expression) setDialect(dialect Dialect) {
-	e.dialect = dialect
-	for _, el := range e.elements {
-		el.setDialect(dialect)
-	}
 }
 
 func (e *Expression) referrents() []selection {
@@ -95,7 +85,7 @@ func (e *Expression) argCount() int {
 	return ac
 }
 
-func (e *Expression) size() int {
+func (e *Expression) size(scanner *sqlScanner) int {
 	size := 0
 	elidx := 0
 	for _, sym := range e.scanInfo {
@@ -110,7 +100,7 @@ func (e *Expression) size() int {
 				defer reset()
 			}
 			elidx++
-			size += el.size()
+			size += el.size(scanner)
 		} else {
 			size += len(Symbols[sym])
 		}
@@ -118,7 +108,7 @@ func (e *Expression) size() int {
 	return size
 }
 
-func (e *Expression) scan(b []byte, args []interface{}, curArg *int) int {
+func (e *Expression) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	elidx := 0
 	for _, sym := range e.scanInfo {
@@ -133,7 +123,7 @@ func (e *Expression) scan(b []byte, args []interface{}, curArg *int) int {
 				defer reset()
 			}
 			elidx++
-			bw += el.scan(b[bw:], args, curArg)
+			bw += el.scan(scanner, b[bw:], args, curArg)
 		} else {
 			bw += copy(b[bw:], Symbols[sym])
 		}
