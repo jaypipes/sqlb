@@ -16,6 +16,7 @@ func (w *whereClause) size(scanner *sqlScanner) int {
 	size := 0
 	nfilters := len(w.filters)
 	if nfilters > 0 {
+		size += len(scanner.format.SeparateClauseWith)
 		size += len(Symbols[SYM_WHERE])
 		size += len(Symbols[SYM_AND]) * (nfilters - 1)
 		for _, filter := range w.filters {
@@ -28,6 +29,7 @@ func (w *whereClause) size(scanner *sqlScanner) int {
 func (w *whereClause) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	if len(w.filters) > 0 {
+		bw += copy(b[bw:], scanner.format.SeparateClauseWith)
 		bw += copy(b[bw:], Symbols[SYM_WHERE])
 		for x, filter := range w.filters {
 			if x > 0 {

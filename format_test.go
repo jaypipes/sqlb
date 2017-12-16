@@ -21,18 +21,29 @@ func TestFormatOptions(t *testing.T) {
 		qargs   []interface{}
 	}{
 		{
-			name: "SELECT FROM with default space clause separator",
+			name: "default space clause separator",
 			s: &selectStatement{
 				selections: []selection{users},
 				projs:      []projection{colUserName},
+				where: &whereClause{
+					filters: []*Expression{
+						Equal(colUserName, "foo"),
+					},
+				},
 			},
-			qs: "SELECT users.name FROM users",
+			qs:    "SELECT users.name FROM users WHERE users.name = ?",
+			qargs: []interface{}{"foo"},
 		},
 		{
-			name: "SELECT FROM with newline clause separator ",
+			name: "newline clause separator ",
 			s: &selectStatement{
 				selections: []selection{users},
 				projs:      []projection{colUserName},
+				where: &whereClause{
+					filters: []*Expression{
+						Equal(colUserName, "foo"),
+					},
+				},
 			},
 			scanner: &sqlScanner{
 				dialect: DIALECT_MYSQL,
@@ -40,7 +51,8 @@ func TestFormatOptions(t *testing.T) {
 					SeparateClauseWith: "\n",
 				},
 			},
-			qs: "SELECT users.name\nFROM users",
+			qs:    "SELECT users.name\nFROM users\nWHERE users.name = ?",
+			qargs: []interface{}{"foo"},
 		},
 	}
 	for _, test := range tests {

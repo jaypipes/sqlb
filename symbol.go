@@ -186,7 +186,7 @@ var (
 		SYM_LEFT_JOIN:               []byte(" LEFT JOIN "),
 		SYM_CROSS_JOIN:              []byte(" CROSS JOIN "),
 		SYM_ON:                      []byte(" ON "),
-		SYM_WHERE:                   []byte(" WHERE "),
+		SYM_WHERE:                   []byte("WHERE "),
 		SYM_GROUP_BY:                []byte(" GROUP BY "),
 		SYM_ORDER_BY:                []byte(" ORDER BY "),
 		SYM_DESC:                    []byte(" DESC"),
