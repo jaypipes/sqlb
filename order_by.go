@@ -40,7 +40,9 @@ func (ob *orderByClause) argCount() int {
 }
 
 func (ob *orderByClause) size(scanner *sqlScanner) int {
-	size := len(Symbols[SYM_ORDER_BY])
+	size := 0
+	size += len(scanner.format.SeparateClauseWith)
+	size += len(Symbols[SYM_ORDER_BY])
 	ncols := len(ob.scols)
 	for _, sc := range ob.scols {
 		size += sc.size(scanner)
@@ -50,6 +52,7 @@ func (ob *orderByClause) size(scanner *sqlScanner) int {
 
 func (ob *orderByClause) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
+	bw += copy(b[bw:], scanner.format.SeparateClauseWith)
 	bw += copy(b[bw:], Symbols[SYM_ORDER_BY])
 	ncols := len(ob.scols)
 	for x, sc := range ob.scols {

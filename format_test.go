@@ -35,6 +35,9 @@ func TestFormatOptions(t *testing.T) {
 		groupBy: &groupByClause{
 			cols: []projection{colUserName},
 		},
+		orderBy: &orderByClause{
+			scols: []*sortColumn{colUserName.Desc()},
+		},
 	}
 
 	tests := []struct {
@@ -47,7 +50,7 @@ func TestFormatOptions(t *testing.T) {
 		{
 			name:  "default space clause separator",
 			s:     stmt,
-			qs:    "SELECT articles.id, users.name AS author FROM articles JOIN users ON articles.author = users.id WHERE users.name = ? GROUP BY users.name",
+			qs:    "SELECT articles.id, users.name AS author FROM articles JOIN users ON articles.author = users.id WHERE users.name = ? GROUP BY users.name ORDER BY users.name DESC",
 			qargs: []interface{}{"foo"},
 		},
 		{
@@ -59,7 +62,7 @@ func TestFormatOptions(t *testing.T) {
 				},
 			},
 			s:     stmt,
-			qs:    "SELECT articles.id, users.name AS author\nFROM articles\nJOIN users ON articles.author = users.id\nWHERE users.name = ?\nGROUP BY users.name",
+			qs:    "SELECT articles.id, users.name AS author\nFROM articles\nJOIN users ON articles.author = users.id\nWHERE users.name = ?\nGROUP BY users.name\nORDER BY users.name DESC",
 			qargs: []interface{}{"foo"},
 		},
 	}
