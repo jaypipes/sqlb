@@ -25,6 +25,7 @@ func (j *joinClause) argCount() int {
 
 func (j *joinClause) size(scanner *sqlScanner) int {
 	size := 0
+	size += len(scanner.format.SeparateClauseWith)
 	switch j.joinType {
 	case JOIN_INNER:
 		size += len(Symbols[SYM_JOIN])
@@ -43,6 +44,7 @@ func (j *joinClause) size(scanner *sqlScanner) int {
 
 func (j *joinClause) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
+	bw += copy(b[bw:], scanner.format.SeparateClauseWith)
 	switch j.joinType {
 	case JOIN_INNER:
 		bw += copy(b[bw:], Symbols[SYM_JOIN])

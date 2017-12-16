@@ -11,7 +11,11 @@ func TestFormatOptions(t *testing.T) {
 
 	m := testFixtureMeta()
 	users := m.Table("users")
+	articles := m.Table("articles")
 	colUserName := users.C("name")
+	colUserId := users.C("id")
+	colArticleId := articles.C("id")
+	colArticleAuthor := articles.C("author")
 
 	tests := []struct {
 		name    string
@@ -23,22 +27,36 @@ func TestFormatOptions(t *testing.T) {
 		{
 			name: "default space clause separator",
 			s: &selectStatement{
-				selections: []selection{users},
-				projs:      []projection{colUserName},
+				selections: []selection{articles},
+				projs:      []projection{colArticleId, colUserName.As("author")},
+				joins: []*joinClause{
+					&joinClause{
+						left:  articles,
+						right: users,
+						on:    Equal(colArticleAuthor, colUserId),
+					},
+				},
 				where: &whereClause{
 					filters: []*Expression{
 						Equal(colUserName, "foo"),
 					},
 				},
 			},
-			qs:    "SELECT users.name FROM users WHERE users.name = ?",
+			qs:    "SELECT articles.id, users.name AS author FROM articles JOIN users ON articles.author = users.id WHERE users.name = ?",
 			qargs: []interface{}{"foo"},
 		},
 		{
 			name: "newline clause separator ",
 			s: &selectStatement{
-				selections: []selection{users},
-				projs:      []projection{colUserName},
+				selections: []selection{articles},
+				projs:      []projection{colArticleId, colUserName.As("author")},
+				joins: []*joinClause{
+					&joinClause{
+						left:  articles,
+						right: users,
+						on:    Equal(colArticleAuthor, colUserId),
+					},
+				},
 				where: &whereClause{
 					filters: []*Expression{
 						Equal(colUserName, "foo"),
@@ -51,7 +69,7 @@ func TestFormatOptions(t *testing.T) {
 					SeparateClauseWith: "\n",
 				},
 			},
-			qs:    "SELECT users.name\nFROM users\nWHERE users.name = ?",
+			qs:    "SELECT articles.id, users.name AS author\nFROM articles\nJOIN users ON articles.author = users.id\nWHERE users.name = ?",
 			qargs: []interface{}{"foo"},
 		},
 	}
