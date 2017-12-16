@@ -17,6 +17,26 @@ func TestFormatOptions(t *testing.T) {
 	colArticleId := articles.C("id")
 	colArticleAuthor := articles.C("author")
 
+	stmt := &selectStatement{
+		selections: []selection{articles},
+		projs:      []projection{colArticleId, colUserName.As("author")},
+		joins: []*joinClause{
+			&joinClause{
+				left:  articles,
+				right: users,
+				on:    Equal(colArticleAuthor, colUserId),
+			},
+		},
+		where: &whereClause{
+			filters: []*Expression{
+				Equal(colUserName, "foo"),
+			},
+		},
+		groupBy: &groupByClause{
+			cols: []projection{colUserName},
+		},
+	}
+
 	tests := []struct {
 		name    string
 		scanner *sqlScanner
@@ -25,51 +45,21 @@ func TestFormatOptions(t *testing.T) {
 		qargs   []interface{}
 	}{
 		{
-			name: "default space clause separator",
-			s: &selectStatement{
-				selections: []selection{articles},
-				projs:      []projection{colArticleId, colUserName.As("author")},
-				joins: []*joinClause{
-					&joinClause{
-						left:  articles,
-						right: users,
-						on:    Equal(colArticleAuthor, colUserId),
-					},
-				},
-				where: &whereClause{
-					filters: []*Expression{
-						Equal(colUserName, "foo"),
-					},
-				},
-			},
-			qs:    "SELECT articles.id, users.name AS author FROM articles JOIN users ON articles.author = users.id WHERE users.name = ?",
+			name:  "default space clause separator",
+			s:     stmt,
+			qs:    "SELECT articles.id, users.name AS author FROM articles JOIN users ON articles.author = users.id WHERE users.name = ? GROUP BY users.name",
 			qargs: []interface{}{"foo"},
 		},
 		{
 			name: "newline clause separator ",
-			s: &selectStatement{
-				selections: []selection{articles},
-				projs:      []projection{colArticleId, colUserName.As("author")},
-				joins: []*joinClause{
-					&joinClause{
-						left:  articles,
-						right: users,
-						on:    Equal(colArticleAuthor, colUserId),
-					},
-				},
-				where: &whereClause{
-					filters: []*Expression{
-						Equal(colUserName, "foo"),
-					},
-				},
-			},
 			scanner: &sqlScanner{
 				dialect: DIALECT_MYSQL,
 				format: &FormatOptions{
 					SeparateClauseWith: "\n",
 				},
 			},
-			qs:    "SELECT articles.id, users.name AS author\nFROM articles\nJOIN users ON articles.author = users.id\nWHERE users.name = ?",
+			s:     stmt,
+			qs:    "SELECT articles.id, users.name AS author\nFROM articles\nJOIN users ON articles.author = users.id\nWHERE users.name = ?\nGROUP BY users.name",
 			qargs: []interface{}{"foo"},
 		},
 	}

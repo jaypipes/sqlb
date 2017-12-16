@@ -10,7 +10,9 @@ func (gb *groupByClause) argCount() int {
 }
 
 func (gb *groupByClause) size(scanner *sqlScanner) int {
-	size := len(Symbols[SYM_GROUP_BY])
+	size := 0
+	size += len(scanner.format.SeparateClauseWith)
+	size += len(Symbols[SYM_GROUP_BY])
 	ncols := len(gb.cols)
 	for _, c := range gb.cols {
 		reset := c.disableAliasScan()
@@ -22,6 +24,7 @@ func (gb *groupByClause) size(scanner *sqlScanner) int {
 
 func (gb *groupByClause) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
+	bw += copy(b[bw:], scanner.format.SeparateClauseWith)
 	bw += copy(b[bw:], Symbols[SYM_GROUP_BY])
 	ncols := len(gb.cols)
 	for x, c := range gb.cols {
