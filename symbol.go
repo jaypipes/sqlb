@@ -190,7 +190,7 @@ var (
 		SYM_GROUP_BY:                []byte("GROUP BY "),
 		SYM_ORDER_BY:                []byte("ORDER BY "),
 		SYM_DESC:                    []byte(" DESC"),
-		SYM_LIMIT:                   []byte(" LIMIT "),
+		SYM_LIMIT:                   []byte("LIMIT "),
 		SYM_OFFSET:                  []byte(" OFFSET "),
 		SYM_INSERT:                  []byte("INSERT INTO "),
 		SYM_VALUES:                  []byte(") VALUES ("),

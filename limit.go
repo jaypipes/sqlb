@@ -17,7 +17,9 @@ func (lc *limitClause) size(scanner *sqlScanner) int {
 	// markers for query parameters. This is calculated separately by the
 	// top-level scanning struct before malloc'ing the buffer to inject the SQL
 	// string into.
-	size := len(Symbols[SYM_LIMIT])
+	size := 0
+	size += len(scanner.format.SeparateClauseWith)
+	size += len(Symbols[SYM_LIMIT])
 	if lc.offset != nil {
 		size += len(Symbols[SYM_OFFSET])
 	}
@@ -26,6 +28,7 @@ func (lc *limitClause) size(scanner *sqlScanner) int {
 
 func (lc *limitClause) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
+	bw += copy(b[bw:], scanner.format.SeparateClauseWith)
 	bw += copy(b[bw:], Symbols[SYM_LIMIT])
 	bw += scanInterpolationMarker(scanner.dialect, b[bw:], *curArg)
 	args[*curArg] = lc.limit
