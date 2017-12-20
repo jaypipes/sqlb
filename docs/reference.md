@@ -14,6 +14,7 @@ ways.
     1. [Updating rows](#updating-data-in-a-table)
 1. [Aliasables](#aliasables)
 1. [SQL Functions](#sql-functions)
+1. [Modifying output SQL format](#modifying-output-sql-format)
 
 ## Schema and Metadata
 
@@ -610,3 +611,23 @@ for each `sqlb` string function and the supported RDBMS dialects.
 | `LTrimChars(colName, "#$%")` | PostgreSQL    | `SELECT TRIM(LEADING $1 FROM users.name) FROM users` |
 | `RTrimChars(colName, "#$%")` | MySQL         | `SELECT TRIM(TRAILING ? FROM users.name) FROM users` |
 | `RTrimChars(colName, "#$%")` | PostgreSQL    | `SELECT TRIM(TRAILING $1 FROM users.name) FROM users` |
+
+## Modifying output SQL format
+
+`sqlb` users may affect the output format of the SQL strings produced by
+`sqlb.Query` structs in a number of ways.
+
+The first way to affect the output format is by setting the SQL dialect to use.
+The SQL dialect affects a number of things about the output SQL, including SQL
+function names. See the [section on SQL dialects](#sql-dialects) for more
+information.
+
+The second way to influence the format of the output SQL string is to supply a
+`sqlb.FormatOptions` struct to one of the `sqlb.Query` structs.
+
+The `sqlb.FormatOptions` struct contains a number of fields that affect the
+output of the SQL string. These fields are detailed in the table below.
+
+| `sqlb.FormatOptions` field name | field type | default | Affect on SQL string |
+| ------------------------------- | ---------- | ------- | -------------------- |
+| `SeparateClausesWith`           | `string`   | " "     | Change the character or characters that separate major clauses like `FROM`, `JOIN`, `GROUP BY`, etc. |
