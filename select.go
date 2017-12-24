@@ -60,6 +60,11 @@ func (q *SelectQuery) GroupBy(cols ...projection) *SelectQuery {
 	return q
 }
 
+func (q *SelectQuery) Having(e *Expression) *SelectQuery {
+	q.sel.addHaving(e)
+	return q
+}
+
 func (q *SelectQuery) OrderBy(scols ...*sortColumn) *SelectQuery {
 	q.sel.addOrderBy(scols...)
 	return q

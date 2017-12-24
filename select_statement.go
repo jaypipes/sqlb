@@ -6,6 +6,7 @@ type selectStatement struct {
 	joins      []*joinClause
 	where      *whereClause
 	groupBy    *groupByClause
+	having     *havingClause
 	orderBy    *orderByClause
 	limit      *limitClause
 }
@@ -26,6 +27,9 @@ func (s *selectStatement) argCount() int {
 	}
 	if s.groupBy != nil {
 		argc += s.groupBy.argCount()
+	}
+	if s.having != nil {
+		argc += s.having.argCount()
 	}
 	if s.orderBy != nil {
 		argc += s.orderBy.argCount()
@@ -60,6 +64,9 @@ func (s *selectStatement) size(scanner *sqlScanner) int {
 	}
 	if s.groupBy != nil {
 		size += s.groupBy.size(scanner)
+	}
+	if s.having != nil {
+		size += s.having.size(scanner)
 	}
 	if s.orderBy != nil {
 		size += s.orderBy.size(scanner)
@@ -99,6 +106,9 @@ func (s *selectStatement) scan(scanner *sqlScanner, b []byte, args []interface{}
 	}
 	if s.groupBy != nil {
 		bw += s.groupBy.scan(scanner, b[bw:], args, curArg)
+	}
+	if s.having != nil {
+		bw += s.having.scan(scanner, b[bw:], args, curArg)
 	}
 	if s.orderBy != nil {
 		bw += s.orderBy.scan(scanner, b[bw:], args, curArg)
@@ -142,6 +152,14 @@ func (s *selectStatement) addGroupBy(cols ...projection) *selectStatement {
 		}
 	}
 	s.groupBy = gb
+	return s
+}
+
+func (s *selectStatement) addHaving(e *Expression) *selectStatement {
+	if s.having == nil {
+		s.having = &havingClause{conditions: make([]*Expression, 0)}
+	}
+	s.having.conditions = append(s.having.conditions, e)
 	return s
 }
 

@@ -67,6 +67,12 @@ func TestSelectQuery(t *testing.T) {
 			qs:   "SELECT users.id, users.name FROM users GROUP BY users.name",
 		},
 		{
+			name:  "Simple HAVING",
+			q:     Select(users).Having(Equal(colUserName, "foo")),
+			qs:    "SELECT users.id, users.name FROM users HAVING users.name = ?",
+			qargs: []interface{}{"foo"},
+		},
+		{
 			name: "Simple ORDER BY",
 			q:    Select(users).OrderBy(colUserName.Desc()),
 			qs:   "SELECT users.id, users.name FROM users ORDER BY users.name DESC",

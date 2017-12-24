@@ -19,6 +19,7 @@ const (
 	SYM_ON
 	SYM_WHERE
 	SYM_GROUP_BY
+	SYM_HAVING
 	SYM_ORDER_BY
 	SYM_DESC
 	SYM_LIMIT
@@ -188,6 +189,7 @@ var (
 		SYM_ON:                      []byte(" ON "),
 		SYM_WHERE:                   []byte("WHERE "),
 		SYM_GROUP_BY:                []byte("GROUP BY "),
+		SYM_HAVING:                  []byte("HAVING "),
 		SYM_ORDER_BY:                []byte("ORDER BY "),
 		SYM_DESC:                    []byte(" DESC"),
 		SYM_LIMIT:                   []byte("LIMIT "),
