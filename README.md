@@ -322,3 +322,8 @@ No more manually constructing and reconstructing strings or tracking query
 arguments. `sqlb` handles the SQL string construction for you as well as
 properly construct the slice of query arguments, allowing you to write custom
 query code in a more natural and efficient manner.
+
+## License
+
+`sqlb` is licensed under the Apache license version 2. See the
+[COPYING](COPYING) file for more information.
