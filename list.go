@@ -1,3 +1,8 @@
+//
+// Use and distribution licensed under the Apache license version 2.
+//
+// See the COPYING file in the root project directory for full text.
+//
 package sqlb
 
 // A List is a concrete struct wrapper around an array of elements that
