@@ -67,8 +67,34 @@ func TestFormatOptions(t *testing.T) {
 					SeparateClauseWith: "\n",
 				},
 			},
-			s:     stmt,
-			qs:    "SELECT articles.id, users.name AS author\nFROM articles\nJOIN users ON articles.author = users.id\nWHERE users.name = ?\nGROUP BY users.name\nORDER BY users.name DESC\nLIMIT ?",
+			s: stmt,
+			qs: `SELECT articles.id, users.name AS author
+FROM articles
+JOIN users ON articles.author = users.id
+WHERE users.name = ?
+GROUP BY users.name
+ORDER BY users.name DESC
+LIMIT ?`,
+			qargs: []interface{}{"foo", 10},
+		},
+		{
+			name: "newline clause separator with prefix newline",
+			scanner: &sqlScanner{
+				dialect: DIALECT_MYSQL,
+				format: &FormatOptions{
+					SeparateClauseWith: "\n",
+					PrefixWith:         "\n",
+				},
+			},
+			s: stmt,
+			qs: `
+SELECT articles.id, users.name AS author
+FROM articles
+JOIN users ON articles.author = users.id
+WHERE users.name = ?
+GROUP BY users.name
+ORDER BY users.name DESC
+LIMIT ?`,
 			qargs: []interface{}{"foo", 10},
 		},
 	}
@@ -77,20 +103,12 @@ func TestFormatOptions(t *testing.T) {
 		if scanner == nil {
 			scanner = defaultScanner
 		}
-		expArgc := len(test.qargs)
-		argc := test.s.argCount()
-		assert.Equal(expArgc, argc)
-
-		expLen := len(test.qs)
-		size := test.s.size(scanner)
-		size += interpolationLength(DIALECT_MYSQL, argc)
-		assert.Equal(expLen, size)
-
-		b := make([]byte, size)
-		curArg := 0
-		written := test.s.scan(scanner, b, test.qargs, &curArg)
-
-		assert.Equal(written, size)
-		assert.Equal(test.qs, string(b))
+		sel := &SelectQuery{
+			sel:     test.s,
+			scanner: scanner,
+		}
+		qs, qargs := sel.StringArgs()
+		assert.Equal(qs, test.qs)
+		assert.Equal(qargs, test.qargs)
 	}
 }
