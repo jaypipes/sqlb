@@ -7,10 +7,12 @@ package sqlb
 
 type FormatOptions struct {
 	SeparateClauseWith string
+	PrefixWith         string
 }
 
 var defaultFormatOptions = &FormatOptions{
 	SeparateClauseWith: " ",
+	PrefixWith:         "",
 }
 
 var defaultScanner = &sqlScanner{
@@ -36,9 +38,10 @@ type sqlScanner struct {
 
 func (s *sqlScanner) scan(b []byte, args []interface{}, scannables ...Scannable) {
 	curArg := 0
-
+	bw := 0
+	bw += copy(b[bw:], s.format.PrefixWith)
 	for _, scannable := range scannables {
-		scannable.scan(s, b, args, &curArg)
+		bw += scannable.scan(s, b[bw:], args, &curArg)
 	}
 }
 
@@ -51,6 +54,7 @@ func (s *sqlScanner) size(elements ...element) *ElementSizes {
 		buflen += el.size(s)
 	}
 	buflen += interpolationLength(s.dialect, argc)
+	buflen += len(s.format.PrefixWith)
 
 	return &ElementSizes{
 		ArgCount:   argc,
