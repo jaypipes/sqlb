@@ -8,6 +8,7 @@ package sqlb
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -124,17 +125,17 @@ func TestExpressions(t *testing.T) {
 	}
 	for _, test := range tests {
 		expArgc := len(test.qargs)
-		argc := test.c.argCount()
+		argc := test.c.ArgCount()
 		assert.Equal(expArgc, argc)
 
 		expLen := len(test.qs)
-		size := test.c.size(defaultScanner)
-		size += interpolationLength(DIALECT_MYSQL, argc)
+		size := test.c.Size(defaultScanner)
+		size += interpolationLength(types.DIALECT_MYSQL, argc)
 		assert.Equal(expLen, size)
 
 		b := make([]byte, size)
 		curArg := 0
-		written := test.c.scan(defaultScanner, b, test.qargs, &curArg)
+		written := test.c.Scan(defaultScanner, b, test.qargs, &curArg)
 
 		assert.Equal(written, size)
 		assert.Equal(test.qs, string(b))

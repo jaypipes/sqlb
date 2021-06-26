@@ -5,6 +5,8 @@
 //
 package sqlb
 
+import "github.com/jaypipes/sqlb/pkg/types"
+
 type funcId int
 
 const (
@@ -94,17 +96,17 @@ var (
 )
 
 type sqlFunc struct {
-	sel      selection
+	sel      types.Selection
 	alias    string
 	scanInfo scanInfo
-	elements []element
+	elements []types.Element
 }
 
-func (f *sqlFunc) from() selection {
+func (f *sqlFunc) From() types.Selection {
 	return f.sel
 }
 
-func (f *sqlFunc) disableAliasScan() func() {
+func (f *sqlFunc) DisableAliasScan() func() {
 	origAlias := f.alias
 	f.alias = ""
 	return func() { f.alias = origAlias }
@@ -119,15 +121,15 @@ func (f *sqlFunc) As(alias string) *sqlFunc {
 	return f
 }
 
-func (e *sqlFunc) argCount() int {
+func (e *sqlFunc) ArgCount() int {
 	ac := 0
 	for _, el := range e.elements {
-		ac += el.argCount()
+		ac += el.ArgCount()
 	}
 	return ac
 }
 
-func (f *sqlFunc) size(scanner *sqlScanner) int {
+func (f *sqlFunc) Size(scanner types.Scanner) int {
 	size := 0
 	elidx := 0
 	for _, sym := range f.scanInfo {
@@ -138,12 +140,12 @@ func (f *sqlFunc) size(scanner *sqlScanner) int {
 			// projections. We don't want to output, for example,
 			// "ON users.id AS user_id = articles.author"
 			switch el.(type) {
-			case projection:
-				reset := el.(projection).disableAliasScan()
+			case types.Projection:
+				reset := el.(types.Projection).DisableAliasScan()
 				defer reset()
 			}
 			elidx++
-			size += el.size(scanner)
+			size += el.Size(scanner)
 		default:
 			size += len(Symbols[sym])
 		}
@@ -154,7 +156,7 @@ func (f *sqlFunc) size(scanner *sqlScanner) int {
 	return size
 }
 
-func (f *sqlFunc) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
+func (f *sqlFunc) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	elidx := 0
 	for _, sym := range f.scanInfo {
@@ -164,12 +166,12 @@ func (f *sqlFunc) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg
 			// projections. We don't want to output, for example,
 			// "ON users.id AS user_id = articles.author"
 			switch el.(type) {
-			case projection:
-				reset := el.(projection).disableAliasScan()
+			case types.Projection:
+				reset := el.(types.Projection).DisableAliasScan()
 				defer reset()
 			}
 			elidx++
-			bw += el.scan(scanner, b[bw:], args, curArg)
+			bw += el.Scan(scanner, b[bw:], args, curArg)
 		} else {
 			bw += copy(b[bw:], Symbols[sym])
 		}
@@ -181,11 +183,11 @@ func (f *sqlFunc) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg
 	return bw
 }
 
-func Max(p projection) *sqlFunc {
+func Max(p types.Projection) *sqlFunc {
 	return &sqlFunc{
 		scanInfo: funcScanTable[FUNC_MAX],
-		elements: []element{p.(element)},
-		sel:      p.from(),
+		elements: []types.Element{p.(types.Element)},
+		sel:      p.From(),
 	}
 }
 
@@ -193,11 +195,11 @@ func (c *Column) Max() *sqlFunc {
 	return Max(c)
 }
 
-func Min(p projection) *sqlFunc {
+func Min(p types.Projection) *sqlFunc {
 	return &sqlFunc{
 		scanInfo: funcScanTable[FUNC_MIN],
-		elements: []element{p.(element)},
-		sel:      p.from(),
+		elements: []types.Element{p.(types.Element)},
+		sel:      p.From(),
 	}
 }
 
@@ -205,11 +207,11 @@ func (c *Column) Min() *sqlFunc {
 	return Min(c)
 }
 
-func Sum(p projection) *sqlFunc {
+func Sum(p types.Projection) *sqlFunc {
 	return &sqlFunc{
 		scanInfo: funcScanTable[FUNC_SUM],
-		elements: []element{p.(element)},
-		sel:      p.from(),
+		elements: []types.Element{p.(types.Element)},
+		sel:      p.From(),
 	}
 }
 
@@ -217,11 +219,11 @@ func (c *Column) Sum() *sqlFunc {
 	return Sum(c)
 }
 
-func Avg(p projection) *sqlFunc {
+func Avg(p types.Projection) *sqlFunc {
 	return &sqlFunc{
 		scanInfo: funcScanTable[FUNC_AVG],
-		elements: []element{p.(element)},
-		sel:      p.from(),
+		elements: []types.Element{p.(types.Element)},
+		sel:      p.From(),
 	}
 }
 
@@ -229,22 +231,22 @@ func (c *Column) Avg() *sqlFunc {
 	return Avg(c)
 }
 
-func Count(sel selection) *sqlFunc {
+func Count(sel types.Selection) *sqlFunc {
 	return &sqlFunc{
 		scanInfo: funcScanTable[FUNC_COUNT_STAR],
 		sel:      sel,
 	}
 }
 
-func CountDistinct(p projection) *sqlFunc {
+func CountDistinct(p types.Projection) *sqlFunc {
 	return &sqlFunc{
 		scanInfo: funcScanTable[FUNC_COUNT_DISTINCT],
-		elements: []element{p.(element)},
-		sel:      p.from(),
+		elements: []types.Element{p.(types.Element)},
+		sel:      p.From(),
 	}
 }
 
-func Cast(p projection, stype SqlType) *sqlFunc {
+func Cast(p types.Projection, stype SqlType) *sqlFunc {
 	si := make([]Symbol, len(funcScanTable[FUNC_CAST]))
 	copy(si, funcScanTable[FUNC_CAST])
 	// Replace the placeholder with the SQL type's appropriate []byte
@@ -252,15 +254,15 @@ func Cast(p projection, stype SqlType) *sqlFunc {
 	si[3] = sqlTypeToSymbol[stype]
 	return &sqlFunc{
 		scanInfo: si,
-		elements: []element{p.(element)},
+		elements: []types.Element{p.(types.Element)},
 	}
 }
 
-func CharLength(p projection) *sqlFunc {
+func CharLength(p types.Projection) *sqlFunc {
 	return &sqlFunc{
 		scanInfo: funcScanTable[FUNC_CHAR_LENGTH],
-		elements: []element{p.(element)},
-		sel:      p.from(),
+		elements: []types.Element{p.(types.Element)},
+		sel:      p.From(),
 	}
 }
 
@@ -268,11 +270,11 @@ func (c *Column) CharLength() *sqlFunc {
 	return CharLength(c)
 }
 
-func BitLength(p projection) *sqlFunc {
+func BitLength(p types.Projection) *sqlFunc {
 	return &sqlFunc{
 		scanInfo: funcScanTable[FUNC_BIT_LENGTH],
-		elements: []element{p.(element)},
-		sel:      p.from(),
+		elements: []types.Element{p.(types.Element)},
+		sel:      p.From(),
 	}
 }
 
@@ -280,11 +282,11 @@ func (c *Column) BitLength() *sqlFunc {
 	return BitLength(c)
 }
 
-func Ascii(p projection) *sqlFunc {
+func Ascii(p types.Projection) *sqlFunc {
 	return &sqlFunc{
 		scanInfo: funcScanTable[FUNC_ASCII],
-		elements: []element{p.(element)},
-		sel:      p.from(),
+		elements: []types.Element{p.(types.Element)},
+		sel:      p.From(),
 	}
 }
 
@@ -292,11 +294,11 @@ func (c *Column) Ascii() *sqlFunc {
 	return Ascii(c)
 }
 
-func Reverse(p projection) *sqlFunc {
+func Reverse(p types.Projection) *sqlFunc {
 	return &sqlFunc{
 		scanInfo: funcScanTable[FUNC_REVERSE],
-		elements: []element{p.(element)},
-		sel:      p.from(),
+		elements: []types.Element{p.(types.Element)},
+		sel:      p.From(),
 	}
 }
 
@@ -304,31 +306,31 @@ func (c *Column) Reverse() *sqlFunc {
 	return Reverse(c)
 }
 
-func Concat(projs ...projection) *sqlFunc {
-	els := make([]element, len(projs))
+func Concat(projs ...types.Projection) *sqlFunc {
+	els := make([]types.Element, len(projs))
 	for x, p := range projs {
-		els[x] = p.(element)
+		els[x] = p.(types.Element)
 	}
 	subjects := &List{elements: els}
 	return &sqlFunc{
 		scanInfo: funcScanTable[FUNC_CONCAT],
-		elements: []element{subjects},
+		elements: []types.Element{subjects},
 		// TODO(jaypipes): Clearly we need to support >1 selection...
-		sel: projs[0].from(),
+		sel: projs[0].From(),
 	}
 }
 
-func ConcatWs(sep string, projs ...projection) *sqlFunc {
-	els := make([]element, len(projs))
+func ConcatWs(sep string, projs ...types.Projection) *sqlFunc {
+	els := make([]types.Element, len(projs))
 	for x, p := range projs {
-		els[x] = p.(element)
+		els[x] = p.(types.Element)
 	}
 	subjects := &List{elements: els}
 	return &sqlFunc{
 		scanInfo: funcScanTable[FUNC_CONCAT_WS],
-		elements: []element{&value{val: sep}, subjects},
+		elements: []types.Element{&value{val: sep}, subjects},
 		// TODO(jaypipes): Clearly we need to support >1 selection...
-		sel: projs[0].from(),
+		sel: projs[0].From(),
 	}
 }
 
@@ -356,7 +358,7 @@ func CurrentDate() *sqlFunc {
 	}
 }
 
-func Extract(p projection, unit IntervalUnit) *sqlFunc {
+func Extract(p types.Projection, unit IntervalUnit) *sqlFunc {
 	si := make([]Symbol, len(funcScanTable[FUNC_EXTRACT]))
 	copy(si, funcScanTable[FUNC_EXTRACT])
 	// Replace the placeholder with the interval unit's appropriate []byte
@@ -364,6 +366,6 @@ func Extract(p projection, unit IntervalUnit) *sqlFunc {
 	si[1] = intervalUnitToSymbol[unit]
 	return &sqlFunc{
 		scanInfo: si,
-		elements: []element{p.(element)},
+		elements: []types.Element{p.(types.Element)},
 	}
 }

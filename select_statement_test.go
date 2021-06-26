@@ -9,6 +9,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/jaypipes/sqlb/pkg/types"
 )
 
 func TestSelectClause(t *testing.T) {
@@ -35,7 +37,7 @@ func TestSelectClause(t *testing.T) {
 		{
 			name: "A literal value",
 			s: &selectStatement{
-				projs: []projection{&value{val: 1}},
+				projs: []types.Projection{&value{val: 1}},
 			},
 			qs:    "SELECT ?",
 			qargs: []interface{}{1},
@@ -43,7 +45,7 @@ func TestSelectClause(t *testing.T) {
 		{
 			name: "A literal value aliased",
 			s: &selectStatement{
-				projs: []projection{
+				projs: []types.Projection{
 					&value{alias: "foo", val: 1},
 				},
 			},
@@ -53,7 +55,7 @@ func TestSelectClause(t *testing.T) {
 		{
 			name: "Two literal values",
 			s: &selectStatement{
-				projs: []projection{
+				projs: []types.Projection{
 					&value{val: 1},
 					&value{val: 1},
 				},
@@ -64,16 +66,16 @@ func TestSelectClause(t *testing.T) {
 		{
 			name: "Table and column",
 			s: &selectStatement{
-				selections: []selection{users},
-				projs:      []projection{colUserName},
+				selections: []types.Selection{users},
+				projs:      []types.Projection{colUserName},
 			},
 			qs: "SELECT users.name FROM users",
 		},
 		{
 			name: "aliased Table and Column",
 			s: &selectStatement{
-				selections: []selection{users.As("u")},
-				projs: []projection{
+				selections: []types.Selection{users.As("u")},
+				projs: []types.Projection{
 					users.As("u").C("name"),
 				},
 			},
@@ -82,16 +84,16 @@ func TestSelectClause(t *testing.T) {
 		{
 			name: "Table and multiple Column",
 			s: &selectStatement{
-				selections: []selection{users},
-				projs:      []projection{colUserId, colUserName},
+				selections: []types.Selection{users},
+				projs:      []types.Projection{colUserId, colUserName},
 			},
 			qs: "SELECT users.id, users.name FROM users",
 		},
 		{
 			name: "Simple WHERE",
 			s: &selectStatement{
-				selections: []selection{users},
-				projs:      []projection{colUserName},
+				selections: []types.Selection{users},
+				projs:      []types.Projection{colUserName},
 				where: &whereClause{
 					filters: []*Expression{
 						Equal(colUserName, "foo"),
@@ -104,8 +106,8 @@ func TestSelectClause(t *testing.T) {
 		{
 			name: "Simple LIMIT",
 			s: &selectStatement{
-				selections: []selection{users},
-				projs:      []projection{colUserName},
+				selections: []types.Selection{users},
+				projs:      []types.Projection{colUserName},
 				limit:      &limitClause{limit: 10},
 			},
 			qs:    "SELECT users.name FROM users LIMIT ?",
@@ -114,8 +116,8 @@ func TestSelectClause(t *testing.T) {
 		{
 			name: "Simple ORDER BY",
 			s: &selectStatement{
-				selections: []selection{users},
-				projs:      []projection{colUserName},
+				selections: []types.Selection{users},
+				projs:      []types.Projection{colUserName},
 				orderBy: &orderByClause{
 					scols: []*sortColumn{colUserName.Desc()},
 				},
@@ -125,10 +127,10 @@ func TestSelectClause(t *testing.T) {
 		{
 			name: "Simple GROUP BY",
 			s: &selectStatement{
-				selections: []selection{users},
-				projs:      []projection{colUserName},
+				selections: []types.Selection{users},
+				projs:      []types.Projection{colUserName},
 				groupBy: &groupByClause{
-					cols: []projection{colUserName},
+					cols: []types.Projection{colUserName},
 				},
 			},
 			qs: "SELECT users.name FROM users GROUP BY users.name",
@@ -136,10 +138,10 @@ func TestSelectClause(t *testing.T) {
 		{
 			name: "GROUP BY, ORDER BY and LIMIT",
 			s: &selectStatement{
-				selections: []selection{users},
-				projs:      []projection{colUserName},
+				selections: []types.Selection{users},
+				projs:      []types.Projection{colUserName},
 				groupBy: &groupByClause{
-					cols: []projection{colUserName},
+					cols: []types.Projection{colUserName},
 				},
 				orderBy: &orderByClause{
 					scols: []*sortColumn{colUserName.Desc()},
@@ -152,8 +154,8 @@ func TestSelectClause(t *testing.T) {
 		{
 			name: "Single JOIN",
 			s: &selectStatement{
-				selections: []selection{articles},
-				projs:      []projection{colArticleId, colUserName.As("author")},
+				selections: []types.Selection{articles},
+				projs:      []types.Projection{colArticleId, colUserName.As("author")},
 				joins: []*joinClause{
 					&joinClause{
 						left:  articles,
@@ -167,8 +169,8 @@ func TestSelectClause(t *testing.T) {
 		{
 			name: "Multiple JOINs",
 			s: &selectStatement{
-				selections: []selection{articles},
-				projs:      []projection{colArticleId, colUserName.As("author"), colArticleStateName.As("state")},
+				selections: []types.Selection{articles},
+				projs:      []types.Projection{colArticleId, colUserName.As("author"), colArticleStateName.As("state")},
 				joins: []*joinClause{
 					&joinClause{
 						left:  articles,
@@ -187,25 +189,25 @@ func TestSelectClause(t *testing.T) {
 		{
 			name: "COUNT(*) on a table",
 			s: &selectStatement{
-				selections: []selection{users},
-				projs:      []projection{Count(users)},
+				selections: []types.Selection{users},
+				projs:      []types.Projection{Count(users)},
 			},
 			qs: "SELECT COUNT(*) FROM users",
 		},
 	}
 	for _, test := range tests {
 		expArgc := len(test.qargs)
-		argc := test.s.argCount()
+		argc := test.s.ArgCount()
 		assert.Equal(expArgc, argc)
 
 		expLen := len(test.qs)
-		size := test.s.size(defaultScanner)
-		size += interpolationLength(DIALECT_MYSQL, argc)
+		size := test.s.Size(defaultScanner)
+		size += interpolationLength(types.DIALECT_MYSQL, argc)
 		assert.Equal(expLen, size)
 
 		b := make([]byte, size)
 		curArg := 0
-		written := test.s.scan(defaultScanner, b, test.qargs, &curArg)
+		written := test.s.Scan(defaultScanner, b, test.qargs, &curArg)
 
 		assert.Equal(written, size)
 		assert.Equal(test.qs, string(b))

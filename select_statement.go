@@ -5,9 +5,13 @@
 //
 package sqlb
 
+import (
+	"github.com/jaypipes/sqlb/pkg/types"
+)
+
 type selectStatement struct {
-	projs      []projection
-	selections []selection
+	projs      []types.Projection
+	selections []types.Selection
 	joins      []*joinClause
 	where      *whereClause
 	groupBy    *groupByClause
@@ -16,110 +20,110 @@ type selectStatement struct {
 	limit      *limitClause
 }
 
-func (s *selectStatement) argCount() int {
+func (s *selectStatement) ArgCount() int {
 	argc := 0
 	for _, p := range s.projs {
-		argc += p.argCount()
+		argc += p.ArgCount()
 	}
 	for _, sel := range s.selections {
-		argc += sel.argCount()
+		argc += sel.ArgCount()
 	}
 	for _, join := range s.joins {
-		argc += join.argCount()
+		argc += join.ArgCount()
 	}
 	if s.where != nil {
-		argc += s.where.argCount()
+		argc += s.where.ArgCount()
 	}
 	if s.groupBy != nil {
-		argc += s.groupBy.argCount()
+		argc += s.groupBy.ArgCount()
 	}
 	if s.having != nil {
-		argc += s.having.argCount()
+		argc += s.having.ArgCount()
 	}
 	if s.orderBy != nil {
-		argc += s.orderBy.argCount()
+		argc += s.orderBy.ArgCount()
 	}
 	if s.limit != nil {
-		argc += s.limit.argCount()
+		argc += s.limit.ArgCount()
 	}
 	return argc
 }
 
-func (s *selectStatement) size(scanner *sqlScanner) int {
+func (s *selectStatement) Size(scanner types.Scanner) int {
 	size := len(Symbols[SYM_SELECT])
 	nprojs := len(s.projs)
 	for _, p := range s.projs {
-		size += p.size(scanner)
+		size += p.Size(scanner)
 	}
 	size += (len(Symbols[SYM_COMMA_WS]) * (nprojs - 1)) // the commas...
 	nsels := len(s.selections)
 	if nsels > 0 {
-		size += len(scanner.format.SeparateClauseWith)
+		size += len(scanner.FormatOptions().SeparateClauseWith)
 		size += len(Symbols[SYM_FROM])
 		for _, sel := range s.selections {
-			size += sel.size(scanner)
+			size += sel.Size(scanner)
 		}
 		size += (len(Symbols[SYM_COMMA_WS]) * (nsels - 1)) // the commas...
 		for _, join := range s.joins {
-			size += join.size(scanner)
+			size += join.Size(scanner)
 		}
 	}
 	if s.where != nil {
-		size += s.where.size(scanner)
+		size += s.where.Size(scanner)
 	}
 	if s.groupBy != nil {
-		size += s.groupBy.size(scanner)
+		size += s.groupBy.Size(scanner)
 	}
 	if s.having != nil {
-		size += s.having.size(scanner)
+		size += s.having.Size(scanner)
 	}
 	if s.orderBy != nil {
-		size += s.orderBy.size(scanner)
+		size += s.orderBy.Size(scanner)
 	}
 	if s.limit != nil {
-		size += s.limit.size(scanner)
+		size += s.limit.Size(scanner)
 	}
 	return size
 }
 
-func (s *selectStatement) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
+func (s *selectStatement) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	bw += copy(b[bw:], Symbols[SYM_SELECT])
 	nprojs := len(s.projs)
 	for x, p := range s.projs {
-		bw += p.scan(scanner, b[bw:], args, curArg)
+		bw += p.Scan(scanner, b[bw:], args, curArg)
 		if x != (nprojs - 1) {
 			bw += copy(b[bw:], Symbols[SYM_COMMA_WS])
 		}
 	}
 	nsels := len(s.selections)
 	if nsels > 0 {
-		bw += copy(b[bw:], scanner.format.SeparateClauseWith)
+		bw += copy(b[bw:], scanner.FormatOptions().SeparateClauseWith)
 		bw += copy(b[bw:], Symbols[SYM_FROM])
 		for x, sel := range s.selections {
-			bw += sel.scan(scanner, b[bw:], args, curArg)
+			bw += sel.Scan(scanner, b[bw:], args, curArg)
 			if x != (nsels - 1) {
 				bw += copy(b[bw:], Symbols[SYM_COMMA_WS])
 			}
 		}
 		for _, join := range s.joins {
-			bw += join.scan(scanner, b[bw:], args, curArg)
+			bw += join.Scan(scanner, b[bw:], args, curArg)
 		}
 	}
 	if s.where != nil {
-		bw += s.where.scan(scanner, b[bw:], args, curArg)
+		bw += s.where.Scan(scanner, b[bw:], args, curArg)
 	}
 	if s.groupBy != nil {
-		bw += s.groupBy.scan(scanner, b[bw:], args, curArg)
+		bw += s.groupBy.Scan(scanner, b[bw:], args, curArg)
 	}
 	if s.having != nil {
-		bw += s.having.scan(scanner, b[bw:], args, curArg)
+		bw += s.having.Scan(scanner, b[bw:], args, curArg)
 	}
 	if s.orderBy != nil {
-		bw += s.orderBy.scan(scanner, b[bw:], args, curArg)
+		bw += s.orderBy.Scan(scanner, b[bw:], args, curArg)
 	}
 	if s.limit != nil {
-		bw += s.limit.scan(scanner, b[bw:], args, curArg)
+		bw += s.limit.Scan(scanner, b[bw:], args, curArg)
 	}
 	return bw
 }
@@ -139,14 +143,14 @@ func (s *selectStatement) addWhere(e *Expression) *selectStatement {
 
 // Given one or more columns, either set or add to the GROUP BY clause for
 // the selectStatement
-func (s *selectStatement) addGroupBy(cols ...projection) *selectStatement {
+func (s *selectStatement) addGroupBy(cols ...types.Projection) *selectStatement {
 	if len(cols) == 0 {
 		return s
 	}
 	gb := s.groupBy
 	if gb == nil {
 		gb = &groupByClause{
-			cols: make([]projection, len(cols)),
+			cols: make([]types.Projection, len(cols)),
 		}
 		for x, c := range cols {
 			gb.cols[x] = c
@@ -213,11 +217,11 @@ func containsJoin(s *selectStatement, j *joinClause) bool {
 	return false
 }
 
-func addToProjections(s *selectStatement, p projection) {
+func addToProjections(s *selectStatement, p types.Projection) {
 	s.projs = append(s.projs, p)
 }
 
-func (s *selectStatement) removeSelection(toRemove selection) {
+func (s *selectStatement) removeSelection(toRemove types.Selection) {
 	idx := -1
 	for x, sel := range s.selections {
 		if sel == toRemove {

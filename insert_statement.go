@@ -5,6 +5,8 @@
 //
 package sqlb
 
+import "github.com/jaypipes/sqlb/pkg/types"
+
 // INSERT INTO <table> (<columns>) VALUES (<values>)
 
 type insertStatement struct {
@@ -13,11 +15,11 @@ type insertStatement struct {
 	values  []interface{}
 }
 
-func (s *insertStatement) argCount() int {
+func (s *insertStatement) ArgCount() int {
 	return len(s.values)
 }
 
-func (s *insertStatement) size(scanner *sqlScanner) int {
+func (s *insertStatement) Size(scanner types.Scanner) int {
 	size := len(Symbols[SYM_INSERT]) + len(s.table.name) + 1 // space after table name
 	ncols := len(s.columns)
 	for _, c := range s.columns {
@@ -35,7 +37,7 @@ func (s *insertStatement) size(scanner *sqlScanner) int {
 	return size
 }
 
-func (s *insertStatement) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
+func (s *insertStatement) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	bw += copy(b[bw:], Symbols[SYM_INSERT])
 	// We don't add any table alias when outputting the table identifier
@@ -54,7 +56,7 @@ func (s *insertStatement) scan(scanner *sqlScanner, b []byte, args []interface{}
 	}
 	bw += copy(b[bw:], Symbols[SYM_VALUES])
 	for x, v := range s.values {
-		bw += scanInterpolationMarker(scanner.dialect, b[bw:], *curArg)
+		bw += scanInterpolationMarker(scanner.Dialect(), b[bw:], *curArg)
 		args[*curArg] = v
 		*curArg++
 		if x != (ncols - 1) {

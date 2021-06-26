@@ -5,6 +5,8 @@
 //
 package sqlb
 
+import "github.com/jaypipes/sqlb/pkg/types"
+
 type exprType int
 
 const (
@@ -67,30 +69,30 @@ var (
 
 type Expression struct {
 	scanInfo scanInfo
-	elements []element
+	elements []types.Element
 }
 
-func (e *Expression) referrents() []selection {
-	res := make([]selection, 0)
+func (e *Expression) referrents() []types.Selection {
+	res := make([]types.Selection, 0)
 	for _, el := range e.elements {
 		switch el.(type) {
-		case projection:
-			p := el.(projection)
-			res = append(res, p.from())
+		case types.Projection:
+			p := el.(types.Projection)
+			res = append(res, p.From())
 		}
 	}
 	return res
 }
 
-func (e *Expression) argCount() int {
+func (e *Expression) ArgCount() int {
 	ac := 0
 	for _, el := range e.elements {
-		ac += el.argCount()
+		ac += el.ArgCount()
 	}
 	return ac
 }
 
-func (e *Expression) size(scanner *sqlScanner) int {
+func (e *Expression) Size(scanner types.Scanner) int {
 	size := 0
 	elidx := 0
 	for _, sym := range e.scanInfo {
@@ -100,12 +102,12 @@ func (e *Expression) size(scanner *sqlScanner) int {
 			// projections. We don't want to output, for example,
 			// "ON users.id AS user_id = articles.author"
 			switch el.(type) {
-			case projection:
-				reset := el.(projection).disableAliasScan()
+			case types.Projection:
+				reset := el.(types.Projection).DisableAliasScan()
 				defer reset()
 			}
 			elidx++
-			size += el.size(scanner)
+			size += el.Size(scanner)
 		} else {
 			size += len(Symbols[sym])
 		}
@@ -113,7 +115,7 @@ func (e *Expression) size(scanner *sqlScanner) int {
 	return size
 }
 
-func (e *Expression) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
+func (e *Expression) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	elidx := 0
 	for _, sym := range e.scanInfo {
@@ -123,12 +125,12 @@ func (e *Expression) scan(scanner *sqlScanner, b []byte, args []interface{}, cur
 			// projections. We don't want to output, for example,
 			// "ON users.id AS user_id = articles.author"
 			switch el.(type) {
-			case projection:
-				reset := el.(projection).disableAliasScan()
+			case types.Projection:
+				reset := el.(types.Projection).DisableAliasScan()
 				defer reset()
 			}
 			elidx++
-			bw += el.scan(scanner, b[bw:], args, curArg)
+			bw += el.Scan(scanner, b[bw:], args, curArg)
 		} else {
 			bw += copy(b[bw:], Symbols[sym])
 		}
@@ -155,25 +157,25 @@ func NotEqual(left interface{}, right interface{}) *Expression {
 func And(a *Expression, b *Expression) *Expression {
 	return &Expression{
 		scanInfo: exprScanTable[EXP_AND],
-		elements: []element{a, b},
+		elements: []types.Element{a, b},
 	}
 }
 
 func Or(a *Expression, b *Expression) *Expression {
 	return &Expression{
 		scanInfo: exprScanTable[EXP_OR],
-		elements: []element{a, b},
+		elements: []types.Element{a, b},
 	}
 }
 
-func In(subject element, values ...interface{}) *Expression {
+func In(subject types.Element, values ...interface{}) *Expression {
 	return &Expression{
 		scanInfo: exprScanTable[EXP_IN],
-		elements: []element{subject, toValueList(values...)},
+		elements: []types.Element{subject, toValueList(values...)},
 	}
 }
 
-func Between(subject element, start interface{}, end interface{}) *Expression {
+func Between(subject types.Element, start interface{}, end interface{}) *Expression {
 	els := toElements(subject, start, end)
 	return &Expression{
 		scanInfo: exprScanTable[EXP_BETWEEN],
@@ -181,17 +183,17 @@ func Between(subject element, start interface{}, end interface{}) *Expression {
 	}
 }
 
-func IsNull(subject element) *Expression {
+func IsNull(subject types.Element) *Expression {
 	return &Expression{
 		scanInfo: exprScanTable[EXP_IS_NULL],
-		elements: []element{subject},
+		elements: []types.Element{subject},
 	}
 }
 
-func IsNotNull(subject element) *Expression {
+func IsNotNull(subject types.Element) *Expression {
 	return &Expression{
 		scanInfo: exprScanTable[EXP_IS_NOT_NULL],
-		elements: []element{subject},
+		elements: []types.Element{subject},
 	}
 }
 

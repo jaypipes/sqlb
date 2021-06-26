@@ -11,6 +11,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -151,12 +152,12 @@ func testFixtureMeta() *Meta {
 	return meta
 }
 
-func resetDB(dialect Dialect, db *sql.DB) {
+func resetDB(dialect types.Dialect, db *sql.DB) {
 	var stmts []string
 	switch dialect {
-	case DIALECT_MYSQL:
+	case types.DIALECT_MYSQL:
 		stmts = _MYSQL_DB_INIT
-	case DIALECT_POSTGRESQL:
+	case types.DIALECT_POSTGRESQL:
 		stmts = _POSTGRESQL_DB_INIT
 	}
 	for _, stmt := range stmts {
@@ -177,10 +178,10 @@ func TestReflectMySQL(t *testing.T) {
 	db, err := sql.Open("mysql", dsn)
 	assert.Nil(err)
 
-	resetDB(DIALECT_MYSQL, db)
+	resetDB(types.DIALECT_MYSQL, db)
 
 	var meta Meta
-	err = Reflect(DIALECT_MYSQL, db, &meta)
+	err = Reflect(types.DIALECT_MYSQL, db, &meta)
 	assert.Nil(err)
 
 	assert.Equal(2, len(meta.tables))
@@ -209,10 +210,10 @@ func TestReflectPostgreSQL(t *testing.T) {
 	db, err := sql.Open("postgres", dsn)
 	assert.Nil(err)
 
-	resetDB(DIALECT_POSTGRESQL, db)
+	resetDB(types.DIALECT_POSTGRESQL, db)
 
 	var meta Meta
-	err = Reflect(DIALECT_POSTGRESQL, db, &meta)
+	err = Reflect(types.DIALECT_POSTGRESQL, db, &meta)
 	assert.Nil(err)
 
 	assert.Equal(2, len(meta.tables))
@@ -234,7 +235,7 @@ func TestReflectPostgreSQL(t *testing.T) {
 func TestReflectErrors(t *testing.T) {
 	assert := assert.New(t)
 
-	err := Reflect(DIALECT_MYSQL, nil, nil)
+	err := Reflect(types.DIALECT_MYSQL, nil, nil)
 	assert.NotNil(err)
 	assert.Equal(ERR_NO_META_STRUCT, err)
 }

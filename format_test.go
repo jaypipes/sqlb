@@ -8,6 +8,7 @@ package sqlb
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -23,8 +24,8 @@ func TestFormatOptions(t *testing.T) {
 	colArticleAuthor := articles.C("author")
 
 	stmt := &selectStatement{
-		selections: []selection{articles},
-		projs:      []projection{colArticleId, colUserName.As("author")},
+		selections: []types.Selection{articles},
+		projs:      []types.Projection{colArticleId, colUserName.As("author")},
 		joins: []*joinClause{
 			&joinClause{
 				left:  articles,
@@ -38,7 +39,7 @@ func TestFormatOptions(t *testing.T) {
 			},
 		},
 		groupBy: &groupByClause{
-			cols: []projection{colUserName},
+			cols: []types.Projection{colUserName},
 		},
 		orderBy: &orderByClause{
 			scols: []*sortColumn{colUserName.Desc()},
@@ -62,8 +63,8 @@ func TestFormatOptions(t *testing.T) {
 		{
 			name: "newline clause separator ",
 			scanner: &sqlScanner{
-				dialect: DIALECT_MYSQL,
-				format: &FormatOptions{
+				dialect: types.DIALECT_MYSQL,
+				format: &types.FormatOptions{
 					SeparateClauseWith: "\n",
 				},
 			},
@@ -80,8 +81,8 @@ LIMIT ?`,
 		{
 			name: "newline clause separator with prefix newline",
 			scanner: &sqlScanner{
-				dialect: DIALECT_MYSQL,
-				format: &FormatOptions{
+				dialect: types.DIALECT_MYSQL,
+				format: &types.FormatOptions{
 					SeparateClauseWith: "\n",
 					PrefixWith:         "\n",
 				},

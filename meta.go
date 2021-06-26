@@ -10,6 +10,7 @@ import (
 	"errors"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/jaypipes/sqlb/pkg/types"
 	_ "github.com/lib/pq"
 )
 
@@ -19,13 +20,14 @@ var (
 
 type Meta struct {
 	db         *sql.DB
-	dialect    Dialect
+	dialect    types.Dialect
 	schemaName string
 	tables     map[string]*Table
 }
 
-func NewMeta(dialect Dialect, schemaName string) *Meta {
+func NewMeta(dialect types.Dialect, schemaName string) *Meta {
 	return &Meta{
+		dialect:    dialect,
 		schemaName: schemaName,
 		tables:     make(map[string]*Table, 0),
 	}
@@ -50,14 +52,14 @@ func (m *Meta) Table(name string) *Table {
 	return t
 }
 
-func Reflect(dialect Dialect, db *sql.DB, meta *Meta) error {
+func Reflect(dialect types.Dialect, db *sql.DB, meta *Meta) error {
 	if meta == nil {
 		return ERR_NO_META_STRUCT
 	}
 	schemaName := getSchemaName(dialect, db)
 	var qs string
 	switch dialect {
-	case DIALECT_MYSQL:
+	case types.DIALECT_MYSQL:
 		qs = `
 SELECT t.TABLE_NAME
 FROM INFORMATION_SCHEMA.TABLES AS t
@@ -65,7 +67,7 @@ WHERE t.TABLE_TYPE = 'BASE TABLE'
 AND t.TABLE_SCHEMA = ?
 ORDER BY t.TABLE_NAME
 `
-	case DIALECT_POSTGRESQL:
+	case types.DIALECT_POSTGRESQL:
 		qs = `
 SELECT t.TABLE_NAME
 FROM INFORMATION_SCHEMA.TABLES AS t
@@ -101,10 +103,10 @@ ORDER BY t.TABLE_NAME
 
 // Grabs column information from the information schema and populates the
 // supplied map of TableDef descriptors' columns
-func fillTableColumns(db *sql.DB, dialect Dialect, schemaName string, tables *map[string]*Table) error {
+func fillTableColumns(db *sql.DB, dialect types.Dialect, schemaName string, tables *map[string]*Table) error {
 	var qs string
 	switch dialect {
-	case DIALECT_MYSQL:
+	case types.DIALECT_MYSQL:
 		qs = `
 SELECT c.TABLE_NAME, c.COLUMN_NAME
 FROM INFORMATION_SCHEMA.COLUMNS AS c
@@ -115,7 +117,7 @@ WHERE c.TABLE_SCHEMA = ?
 AND t.TABLE_TYPE = 'BASE TABLE'
 ORDER BY c.TABLE_NAME, c.COLUMN_NAME
 `
-	case DIALECT_POSTGRESQL:
+	case types.DIALECT_POSTGRESQL:
 		qs = `
 SELECT c.TABLE_NAME, c.COLUMN_NAME
 FROM INFORMATION_SCHEMA.COLUMNS AS c
@@ -151,12 +153,12 @@ ORDER BY c.TABLE_NAME, c.COLUMN_NAME
 }
 
 // Returns the database schema name given a driver name and a sql.DB handle
-func getSchemaName(dialect Dialect, db *sql.DB) string {
+func getSchemaName(dialect types.Dialect, db *sql.DB) string {
 	var qs string
 	switch dialect {
-	case DIALECT_MYSQL:
+	case types.DIALECT_MYSQL:
 		qs = "SELECT DATABASE()"
-	case DIALECT_POSTGRESQL:
+	case types.DIALECT_POSTGRESQL:
 		qs = "SELECT CURRENT_DATABASE()"
 	}
 	var schemaName string

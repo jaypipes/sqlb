@@ -5,37 +5,39 @@
 //
 package sqlb
 
+import "github.com/jaypipes/sqlb/pkg/types"
+
 type groupByClause struct {
-	cols []projection
+	cols []types.Projection
 }
 
-func (gb *groupByClause) argCount() int {
+func (gb *groupByClause) ArgCount() int {
 	argc := 0
 	return argc
 }
 
-func (gb *groupByClause) size(scanner *sqlScanner) int {
+func (gb *groupByClause) Size(scanner types.Scanner) int {
 	size := 0
-	size += len(scanner.format.SeparateClauseWith)
+	size += len(scanner.FormatOptions().SeparateClauseWith)
 	size += len(Symbols[SYM_GROUP_BY])
 	ncols := len(gb.cols)
 	for _, c := range gb.cols {
-		reset := c.disableAliasScan()
+		reset := c.DisableAliasScan()
 		defer reset()
-		size += c.size(scanner)
+		size += c.Size(scanner)
 	}
 	return size + (len(Symbols[SYM_COMMA_WS]) * (ncols - 1)) // the commas...
 }
 
-func (gb *groupByClause) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
+func (gb *groupByClause) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
-	bw += copy(b[bw:], scanner.format.SeparateClauseWith)
+	bw += copy(b[bw:], scanner.FormatOptions().SeparateClauseWith)
 	bw += copy(b[bw:], Symbols[SYM_GROUP_BY])
 	ncols := len(gb.cols)
 	for x, c := range gb.cols {
-		reset := c.disableAliasScan()
+		reset := c.DisableAliasScan()
 		defer reset()
-		bw += c.scan(scanner, b[bw:], args, curArg)
+		bw += c.Scan(scanner, b[bw:], args, curArg)
 		if x != (ncols - 1) {
 			bw += copy(b[bw:], Symbols[SYM_COMMA_WS])
 		}

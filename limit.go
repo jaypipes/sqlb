@@ -5,25 +5,27 @@
 //
 package sqlb
 
+import "github.com/jaypipes/sqlb/pkg/types"
+
 type limitClause struct {
 	limit  int
 	offset *int
 }
 
-func (lc *limitClause) argCount() int {
+func (lc *limitClause) ArgCount() int {
 	if lc.offset == nil {
 		return 1
 	}
 	return 2
 }
 
-func (lc *limitClause) size(scanner *sqlScanner) int {
+func (lc *limitClause) Size(scanner types.Scanner) int {
 	// Due to dialect handling, we do not include the length of interpolation
 	// markers for query parameters. This is calculated separately by the
 	// top-level scanning struct before malloc'ing the buffer to inject the SQL
 	// string into.
 	size := 0
-	size += len(scanner.format.SeparateClauseWith)
+	size += len(scanner.FormatOptions().SeparateClauseWith)
 	size += len(Symbols[SYM_LIMIT])
 	if lc.offset != nil {
 		size += len(Symbols[SYM_OFFSET])
@@ -31,16 +33,16 @@ func (lc *limitClause) size(scanner *sqlScanner) int {
 	return size
 }
 
-func (lc *limitClause) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
+func (lc *limitClause) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
-	bw += copy(b[bw:], scanner.format.SeparateClauseWith)
+	bw += copy(b[bw:], scanner.FormatOptions().SeparateClauseWith)
 	bw += copy(b[bw:], Symbols[SYM_LIMIT])
-	bw += scanInterpolationMarker(scanner.dialect, b[bw:], *curArg)
+	bw += scanInterpolationMarker(scanner.Dialect(), b[bw:], *curArg)
 	args[*curArg] = lc.limit
 	*curArg++
 	if lc.offset != nil {
 		bw += copy(b[bw:], Symbols[SYM_OFFSET])
-		bw += scanInterpolationMarker(scanner.dialect, b[bw:], *curArg)
+		bw += scanInterpolationMarker(scanner.Dialect(), b[bw:], *curArg)
 		args[*curArg] = *lc.offset
 		*curArg++
 	}
