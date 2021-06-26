@@ -1,0 +1,21 @@
+name: unit-test
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go:
+          - '1.15'
+          - '1.14'
+          - '1.13'
+    name: go ${{ matrix.go }} test
+    steps:
+      - uses: actions/checkout@v2
+      - name: install build-essential
+        run: sudo apt update -y && sudo apt install -y build-essential
+      - name: setup go ${{ matrix.go }}
+        uses: actions/setup-go@v1
+        with:
+          go-version: ${{ matrix.go }}
+      - run: go test -v ./...
