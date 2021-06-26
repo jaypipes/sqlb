@@ -8,6 +8,7 @@ package sqlb
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -29,10 +30,10 @@ func TestDerived(t *testing.T) {
 		derivedTest{
 			c: &derivedTable{
 				from: &selectStatement{
-					projs: []projection{
+					projs: []types.Projection{
 						colUserName,
 					},
-					selections: []selection{
+					selections: []types.Selection{
 						users,
 					},
 				},
@@ -43,15 +44,15 @@ func TestDerived(t *testing.T) {
 	}
 	for _, test := range tests {
 		expLen := len(test.qs)
-		s := test.c.size(defaultScanner)
+		s := test.c.Size(defaultScanner)
 		assert.Equal(expLen, s)
 
 		expArgc := len(test.qargs)
-		assert.Equal(expArgc, test.c.argCount())
+		assert.Equal(expArgc, test.c.ArgCount())
 
 		b := make([]byte, s)
 		curArg := 0
-		written := test.c.scan(defaultScanner, b, test.qargs, &curArg)
+		written := test.c.Scan(defaultScanner, b, test.qargs, &curArg)
 
 		assert.Equal(written, s)
 		assert.Equal(test.qs, string(b))

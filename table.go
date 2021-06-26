@@ -5,6 +5,8 @@
 //
 package sqlb
 
+import "github.com/jaypipes/sqlb/pkg/types"
+
 type Table struct {
 	alias   string
 	meta    *Meta
@@ -36,19 +38,19 @@ func (t *Table) NewColumn(name string) *Column {
 	return c
 }
 
-func (t *Table) projections() []projection {
-	res := make([]projection, len(t.columns))
+func (t *Table) Projections() []types.Projection {
+	res := make([]types.Projection, len(t.columns))
 	for x, c := range t.columns {
 		res[x] = c
 	}
 	return res
 }
 
-func (t *Table) argCount() int {
+func (t *Table) ArgCount() int {
 	return 0
 }
 
-func (t *Table) size(scanner *sqlScanner) int {
+func (t *Table) Size(scanner types.Scanner) int {
 	size := len(t.name)
 	if t.alias != "" {
 		size += len(Symbols[SYM_AS]) + len(t.alias)
@@ -56,7 +58,7 @@ func (t *Table) size(scanner *sqlScanner) int {
 	return size
 }
 
-func (t *Table) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
+func (t *Table) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := copy(b, t.name)
 	if t.alias != "" {
 		bw += copy(b[bw:], Symbols[SYM_AS])

@@ -8,6 +8,7 @@ package sqlb
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,15 +19,15 @@ func TestListSingle(t *testing.T) {
 	users := m.Table("users")
 	colUserName := users.C("name")
 
-	cl := &List{elements: []element{colUserName}}
+	cl := &List{elements: []types.Element{colUserName}}
 
 	exp := "users.name"
 	expLen := len(exp)
-	s := cl.size(defaultScanner)
+	s := cl.Size(defaultScanner)
 	assert.Equal(expLen, s)
 
 	b := make([]byte, s)
-	written := cl.scan(defaultScanner, b, nil, nil)
+	written := cl.Scan(defaultScanner, b, nil, nil)
 
 	assert.Equal(written, s)
 	assert.Equal(exp, string(b))
@@ -40,15 +41,15 @@ func TestListMulti(t *testing.T) {
 	colUserId := users.C("id")
 	colUserName := users.C("name")
 
-	cl := &List{elements: []element{colUserId, colUserName}}
+	cl := &List{elements: []types.Element{colUserId, colUserName}}
 
 	exp := "users.id, users.name"
 	expLen := len(exp)
-	s := cl.size(defaultScanner)
+	s := cl.Size(defaultScanner)
 	assert.Equal(expLen, s)
 
 	b := make([]byte, s)
-	written := cl.scan(defaultScanner, b, nil, nil)
+	written := cl.Scan(defaultScanner, b, nil, nil)
 
 	assert.Equal(written, s)
 	assert.Equal(exp, string(b))

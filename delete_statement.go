@@ -3,7 +3,12 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
+
 package sqlb
+
+import (
+	"github.com/jaypipes/sqlb/pkg/types"
+)
 
 // DELETE FROM <table> WHERE <predicates>
 
@@ -12,29 +17,29 @@ type deleteStatement struct {
 	where *whereClause
 }
 
-func (s *deleteStatement) argCount() int {
+func (s *deleteStatement) ArgCount() int {
 	argc := 0
 	if s.where != nil {
-		argc += s.where.argCount()
+		argc += s.where.ArgCount()
 	}
 	return argc
 }
 
-func (s *deleteStatement) size(scanner *sqlScanner) int {
+func (s *deleteStatement) Size(scanner types.Scanner) int {
 	size := len(Symbols[SYM_DELETE]) + len(s.table.name)
 	if s.where != nil {
-		size += s.where.size(scanner)
+		size += s.where.Size(scanner)
 	}
 	return size
 }
 
-func (s *deleteStatement) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
+func (s *deleteStatement) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	bw += copy(b[bw:], Symbols[SYM_DELETE])
 	// We don't add any table alias when outputting the table identifier
 	bw += copy(b[bw:], s.table.name)
 	if s.where != nil {
-		bw += s.where.scan(scanner, b[bw:], args, curArg)
+		bw += s.where.Scan(scanner, b[bw:], args, curArg)
 	}
 	return bw
 }

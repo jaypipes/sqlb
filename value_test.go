@@ -16,18 +16,18 @@ func TestValue(t *testing.T) {
 
 	v := &value{val: "foo"}
 
-	s := v.size(defaultScanner)
+	s := v.Size(defaultScanner)
 	// Due to dialect handling, we can't include interpolation markers in the
 	// size calculation, so size() always returns 0 for non-aliased values.
 	assert.Equal(0, s)
 
-	argc := v.argCount()
+	argc := v.ArgCount()
 	assert.Equal(1, argc)
 
 	args := make([]interface{}, 1)
 	b := make([]byte, 1)
 	curArg := 0
-	written := v.scan(defaultScanner, b, args, &curArg)
+	written := v.Scan(defaultScanner, b, args, &curArg)
 
 	exp := "?"
 	expLen := len(exp)

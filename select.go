@@ -8,6 +8,8 @@ package sqlb
 import (
 	"errors"
 	"fmt"
+
+	"github.com/jaypipes/sqlb/pkg/types"
 )
 
 var (
@@ -32,26 +34,26 @@ func (q *SelectQuery) Error() error {
 }
 
 func (q *SelectQuery) String() string {
-	sizes := q.scanner.size(q.sel)
+	sizes := q.scanner.Size(q.sel)
 	if len(q.args) != sizes.ArgCount {
 		q.args = make([]interface{}, sizes.ArgCount)
 	}
 	if len(q.b) != sizes.BufferSize {
 		q.b = make([]byte, sizes.BufferSize)
 	}
-	q.scanner.scan(q.b, q.args, q.sel)
+	q.scanner.Scan(q.b, q.args, q.sel)
 	return string(q.b)
 }
 
 func (q *SelectQuery) StringArgs() (string, []interface{}) {
-	sizes := q.scanner.size(q.sel)
+	sizes := q.scanner.Size(q.sel)
 	if len(q.args) != sizes.ArgCount {
 		q.args = make([]interface{}, sizes.ArgCount)
 	}
 	if len(q.b) != sizes.BufferSize {
 		q.b = make([]byte, sizes.BufferSize)
 	}
-	q.scanner.scan(q.b, q.args, q.sel)
+	q.scanner.Scan(q.b, q.args, q.sel)
 	return string(q.b), q.args
 }
 
@@ -60,7 +62,7 @@ func (q *SelectQuery) Where(e *Expression) *SelectQuery {
 	return q
 }
 
-func (q *SelectQuery) GroupBy(cols ...projection) *SelectQuery {
+func (q *SelectQuery) GroupBy(cols ...types.Projection) *SelectQuery {
 	q.sel.addGroupBy(cols...)
 	return q
 }
@@ -94,14 +96,14 @@ func (q *SelectQuery) As(alias string) *SelectQuery {
 	}
 	derivedSel := &selectStatement{
 		projs:      dt.getAllDerivedColumns(),
-		selections: []selection{dt},
+		selections: []types.Selection{dt},
 	}
 	return &SelectQuery{sel: derivedSel, scanner: q.scanner}
 }
 
 // Returns the projection of the underlying selectStatement that matches the name
 // provided
-func (q *SelectQuery) C(name string) projection {
+func (q *SelectQuery) C(name string) types.Projection {
 	for _, p := range q.sel.projs {
 		switch p.(type) {
 		case *derivedColumn:
@@ -129,25 +131,25 @@ func (q *SelectQuery) C(name string) projection {
 }
 
 func (q *SelectQuery) Join(right interface{}, on *Expression) *SelectQuery {
-	var rightSel selection
+	var rightSel types.Selection
 	switch right.(type) {
-	case selection:
-		rightSel = right.(selection)
 	case *SelectQuery:
 		// Joining to a derived table
 		rightSel = right.(*SelectQuery).sel.selections[0]
+	case types.Selection:
+		rightSel = right.(types.Selection)
 	}
 	return q.doJoin(JOIN_INNER, rightSel, on)
 }
 
 func (q *SelectQuery) OuterJoin(right interface{}, on *Expression) *SelectQuery {
-	var rightSel selection
+	var rightSel types.Selection
 	switch right.(type) {
-	case selection:
-		rightSel = right.(selection)
 	case *SelectQuery:
 		// Joining to a derived table
 		rightSel = right.(*SelectQuery).sel.selections[0]
+	case types.Selection:
+		rightSel = right.(types.Selection)
 	}
 	return q.doJoin(JOIN_OUTER, rightSel, on)
 }
@@ -158,7 +160,7 @@ func (q *SelectQuery) OuterJoin(right interface{}, on *Expression) *SelectQuery 
 // SelectQuery.e will be set to an error.
 func (q *SelectQuery) doJoin(
 	jt joinType,
-	right selection,
+	right types.Selection,
 	on *Expression,
 ) *SelectQuery {
 	if q.sel == nil || len(q.sel.selections) == 0 {
@@ -168,13 +170,13 @@ func (q *SelectQuery) doJoin(
 
 	// Let's first determine which selection is targeted as the LEFT part of
 	// the join.
-	var left selection
+	var left types.Selection
 	if on != nil {
 		for _, el := range on.elements {
 			switch el.(type) {
-			case projection:
-				p := el.(projection)
-				exprSel := p.from()
+			case types.Projection:
+				p := el.(types.Projection)
+				exprSel := p.From()
 				if exprSel == right {
 					continue
 				}
@@ -259,18 +261,18 @@ func (q *SelectQuery) doJoin(
 
 func Select(items ...interface{}) *SelectQuery {
 	scanner := &sqlScanner{
-		dialect: DIALECT_UNKNOWN,
+		dialect: types.DIALECT_UNKNOWN,
 		format:  defaultFormatOptions,
 	}
 	sq := &SelectQuery{
 		scanner: scanner,
 	}
 	sel := &selectStatement{
-		projs: make([]projection, 0),
+		projs: make([]types.Projection, 0),
 	}
 
 	nDerived := 0
-	selectionMap := make(map[selection]bool, 0)
+	selectionMap := make(map[types.Selection]bool, 0)
 
 	// For each scannable item we've received in the call, check what concrete
 	// type they are and, depending on which type they are, either add them to
@@ -334,7 +336,7 @@ func Select(items ...interface{}) *SelectQuery {
 			v := item.(*Table)
 			// Set scanner's dialect based on supplied meta's dialect
 			sq.scanner.dialect = v.meta.dialect
-			for _, c := range v.projections() {
+			for _, c := range v.Projections() {
 				addToProjections(sel, c)
 			}
 			selectionMap[v] = true
@@ -350,7 +352,7 @@ func Select(items ...interface{}) *SelectQuery {
 			addToProjections(sel, p)
 		}
 	}
-	selections := make([]selection, len(selectionMap))
+	selections := make([]types.Selection, len(selectionMap))
 	x := 0
 	for sel, _ := range selectionMap {
 		selections[x] = sel

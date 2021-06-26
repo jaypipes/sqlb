@@ -7,6 +7,8 @@ package sqlb
 
 import (
 	"errors"
+
+	"github.com/jaypipes/sqlb/pkg/types"
 )
 
 var (
@@ -19,7 +21,7 @@ type InsertQuery struct {
 	b       []byte
 	args    []interface{}
 	stmt    *insertStatement
-	scanner *sqlScanner
+	scanner types.Scanner
 }
 
 func (q *InsertQuery) IsValid() bool {
@@ -31,26 +33,26 @@ func (q *InsertQuery) Error() error {
 }
 
 func (q *InsertQuery) String() string {
-	sizes := q.scanner.size(q.stmt)
+	sizes := q.scanner.Size(q.stmt)
 	if len(q.args) != sizes.ArgCount {
 		q.args = make([]interface{}, sizes.ArgCount)
 	}
 	if len(q.b) != sizes.BufferSize {
 		q.b = make([]byte, sizes.BufferSize)
 	}
-	q.scanner.scan(q.b, q.args, q.stmt)
+	q.scanner.Scan(q.b, q.args, q.stmt)
 	return string(q.b)
 }
 
 func (q *InsertQuery) StringArgs() (string, []interface{}) {
-	sizes := q.scanner.size(q.stmt)
+	sizes := q.scanner.Size(q.stmt)
 	if len(q.args) != sizes.ArgCount {
 		q.args = make([]interface{}, sizes.ArgCount)
 	}
 	if len(q.b) != sizes.BufferSize {
 		q.b = make([]byte, sizes.BufferSize)
 	}
-	q.scanner.scan(q.b, q.args, q.stmt)
+	q.scanner.Scan(q.b, q.args, q.stmt)
 	return string(q.b), q.args
 }
 

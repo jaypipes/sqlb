@@ -5,14 +5,10 @@
 //
 package sqlb
 
-import "strconv"
+import (
+	"strconv"
 
-type Dialect int
-
-const (
-	DIALECT_UNKNOWN = iota
-	DIALECT_MYSQL
-	DIALECT_POSTGRESQL
+	"github.com/jaypipes/sqlb/pkg/types"
 )
 
 // Returns the total length of the characters representing interpolation
@@ -20,8 +16,8 @@ const (
 // sequences for marking query parameters during query preparation. For
 // instance, MySQL and SQLite use the ? character. PostgreSQL uses a numbered
 // $N schema with N starting at 1, SQL Server uses a :N scheme, etc.
-func interpolationLength(dialect Dialect, argc int) int {
-	if dialect == DIALECT_POSTGRESQL {
+func interpolationLength(dialect types.Dialect, argc int) int {
+	if dialect == types.DIALECT_POSTGRESQL {
 		// $ character for each interpolated parameter plus ones digit of
 		// number
 		size := 2 * argc
@@ -42,8 +38,8 @@ func interpolationLength(dialect Dialect, argc int) int {
 	return argc // Single question mark used as interpolation marker
 }
 
-func scanInterpolationMarker(dialect Dialect, b []byte, position int) int {
-	if dialect == DIALECT_POSTGRESQL {
+func scanInterpolationMarker(dialect types.Dialect, b []byte, position int) int {
+	if dialect == types.DIALECT_POSTGRESQL {
 		bw := copy(b, Symbols[SYM_DOLLAR])
 		bw += copy(b[bw:], []byte(strconv.Itoa(position+1)))
 		return bw

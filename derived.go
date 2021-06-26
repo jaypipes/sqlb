@@ -5,6 +5,8 @@
 //
 package sqlb
 
+import "github.com/jaypipes/sqlb/pkg/types"
+
 // A derived table is a SELECT in the FROM clause. It is always aliased and the
 // projections for a derived table take this alias as their selection alias.
 //
@@ -26,9 +28,9 @@ type derivedTable struct {
 
 // Return a collection of derivedColumn projections that have been constructed
 // to refer to this derived table and not have any outer alias
-func (dt *derivedTable) getAllDerivedColumns() []projection {
+func (dt *derivedTable) getAllDerivedColumns() []types.Projection {
 	nprojs := len(dt.from.projs)
-	projs := make([]projection, nprojs)
+	projs := make([]types.Projection, nprojs)
 	for x := 0; x < nprojs; x++ {
 		p := dt.from.projs[x]
 		switch p.(type) {
@@ -39,9 +41,9 @@ func (dt *derivedTable) getAllDerivedColumns() []projection {
 	return projs
 }
 
-func (dt *derivedTable) projections() []projection {
+func (dt *derivedTable) Projections() []types.Projection {
 	nprojs := len(dt.from.projs)
-	projs := make([]projection, nprojs)
+	projs := make([]types.Projection, nprojs)
 	for x := 0; x < nprojs; x++ {
 		p := dt.from.projs[x]
 		switch p.(type) {
@@ -51,21 +53,21 @@ func (dt *derivedTable) projections() []projection {
 	return projs
 }
 
-func (dt *derivedTable) argCount() int {
-	return dt.from.argCount()
+func (dt *derivedTable) ArgCount() int {
+	return dt.from.ArgCount()
 }
 
-func (dt *derivedTable) size(scanner *sqlScanner) int {
-	size := dt.from.size(scanner)
+func (dt *derivedTable) Size(scanner types.Scanner) int {
+	size := dt.from.Size(scanner)
 	size += (len(Symbols[SYM_LPAREN]) + len(Symbols[SYM_RPAREN]) +
 		len(Symbols[SYM_AS]) + len(dt.alias))
 	return size
 }
 
-func (dt *derivedTable) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
+func (dt *derivedTable) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	bw += copy(b[bw:], Symbols[SYM_LPAREN])
-	bw += dt.from.scan(scanner, b[bw:], args, curArg)
+	bw += dt.from.Scan(scanner, b[bw:], args, curArg)
 	bw += copy(b[bw:], Symbols[SYM_RPAREN])
 	bw += copy(b[bw:], Symbols[SYM_AS])
 	bw += copy(b[bw:], dt.alias)
@@ -127,21 +129,21 @@ type derivedColumn struct {
 	dt    *derivedTable
 }
 
-func (dc *derivedColumn) from() selection {
+func (dc *derivedColumn) From() types.Selection {
 	return dc.dt
 }
 
-func (dc *derivedColumn) disableAliasScan() func() {
+func (dc *derivedColumn) DisableAliasScan() func() {
 	origAlias := dc.alias
 	dc.alias = ""
 	return func() { dc.alias = origAlias }
 }
 
-func (dc *derivedColumn) argCount() int {
+func (dc *derivedColumn) ArgCount() int {
 	return 0
 }
 
-func (dc *derivedColumn) size(scanner *sqlScanner) int {
+func (dc *derivedColumn) Size(scanner types.Scanner) int {
 	size := len(dc.dt.alias)
 	size += len(Symbols[SYM_PERIOD])
 	if dc.c.alias != "" {
@@ -155,7 +157,7 @@ func (dc *derivedColumn) size(scanner *sqlScanner) int {
 	return size
 }
 
-func (dc *derivedColumn) scan(scanner *sqlScanner, b []byte, args []interface{}, curArg *int) int {
+func (dc *derivedColumn) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	bw += copy(b[bw:], dc.dt.alias)
 	bw += copy(b[bw:], Symbols[SYM_PERIOD])

@@ -8,6 +8,7 @@ package sqlb
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -29,36 +30,36 @@ func TestGroupByClause(t *testing.T) {
 		// Single column
 		groupByClauseTest{
 			c: &groupByClause{
-				cols: []projection{colUserName},
+				cols: []types.Projection{colUserName},
 			},
 			qs: " GROUP BY users.name",
 		},
 		// Multiple columns
 		groupByClauseTest{
 			c: &groupByClause{
-				cols: []projection{colUserName, colUserId},
+				cols: []types.Projection{colUserName, colUserId},
 			},
 			qs: " GROUP BY users.name, users.id",
 		},
 		// Aliased column should NOT output alias in GROUP BY
 		groupByClauseTest{
 			c: &groupByClause{
-				cols: []projection{colUserName.As("user_name")},
+				cols: []types.Projection{colUserName.As("user_name")},
 			},
 			qs: " GROUP BY users.name",
 		},
 	}
 	for _, test := range tests {
 		expLen := len(test.qs)
-		s := test.c.size(defaultScanner)
+		s := test.c.Size(defaultScanner)
 		assert.Equal(expLen, s)
 
 		expArgc := len(test.qargs)
-		assert.Equal(expArgc, test.c.argCount())
+		assert.Equal(expArgc, test.c.ArgCount())
 
 		b := make([]byte, s)
 		curArg := 0
-		written := test.c.scan(defaultScanner, b, test.qargs, &curArg)
+		written := test.c.Scan(defaultScanner, b, test.qargs, &curArg)
 
 		assert.Equal(written, s)
 		assert.Equal(test.qs, string(b))

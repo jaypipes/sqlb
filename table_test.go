@@ -8,13 +8,14 @@ package sqlb
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestTableMeta(t *testing.T) {
 	assert := assert.New(t)
 
-	m := NewMeta(DIALECT_MYSQL, "test")
+	m := NewMeta(types.DIALECT_MYSQL, "test")
 	td := m.Table("users")
 	assert.Nil(td)
 	td = m.NewTable("users")
@@ -40,11 +41,11 @@ func TestTable(t *testing.T) {
 
 	exp := "users"
 	expLen := len(exp)
-	s := users.size(defaultScanner)
+	s := users.Size(defaultScanner)
 	assert.Equal(expLen, s)
 
 	b := make([]byte, s)
-	written := users.scan(defaultScanner, b, nil, nil)
+	written := users.Scan(defaultScanner, b, nil, nil)
 
 	assert.Equal(written, s)
 	assert.Equal(exp, string(b))
@@ -58,11 +59,11 @@ func TestTableAlias(t *testing.T) {
 
 	exp := "users AS u"
 	expLen := len(exp)
-	s := u.size(defaultScanner)
+	s := u.Size(defaultScanner)
 	assert.Equal(expLen, s)
 
 	b := make([]byte, s)
-	written := u.scan(defaultScanner, b, nil, nil)
+	written := u.Scan(defaultScanner, b, nil, nil)
 
 	assert.Equal(written, s)
 	assert.Equal(exp, string(b))
