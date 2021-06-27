@@ -19,7 +19,7 @@ type SelectStatement struct {
 	groupBy    *ast.GroupByClause
 	having     *ast.HavingClause
 	orderBy    *ast.OrderByClause
-	limit      *LimitClause
+	limit      *ast.LimitClause
 }
 
 func (s *SelectStatement) ArgCount() int {
@@ -187,14 +187,14 @@ func (s *SelectStatement) AddOrderBy(sortCols ...*ast.SortColumn) *SelectStateme
 }
 
 func (s *SelectStatement) SetLimitWithOffset(limit int, offset int) *SelectStatement {
-	lc := &LimitClause{limit: limit}
-	lc.offset = &offset
+	tmpOffset := offset
+	lc := ast.NewLimitClause(limit, &tmpOffset)
 	s.limit = lc
 	return s
 }
 
 func (s *SelectStatement) SetLimit(limit int) *SelectStatement {
-	lc := &LimitClause{limit: limit}
+	lc := ast.NewLimitClause(limit, nil)
 	s.limit = lc
 	return s
 }

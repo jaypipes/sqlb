@@ -3,11 +3,13 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
-package sqlb
+
+package ast_test
 
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
 	"github.com/stretchr/testify/assert"
@@ -16,9 +18,7 @@ import (
 func TestLimitClause(t *testing.T) {
 	assert := assert.New(t)
 
-	lc := &LimitClause{
-		limit: 20,
-	}
+	lc := ast.NewLimitClause(20, nil)
 
 	exp := " LIMIT ?"
 	expArgCount := 1
@@ -44,11 +44,8 @@ func TestLimitClause(t *testing.T) {
 func TestLimitClauseWithOffset(t *testing.T) {
 	assert := assert.New(t)
 
-	lc := &LimitClause{
-		limit: 20,
-	}
 	offset := 10
-	lc.offset = &offset
+	lc := ast.NewLimitClause(20, &offset)
 
 	exp := " LIMIT ? OFFSET ?"
 	expArgCount := 2

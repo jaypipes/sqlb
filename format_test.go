@@ -41,7 +41,7 @@ func TestFormatOptions(t *testing.T) {
 		),
 		groupBy: ast.NewGroupByClause(colUserName),
 		orderBy: ast.NewOrderByClause(colUserName.Desc()),
-		limit:   &LimitClause{limit: 10},
+		limit:   ast.NewLimitClause(10, nil),
 	}
 
 	tests := []struct {

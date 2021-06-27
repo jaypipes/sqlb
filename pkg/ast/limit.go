@@ -3,7 +3,8 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
-package sqlb
+
+package ast
 
 import (
 	"github.com/jaypipes/sqlb/pkg/grammar"
@@ -51,4 +52,12 @@ func (lc *LimitClause) Scan(scanner types.Scanner, b []byte, args []interface{},
 		*curArg++
 	}
 	return bw
+}
+
+// NewLimitClause returns a new LimitClause struct
+func NewLimitClause(limit int, offset *int) *LimitClause {
+	return &LimitClause{
+		limit:  limit,
+		offset: offset,
+	}
 }

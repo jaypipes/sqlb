@@ -109,7 +109,7 @@ func TestSelectClause(t *testing.T) {
 			s: &SelectStatement{
 				selections: []types.Selection{users},
 				projs:      []types.Projection{colUserName},
-				limit:      &LimitClause{limit: 10},
+				limit:      ast.NewLimitClause(10, nil),
 			},
 			qs:    "SELECT users.name FROM users LIMIT ?",
 			qargs: []interface{}{10},
@@ -139,7 +139,7 @@ func TestSelectClause(t *testing.T) {
 				projs:      []types.Projection{colUserName},
 				groupBy:    ast.NewGroupByClause(colUserName),
 				orderBy:    ast.NewOrderByClause(colUserName.Desc()),
-				limit:      &LimitClause{limit: 10},
+				limit:      ast.NewLimitClause(10, nil),
 			},
 			qs:    "SELECT users.name FROM users GROUP BY users.name ORDER BY users.name DESC LIMIT ?",
 			qargs: []interface{}{10},
