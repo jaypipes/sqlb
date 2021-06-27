@@ -135,9 +135,9 @@ func (s *SelectStatement) AddJoin(jc *JoinClause) *SelectStatement {
 	return s
 }
 
-func (s *SelectStatement) AddWhere(e *Expression) *SelectStatement {
+func (s *SelectStatement) AddWhere(e *ast.Expression) *SelectStatement {
 	if s.where == nil {
-		s.where = &WhereClause{filters: make([]*Expression, 0)}
+		s.where = &WhereClause{filters: make([]*ast.Expression, 0)}
 	}
 	s.where.filters = append(s.where.filters, e)
 	return s
@@ -166,9 +166,9 @@ func (s *SelectStatement) AddGroupBy(cols ...types.Projection) *SelectStatement 
 	return s
 }
 
-func (s *SelectStatement) AddHaving(e *Expression) *SelectStatement {
+func (s *SelectStatement) AddHaving(e *ast.Expression) *SelectStatement {
 	if s.having == nil {
-		s.having = &HavingClause{conditions: make([]*Expression, 0)}
+		s.having = &HavingClause{conditions: make([]*ast.Expression, 0)}
 	}
 	s.having.conditions = append(s.having.conditions, e)
 	return s

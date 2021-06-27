@@ -7,6 +7,7 @@
 package sqlb
 
 import (
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
@@ -45,9 +46,9 @@ func (s *DeleteStatement) Scan(scanner types.Scanner, b []byte, args []interface
 	return bw
 }
 
-func (s *DeleteStatement) AddWhere(e *Expression) *DeleteStatement {
+func (s *DeleteStatement) AddWhere(e *ast.Expression) *DeleteStatement {
 	if s.where == nil {
-		s.where = &WhereClause{filters: make([]*Expression, 0)}
+		s.where = &WhereClause{filters: make([]*ast.Expression, 0)}
 	}
 	s.where.filters = append(s.where.filters, e)
 	return s

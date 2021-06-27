@@ -33,12 +33,12 @@ func TestFormatOptions(t *testing.T) {
 			&JoinClause{
 				left:  articles,
 				right: users,
-				on:    Equal(colArticleAuthor, colUserId),
+				on:    ast.Equal(colArticleAuthor, colUserId),
 			},
 		},
 		where: &WhereClause{
-			filters: []*Expression{
-				Equal(colUserName, "foo"),
+			filters: []*ast.Expression{
+				ast.Equal(colUserName, "foo"),
 			},
 		},
 		groupBy: &GroupByClause{

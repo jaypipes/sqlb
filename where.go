@@ -6,12 +6,13 @@
 package sqlb
 
 import (
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
 type WhereClause struct {
-	filters []*Expression
+	filters []*ast.Expression
 }
 
 func (w *WhereClause) ArgCount() int {

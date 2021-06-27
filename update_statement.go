@@ -6,6 +6,7 @@
 package sqlb
 
 import (
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	pkgscanner "github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
@@ -76,9 +77,9 @@ func (s *UpdateStatement) Scan(scanner types.Scanner, b []byte, args []interface
 	return bw
 }
 
-func (s *UpdateStatement) AddWhere(e *Expression) *UpdateStatement {
+func (s *UpdateStatement) AddWhere(e *ast.Expression) *UpdateStatement {
 	if s.where == nil {
-		s.where = &WhereClause{filters: make([]*Expression, 0)}
+		s.where = &WhereClause{filters: make([]*ast.Expression, 0)}
 	}
 	s.where.filters = append(s.where.filters, e)
 	return s

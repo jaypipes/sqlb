@@ -8,6 +8,7 @@ package sqlb
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/stretchr/testify/assert"
 )
@@ -56,7 +57,7 @@ func TestUpdateQuery(t *testing.T) {
 		{
 			name: "UPDATE simple WHERE",
 			q: Update(users, map[string]interface{}{"name": "bar"}).Where(
-				Equal(colUserName, "foo"),
+				ast.Equal(colUserName, "foo"),
 			),
 			qs:    "UPDATE users SET name = ? WHERE users.name = ?",
 			qargs: []interface{}{"bar", "foo"},

@@ -8,6 +8,7 @@ package sqlb
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/stretchr/testify/assert"
 )
@@ -43,7 +44,7 @@ func TestDeleteQuery(t *testing.T) {
 		},
 		{
 			name:  "DELETE simple WHERE",
-			q:     Delete(users).Where(Equal(colUserName, "foo")),
+			q:     Delete(users).Where(ast.Equal(colUserName, "foo")),
 			qs:    "DELETE FROM users WHERE users.name = ?",
 			qargs: []interface{}{"foo"},
 		},

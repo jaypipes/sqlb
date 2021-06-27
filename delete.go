@@ -8,6 +8,7 @@ package sqlb
 import (
 	"errors"
 
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
@@ -56,7 +57,7 @@ func (q *DeleteQuery) StringArgs() (string, []interface{}) {
 	return string(q.b), q.args
 }
 
-func (q *DeleteQuery) Where(e *Expression) *DeleteQuery {
+func (q *DeleteQuery) Where(e *ast.Expression) *DeleteQuery {
 	q.stmt.AddWhere(e)
 	return q
 }

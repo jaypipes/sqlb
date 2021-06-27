@@ -8,6 +8,7 @@ package sqlb
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/jaypipes/sqlb/pkg/types"
@@ -44,8 +45,8 @@ func TestUpdateStatement(t *testing.T) {
 				columns: []*ColumnIdentifier{colUserName},
 				values:  []interface{}{"foo"},
 				where: &WhereClause{
-					filters: []*Expression{
-						Equal(colUserName, "bar"),
+					filters: []*ast.Expression{
+						ast.Equal(colUserName, "bar"),
 					},
 				},
 			},

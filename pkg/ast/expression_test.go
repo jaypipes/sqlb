@@ -3,11 +3,14 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
-package sqlb
+
+package ast_test
 
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb"
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/jaypipes/sqlb/pkg/types"
@@ -15,7 +18,7 @@ import (
 )
 
 type expressionTest struct {
-	c     *Expression
+	c     *ast.Expression
 	qs    string
 	qargs []interface{}
 }
@@ -24,8 +27,8 @@ func TestExpressions(t *testing.T) {
 	assert := assert.New(t)
 
 	sc := testutil.Schema()
-	users := T(sc, "users")
-	articles := T(sc, "articles")
+	users := sqlb.T(sc, "users")
+	articles := sqlb.T(sc, "articles")
 	colUserId := users.C("id")
 	colUserName := users.C("name")
 	colArticleAuthor := articles.C("author")
@@ -33,94 +36,94 @@ func TestExpressions(t *testing.T) {
 	tests := []expressionTest{
 		// equal value
 		expressionTest{
-			c:     Equal(colUserName, "foo"),
+			c:     ast.Equal(colUserName, "foo"),
 			qs:    "users.name = ?",
 			qargs: []interface{}{"foo"},
 		},
 		// reverse args equal
 		expressionTest{
-			c:     Equal("foo", colUserName),
+			c:     ast.Equal("foo", colUserName),
 			qs:    "? = users.name",
 			qargs: []interface{}{"foo"},
 		},
 		// equal columns
 		expressionTest{
-			c:  Equal(colUserId, colArticleAuthor),
+			c:  ast.Equal(colUserId, colArticleAuthor),
 			qs: "users.id = articles.author",
 		},
 		// not equal value
 		expressionTest{
-			c:     NotEqual(colUserName, "foo"),
+			c:     ast.NotEqual(colUserName, "foo"),
 			qs:    "users.name != ?",
 			qargs: []interface{}{"foo"},
 		},
 		// in single value
 		expressionTest{
-			c:     In(colUserName, "foo"),
+			c:     ast.In(colUserName, "foo"),
 			qs:    "users.name IN (?)",
 			qargs: []interface{}{"foo"},
 		},
 		// in multi value
 		expressionTest{
-			c:     In(colUserName, "foo", "bar", 1),
+			c:     ast.In(colUserName, "foo", "bar", 1),
 			qs:    "users.name IN (?, ?, ?)",
 			qargs: []interface{}{"foo", "bar", 1},
 		},
 		// AND expression
 		expressionTest{
-			c: And(
-				NotEqual(colUserName, "foo"),
-				NotEqual(colUserName, "bar"),
+			c: ast.And(
+				ast.NotEqual(colUserName, "foo"),
+				ast.NotEqual(colUserName, "bar"),
 			),
 			qs:    "(users.name != ? AND users.name != ?)",
 			qargs: []interface{}{"foo", "bar"},
 		},
 		// OR expression
 		expressionTest{
-			c: Or(
-				Equal(colUserName, "foo"),
-				Equal(colUserName, "bar"),
+			c: ast.Or(
+				ast.Equal(colUserName, "foo"),
+				ast.Equal(colUserName, "bar"),
 			),
 			qs:    "(users.name = ? OR users.name = ?)",
 			qargs: []interface{}{"foo", "bar"},
 		},
 		// BETWEEN column and two values
 		expressionTest{
-			c:     Between(colUserName, "foo", "bar"),
+			c:     ast.Between(colUserName, "foo", "bar"),
 			qs:    "users.name BETWEEN ? AND ?",
 			qargs: []interface{}{"foo", "bar"},
 		},
 		// column IS NULL
 		expressionTest{
-			c:  IsNull(colUserName),
+			c:  ast.IsNull(colUserName),
 			qs: "users.name IS NULL",
 		},
 		// column IS NOT NULL
 		expressionTest{
-			c:  IsNotNull(colUserName),
+			c:  ast.IsNotNull(colUserName),
 			qs: "users.name IS NOT NULL",
 		},
 		// col > value
 		expressionTest{
-			c:     GreaterThan(colUserName, "foo"),
+			c:     ast.GreaterThan(colUserName, "foo"),
 			qs:    "users.name > ?",
 			qargs: []interface{}{"foo"},
 		},
 		// col >= value
 		expressionTest{
-			c:     GreaterThanOrEqual(colUserName, "foo"),
+			c:     ast.GreaterThanOrEqual(colUserName, "foo"),
 			qs:    "users.name >= ?",
 			qargs: []interface{}{"foo"},
 		},
 		// col < value
 		expressionTest{
-			c:     LessThan(colUserName, "foo"),
+			c:     ast.LessThan(colUserName, "foo"),
 			qs:    "users.name < ?",
 			qargs: []interface{}{"foo"},
 		},
 		// col <= value
 		expressionTest{
-			c:     LessThanOrEqual(colUserName, "foo"),
+			c:     ast.LessThanOrEqual(colUserName, "foo"),
 			qs:    "users.name <= ?",
 			qargs: []interface{}{"foo"},
 		},

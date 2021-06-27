@@ -8,6 +8,7 @@ package sqlb
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/jaypipes/sqlb/pkg/types"
@@ -36,8 +37,8 @@ func TestHavingClause(t *testing.T) {
 		{
 			name: "Single expression",
 			c: &HavingClause{
-				conditions: []*Expression{
-					Equal(colUserName, "foo"),
+				conditions: []*ast.Expression{
+					ast.Equal(colUserName, "foo"),
 				},
 			},
 			qs:    " HAVING users.name = ?",
@@ -46,10 +47,10 @@ func TestHavingClause(t *testing.T) {
 		{
 			name: "AND expression",
 			c: &HavingClause{
-				conditions: []*Expression{
-					And(
-						NotEqual(colUserName, "foo"),
-						NotEqual(colUserName, "bar"),
+				conditions: []*ast.Expression{
+					ast.And(
+						ast.NotEqual(colUserName, "foo"),
+						ast.NotEqual(colUserName, "bar"),
 					),
 				},
 			},
@@ -59,9 +60,9 @@ func TestHavingClause(t *testing.T) {
 		{
 			name: "Multiple unary expressions should be AND'd together",
 			c: &HavingClause{
-				conditions: []*Expression{
-					NotEqual(colUserName, "foo"),
-					NotEqual(colUserName, "bar"),
+				conditions: []*ast.Expression{
+					ast.NotEqual(colUserName, "foo"),
+					ast.NotEqual(colUserName, "bar"),
 				},
 			},
 			qs:    " HAVING users.name != ? AND users.name != ?",
@@ -70,10 +71,10 @@ func TestHavingClause(t *testing.T) {
 		{
 			name: "OR expression",
 			c: &HavingClause{
-				conditions: []*Expression{
-					Or(
-						Equal(colUserName, "foo"),
-						Equal(colUserName, "bar"),
+				conditions: []*ast.Expression{
+					ast.Or(
+						ast.Equal(colUserName, "foo"),
+						ast.Equal(colUserName, "bar"),
 					),
 				},
 			},
@@ -83,12 +84,12 @@ func TestHavingClause(t *testing.T) {
 		{
 			name: "OR and another unary expression",
 			c: &HavingClause{
-				conditions: []*Expression{
-					Or(
-						Equal(colUserName, "foo"),
-						Equal(colUserName, "bar"),
+				conditions: []*ast.Expression{
+					ast.Or(
+						ast.Equal(colUserName, "foo"),
+						ast.Equal(colUserName, "bar"),
 					),
-					NotEqual(colUserName, "baz"),
+					ast.NotEqual(colUserName, "baz"),
 				},
 			},
 			qs:    " HAVING (users.name = ? OR users.name = ?) AND users.name != ?",
@@ -97,15 +98,15 @@ func TestHavingClause(t *testing.T) {
 		{
 			name: "Two AND expressions OR'd together",
 			c: &HavingClause{
-				conditions: []*Expression{
-					Or(
-						And(
-							NotEqual(colUserName, "foo"),
-							NotEqual(colUserName, "bar"),
+				conditions: []*ast.Expression{
+					ast.Or(
+						ast.And(
+							ast.NotEqual(colUserName, "foo"),
+							ast.NotEqual(colUserName, "bar"),
 						),
-						And(
-							NotEqual(colUserName, "baz"),
-							Equal(colUserId, 1),
+						ast.And(
+							ast.NotEqual(colUserName, "baz"),
+							ast.Equal(colUserId, 1),
 						),
 					),
 				},

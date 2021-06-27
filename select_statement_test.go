@@ -98,8 +98,8 @@ func TestSelectClause(t *testing.T) {
 				selections: []types.Selection{users},
 				projs:      []types.Projection{colUserName},
 				where: &WhereClause{
-					filters: []*Expression{
-						Equal(colUserName, "foo"),
+					filters: []*ast.Expression{
+						ast.Equal(colUserName, "foo"),
 					},
 				},
 			},
@@ -163,7 +163,7 @@ func TestSelectClause(t *testing.T) {
 					&JoinClause{
 						left:  articles,
 						right: users,
-						on:    Equal(colArticleAuthor, colUserId),
+						on:    ast.Equal(colArticleAuthor, colUserId),
 					},
 				},
 			},
@@ -178,12 +178,12 @@ func TestSelectClause(t *testing.T) {
 					&JoinClause{
 						left:  articles,
 						right: users,
-						on:    Equal(colArticleAuthor, colUserId),
+						on:    ast.Equal(colArticleAuthor, colUserId),
 					},
 					&JoinClause{
 						left:  articles,
 						right: article_states,
-						on:    Equal(colArticleState, colArticleStateId),
+						on:    ast.Equal(colArticleState, colArticleStateId),
 					},
 				},
 			},

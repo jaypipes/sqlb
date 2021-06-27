@@ -6,12 +6,13 @@
 package sqlb
 
 import (
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
 type HavingClause struct {
-	conditions []*Expression
+	conditions []*ast.Expression
 }
 
 func (c *HavingClause) ArgCount() int {

@@ -8,6 +8,7 @@ package sqlb
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/jaypipes/sqlb/pkg/types"
@@ -39,8 +40,8 @@ func TestDeleteStatement(t *testing.T) {
 			s: &DeleteStatement{
 				table: users,
 				where: &WhereClause{
-					filters: []*Expression{
-						Equal(colUserName, "foo"),
+					filters: []*ast.Expression{
+						ast.Equal(colUserName, "foo"),
 					},
 				},
 			},

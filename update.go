@@ -8,6 +8,7 @@ package sqlb
 import (
 	"errors"
 
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
@@ -58,7 +59,7 @@ func (q *UpdateQuery) StringArgs() (string, []interface{}) {
 	return string(q.b), q.args
 }
 
-func (q *UpdateQuery) Where(e *Expression) *UpdateQuery {
+func (q *UpdateQuery) Where(e *ast.Expression) *UpdateQuery {
 	q.stmt.AddWhere(e)
 	return q
 }

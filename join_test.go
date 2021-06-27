@@ -8,6 +8,7 @@ package sqlb
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/stretchr/testify/assert"
@@ -28,8 +29,8 @@ func TestJoinClause(t *testing.T) {
 	colUserId := users.C("id")
 	colArticleAuthor := articles.C("author")
 
-	auCond := Equal(colArticleAuthor, colUserId)
-	uaCond := Equal(colUserId, colArticleAuthor)
+	auCond := ast.Equal(colArticleAuthor, colUserId)
+	uaCond := ast.Equal(colUserId, colArticleAuthor)
 
 	tests := []JoinClauseTest{
 		// articles to users table defs
@@ -52,7 +53,7 @@ func TestJoinClause(t *testing.T) {
 			c: &JoinClause{
 				left:  articles.As("a"),
 				right: users,
-				on:    Equal(articles.As("a").C("author"), colUserId),
+				on:    ast.Equal(articles.As("a").C("author"), colUserId),
 			},
 			qs: " JOIN users ON a.author = users.id",
 		},
@@ -61,7 +62,7 @@ func TestJoinClause(t *testing.T) {
 			c: &JoinClause{
 				left:  articles,
 				right: users.As("u"),
-				on:    Equal(colArticleAuthor, users.As("u").C("id")),
+				on:    ast.Equal(colArticleAuthor, users.As("u").C("id")),
 			},
 			qs: " JOIN users AS u ON articles.author = u.id",
 		},
@@ -70,7 +71,7 @@ func TestJoinClause(t *testing.T) {
 			c: &JoinClause{
 				left:  articles,
 				right: users,
-				on:    Equal(colArticleAuthor, colUserId.As("user_id")),
+				on:    ast.Equal(colArticleAuthor, colUserId.As("user_id")),
 			},
 			qs: " JOIN users ON articles.author = users.id",
 		},
@@ -80,13 +81,13 @@ func TestJoinClause(t *testing.T) {
 				JoinType: JOIN_OUTER,
 				left:     articles,
 				right:    users,
-				on:       Equal(colArticleAuthor, colUserId),
+				on:       ast.Equal(colArticleAuthor, colUserId),
 			},
 			qs: " LEFT JOIN users ON articles.author = users.id",
 		},
 		// OuterJoin() function
 		JoinClauseTest{
-			c:  OuterJoin(articles, users, Equal(colArticleAuthor, colUserId)),
+			c:  OuterJoin(articles, users, ast.Equal(colArticleAuthor, colUserId)),
 			qs: " LEFT JOIN users ON articles.author = users.id",
 		},
 		// cross join manual construction

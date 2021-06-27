@@ -6,6 +6,7 @@
 package sqlb
 
 import (
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
@@ -22,7 +23,7 @@ type JoinClause struct {
 	JoinType JoinType
 	left     types.Selection
 	right    types.Selection
-	on       *Expression
+	on       *ast.Expression
 }
 
 func (j *JoinClause) ArgCount() int {
@@ -71,11 +72,11 @@ func (j *JoinClause) Scan(scanner types.Scanner, b []byte, args []interface{}, c
 	return bw
 }
 
-func Join(left types.Selection, right types.Selection, on *Expression) *JoinClause {
+func Join(left types.Selection, right types.Selection, on *ast.Expression) *JoinClause {
 	return &JoinClause{left: left, right: right, on: on}
 }
 
-func OuterJoin(left types.Selection, right types.Selection, on *Expression) *JoinClause {
+func OuterJoin(left types.Selection, right types.Selection, on *ast.Expression) *JoinClause {
 	return &JoinClause{
 		JoinType: JOIN_OUTER,
 		left:     left,

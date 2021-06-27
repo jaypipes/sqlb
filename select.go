@@ -59,7 +59,7 @@ func (q *SelectQuery) StringArgs() (string, []interface{}) {
 	return string(q.b), q.args
 }
 
-func (q *SelectQuery) Where(e *Expression) *SelectQuery {
+func (q *SelectQuery) Where(e *ast.Expression) *SelectQuery {
 	q.sel.AddWhere(e)
 	return q
 }
@@ -69,7 +69,7 @@ func (q *SelectQuery) GroupBy(cols ...types.Projection) *SelectQuery {
 	return q
 }
 
-func (q *SelectQuery) Having(e *Expression) *SelectQuery {
+func (q *SelectQuery) Having(e *ast.Expression) *SelectQuery {
 	q.sel.AddHaving(e)
 	return q
 }
@@ -132,7 +132,7 @@ func (q *SelectQuery) C(name string) types.Projection {
 	return nil
 }
 
-func (q *SelectQuery) Join(right interface{}, on *Expression) *SelectQuery {
+func (q *SelectQuery) Join(right interface{}, on *ast.Expression) *SelectQuery {
 	var rightSel types.Selection
 	switch right.(type) {
 	case *SelectQuery:
@@ -144,7 +144,7 @@ func (q *SelectQuery) Join(right interface{}, on *Expression) *SelectQuery {
 	return q.doJoin(JOIN_INNER, rightSel, on)
 }
 
-func (q *SelectQuery) OuterJoin(right interface{}, on *Expression) *SelectQuery {
+func (q *SelectQuery) OuterJoin(right interface{}, on *ast.Expression) *SelectQuery {
 	var rightSel types.Selection
 	switch right.(type) {
 	case *SelectQuery:
@@ -163,7 +163,7 @@ func (q *SelectQuery) OuterJoin(right interface{}, on *Expression) *SelectQuery 
 func (q *SelectQuery) doJoin(
 	jt JoinType,
 	right types.Selection,
-	on *Expression,
+	on *ast.Expression,
 ) *SelectQuery {
 	if q.sel == nil || len(q.sel.selections) == 0 {
 		q.e = ERR_JOIN_INVALID_NO_SELECT
@@ -174,7 +174,7 @@ func (q *SelectQuery) doJoin(
 	// the join.
 	var left types.Selection
 	if on != nil {
-		for _, el := range on.elements {
+		for _, el := range on.Elements() {
 			switch el.(type) {
 			case types.Projection:
 				p := el.(types.Projection)
@@ -205,9 +205,9 @@ func (q *SelectQuery) doJoin(
 				if left != nil {
 					break
 				}
-			case *Expression:
-				expr := el.(*Expression)
-				for _, referrent := range expr.referrents() {
+			case *ast.Expression:
+				expr := el.(*ast.Expression)
+				for _, referrent := range expr.Referrents() {
 					if referrent == right {
 						continue
 					}

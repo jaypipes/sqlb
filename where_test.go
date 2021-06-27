@@ -8,6 +8,7 @@ package sqlb
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/jaypipes/sqlb/pkg/types"
@@ -36,8 +37,8 @@ func TestWhereClause(t *testing.T) {
 		{
 			name: "Single expression",
 			c: &WhereClause{
-				filters: []*Expression{
-					Equal(colUserName, "foo"),
+				filters: []*ast.Expression{
+					ast.Equal(colUserName, "foo"),
 				},
 			},
 			qs:    " WHERE users.name = ?",
@@ -46,10 +47,10 @@ func TestWhereClause(t *testing.T) {
 		{
 			name: "AND expression",
 			c: &WhereClause{
-				filters: []*Expression{
-					And(
-						NotEqual(colUserName, "foo"),
-						NotEqual(colUserName, "bar"),
+				filters: []*ast.Expression{
+					ast.And(
+						ast.NotEqual(colUserName, "foo"),
+						ast.NotEqual(colUserName, "bar"),
 					),
 				},
 			},
@@ -59,9 +60,9 @@ func TestWhereClause(t *testing.T) {
 		{
 			name: "Multiple unary expressions should be AND'd together",
 			c: &WhereClause{
-				filters: []*Expression{
-					NotEqual(colUserName, "foo"),
-					NotEqual(colUserName, "bar"),
+				filters: []*ast.Expression{
+					ast.NotEqual(colUserName, "foo"),
+					ast.NotEqual(colUserName, "bar"),
 				},
 			},
 			qs:    " WHERE users.name != ? AND users.name != ?",
@@ -70,10 +71,10 @@ func TestWhereClause(t *testing.T) {
 		{
 			name: "OR expression",
 			c: &WhereClause{
-				filters: []*Expression{
-					Or(
-						Equal(colUserName, "foo"),
-						Equal(colUserName, "bar"),
+				filters: []*ast.Expression{
+					ast.Or(
+						ast.Equal(colUserName, "foo"),
+						ast.Equal(colUserName, "bar"),
 					),
 				},
 			},
@@ -83,12 +84,12 @@ func TestWhereClause(t *testing.T) {
 		{
 			name: "OR and another unary expression",
 			c: &WhereClause{
-				filters: []*Expression{
-					Or(
-						Equal(colUserName, "foo"),
-						Equal(colUserName, "bar"),
+				filters: []*ast.Expression{
+					ast.Or(
+						ast.Equal(colUserName, "foo"),
+						ast.Equal(colUserName, "bar"),
 					),
-					NotEqual(colUserName, "baz"),
+					ast.NotEqual(colUserName, "baz"),
 				},
 			},
 			qs:    " WHERE (users.name = ? OR users.name = ?) AND users.name != ?",
@@ -97,15 +98,15 @@ func TestWhereClause(t *testing.T) {
 		{
 			name: "Two AND expressions OR'd together",
 			c: &WhereClause{
-				filters: []*Expression{
-					Or(
-						And(
-							NotEqual(colUserName, "foo"),
-							NotEqual(colUserName, "bar"),
+				filters: []*ast.Expression{
+					ast.Or(
+						ast.And(
+							ast.NotEqual(colUserName, "foo"),
+							ast.NotEqual(colUserName, "bar"),
 						),
-						And(
-							NotEqual(colUserName, "baz"),
-							Equal(colUserId, 1),
+						ast.And(
+							ast.NotEqual(colUserName, "baz"),
+							ast.Equal(colUserId, 1),
 						),
 					),
 				},
