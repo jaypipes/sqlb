@@ -5,7 +5,10 @@
 //
 package sqlb
 
-import "github.com/jaypipes/sqlb/pkg/types"
+import (
+	"github.com/jaypipes/sqlb/pkg/grammar"
+	"github.com/jaypipes/sqlb/pkg/types"
+)
 
 type joinType int
 
@@ -35,16 +38,16 @@ func (j *joinClause) Size(scanner types.Scanner) int {
 	size += len(scanner.FormatOptions().SeparateClauseWith)
 	switch j.joinType {
 	case JOIN_INNER:
-		size += len(Symbols[SYM_JOIN])
+		size += len(grammar.Symbols[grammar.SYM_JOIN])
 	case JOIN_OUTER:
-		size += len(Symbols[SYM_LEFT_JOIN])
+		size += len(grammar.Symbols[grammar.SYM_LEFT_JOIN])
 	case JOIN_CROSS:
-		size += len(Symbols[SYM_CROSS_JOIN])
+		size += len(grammar.Symbols[grammar.SYM_CROSS_JOIN])
 		// CROSS JOIN has no ON condition so just short-circuit here
 		return size + j.right.Size(scanner)
 	}
 	size += j.right.Size(scanner)
-	size += len(Symbols[SYM_ON])
+	size += len(grammar.Symbols[grammar.SYM_ON])
 	size += j.on.Size(scanner)
 	return size
 }
@@ -54,15 +57,15 @@ func (j *joinClause) Scan(scanner types.Scanner, b []byte, args []interface{}, c
 	bw += copy(b[bw:], scanner.FormatOptions().SeparateClauseWith)
 	switch j.joinType {
 	case JOIN_INNER:
-		bw += copy(b[bw:], Symbols[SYM_JOIN])
+		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_JOIN])
 	case JOIN_OUTER:
-		bw += copy(b[bw:], Symbols[SYM_LEFT_JOIN])
+		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_LEFT_JOIN])
 	case JOIN_CROSS:
-		bw += copy(b[bw:], Symbols[SYM_CROSS_JOIN])
+		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_CROSS_JOIN])
 	}
 	bw += j.right.Scan(scanner, b[bw:], args, curArg)
 	if j.on != nil {
-		bw += copy(b[bw:], Symbols[SYM_ON])
+		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_ON])
 		bw += j.on.Scan(scanner, b[bw:], args, curArg)
 	}
 	return bw

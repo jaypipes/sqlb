@@ -7,6 +7,7 @@
 package sqlb
 
 import (
+	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
@@ -26,7 +27,7 @@ func (s *deleteStatement) ArgCount() int {
 }
 
 func (s *deleteStatement) Size(scanner types.Scanner) int {
-	size := len(Symbols[SYM_DELETE]) + len(s.table.name)
+	size := len(grammar.Symbols[grammar.SYM_DELETE]) + len(s.table.name)
 	if s.where != nil {
 		size += s.where.Size(scanner)
 	}
@@ -35,7 +36,7 @@ func (s *deleteStatement) Size(scanner types.Scanner) int {
 
 func (s *deleteStatement) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
-	bw += copy(b[bw:], Symbols[SYM_DELETE])
+	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_DELETE])
 	// We don't add any table alias when outputting the table identifier
 	bw += copy(b[bw:], s.table.name)
 	if s.where != nil {

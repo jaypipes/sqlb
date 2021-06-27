@@ -8,6 +8,7 @@ package sqlb
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
@@ -91,7 +92,7 @@ func TestFunctions(t *testing.T) {
 		},
 		{
 			name: "CAST(column AS type)",
-			c:    Cast(colUserName, SQL_TYPE_TEXT),
+			c:    Cast(colUserName, grammar.SQL_TYPE_TEXT),
 			qs: map[types.Dialect]string{
 				types.DIALECT_MYSQL:      "CAST(users.name AS TEXT)",
 				types.DIALECT_POSTGRESQL: "CAST(users.name AS TEXT)",
@@ -181,7 +182,7 @@ func TestFunctions(t *testing.T) {
 		},
 		{
 			name: "EXTRACT(unit FROM column)",
-			c:    Extract(colUserName, UNIT_MINUTE_SECOND),
+			c:    Extract(colUserName, grammar.UNIT_MINUTE_SECOND),
 			qs: map[types.Dialect]string{
 				types.DIALECT_MYSQL: "EXTRACT(MINUTE_SECOND FROM users.name)",
 				// Should be:

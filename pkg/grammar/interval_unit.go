@@ -1,0 +1,62 @@
+//
+// Use and distribution licensed under the Apache license version 2.
+//
+// See the COPYING file in the root project directory for full text.
+//
+
+package grammar
+
+type IntervalUnit int
+
+const (
+	// Used in the Extract() function
+	UNIT_MICROSECOND IntervalUnit = iota
+	UNIT_SECOND
+	UNIT_MINUTE
+	UNIT_HOUR
+	UNIT_DAY
+	UNIT_WEEK
+	UNIT_MONTH
+	UNIT_QUARTER
+	UNIT_YEAR
+	UNIT_SECOND_MICROSECOND
+	UNIT_MINUTE_MICROSECOND
+	UNIT_MINUTE_SECOND
+	UNIT_HOUR_MICROSECOND
+	UNIT_HOUR_SECOND
+	UNIT_HOUR_MINUTE
+	UNIT_DAY_MICROSECOND
+	UNIT_DAY_SECOND
+	UNIT_DAY_MINUTE
+	UNIT_DAY_HOUR
+	UNIT_YEAR_MONTH
+)
+
+var (
+	intervalUnitToSymbol = map[IntervalUnit]Symbol{
+		UNIT_MICROSECOND:        SYM_UNIT_MICROSECOND,
+		UNIT_SECOND:             SYM_UNIT_SECOND,
+		UNIT_MINUTE:             SYM_UNIT_MINUTE,
+		UNIT_HOUR:               SYM_UNIT_HOUR,
+		UNIT_DAY:                SYM_UNIT_DAY,
+		UNIT_WEEK:               SYM_UNIT_WEEK,
+		UNIT_MONTH:              SYM_UNIT_MONTH,
+		UNIT_QUARTER:            SYM_UNIT_QUARTER,
+		UNIT_YEAR:               SYM_UNIT_SECOND,
+		UNIT_SECOND_MICROSECOND: SYM_UNIT_SECOND_MICROSECOND,
+		UNIT_MINUTE_MICROSECOND: SYM_UNIT_MINUTE_MICROSECOND,
+		UNIT_MINUTE_SECOND:      SYM_UNIT_MINUTE_SECOND,
+		UNIT_HOUR_MICROSECOND:   SYM_UNIT_HOUR_MICROSECOND,
+		UNIT_HOUR_SECOND:        SYM_UNIT_HOUR_SECOND,
+		UNIT_HOUR_MINUTE:        SYM_UNIT_HOUR_MINUTE,
+		UNIT_DAY_MICROSECOND:    SYM_UNIT_DAY_MICROSECOND,
+		UNIT_DAY_SECOND:         SYM_UNIT_DAY_SECOND,
+		UNIT_DAY_MINUTE:         SYM_UNIT_DAY_MINUTE,
+		UNIT_DAY_HOUR:           SYM_UNIT_DAY_HOUR,
+		UNIT_YEAR_MONTH:         SYM_UNIT_YEAR_MONTH,
+	}
+)
+
+func IntervalUnitToSymbol(iu IntervalUnit) Symbol {
+	return intervalUnitToSymbol[iu]
+}

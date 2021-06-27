@@ -5,7 +5,10 @@
 //
 package sqlb
 
-import "github.com/jaypipes/sqlb/pkg/types"
+import (
+	"github.com/jaypipes/sqlb/pkg/grammar"
+	"github.com/jaypipes/sqlb/pkg/types"
+)
 
 // A value is a concrete struct wrapper around a constant that implements the
 // scannable interface. Typically, users won't directly construct value
@@ -50,7 +53,7 @@ func (v *value) Size(scanner types.Scanner) int {
 	// string into.
 	size := 0
 	if v.alias != "" {
-		size += len(Symbols[SYM_AS]) + len(v.alias)
+		size += len(grammar.Symbols[grammar.SYM_AS]) + len(v.alias)
 	}
 	return size
 }
@@ -60,7 +63,7 @@ func (v *value) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg
 	bw := scanInterpolationMarker(scanner.Dialect(), b, *curArg)
 	*curArg++
 	if v.alias != "" {
-		bw += copy(b[bw:], Symbols[SYM_AS])
+		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_AS])
 		bw += copy(b[bw:], v.alias)
 	}
 	return bw

@@ -5,7 +5,10 @@
 //
 package sqlb
 
-import "github.com/jaypipes/sqlb/pkg/types"
+import (
+	"github.com/jaypipes/sqlb/pkg/grammar"
+	"github.com/jaypipes/sqlb/pkg/types"
+)
 
 type limitClause struct {
 	limit  int
@@ -26,9 +29,9 @@ func (lc *limitClause) Size(scanner types.Scanner) int {
 	// string into.
 	size := 0
 	size += len(scanner.FormatOptions().SeparateClauseWith)
-	size += len(Symbols[SYM_LIMIT])
+	size += len(grammar.Symbols[grammar.SYM_LIMIT])
 	if lc.offset != nil {
-		size += len(Symbols[SYM_OFFSET])
+		size += len(grammar.Symbols[grammar.SYM_OFFSET])
 	}
 	return size
 }
@@ -36,12 +39,12 @@ func (lc *limitClause) Size(scanner types.Scanner) int {
 func (lc *limitClause) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	bw += copy(b[bw:], scanner.FormatOptions().SeparateClauseWith)
-	bw += copy(b[bw:], Symbols[SYM_LIMIT])
+	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_LIMIT])
 	bw += scanInterpolationMarker(scanner.Dialect(), b[bw:], *curArg)
 	args[*curArg] = lc.limit
 	*curArg++
 	if lc.offset != nil {
-		bw += copy(b[bw:], Symbols[SYM_OFFSET])
+		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_OFFSET])
 		bw += scanInterpolationMarker(scanner.Dialect(), b[bw:], *curArg)
 		args[*curArg] = *lc.offset
 		*curArg++

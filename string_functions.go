@@ -5,7 +5,10 @@
 //
 package sqlb
 
-import "github.com/jaypipes/sqlb/pkg/types"
+import (
+	"github.com/jaypipes/sqlb/pkg/grammar"
+	"github.com/jaypipes/sqlb/pkg/types"
+)
 
 // TRIM/BTRIM/LTRIM/RTRIM SQL function support
 //
@@ -95,28 +98,28 @@ func trimFuncSizeMySQL(f *trimFunc) int {
 	case TRIM_LEADING:
 		if f.chars == "" {
 			// LTRIM(string)
-			size = len(Symbols[SYM_LTRIM])
+			size = len(grammar.Symbols[grammar.SYM_LTRIM])
 		} else {
 			// TRIM(LEADING remstr FROM string)
-			size = (len(Symbols[SYM_TRIM]) + len(Symbols[SYM_LEADING]) +
-				len(Symbols[SYM_FROM]) + 2)
+			size = (len(grammar.Symbols[grammar.SYM_TRIM]) + len(grammar.Symbols[grammar.SYM_LEADING]) +
+				len(grammar.Symbols[grammar.SYM_FROM]) + 2)
 		}
 	case TRIM_TRAILING:
 		if f.chars == "" {
 			// LTRIM(string)
-			size = len(Symbols[SYM_RTRIM])
+			size = len(grammar.Symbols[grammar.SYM_RTRIM])
 		} else {
 			// TRIM(TRAILING remstr FROM string)
-			size = (len(Symbols[SYM_TRIM]) + len(Symbols[SYM_TRAILING]) +
-				len(Symbols[SYM_FROM]) + 2)
+			size = (len(grammar.Symbols[grammar.SYM_TRIM]) + len(grammar.Symbols[grammar.SYM_TRAILING]) +
+				len(grammar.Symbols[grammar.SYM_FROM]) + 2)
 		}
 	case TRIM_BOTH:
 		if f.chars == "" {
 			// TRIM(string)
-			size = len(Symbols[SYM_TRIM])
+			size = len(grammar.Symbols[grammar.SYM_TRIM])
 		} else {
 			// TRIM(remstr FROM string)
-			size = len(Symbols[SYM_TRIM]) + len(Symbols[SYM_FROM]) + 1
+			size = len(grammar.Symbols[grammar.SYM_TRIM]) + len(grammar.Symbols[grammar.SYM_FROM]) + 1
 		}
 	}
 	return size
@@ -130,42 +133,42 @@ func trimFuncScanMySQL(f *trimFunc, scanner types.Scanner, b []byte, args []inte
 	switch f.location {
 	case TRIM_LEADING:
 		if f.chars == "" {
-			bw += copy(b[bw:], Symbols[SYM_LTRIM])
+			bw += copy(b[bw:], grammar.Symbols[grammar.SYM_LTRIM])
 		} else {
-			bw += copy(b[bw:], Symbols[SYM_TRIM])
-			bw += copy(b[bw:], Symbols[SYM_LEADING])
+			bw += copy(b[bw:], grammar.Symbols[grammar.SYM_TRIM])
+			bw += copy(b[bw:], grammar.Symbols[grammar.SYM_LEADING])
 			bw += copy(b[bw:], " ")
 			bw += scanInterpolationMarker(types.DIALECT_MYSQL, b[bw:], *curArg)
 			args[*curArg] = f.chars
 			*curArg++
 			bw += copy(b[bw:], " ")
-			bw += copy(b[bw:], Symbols[SYM_FROM])
+			bw += copy(b[bw:], grammar.Symbols[grammar.SYM_FROM])
 		}
 		bw += trimFuncScanSubject(f, scanner, b[bw:], args, curArg)
 	case TRIM_TRAILING:
 		if f.chars == "" {
-			bw += copy(b[bw:], Symbols[SYM_RTRIM])
+			bw += copy(b[bw:], grammar.Symbols[grammar.SYM_RTRIM])
 		} else {
-			bw += copy(b[bw:], Symbols[SYM_TRIM])
-			bw += copy(b[bw:], Symbols[SYM_TRAILING])
+			bw += copy(b[bw:], grammar.Symbols[grammar.SYM_TRIM])
+			bw += copy(b[bw:], grammar.Symbols[grammar.SYM_TRAILING])
 			bw += copy(b[bw:], " ")
 			bw += scanInterpolationMarker(types.DIALECT_MYSQL, b[bw:], *curArg)
 			args[*curArg] = f.chars
 			*curArg++
 			bw += copy(b[bw:], " ")
-			bw += copy(b[bw:], Symbols[SYM_FROM])
+			bw += copy(b[bw:], grammar.Symbols[grammar.SYM_FROM])
 		}
 		bw += trimFuncScanSubject(f, scanner, b[bw:], args, curArg)
 	case TRIM_BOTH:
 		if f.chars == "" {
-			bw += copy(b[bw:], Symbols[SYM_TRIM])
+			bw += copy(b[bw:], grammar.Symbols[grammar.SYM_TRIM])
 		} else {
-			bw += copy(b[bw:], Symbols[SYM_TRIM])
+			bw += copy(b[bw:], grammar.Symbols[grammar.SYM_TRIM])
 			bw += scanInterpolationMarker(types.DIALECT_MYSQL, b[bw:], *curArg)
 			args[*curArg] = f.chars
 			*curArg++
 			bw += copy(b[bw:], " ")
-			bw += copy(b[bw:], Symbols[SYM_FROM])
+			bw += copy(b[bw:], grammar.Symbols[grammar.SYM_FROM])
 		}
 		bw += trimFuncScanSubject(f, scanner, b[bw:], args, curArg)
 	}
@@ -179,16 +182,16 @@ func trimFuncSizePostgreSQL(f *trimFunc) int {
 	switch f.location {
 	case TRIM_LEADING:
 		// TRIM(LEADING FROM string)
-		size = (len(Symbols[SYM_TRIM]) + len(Symbols[SYM_LEADING]) +
-			len(Symbols[SYM_FROM]) + 1)
+		size = (len(grammar.Symbols[grammar.SYM_TRIM]) + len(grammar.Symbols[grammar.SYM_LEADING]) +
+			len(grammar.Symbols[grammar.SYM_FROM]) + 1)
 		if f.chars != "" {
 			// TRIM(LEADING chars FROM string)
 			size += 1
 		}
 	case TRIM_TRAILING:
 		// TRIM(TRAILING FROM string)
-		size = (len(Symbols[SYM_TRIM]) + len(Symbols[SYM_TRAILING]) +
-			len(Symbols[SYM_FROM]) + 1)
+		size = (len(grammar.Symbols[grammar.SYM_TRIM]) + len(grammar.Symbols[grammar.SYM_TRAILING]) +
+			len(grammar.Symbols[grammar.SYM_FROM]) + 1)
 		if f.chars != "" {
 			// TRIM(TRAILING chars FROM string)
 			size += 1
@@ -196,10 +199,10 @@ func trimFuncSizePostgreSQL(f *trimFunc) int {
 	case TRIM_BOTH:
 		if f.chars == "" {
 			// BTRIM(string)
-			size = len(Symbols[SYM_BTRIM])
+			size = len(grammar.Symbols[grammar.SYM_BTRIM])
 		} else {
 			// BTRIM(string, chars)
-			size = len(Symbols[SYM_BTRIM]) + len(Symbols[SYM_COMMA_WS])
+			size = len(grammar.Symbols[grammar.SYM_BTRIM]) + len(grammar.Symbols[grammar.SYM_COMMA_WS])
 		}
 	}
 	return size
@@ -212,8 +215,8 @@ func trimFuncScanPostgreSQL(f *trimFunc, scanner types.Scanner, b []byte, args [
 	bw := 0
 	switch f.location {
 	case TRIM_LEADING:
-		bw += copy(b[bw:], Symbols[SYM_TRIM])
-		bw += copy(b[bw:], Symbols[SYM_LEADING])
+		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_TRIM])
+		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_LEADING])
 		if f.chars != "" {
 			bw += copy(b[bw:], " ")
 			bw += scanInterpolationMarker(types.DIALECT_POSTGRESQL, b[bw:], *curArg)
@@ -221,11 +224,11 @@ func trimFuncScanPostgreSQL(f *trimFunc, scanner types.Scanner, b []byte, args [
 			*curArg++
 		}
 		bw += copy(b[bw:], " ")
-		bw += copy(b[bw:], Symbols[SYM_FROM])
+		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_FROM])
 		bw += trimFuncScanSubject(f, scanner, b[bw:], args, curArg)
 	case TRIM_TRAILING:
-		bw += copy(b[bw:], Symbols[SYM_TRIM])
-		bw += copy(b[bw:], Symbols[SYM_TRAILING])
+		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_TRIM])
+		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_TRAILING])
 		if f.chars != "" {
 			bw += copy(b[bw:], " ")
 			bw += scanInterpolationMarker(types.DIALECT_POSTGRESQL, b[bw:], *curArg)
@@ -233,13 +236,13 @@ func trimFuncScanPostgreSQL(f *trimFunc, scanner types.Scanner, b []byte, args [
 			*curArg++
 		}
 		bw += copy(b[bw:], " ")
-		bw += copy(b[bw:], Symbols[SYM_FROM])
+		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_FROM])
 		bw += trimFuncScanSubject(f, scanner, b[bw:], args, curArg)
 	case TRIM_BOTH:
-		bw += copy(b[bw:], Symbols[SYM_BTRIM])
+		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_BTRIM])
 		bw += trimFuncScanSubject(f, scanner, b[bw:], args, curArg)
 		if f.chars != "" {
-			bw += copy(b[bw:], Symbols[SYM_COMMA_WS])
+			bw += copy(b[bw:], grammar.Symbols[grammar.SYM_COMMA_WS])
 			bw += scanInterpolationMarker(types.DIALECT_POSTGRESQL, b[bw:], *curArg)
 			args[*curArg] = f.chars
 			*curArg++
@@ -269,7 +272,7 @@ func (f *trimFunc) Size(scanner types.Scanner) int {
 	default:
 		size = trimFuncSizeMySQL(f)
 	}
-	size += len(Symbols[SYM_RPAREN])
+	size += len(grammar.Symbols[grammar.SYM_RPAREN])
 	// We need to disable alias output for elements that are
 	// projections. We don't want to output, for example,
 	// "ON users.id AS user_id = TRIM(articles.author)"
@@ -280,7 +283,7 @@ func (f *trimFunc) Size(scanner types.Scanner) int {
 	}
 	size += f.subject.Size(scanner)
 	if f.alias != "" {
-		size += len(Symbols[SYM_AS]) + len(f.alias)
+		size += len(grammar.Symbols[grammar.SYM_AS]) + len(f.alias)
 	}
 	return size
 }
@@ -293,9 +296,9 @@ func (f *trimFunc) Scan(scanner types.Scanner, b []byte, args []interface{}, cur
 	default:
 		bw += trimFuncScanMySQL(f, scanner, b[bw:], args, curArg)
 	}
-	bw += copy(b[bw:], Symbols[SYM_RPAREN])
+	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_RPAREN])
 	if f.alias != "" {
-		bw += copy(b[bw:], Symbols[SYM_AS])
+		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_AS])
 		bw += copy(b[bw:], f.alias)
 	}
 	return bw
