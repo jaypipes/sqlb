@@ -3,41 +3,42 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
-package sqlb
+
+package ast
 
 import (
-	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
-type sqlFunc struct {
+// Function is a SQL function that accepts zero or more parameters
+type Function struct {
 	sel      types.Selection
-	alias    string
+	Alias    string
 	ScanInfo grammar.ScanInfo
 	elements []types.Element
 }
 
-func (f *sqlFunc) From() types.Selection {
+func (f *Function) From() types.Selection {
 	return f.sel
 }
 
-func (f *sqlFunc) DisableAliasScan() func() {
-	origAlias := f.alias
-	f.alias = ""
-	return func() { f.alias = origAlias }
+func (f *Function) DisableAliasScan() func() {
+	origAlias := f.Alias
+	f.Alias = ""
+	return func() { f.Alias = origAlias }
 }
 
-func (f *sqlFunc) Alias(alias string) {
-	f.alias = alias
+func (f *Function) As(alias string) *Function {
+	return &Function{
+		sel:      f.sel,
+		Alias:    alias,
+		ScanInfo: f.ScanInfo,
+		elements: f.elements,
+	}
 }
 
-func (f *sqlFunc) As(alias string) *sqlFunc {
-	f.Alias(alias)
-	return f
-}
-
-func (e *sqlFunc) ArgCount() int {
+func (e *Function) ArgCount() int {
 	ac := 0
 	for _, el := range e.elements {
 		ac += el.ArgCount()
@@ -45,7 +46,7 @@ func (e *sqlFunc) ArgCount() int {
 	return ac
 }
 
-func (f *sqlFunc) Size(scanner types.Scanner) int {
+func (f *Function) Size(scanner types.Scanner) int {
 	size := 0
 	elidx := 0
 	for _, sym := range f.ScanInfo {
@@ -66,13 +67,13 @@ func (f *sqlFunc) Size(scanner types.Scanner) int {
 			size += len(grammar.Symbols[sym])
 		}
 	}
-	if f.alias != "" {
-		size += len(grammar.Symbols[grammar.SYM_AS]) + len(f.alias)
+	if f.Alias != "" {
+		size += len(grammar.Symbols[grammar.SYM_AS]) + len(f.Alias)
 	}
 	return size
 }
 
-func (f *sqlFunc) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
+func (f *Function) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	elidx := 0
 	for _, sym := range f.ScanInfo {
@@ -92,143 +93,119 @@ func (f *sqlFunc) Scan(scanner types.Scanner, b []byte, args []interface{}, curA
 			bw += copy(b[bw:], grammar.Symbols[sym])
 		}
 	}
-	if f.alias != "" {
+	if f.Alias != "" {
 		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_AS])
-		bw += copy(b[bw:], f.alias)
+		bw += copy(b[bw:], f.Alias)
 	}
 	return bw
 }
 
-func Max(p types.Projection) *sqlFunc {
-	return &sqlFunc{
+func (f *Function) Desc() *SortColumn {
+	return &SortColumn{p: f, desc: true}
+}
+
+func (f *Function) Asc() *SortColumn {
+	return &SortColumn{p: f}
+}
+
+func Max(p types.Projection) *Function {
+	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_MAX),
 		elements: []types.Element{p.(types.Element)},
 		sel:      p.From(),
 	}
 }
 
-func (c *ColumnIdentifier) Max() *sqlFunc {
-	return Max(c)
-}
-
-func Min(p types.Projection) *sqlFunc {
-	return &sqlFunc{
+func Min(p types.Projection) *Function {
+	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_MIN),
 		elements: []types.Element{p.(types.Element)},
 		sel:      p.From(),
 	}
 }
 
-func (c *ColumnIdentifier) Min() *sqlFunc {
-	return Min(c)
-}
-
-func Sum(p types.Projection) *sqlFunc {
-	return &sqlFunc{
+func Sum(p types.Projection) *Function {
+	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_SUM),
 		elements: []types.Element{p.(types.Element)},
 		sel:      p.From(),
 	}
 }
 
-func (c *ColumnIdentifier) Sum() *sqlFunc {
-	return Sum(c)
-}
-
-func Avg(p types.Projection) *sqlFunc {
-	return &sqlFunc{
+func Avg(p types.Projection) *Function {
+	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_AVG),
 		elements: []types.Element{p.(types.Element)},
 		sel:      p.From(),
 	}
 }
 
-func (c *ColumnIdentifier) Avg() *sqlFunc {
-	return Avg(c)
-}
-
-func Count(sel types.Selection) *sqlFunc {
-	return &sqlFunc{
+func Count(sel types.Selection) *Function {
+	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_COUNT_STAR),
 		sel:      sel,
 	}
 }
 
-func CountDistinct(p types.Projection) *sqlFunc {
-	return &sqlFunc{
+func CountDistinct(p types.Projection) *Function {
+	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_COUNT_DISTINCT),
 		elements: []types.Element{p.(types.Element)},
 		sel:      p.From(),
 	}
 }
 
-func Cast(p types.Projection, stype grammar.SqlType) *sqlFunc {
+func Cast(p types.Projection, stype grammar.SqlType) *Function {
 	si := make([]grammar.Symbol, len(grammar.FunctionScanTable(grammar.FUNC_CAST)))
 	copy(si, grammar.FunctionScanTable(grammar.FUNC_CAST))
 	// Replace the placeholder with the SQL type's appropriate []byte
 	// representation
 	si[3] = grammar.SQLTypeToSymbol(stype)
-	return &sqlFunc{
+	return &Function{
 		ScanInfo: si,
 		elements: []types.Element{p.(types.Element)},
 	}
 }
 
-func CharLength(p types.Projection) *sqlFunc {
-	return &sqlFunc{
+func CharLength(p types.Projection) *Function {
+	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_CHAR_LENGTH),
 		elements: []types.Element{p.(types.Element)},
 		sel:      p.From(),
 	}
 }
 
-func (c *ColumnIdentifier) CharLength() *sqlFunc {
-	return CharLength(c)
-}
-
-func BitLength(p types.Projection) *sqlFunc {
-	return &sqlFunc{
+func BitLength(p types.Projection) *Function {
+	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_BIT_LENGTH),
 		elements: []types.Element{p.(types.Element)},
 		sel:      p.From(),
 	}
 }
 
-func (c *ColumnIdentifier) BitLength() *sqlFunc {
-	return BitLength(c)
-}
-
-func Ascii(p types.Projection) *sqlFunc {
-	return &sqlFunc{
+func Ascii(p types.Projection) *Function {
+	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_ASCII),
 		elements: []types.Element{p.(types.Element)},
 		sel:      p.From(),
 	}
 }
 
-func (c *ColumnIdentifier) Ascii() *sqlFunc {
-	return Ascii(c)
-}
-
-func Reverse(p types.Projection) *sqlFunc {
-	return &sqlFunc{
+func Reverse(p types.Projection) *Function {
+	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_REVERSE),
 		elements: []types.Element{p.(types.Element)},
 		sel:      p.From(),
 	}
 }
 
-func (c *ColumnIdentifier) Reverse() *sqlFunc {
-	return Reverse(c)
-}
-
-func Concat(projs ...types.Projection) *sqlFunc {
+func Concat(projs ...types.Projection) *Function {
 	els := make([]types.Element, len(projs))
 	for x, p := range projs {
 		els[x] = p.(types.Element)
 	}
-	subjects := ast.NewList(els...)
-	return &sqlFunc{
+	subjects := NewList(els...)
+	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_CONCAT),
 		elements: []types.Element{subjects},
 		// TODO(jaypipes): Clearly we need to support >1 selection...
@@ -236,51 +213,51 @@ func Concat(projs ...types.Projection) *sqlFunc {
 	}
 }
 
-func ConcatWs(sep string, projs ...types.Projection) *sqlFunc {
+func ConcatWs(sep string, projs ...types.Projection) *Function {
 	els := make([]types.Element, len(projs))
 	for x, p := range projs {
 		els[x] = p.(types.Element)
 	}
-	subjects := ast.NewList(els...)
-	return &sqlFunc{
+	subjects := NewList(els...)
+	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_CONCAT_WS),
-		elements: []types.Element{ast.NewValue(nil, sep), subjects},
+		elements: []types.Element{NewValue(nil, sep), subjects},
 		// TODO(jaypipes): Clearly we need to support >1 selection...
 		sel: projs[0].From(),
 	}
 }
 
-func Now() *sqlFunc {
-	return &sqlFunc{
+func Now() *Function {
+	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_NOW),
 	}
 }
 
-func CurrentTimestamp() *sqlFunc {
-	return &sqlFunc{
+func CurrentTimestamp() *Function {
+	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_CURRENT_TIMESTAMP),
 	}
 }
 
-func CurrentTime() *sqlFunc {
-	return &sqlFunc{
+func CurrentTime() *Function {
+	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_CURRENT_TIME),
 	}
 }
 
-func CurrentDate() *sqlFunc {
-	return &sqlFunc{
+func CurrentDate() *Function {
+	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_CURRENT_DATE),
 	}
 }
 
-func Extract(p types.Projection, unit grammar.IntervalUnit) *sqlFunc {
+func Extract(p types.Projection, unit grammar.IntervalUnit) *Function {
 	si := make([]grammar.Symbol, len(grammar.FunctionScanTable(grammar.FUNC_EXTRACT)))
 	copy(si, grammar.FunctionScanTable(grammar.FUNC_EXTRACT))
 	// Replace the placeholder with the interval unit's appropriate []byte
 	// representation
 	si[1] = grammar.IntervalUnitToSymbol(unit)
-	return &sqlFunc{
+	return &Function{
 		ScanInfo: si,
 		elements: []types.Element{p.(types.Element)},
 	}

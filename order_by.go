@@ -6,42 +6,13 @@
 package sqlb
 
 import (
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
-type SortColumn struct {
-	p    types.Projection
-	desc bool
-}
-
-func (sc *SortColumn) ArgCount() int {
-	return sc.p.ArgCount()
-}
-
-func (sc *SortColumn) Size(scanner types.Scanner) int {
-	reset := sc.p.DisableAliasScan()
-	defer reset()
-	size := sc.p.Size(scanner)
-	if sc.desc {
-		size += len(grammar.Symbols[grammar.SYM_DESC])
-	}
-	return size
-}
-
-func (sc *SortColumn) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
-	reset := sc.p.DisableAliasScan()
-	defer reset()
-	bw := 0
-	bw += sc.p.Scan(scanner, b[bw:], args, curArg)
-	if sc.desc {
-		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_DESC])
-	}
-	return bw
-}
-
 type OrderByClause struct {
-	scols []*SortColumn
+	scols []*ast.SortColumn
 }
 
 func (ob *OrderByClause) ArgCount() int {
@@ -72,20 +43,4 @@ func (ob *OrderByClause) Scan(scanner types.Scanner, b []byte, args []interface{
 		}
 	}
 	return bw
-}
-
-func (c *ColumnIdentifier) Desc() *SortColumn {
-	return &SortColumn{p: c, desc: true}
-}
-
-func (c *ColumnIdentifier) Asc() *SortColumn {
-	return &SortColumn{p: c}
-}
-
-func (f *sqlFunc) Desc() *SortColumn {
-	return &SortColumn{p: f, desc: true}
-}
-
-func (f *sqlFunc) Asc() *SortColumn {
-	return &SortColumn{p: f}
 }

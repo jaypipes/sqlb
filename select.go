@@ -74,7 +74,7 @@ func (q *SelectQuery) Having(e *Expression) *SelectQuery {
 	return q
 }
 
-func (q *SelectQuery) OrderBy(scols ...*SortColumn) *SelectQuery {
+func (q *SelectQuery) OrderBy(scols ...*ast.SortColumn) *SelectQuery {
 	q.sel.AddOrderBy(scols...)
 	return q
 }
@@ -122,9 +122,9 @@ func (q *SelectQuery) C(name string) types.Projection {
 			} else if c.name == name {
 				return c
 			}
-		case *sqlFunc:
-			f := p.(*sqlFunc)
-			if f.alias != "" && f.alias == name {
+		case *ast.Function:
+			f := p.(*ast.Function)
+			if f.Alias != "" && f.Alias == name {
 				return f
 			}
 		}
@@ -342,10 +342,10 @@ func Select(items ...interface{}) *SelectQuery {
 				addToProjections(sel, c)
 			}
 			selectionMap[v] = true
-		case *sqlFunc:
-			v := item.(*sqlFunc)
+		case *ast.Function:
+			v := item.(*ast.Function)
 			addToProjections(sel, v)
-			selectionMap[v.sel] = true
+			selectionMap[v.From()] = true
 		default:
 			// Everything else, make it a literal value projection, so, for
 			// instance, a user can do SELECT 1, which is, technically

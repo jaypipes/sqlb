@@ -8,6 +8,7 @@ package sqlb
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/stretchr/testify/assert"
@@ -31,35 +32,35 @@ func TestOrderBy(t *testing.T) {
 		// column asc
 		orderByTest{
 			c: &OrderByClause{
-				scols: []*SortColumn{colUserName.Asc()},
+				scols: []*ast.SortColumn{colUserName.Asc()},
 			},
 			qs: " ORDER BY users.name",
 		},
 		// column desc
 		orderByTest{
 			c: &OrderByClause{
-				scols: []*SortColumn{colUserName.Desc()},
+				scols: []*ast.SortColumn{colUserName.Desc()},
 			},
 			qs: " ORDER BY users.name DESC",
 		},
 		// Aliased column should NOT output alias in ORDER BY
 		orderByTest{
 			c: &OrderByClause{
-				scols: []*SortColumn{colUserName.As("user_name").Desc()},
+				scols: []*ast.SortColumn{colUserName.As("user_name").Desc()},
 			},
 			qs: " ORDER BY users.name DESC",
 		},
 		// multi column mixed
 		orderByTest{
 			c: &OrderByClause{
-				scols: []*SortColumn{colUserName.Asc(), colUserId.Desc()},
+				scols: []*ast.SortColumn{colUserName.Asc(), colUserId.Desc()},
 			},
 			qs: " ORDER BY users.name, users.id DESC",
 		},
 		// sort by a function
 		orderByTest{
 			c: &OrderByClause{
-				scols: []*SortColumn{Count(users).Desc()},
+				scols: []*ast.SortColumn{ast.Count(users).Desc()},
 			},
 			qs: " ORDER BY COUNT(*) DESC",
 		},

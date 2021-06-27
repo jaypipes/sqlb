@@ -6,6 +6,7 @@
 package sqlb
 
 import (
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
@@ -175,14 +176,14 @@ func (s *SelectStatement) AddHaving(e *Expression) *SelectStatement {
 
 // Given one or more sort columns, either set or add to the ORDER BY clause for
 // the SelectStatement
-func (s *SelectStatement) AddOrderBy(sortCols ...*SortColumn) *SelectStatement {
+func (s *SelectStatement) AddOrderBy(sortCols ...*ast.SortColumn) *SelectStatement {
 	if len(sortCols) == 0 {
 		return s
 	}
 	ob := s.orderBy
 	if ob == nil {
 		ob = &OrderByClause{
-			scols: make([]*SortColumn, len(sortCols)),
+			scols: make([]*ast.SortColumn, len(sortCols)),
 		}
 		for x, sc := range sortCols {
 			ob.scols[x] = sc

@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/stretchr/testify/assert"
 )
@@ -47,7 +48,7 @@ func TestSelectQuery(t *testing.T) {
 		},
 		{
 			name: "Simple SELECT COUNT(*) FROM",
-			q:    Select(Count(users)),
+			q:    Select(ast.Count(users)),
 			qs:   "SELECT COUNT(*) FROM users",
 		},
 		{

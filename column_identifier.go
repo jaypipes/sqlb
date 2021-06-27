@@ -7,6 +7,7 @@
 package sqlb
 
 import (
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
@@ -72,4 +73,44 @@ func (c *ColumnIdentifier) As(alias string) *ColumnIdentifier {
 		name:  c.name,
 		tbl:   c.tbl,
 	}
+}
+
+func (c *ColumnIdentifier) Desc() *ast.SortColumn {
+	return ast.NewSortColumn(c, true)
+}
+
+func (c *ColumnIdentifier) Asc() *ast.SortColumn {
+	return ast.NewSortColumn(c, false)
+}
+
+func (c *ColumnIdentifier) Reverse() *ast.Function {
+	return ast.Reverse(c)
+}
+
+func (c *ColumnIdentifier) Ascii() *ast.Function {
+	return ast.Ascii(c)
+}
+
+func (c *ColumnIdentifier) Max() *ast.Function {
+	return ast.Max(c)
+}
+
+func (c *ColumnIdentifier) Min() *ast.Function {
+	return ast.Min(c)
+}
+
+func (c *ColumnIdentifier) Sum() *ast.Function {
+	return ast.Sum(c)
+}
+
+func (c *ColumnIdentifier) Avg() *ast.Function {
+	return ast.Avg(c)
+}
+
+func (c *ColumnIdentifier) CharLength() *ast.Function {
+	return ast.CharLength(c)
+}
+
+func (c *ColumnIdentifier) BitLength() *ast.Function {
+	return ast.BitLength(c)
 }

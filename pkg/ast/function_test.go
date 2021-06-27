@@ -3,11 +3,14 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
-package sqlb
+
+package ast_test
 
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb"
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
@@ -19,18 +22,18 @@ func TestFunctions(t *testing.T) {
 	assert := assert.New(t)
 
 	sc := testutil.Schema()
-	users := T(sc, "users")
+	users := sqlb.T(sc, "users")
 	colUserName := users.C("name")
 
 	tests := []struct {
 		name  string
-		c     *sqlFunc
+		c     *ast.Function
 		qs    map[types.Dialect]string
 		qargs []interface{}
 	}{
 		{
 			name: "MAX(column)",
-			c:    Max(colUserName),
+			c:    ast.Max(colUserName),
 			qs: map[types.Dialect]string{
 				types.DIALECT_MYSQL:      "MAX(users.name)",
 				types.DIALECT_POSTGRESQL: "MAX(users.name)",
@@ -38,7 +41,7 @@ func TestFunctions(t *testing.T) {
 		},
 		{
 			name: "aliased function",
-			c:    Max(colUserName).As("max_name"),
+			c:    ast.Max(colUserName).As("max_name"),
 			qs: map[types.Dialect]string{
 				types.DIALECT_MYSQL:      "MAX(users.name) AS max_name",
 				types.DIALECT_POSTGRESQL: "MAX(users.name) AS max_name",
@@ -46,7 +49,7 @@ func TestFunctions(t *testing.T) {
 		},
 		{
 			name: "MIN(column)",
-			c:    Min(colUserName),
+			c:    ast.Min(colUserName),
 			qs: map[types.Dialect]string{
 				types.DIALECT_MYSQL:      "MIN(users.name)",
 				types.DIALECT_POSTGRESQL: "MIN(users.name)",
@@ -54,7 +57,7 @@ func TestFunctions(t *testing.T) {
 		},
 		{
 			name: "SUM(column)",
-			c:    Sum(colUserName),
+			c:    ast.Sum(colUserName),
 			qs: map[types.Dialect]string{
 				types.DIALECT_MYSQL:      "SUM(users.name)",
 				types.DIALECT_POSTGRESQL: "SUM(users.name)",
@@ -62,7 +65,7 @@ func TestFunctions(t *testing.T) {
 		},
 		{
 			name: "AVG(column)",
-			c:    Avg(colUserName),
+			c:    ast.Avg(colUserName),
 			qs: map[types.Dialect]string{
 				types.DIALECT_MYSQL:      "AVG(users.name)",
 				types.DIALECT_POSTGRESQL: "AVG(users.name)",
@@ -70,7 +73,7 @@ func TestFunctions(t *testing.T) {
 		},
 		{
 			name: "COUNT(*)",
-			c:    Count(users),
+			c:    ast.Count(users),
 			qs: map[types.Dialect]string{
 				types.DIALECT_MYSQL:      "COUNT(*)",
 				types.DIALECT_POSTGRESQL: "COUNT(*)",
@@ -78,7 +81,7 @@ func TestFunctions(t *testing.T) {
 		},
 		{
 			name: "COUNT(DISTINCT column)",
-			c:    CountDistinct(colUserName),
+			c:    ast.CountDistinct(colUserName),
 			qs: map[types.Dialect]string{
 				types.DIALECT_MYSQL:      "COUNT(DISTINCT users.name)",
 				types.DIALECT_POSTGRESQL: "COUNT(DISTINCT users.name)",
@@ -86,7 +89,7 @@ func TestFunctions(t *testing.T) {
 		},
 		{
 			name: "Ensure AS alias not in COUNT(DISTINCT column)",
-			c:    CountDistinct(colUserName.As("user_name")),
+			c:    ast.CountDistinct(colUserName.As("user_name")),
 			qs: map[types.Dialect]string{
 				types.DIALECT_MYSQL:      "COUNT(DISTINCT users.name)",
 				types.DIALECT_POSTGRESQL: "COUNT(DISTINCT users.name)",
@@ -94,7 +97,7 @@ func TestFunctions(t *testing.T) {
 		},
 		{
 			name: "CAST(column AS type)",
-			c:    Cast(colUserName, grammar.SQL_TYPE_TEXT),
+			c:    ast.Cast(colUserName, grammar.SQL_TYPE_TEXT),
 			qs: map[types.Dialect]string{
 				types.DIALECT_MYSQL:      "CAST(users.name AS TEXT)",
 				types.DIALECT_POSTGRESQL: "CAST(users.name AS TEXT)",
@@ -102,7 +105,7 @@ func TestFunctions(t *testing.T) {
 		},
 		{
 			name: "CHAR_LENGTH(column)",
-			c:    CharLength(colUserName),
+			c:    ast.CharLength(colUserName),
 			qs: map[types.Dialect]string{
 				types.DIALECT_MYSQL:      "CHAR_LENGTH(users.name)",
 				types.DIALECT_POSTGRESQL: "CHAR_LENGTH(users.name)",
@@ -110,7 +113,7 @@ func TestFunctions(t *testing.T) {
 		},
 		{
 			name: "BIT_LENGTH(column)",
-			c:    BitLength(colUserName),
+			c:    ast.BitLength(colUserName),
 			qs: map[types.Dialect]string{
 				types.DIALECT_MYSQL:      "BIT_LENGTH(users.name)",
 				types.DIALECT_POSTGRESQL: "BIT_LENGTH(users.name)",
@@ -118,7 +121,7 @@ func TestFunctions(t *testing.T) {
 		},
 		{
 			name: "ASCII(column)",
-			c:    Ascii(colUserName),
+			c:    ast.Ascii(colUserName),
 			qs: map[types.Dialect]string{
 				types.DIALECT_MYSQL:      "ASCII(users.name)",
 				types.DIALECT_POSTGRESQL: "ASCII(users.name)",
@@ -126,7 +129,7 @@ func TestFunctions(t *testing.T) {
 		},
 		{
 			name: "REVERSE(column)",
-			c:    Reverse(colUserName),
+			c:    ast.Reverse(colUserName),
 			qs: map[types.Dialect]string{
 				types.DIALECT_MYSQL:      "REVERSE(users.name)",
 				types.DIALECT_POSTGRESQL: "REVERSE(users.name)",
@@ -134,7 +137,7 @@ func TestFunctions(t *testing.T) {
 		},
 		{
 			name: "CONCAT(column, column)",
-			c:    Concat(colUserName, colUserName),
+			c:    ast.Concat(colUserName, colUserName),
 			qs: map[types.Dialect]string{
 				types.DIALECT_MYSQL:      "CONCAT(users.name, users.name)",
 				types.DIALECT_POSTGRESQL: "CONCAT(users.name, users.name)",
@@ -142,7 +145,7 @@ func TestFunctions(t *testing.T) {
 		},
 		{
 			name: "CONCAT_WS(string, column, column)",
-			c:    ConcatWs("-", colUserName, colUserName),
+			c:    ast.ConcatWs("-", colUserName, colUserName),
 			qs: map[types.Dialect]string{
 				types.DIALECT_MYSQL: "CONCAT_WS(?, users.name, users.name)",
 				// Should be:
@@ -152,7 +155,7 @@ func TestFunctions(t *testing.T) {
 		},
 		{
 			name: "NOW()",
-			c:    Now(),
+			c:    ast.Now(),
 			qs: map[types.Dialect]string{
 				types.DIALECT_MYSQL:      "NOW()",
 				types.DIALECT_POSTGRESQL: "NOW()",
@@ -160,7 +163,7 @@ func TestFunctions(t *testing.T) {
 		},
 		{
 			name: "CURRENT_TIMESTAMP()",
-			c:    CurrentTimestamp(),
+			c:    ast.CurrentTimestamp(),
 			qs: map[types.Dialect]string{
 				types.DIALECT_MYSQL:      "CURRENT_TIMESTAMP()",
 				types.DIALECT_POSTGRESQL: "CURRENT_TIMESTAMP()",
@@ -168,7 +171,7 @@ func TestFunctions(t *testing.T) {
 		},
 		{
 			name: "CURRENT_TIME()",
-			c:    CurrentTime(),
+			c:    ast.CurrentTime(),
 			qs: map[types.Dialect]string{
 				types.DIALECT_MYSQL:      "CURRENT_TIME()",
 				types.DIALECT_POSTGRESQL: "CURRENT_TIME()",
@@ -176,7 +179,7 @@ func TestFunctions(t *testing.T) {
 		},
 		{
 			name: "CURRENT_DATE()",
-			c:    CurrentDate(),
+			c:    ast.CurrentDate(),
 			qs: map[types.Dialect]string{
 				types.DIALECT_MYSQL:      "CURRENT_DATE()",
 				types.DIALECT_POSTGRESQL: "CURRENT_DATE()",
@@ -184,7 +187,7 @@ func TestFunctions(t *testing.T) {
 		},
 		{
 			name: "EXTRACT(unit FROM column)",
-			c:    Extract(colUserName, grammar.UNIT_MINUTE_SECOND),
+			c:    ast.Extract(colUserName, grammar.UNIT_MINUTE_SECOND),
 			qs: map[types.Dialect]string{
 				types.DIALECT_MYSQL: "EXTRACT(MINUTE_SECOND FROM users.name)",
 				// Should be:

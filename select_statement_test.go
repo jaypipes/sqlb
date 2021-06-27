@@ -122,7 +122,7 @@ func TestSelectClause(t *testing.T) {
 				selections: []types.Selection{users},
 				projs:      []types.Projection{colUserName},
 				orderBy: &OrderByClause{
-					scols: []*SortColumn{colUserName.Desc()},
+					scols: []*ast.SortColumn{colUserName.Desc()},
 				},
 			},
 			qs: "SELECT users.name FROM users ORDER BY users.name DESC",
@@ -147,7 +147,7 @@ func TestSelectClause(t *testing.T) {
 					cols: []types.Projection{colUserName},
 				},
 				orderBy: &OrderByClause{
-					scols: []*SortColumn{colUserName.Desc()},
+					scols: []*ast.SortColumn{colUserName.Desc()},
 				},
 				limit: &LimitClause{limit: 10},
 			},
@@ -193,7 +193,7 @@ func TestSelectClause(t *testing.T) {
 			name: "COUNT(*) on a table",
 			s: &SelectStatement{
 				selections: []types.Selection{users},
-				projs:      []types.Projection{Count(users)},
+				projs:      []types.Projection{ast.Count(users)},
 			},
 			qs: "SELECT COUNT(*) FROM users",
 		},

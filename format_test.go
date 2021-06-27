@@ -8,6 +8,7 @@ package sqlb
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/jaypipes/sqlb/pkg/types"
@@ -44,7 +45,7 @@ func TestFormatOptions(t *testing.T) {
 			cols: []types.Projection{colUserName},
 		},
 		orderBy: &OrderByClause{
-			scols: []*SortColumn{colUserName.Desc()},
+			scols: []*ast.SortColumn{colUserName.Desc()},
 		},
 		limit: &LimitClause{limit: 10},
 	}
