@@ -10,22 +10,22 @@ import (
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
-type joinType int
+type JoinType int
 
 const (
-	JOIN_INNER joinType = iota
+	JOIN_INNER JoinType = iota
 	JOIN_OUTER
 	JOIN_CROSS
 )
 
-type joinClause struct {
-	joinType joinType
+type JoinClause struct {
+	JoinType JoinType
 	left     types.Selection
 	right    types.Selection
 	on       *Expression
 }
 
-func (j *joinClause) ArgCount() int {
+func (j *JoinClause) ArgCount() int {
 	ac := 0
 	if j.on != nil {
 		ac = j.on.ArgCount()
@@ -33,10 +33,10 @@ func (j *joinClause) ArgCount() int {
 	return ac + j.left.ArgCount() + j.right.ArgCount()
 }
 
-func (j *joinClause) Size(scanner types.Scanner) int {
+func (j *JoinClause) Size(scanner types.Scanner) int {
 	size := 0
 	size += len(scanner.FormatOptions().SeparateClauseWith)
-	switch j.joinType {
+	switch j.JoinType {
 	case JOIN_INNER:
 		size += len(grammar.Symbols[grammar.SYM_JOIN])
 	case JOIN_OUTER:
@@ -52,10 +52,10 @@ func (j *joinClause) Size(scanner types.Scanner) int {
 	return size
 }
 
-func (j *joinClause) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
+func (j *JoinClause) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	bw += copy(b[bw:], scanner.FormatOptions().SeparateClauseWith)
-	switch j.joinType {
+	switch j.JoinType {
 	case JOIN_INNER:
 		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_JOIN])
 	case JOIN_OUTER:
@@ -71,19 +71,19 @@ func (j *joinClause) Scan(scanner types.Scanner, b []byte, args []interface{}, c
 	return bw
 }
 
-func Join(left types.Selection, right types.Selection, on *Expression) *joinClause {
-	return &joinClause{left: left, right: right, on: on}
+func Join(left types.Selection, right types.Selection, on *Expression) *JoinClause {
+	return &JoinClause{left: left, right: right, on: on}
 }
 
-func OuterJoin(left types.Selection, right types.Selection, on *Expression) *joinClause {
-	return &joinClause{
-		joinType: JOIN_OUTER,
+func OuterJoin(left types.Selection, right types.Selection, on *Expression) *JoinClause {
+	return &JoinClause{
+		JoinType: JOIN_OUTER,
 		left:     left,
 		right:    right,
 		on:       on,
 	}
 }
 
-func CrossJoin(left types.Selection, right types.Selection) *joinClause {
-	return &joinClause{joinType: JOIN_CROSS, left: left, right: right}
+func CrossJoin(left types.Selection, right types.Selection) *JoinClause {
+	return &JoinClause{JoinType: JOIN_CROSS, left: left, right: right}
 }

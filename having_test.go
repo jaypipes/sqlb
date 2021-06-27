@@ -8,6 +8,7 @@ package sqlb
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
@@ -22,18 +23,18 @@ func TestHavingClause(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		c     *havingClause
+		c     *HavingClause
 		qs    string
 		qargs []interface{}
 	}{
 		{
 			name: "Empty HAVING clause",
-			c:    &havingClause{},
+			c:    &HavingClause{},
 			qs:   "",
 		},
 		{
 			name: "Single expression",
-			c: &havingClause{
+			c: &HavingClause{
 				conditions: []*Expression{
 					Equal(colUserName, "foo"),
 				},
@@ -43,7 +44,7 @@ func TestHavingClause(t *testing.T) {
 		},
 		{
 			name: "AND expression",
-			c: &havingClause{
+			c: &HavingClause{
 				conditions: []*Expression{
 					And(
 						NotEqual(colUserName, "foo"),
@@ -56,7 +57,7 @@ func TestHavingClause(t *testing.T) {
 		},
 		{
 			name: "Multiple unary expressions should be AND'd together",
-			c: &havingClause{
+			c: &HavingClause{
 				conditions: []*Expression{
 					NotEqual(colUserName, "foo"),
 					NotEqual(colUserName, "bar"),
@@ -67,7 +68,7 @@ func TestHavingClause(t *testing.T) {
 		},
 		{
 			name: "OR expression",
-			c: &havingClause{
+			c: &HavingClause{
 				conditions: []*Expression{
 					Or(
 						Equal(colUserName, "foo"),
@@ -80,7 +81,7 @@ func TestHavingClause(t *testing.T) {
 		},
 		{
 			name: "OR and another unary expression",
-			c: &havingClause{
+			c: &HavingClause{
 				conditions: []*Expression{
 					Or(
 						Equal(colUserName, "foo"),
@@ -94,7 +95,7 @@ func TestHavingClause(t *testing.T) {
 		},
 		{
 			name: "Two AND expressions OR'd together",
-			c: &havingClause{
+			c: &HavingClause{
 				conditions: []*Expression{
 					Or(
 						And(
@@ -118,13 +119,13 @@ func TestHavingClause(t *testing.T) {
 		assert.Equal(expArgc, argc)
 
 		expLen := len(test.qs)
-		size := test.c.Size(defaultScanner)
-		size += interpolationLength(types.DIALECT_MYSQL, argc)
+		size := test.c.Size(scanner.DefaultScanner)
+		size += scanner.InterpolationLength(types.DIALECT_MYSQL, argc)
 		assert.Equal(expLen, size)
 
 		b := make([]byte, size)
 		curArg := 0
-		written := test.c.Scan(defaultScanner, b, test.qargs, &curArg)
+		written := test.c.Scan(scanner.DefaultScanner, b, test.qargs, &curArg)
 
 		assert.Equal(written, size)
 		assert.Equal(test.qs, string(b))

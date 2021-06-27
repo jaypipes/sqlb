@@ -8,6 +8,7 @@ package sqlb
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
@@ -15,7 +16,7 @@ import (
 func TestLimitClause(t *testing.T) {
 	assert := assert.New(t)
 
-	lc := &limitClause{
+	lc := &LimitClause{
 		limit: 20,
 	}
 
@@ -25,15 +26,15 @@ func TestLimitClause(t *testing.T) {
 	argc := lc.ArgCount()
 	assert.Equal(expArgCount, argc)
 
-	size := lc.Size(defaultScanner)
-	size += interpolationLength(types.DIALECT_MYSQL, argc)
+	size := lc.Size(scanner.DefaultScanner)
+	size += scanner.InterpolationLength(types.DIALECT_MYSQL, argc)
 	expLen := len(exp)
 	assert.Equal(expLen, size)
 
 	args := make([]interface{}, expArgCount)
 	b := make([]byte, size)
 	curArg := 0
-	written := lc.Scan(defaultScanner, b, args, &curArg)
+	written := lc.Scan(scanner.DefaultScanner, b, args, &curArg)
 
 	assert.Equal(size, written)
 	assert.Equal(exp, string(b))
@@ -43,7 +44,7 @@ func TestLimitClause(t *testing.T) {
 func TestLimitClauseWithOffset(t *testing.T) {
 	assert := assert.New(t)
 
-	lc := &limitClause{
+	lc := &LimitClause{
 		limit: 20,
 	}
 	offset := 10
@@ -55,15 +56,15 @@ func TestLimitClauseWithOffset(t *testing.T) {
 	argc := lc.ArgCount()
 	assert.Equal(expArgCount, argc)
 
-	size := lc.Size(defaultScanner)
-	size += interpolationLength(types.DIALECT_MYSQL, argc)
+	size := lc.Size(scanner.DefaultScanner)
+	size += scanner.InterpolationLength(types.DIALECT_MYSQL, argc)
 	expLen := len(exp)
 	assert.Equal(expLen, size)
 
 	args := make([]interface{}, expArgCount)
 	b := make([]byte, size)
 	curArg := 0
-	written := lc.Scan(defaultScanner, b, args, &curArg)
+	written := lc.Scan(scanner.DefaultScanner, b, args, &curArg)
 
 	assert.Equal(size, written)
 	assert.Equal(exp, string(b))

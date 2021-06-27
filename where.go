@@ -10,11 +10,11 @@ import (
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
-type whereClause struct {
+type WhereClause struct {
 	filters []*Expression
 }
 
-func (w *whereClause) ArgCount() int {
+func (w *WhereClause) ArgCount() int {
 	argc := 0
 	for _, filter := range w.filters {
 		argc += filter.ArgCount()
@@ -22,7 +22,7 @@ func (w *whereClause) ArgCount() int {
 	return argc
 }
 
-func (w *whereClause) Size(scanner types.Scanner) int {
+func (w *WhereClause) Size(scanner types.Scanner) int {
 	size := 0
 	nfilters := len(w.filters)
 	if nfilters > 0 {
@@ -36,7 +36,7 @@ func (w *whereClause) Size(scanner types.Scanner) int {
 	return size
 }
 
-func (w *whereClause) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
+func (w *WhereClause) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	if len(w.filters) > 0 {
 		bw += copy(b[bw:], scanner.FormatOptions().SeparateClauseWith)

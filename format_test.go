@@ -8,6 +8,7 @@ package sqlb
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
@@ -23,34 +24,34 @@ func TestFormatOptions(t *testing.T) {
 	colArticleId := articles.C("id")
 	colArticleAuthor := articles.C("author")
 
-	stmt := &selectStatement{
+	stmt := &SelectStatement{
 		selections: []types.Selection{articles},
 		projs:      []types.Projection{colArticleId, colUserName.As("author")},
-		joins: []*joinClause{
-			&joinClause{
+		joins: []*JoinClause{
+			&JoinClause{
 				left:  articles,
 				right: users,
 				on:    Equal(colArticleAuthor, colUserId),
 			},
 		},
-		where: &whereClause{
+		where: &WhereClause{
 			filters: []*Expression{
 				Equal(colUserName, "foo"),
 			},
 		},
-		groupBy: &groupByClause{
+		groupBy: &GroupByClause{
 			cols: []types.Projection{colUserName},
 		},
-		orderBy: &orderByClause{
-			scols: []*sortColumn{colUserName.Desc()},
+		orderBy: &OrderByClause{
+			scols: []*SortColumn{colUserName.Desc()},
 		},
-		limit: &limitClause{limit: 10},
+		limit: &LimitClause{limit: 10},
 	}
 
 	tests := []struct {
 		name    string
-		scanner *sqlScanner
-		s       *selectStatement
+		scanner types.Scanner
+		s       *SelectStatement
 		qs      string
 		qargs   []interface{}
 	}{
@@ -62,12 +63,11 @@ func TestFormatOptions(t *testing.T) {
 		},
 		{
 			name: "newline clause separator ",
-			scanner: &sqlScanner{
-				dialect: types.DIALECT_MYSQL,
-				format: &types.FormatOptions{
+			scanner: scanner.New(types.DIALECT_MYSQL).WithFormatOptions(
+				&types.FormatOptions{
 					SeparateClauseWith: "\n",
 				},
-			},
+			),
 			s: stmt,
 			qs: `SELECT articles.id, users.name AS author
 FROM articles
@@ -80,13 +80,12 @@ LIMIT ?`,
 		},
 		{
 			name: "newline clause separator with prefix newline",
-			scanner: &sqlScanner{
-				dialect: types.DIALECT_MYSQL,
-				format: &types.FormatOptions{
+			scanner: scanner.New(types.DIALECT_MYSQL).WithFormatOptions(
+				&types.FormatOptions{
 					SeparateClauseWith: "\n",
 					PrefixWith:         "\n",
 				},
-			},
+			),
 			s: stmt,
 			qs: `
 SELECT articles.id, users.name AS author
@@ -100,13 +99,13 @@ LIMIT ?`,
 		},
 	}
 	for _, test := range tests {
-		scanner := test.scanner
-		if scanner == nil {
-			scanner = defaultScanner
+		sc := test.scanner
+		if sc == nil {
+			sc = scanner.DefaultScanner
 		}
 		sel := &SelectQuery{
 			sel:     test.s,
-			scanner: scanner,
+			scanner: sc,
 		}
 		qs, qargs := sel.StringArgs()
 		assert.Equal(qs, test.qs)

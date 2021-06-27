@@ -10,16 +10,16 @@ import (
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
-type sortColumn struct {
+type SortColumn struct {
 	p    types.Projection
 	desc bool
 }
 
-func (sc *sortColumn) ArgCount() int {
+func (sc *SortColumn) ArgCount() int {
 	return sc.p.ArgCount()
 }
 
-func (sc *sortColumn) Size(scanner types.Scanner) int {
+func (sc *SortColumn) Size(scanner types.Scanner) int {
 	reset := sc.p.DisableAliasScan()
 	defer reset()
 	size := sc.p.Size(scanner)
@@ -29,7 +29,7 @@ func (sc *sortColumn) Size(scanner types.Scanner) int {
 	return size
 }
 
-func (sc *sortColumn) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
+func (sc *SortColumn) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	reset := sc.p.DisableAliasScan()
 	defer reset()
 	bw := 0
@@ -40,16 +40,16 @@ func (sc *sortColumn) Scan(scanner types.Scanner, b []byte, args []interface{}, 
 	return bw
 }
 
-type orderByClause struct {
-	scols []*sortColumn
+type OrderByClause struct {
+	scols []*SortColumn
 }
 
-func (ob *orderByClause) ArgCount() int {
+func (ob *OrderByClause) ArgCount() int {
 	argc := 0
 	return argc
 }
 
-func (ob *orderByClause) Size(scanner types.Scanner) int {
+func (ob *OrderByClause) Size(scanner types.Scanner) int {
 	size := 0
 	size += len(scanner.FormatOptions().SeparateClauseWith)
 	size += len(grammar.Symbols[grammar.SYM_ORDER_BY])
@@ -60,7 +60,7 @@ func (ob *orderByClause) Size(scanner types.Scanner) int {
 	return size + (len(grammar.Symbols[grammar.SYM_COMMA_WS]) * (ncols - 1)) // the commas...
 }
 
-func (ob *orderByClause) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
+func (ob *OrderByClause) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	bw += copy(b[bw:], scanner.FormatOptions().SeparateClauseWith)
 	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_ORDER_BY])
@@ -74,18 +74,18 @@ func (ob *orderByClause) Scan(scanner types.Scanner, b []byte, args []interface{
 	return bw
 }
 
-func (c *Column) Desc() *sortColumn {
-	return &sortColumn{p: c, desc: true}
+func (c *Column) Desc() *SortColumn {
+	return &SortColumn{p: c, desc: true}
 }
 
-func (c *Column) Asc() *sortColumn {
-	return &sortColumn{p: c}
+func (c *Column) Asc() *SortColumn {
+	return &SortColumn{p: c}
 }
 
-func (f *sqlFunc) Desc() *sortColumn {
-	return &sortColumn{p: f, desc: true}
+func (f *sqlFunc) Desc() *SortColumn {
+	return &SortColumn{p: f, desc: true}
 }
 
-func (f *sqlFunc) Asc() *sortColumn {
-	return &sortColumn{p: f}
+func (f *sqlFunc) Asc() *SortColumn {
+	return &SortColumn{p: f}
 }

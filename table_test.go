@@ -8,6 +8,7 @@ package sqlb
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
@@ -41,11 +42,11 @@ func TestTable(t *testing.T) {
 
 	exp := "users"
 	expLen := len(exp)
-	s := users.Size(defaultScanner)
+	s := users.Size(scanner.DefaultScanner)
 	assert.Equal(expLen, s)
 
 	b := make([]byte, s)
-	written := users.Scan(defaultScanner, b, nil, nil)
+	written := users.Scan(scanner.DefaultScanner, b, nil, nil)
 
 	assert.Equal(written, s)
 	assert.Equal(exp, string(b))
@@ -59,11 +60,11 @@ func TestTableAlias(t *testing.T) {
 
 	exp := "users AS u"
 	expLen := len(exp)
-	s := u.Size(defaultScanner)
+	s := u.Size(scanner.DefaultScanner)
 	assert.Equal(expLen, s)
 
 	b := make([]byte, s)
-	written := u.Scan(defaultScanner, b, nil, nil)
+	written := u.Scan(scanner.DefaultScanner, b, nil, nil)
 
 	assert.Equal(written, s)
 	assert.Equal(exp, string(b))

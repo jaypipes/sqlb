@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/jaypipes/sqlb/pkg/grammar"
+	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
@@ -198,17 +199,15 @@ func TestFunctions(t *testing.T) {
 
 		// Test each SQL dialect output
 		for dialect, qs := range test.qs {
-			scanner := &sqlScanner{
-				dialect: dialect,
-			}
+			sc := scanner.New(dialect)
 			expLen := len(qs)
-			size := test.c.Size(scanner)
-			size += interpolationLength(dialect, argc)
+			size := test.c.Size(sc)
+			size += scanner.InterpolationLength(dialect, argc)
 			assert.Equal(expLen, size)
 
 			b := make([]byte, size)
 			curArg := 0
-			written := test.c.Scan(scanner, b, test.qargs, &curArg)
+			written := test.c.Scan(sc, b, test.qargs, &curArg)
 
 			assert.Equal(written, size)
 			assert.Equal(qs, string(b))

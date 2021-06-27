@@ -7,19 +7,20 @@ package sqlb
 
 import (
 	"github.com/jaypipes/sqlb/pkg/grammar"
+	pkgscanner "github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
 // UPDATE <table> SET <column_value_list>[ WHERE <predicates>]
 
-type updateStatement struct {
+type UpdateStatement struct {
 	table   *Table
 	columns []*Column
 	values  []interface{}
-	where   *whereClause
+	where   *WhereClause
 }
 
-func (s *updateStatement) ArgCount() int {
+func (s *UpdateStatement) ArgCount() int {
 	argc := len(s.values)
 	if s.where != nil {
 		argc += s.where.ArgCount()
@@ -27,7 +28,7 @@ func (s *updateStatement) ArgCount() int {
 	return argc
 }
 
-func (s *updateStatement) Size(scanner types.Scanner) int {
+func (s *UpdateStatement) Size(scanner types.Scanner) int {
 	size := len(grammar.Symbols[grammar.SYM_UPDATE]) + len(s.table.name) + len(grammar.Symbols[grammar.SYM_SET])
 	ncols := len(s.columns)
 	for _, c := range s.columns {
@@ -47,7 +48,7 @@ func (s *updateStatement) Size(scanner types.Scanner) int {
 	return size
 }
 
-func (s *updateStatement) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
+func (s *UpdateStatement) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_UPDATE])
 	// We don't add any table alias when outputting the table identifier
@@ -61,7 +62,7 @@ func (s *updateStatement) Scan(scanner types.Scanner, b []byte, args []interface
 		// statement
 		bw += copy(b[bw:], c.name)
 		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_EQUAL])
-		bw += scanInterpolationMarker(scanner.Dialect(), b[bw:], *curArg)
+		bw += pkgscanner.ScanInterpolationMarker(scanner.Dialect(), b[bw:], *curArg)
 		args[*curArg] = s.values[x]
 		*curArg++
 		if x != (ncols - 1) {
@@ -75,9 +76,9 @@ func (s *updateStatement) Scan(scanner types.Scanner, b []byte, args []interface
 	return bw
 }
 
-func (s *updateStatement) addWhere(e *Expression) *updateStatement {
+func (s *UpdateStatement) AddWhere(e *Expression) *UpdateStatement {
 	if s.where == nil {
-		s.where = &whereClause{filters: make([]*Expression, 0)}
+		s.where = &WhereClause{filters: make([]*Expression, 0)}
 	}
 	s.where.filters = append(s.where.filters, e)
 	return s

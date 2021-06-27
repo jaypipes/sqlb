@@ -4,24 +4,16 @@
 // See the COPYING file in the root project directory for full text.
 //
 
-package sqlb
+package scanner
 
 import (
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
-var defaultFormatOptions = &types.FormatOptions{
-	SeparateClauseWith: " ",
-	PrefixWith:         "",
-}
-
-var defaultScanner = &sqlScanner{
-	dialect: types.DIALECT_MYSQL,
-	format:  defaultFormatOptions,
-}
-
 // The struct that holds information about the formatting and dialect of the
 // output SQL that sqlb writes to the output buffer
+//
+// implements pkg/types.Scanner
 type sqlScanner struct {
 	dialect types.Dialect
 	format  *types.FormatOptions
@@ -44,7 +36,7 @@ func (s *sqlScanner) Size(elements ...types.Element) *types.ElementSizes {
 		argc += el.ArgCount()
 		buflen += el.Size(s)
 	}
-	buflen += interpolationLength(s.dialect, argc)
+	buflen += InterpolationLength(s.dialect, argc)
 	buflen += len(s.format.PrefixWith)
 
 	return &types.ElementSizes{
@@ -57,6 +49,24 @@ func (s *sqlScanner) Dialect() types.Dialect {
 	return s.dialect
 }
 
+func (s *sqlScanner) WithDialect(dialect types.Dialect) types.Scanner {
+	s.dialect = dialect
+	return s
+}
+
 func (s *sqlScanner) FormatOptions() *types.FormatOptions {
 	return s.format
+}
+
+func (s *sqlScanner) WithFormatOptions(opts *types.FormatOptions) types.Scanner {
+	s.format = opts
+	return s
+}
+
+// New returns a scanner for the supplied dialect
+func New(dialect types.Dialect) types.Scanner {
+	return &sqlScanner{
+		dialect: dialect,
+		format:  DefaultFormatOptions,
+	}
 }

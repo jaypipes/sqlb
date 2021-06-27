@@ -22,5 +22,7 @@ type Scanner interface {
 	Scan([]byte, []interface{}, ...Scannable)
 	Size(...Element) *ElementSizes
 	Dialect() Dialect
+	WithDialect(Dialect) Scanner
 	FormatOptions() *FormatOptions
+	WithFormatOptions(*FormatOptions) Scanner
 }

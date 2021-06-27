@@ -7,6 +7,9 @@ package sqlb
 
 import (
 	"errors"
+
+	"github.com/jaypipes/sqlb/pkg/scanner"
+	"github.com/jaypipes/sqlb/pkg/types"
 )
 
 var (
@@ -17,8 +20,8 @@ type DeleteQuery struct {
 	e       error
 	b       []byte
 	args    []interface{}
-	stmt    *deleteStatement
-	scanner *sqlScanner
+	stmt    *DeleteStatement
+	scanner types.Scanner
 }
 
 func (q *DeleteQuery) IsValid() bool {
@@ -54,7 +57,7 @@ func (q *DeleteQuery) StringArgs() (string, []interface{}) {
 }
 
 func (q *DeleteQuery) Where(e *Expression) *DeleteQuery {
-	q.stmt.addWhere(e)
+	q.stmt.AddWhere(e)
 	return q
 }
 
@@ -65,11 +68,8 @@ func Delete(t *Table) *DeleteQuery {
 		return &DeleteQuery{e: ERR_DELETE_NO_TARGET}
 	}
 
-	scanner := &sqlScanner{
-		dialect: t.meta.dialect,
-		format:  defaultFormatOptions,
-	}
-	stmt := &deleteStatement{
+	scanner := scanner.New(t.meta.dialect)
+	stmt := &DeleteStatement{
 		table: t,
 	}
 	return &DeleteQuery{

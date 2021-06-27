@@ -7,6 +7,9 @@ package sqlb
 
 import (
 	"errors"
+
+	"github.com/jaypipes/sqlb/pkg/scanner"
+	"github.com/jaypipes/sqlb/pkg/types"
 )
 
 var (
@@ -19,8 +22,8 @@ type UpdateQuery struct {
 	e       error
 	b       []byte
 	args    []interface{}
-	stmt    *updateStatement
-	scanner *sqlScanner
+	stmt    *UpdateStatement
+	scanner types.Scanner
 }
 
 func (q *UpdateQuery) IsValid() bool {
@@ -56,7 +59,7 @@ func (q *UpdateQuery) StringArgs() (string, []interface{}) {
 }
 
 func (q *UpdateQuery) Where(e *Expression) *UpdateQuery {
-	q.stmt.addWhere(e)
+	q.stmt.AddWhere(e)
 	return q
 }
 
@@ -85,11 +88,8 @@ func Update(t *Table, values map[string]interface{}) *UpdateQuery {
 		x++
 	}
 
-	scanner := &sqlScanner{
-		dialect: t.meta.dialect,
-		format:  defaultFormatOptions,
-	}
-	stmt := &updateStatement{
+	scanner := scanner.New(t.meta.dialect)
+	stmt := &UpdateStatement{
 		table:   t,
 		columns: cols,
 		values:  vals,

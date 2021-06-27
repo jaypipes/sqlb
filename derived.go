@@ -24,27 +24,27 @@ import (
 // The inner SELECT's projections are columns from the users Table or TableDef.
 // However, the derived table's projections are separate and include the alias
 // of the derived table as the selection alias (u instead of users).
-type derivedTable struct {
+type DerivedTable struct {
 	alias string
-	from  *selectStatement
+	from  *SelectStatement
 }
 
-// Return a collection of derivedColumn projections that have been constructed
+// Return a collection of DerivedColumn projections that have been constructed
 // to refer to this derived table and not have any outer alias
-func (dt *derivedTable) getAllDerivedColumns() []types.Projection {
+func (dt *DerivedTable) getAllDerivedColumns() []types.Projection {
 	nprojs := len(dt.from.projs)
 	projs := make([]types.Projection, nprojs)
 	for x := 0; x < nprojs; x++ {
 		p := dt.from.projs[x]
 		switch p.(type) {
 		case *Column:
-			projs[x] = &derivedColumn{dt: dt, c: p.(*Column)}
+			projs[x] = &DerivedColumn{dt: dt, c: p.(*Column)}
 		}
 	}
 	return projs
 }
 
-func (dt *derivedTable) Projections() []types.Projection {
+func (dt *DerivedTable) Projections() []types.Projection {
 	nprojs := len(dt.from.projs)
 	projs := make([]types.Projection, nprojs)
 	for x := 0; x < nprojs; x++ {
@@ -56,18 +56,18 @@ func (dt *derivedTable) Projections() []types.Projection {
 	return projs
 }
 
-func (dt *derivedTable) ArgCount() int {
+func (dt *DerivedTable) ArgCount() int {
 	return dt.from.ArgCount()
 }
 
-func (dt *derivedTable) Size(scanner types.Scanner) int {
+func (dt *DerivedTable) Size(scanner types.Scanner) int {
 	size := dt.from.Size(scanner)
 	size += (len(grammar.Symbols[grammar.SYM_LPAREN]) + len(grammar.Symbols[grammar.SYM_RPAREN]) +
 		len(grammar.Symbols[grammar.SYM_AS]) + len(dt.alias))
 	return size
 }
 
-func (dt *derivedTable) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
+func (dt *DerivedTable) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_LPAREN])
 	bw += dt.from.Scan(scanner, b[bw:], args, curArg)
@@ -77,7 +77,7 @@ func (dt *derivedTable) Scan(scanner types.Scanner, b []byte, args []interface{}
 	return bw
 }
 
-// A derivedColumn is a type of projection that is produced from a derived
+// A DerivedColumn is a type of projection that is produced from a derived
 // table (SELECT in the FROM clause). What makes a derived column unique is
 // that it uses the alias of the underlying column as its name in the outer
 // projection.
@@ -93,8 +93,8 @@ func (dt *derivedTable) Scan(scanner types.Scanner, b []byte, args []interface{}
 //
 // <outer> should contain:
 //
-// &derivedColumn{dt: dt, c: &Column{name: "id", tbl: users}},
-// &derivedColumn{dt: dt, c: &Column{name: "name", tbl: users}}
+// &DerivedColumn{dt: dt, c: &Column{name: "id", tbl: users}},
+// &DerivedColumn{dt: dt, c: &Column{name: "name", tbl: users}}
 //
 // when scanned into <outer>, that should produce:
 //
@@ -112,41 +112,41 @@ func (dt *derivedTable) Scan(scanner types.Scanner, b []byte, args []interface{}
 //
 // <outer> should instead contain:
 //
-// &derivedColumn{dt: dt, c: &Column{alias: "user_id". name: "id", tbl: users}},
-// &derivedColumn{dt: dt, c: &Column{alias: "user_name", name: "name", tbl: users}}
+// &DerivedColumn{dt: dt, c: &Column{alias: "user_id". name: "id", tbl: users}},
+// &DerivedColumn{dt: dt, c: &Column{alias: "user_name", name: "name", tbl: users}}
 //
 // which, when scanned into <outer>, should produce:
 //
 // []byte("u.user_id, u.user_name")
 //
-// Finally, the derivedColumn can itself have an alias, which can result in the
+// Finally, the DerivedColumn can itself have an alias, which can result in the
 // outermost projection looking like so:
 //
 // SELECT u.user_name AS uname FROM (
 //   SELECT users.name AS user_name
 //   FROM users
 // ) AS u
-type derivedColumn struct {
+type DerivedColumn struct {
 	alias string // This is the outermost alias
 	c     *Column
-	dt    *derivedTable
+	dt    *DerivedTable
 }
 
-func (dc *derivedColumn) From() types.Selection {
+func (dc *DerivedColumn) From() types.Selection {
 	return dc.dt
 }
 
-func (dc *derivedColumn) DisableAliasScan() func() {
+func (dc *DerivedColumn) DisableAliasScan() func() {
 	origAlias := dc.alias
 	dc.alias = ""
 	return func() { dc.alias = origAlias }
 }
 
-func (dc *derivedColumn) ArgCount() int {
+func (dc *DerivedColumn) ArgCount() int {
 	return 0
 }
 
-func (dc *derivedColumn) Size(scanner types.Scanner) int {
+func (dc *DerivedColumn) Size(scanner types.Scanner) int {
 	size := len(dc.dt.alias)
 	size += len(grammar.Symbols[grammar.SYM_PERIOD])
 	if dc.c.alias != "" {
@@ -160,7 +160,7 @@ func (dc *derivedColumn) Size(scanner types.Scanner) int {
 	return size
 }
 
-func (dc *derivedColumn) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
+func (dc *DerivedColumn) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	bw += copy(b[bw:], dc.dt.alias)
 	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_PERIOD])

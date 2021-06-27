@@ -8,6 +8,7 @@ package sqlb
 import (
 	"errors"
 
+	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
@@ -78,10 +79,7 @@ func Insert(t *Table, values map[string]interface{}) *InsertQuery {
 		x++
 	}
 
-	scanner := &sqlScanner{
-		dialect: t.meta.dialect,
-		format:  defaultFormatOptions,
-	}
+	scanner := scanner.New(t.meta.dialect)
 	stmt := &insertStatement{
 		table:   t,
 		columns: cols,
