@@ -3,7 +3,8 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
-package sqlb
+
+package ast
 
 import (
 	"github.com/jaypipes/sqlb/pkg/grammar"
@@ -12,7 +13,7 @@ import (
 )
 
 // Value is a concrete struct wrapper around a constant that implements the
-// scannable interface. Typically, users won't directly construct value
+// Scannable interface. Typically, users won't directly construct value
 // structs but instead helper functions like sqlb.Equal() will construct a
 // value and bind it to the containing element.
 type Value struct {
@@ -68,4 +69,12 @@ func (v *Value) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg
 		bw += copy(b[bw:], v.alias)
 	}
 	return bw
+}
+
+// NewValue returns an AST node representing a Value
+func NewValue(sel types.Selection, val interface{}) *Value {
+	return &Value{
+		sel: sel,
+		val: val,
+	}
 }

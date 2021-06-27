@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
@@ -349,7 +350,7 @@ func Select(items ...interface{}) *SelectQuery {
 			// Everything else, make it a literal value projection, so, for
 			// instance, a user can do SELECT 1, which is, technically
 			// valid SQL.
-			p := &Value{val: item}
+			p := ast.NewValue(nil, item)
 			addToProjections(sel, p)
 		}
 	}

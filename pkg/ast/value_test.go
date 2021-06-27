@@ -3,11 +3,13 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
-package sqlb
+
+package ast_test
 
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/stretchr/testify/assert"
 )
@@ -15,7 +17,7 @@ import (
 func TestValue(t *testing.T) {
 	assert := assert.New(t)
 
-	v := &Value{val: "foo"}
+	v := ast.NewValue(nil, "foo")
 
 	s := v.Size(scanner.DefaultScanner)
 	// Due to dialect handling, we can't include interpolation markers in the

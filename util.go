@@ -5,7 +5,10 @@
 //
 package sqlb
 
-import "github.com/jaypipes/sqlb/pkg/types"
+import (
+	"github.com/jaypipes/sqlb/pkg/ast"
+	"github.com/jaypipes/sqlb/pkg/types"
+)
 
 // Given a slice of interface{} variables, returns a slice of element members.
 // If any of the interface{} variables are *not* of type element already, we
@@ -17,7 +20,7 @@ func toElements(vars ...interface{}) []types.Element {
 		case types.Element:
 			els[x] = v.(types.Element)
 		default:
-			els[x] = &Value{val: v}
+			els[x] = ast.NewValue(nil, v)
 		}
 	}
 	return els
@@ -30,7 +33,7 @@ func toElements(vars ...interface{}) []types.Element {
 func toValueList(vars ...interface{}) *List {
 	els := make([]types.Element, len(vars))
 	for x, v := range vars {
-		els[x] = &Value{val: v}
+		els[x] = ast.NewValue(nil, v)
 	}
 	return &List{elements: els}
 }
