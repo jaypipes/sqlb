@@ -3,11 +3,13 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
-package sqlb
+
+package ast_test
 
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb"
 	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
@@ -15,7 +17,7 @@ import (
 )
 
 type JoinClauseTest struct {
-	c     *JoinClause
+	c     *ast.JoinClause
 	qs    string
 	qargs []interface{}
 }
@@ -24,8 +26,8 @@ func TestJoinClause(t *testing.T) {
 	assert := assert.New(t)
 
 	sc := testutil.Schema()
-	users := T(sc, "users")
-	articles := T(sc, "articles")
+	users := sqlb.T(sc, "users")
+	articles := sqlb.T(sc, "articles")
 	colUserId := users.C("id")
 	colArticleAuthor := articles.C("author")
 
@@ -35,73 +37,58 @@ func TestJoinClause(t *testing.T) {
 	tests := []JoinClauseTest{
 		// articles to users table defs
 		JoinClauseTest{
-			c:  Join(articles, users, auCond),
+			c:  ast.Join(articles, users, auCond),
 			qs: " JOIN users ON articles.author = users.id",
 		},
 		// users to articles table defs
 		JoinClauseTest{
-			c:  Join(users, articles, uaCond),
+			c:  ast.Join(users, articles, uaCond),
 			qs: " JOIN articles ON users.id = articles.author",
 		},
 		// articles to users tables
 		JoinClauseTest{
-			c:  Join(articles, users, auCond),
+			c:  ast.Join(articles, users, auCond),
 			qs: " JOIN users ON articles.author = users.id",
 		},
 		// join an aliased table to non-aliased table
 		JoinClauseTest{
-			c: &JoinClause{
-				left:  articles.As("a"),
-				right: users,
-				on:    ast.Equal(articles.As("a").C("author"), colUserId),
-			},
+			c: ast.Join(
+				articles.As("a"),
+				users,
+				ast.Equal(articles.As("a").C("author"), colUserId),
+			),
 			qs: " JOIN users ON a.author = users.id",
 		},
 		// join a non-aliased table to aliased table
 		JoinClauseTest{
-			c: &JoinClause{
-				left:  articles,
-				right: users.As("u"),
-				on:    ast.Equal(colArticleAuthor, users.As("u").C("id")),
-			},
+			c: ast.Join(
+				articles,
+				users.As("u"),
+				ast.Equal(colArticleAuthor, users.As("u").C("id")),
+			),
 			qs: " JOIN users AS u ON articles.author = u.id",
 		},
 		// aliased projections should not include "AS alias" in output
 		JoinClauseTest{
-			c: &JoinClause{
-				left:  articles,
-				right: users,
-				on:    ast.Equal(colArticleAuthor, colUserId.As("user_id")),
-			},
+			c: ast.Join(
+				articles,
+				users,
+				ast.Equal(colArticleAuthor, colUserId.As("user_id")),
+			),
 			qs: " JOIN users ON articles.author = users.id",
-		},
-		// simple outer join manual construction
-		JoinClauseTest{
-			c: &JoinClause{
-				JoinType: JOIN_OUTER,
-				left:     articles,
-				right:    users,
-				on:       ast.Equal(colArticleAuthor, colUserId),
-			},
-			qs: " LEFT JOIN users ON articles.author = users.id",
 		},
 		// OuterJoin() function
 		JoinClauseTest{
-			c:  OuterJoin(articles, users, ast.Equal(colArticleAuthor, colUserId)),
+			c: ast.OuterJoin(
+				articles,
+				users,
+				ast.Equal(colArticleAuthor, colUserId),
+			),
 			qs: " LEFT JOIN users ON articles.author = users.id",
-		},
-		// cross join manual construction
-		JoinClauseTest{
-			c: &JoinClause{
-				JoinType: JOIN_CROSS,
-				left:     articles,
-				right:    users,
-			},
-			qs: " CROSS JOIN users",
 		},
 		// CrossJoin() function
 		JoinClauseTest{
-			c:  CrossJoin(articles, users),
+			c:  ast.CrossJoin(articles, users),
 			qs: " CROSS JOIN users",
 		},
 	}

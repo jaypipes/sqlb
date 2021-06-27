@@ -14,7 +14,7 @@ import (
 type SelectStatement struct {
 	projs      []types.Projection
 	selections []types.Selection
-	joins      []*JoinClause
+	joins      []*ast.JoinClause
 	where      *ast.WhereClause
 	groupBy    *GroupByClause
 	having     *HavingClause
@@ -130,7 +130,7 @@ func (s *SelectStatement) Scan(scanner types.Scanner, b []byte, args []interface
 	return bw
 }
 
-func (s *SelectStatement) AddJoin(jc *JoinClause) *SelectStatement {
+func (s *SelectStatement) AddJoin(jc *ast.JoinClause) *SelectStatement {
 	s.joins = append(s.joins, jc)
 	return s
 }
@@ -211,7 +211,7 @@ func (s *SelectStatement) SetLimit(limit int) *SelectStatement {
 	return s
 }
 
-func containsJoin(s *SelectStatement, j *JoinClause) bool {
+func containsJoin(s *SelectStatement, j *ast.JoinClause) bool {
 	for _, sj := range s.joins {
 		if j == sj {
 			return true

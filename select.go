@@ -141,7 +141,7 @@ func (q *SelectQuery) Join(right interface{}, on *ast.Expression) *SelectQuery {
 	case types.Selection:
 		rightSel = right.(types.Selection)
 	}
-	return q.doJoin(JOIN_INNER, rightSel, on)
+	return q.doJoin(types.JOIN_INNER, rightSel, on)
 }
 
 func (q *SelectQuery) OuterJoin(right interface{}, on *ast.Expression) *SelectQuery {
@@ -153,7 +153,7 @@ func (q *SelectQuery) OuterJoin(right interface{}, on *ast.Expression) *SelectQu
 	case types.Selection:
 		rightSel = right.(types.Selection)
 	}
-	return q.doJoin(JOIN_OUTER, rightSel, on)
+	return q.doJoin(types.JOIN_OUTER, rightSel, on)
 }
 
 // Join to a supplied selection with the supplied ON expression. If the SelectQuery
@@ -161,7 +161,7 @@ func (q *SelectQuery) OuterJoin(right interface{}, on *ast.Expression) *SelectQu
 // not reference any selection that is found in the SelectQuery's SelectStatement, then
 // SelectQuery.e will be set to an error.
 func (q *SelectQuery) doJoin(
-	jt JoinType,
+	jt types.JoinType,
 	right types.Selection,
 	on *ast.Expression,
 ) *SelectQuery {
@@ -196,10 +196,10 @@ func (q *SelectQuery) doJoin(
 				// Now search through the SelectQuery's JoinClauses, looking
 				// for a selection that is the left side of the ON expression
 				for _, j := range q.sel.joins {
-					if j.left == exprSel {
-						left = j.left
-					} else if j.right == exprSel {
-						left = j.right
+					if j.Left() == exprSel {
+						left = j.Left()
+					} else if j.Right() == exprSel {
+						left = j.Right()
 					}
 				}
 				if left != nil {
@@ -223,10 +223,10 @@ func (q *SelectQuery) doJoin(
 					// Now search through the SelectQuery's JoinClauses, looking
 					// for a selection that is the left side of the ON expression
 					for _, j := range q.sel.joins {
-						if j.left == referrent {
-							left = j.left
-						} else if j.right == referrent {
-							left = j.right
+						if j.Left() == referrent {
+							left = j.Left()
+						} else if j.Right() == referrent {
+							left = j.Right()
 						}
 					}
 					if left != nil {
@@ -247,12 +247,7 @@ func (q *SelectQuery) doJoin(
 		q.e = ERR_JOIN_INVALID_UNKNOWN_TARGET
 		return q
 	}
-	jc := &JoinClause{
-		JoinType: jt,
-		left:     left,
-		right:    right,
-		on:       on,
-	}
+	jc := ast.NewJoinClause(jt, left, right, on)
 	q.sel.AddJoin(jc)
 
 	// Make sure we remove the right-hand selection from the SelectStatement's

@@ -29,12 +29,12 @@ func TestFormatOptions(t *testing.T) {
 	stmt := &SelectStatement{
 		selections: []types.Selection{articles},
 		projs:      []types.Projection{colArticleId, colUserName.As("author")},
-		joins: []*JoinClause{
-			&JoinClause{
-				left:  articles,
-				right: users,
-				on:    ast.Equal(colArticleAuthor, colUserId),
-			},
+		joins: []*ast.JoinClause{
+			ast.Join(
+				articles,
+				users,
+				ast.Equal(colArticleAuthor, colUserId),
+			),
 		},
 		where: ast.NewWhereClause(
 			ast.Equal(colUserName, "foo"),

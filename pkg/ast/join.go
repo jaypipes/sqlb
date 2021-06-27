@@ -3,27 +3,27 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
-package sqlb
+
+package ast
 
 import (
-	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
-type JoinType int
-
-const (
-	JOIN_INNER JoinType = iota
-	JOIN_OUTER
-	JOIN_CROSS
-)
-
 type JoinClause struct {
-	JoinType JoinType
+	joinType types.JoinType
 	left     types.Selection
 	right    types.Selection
-	on       *ast.Expression
+	on       *Expression
+}
+
+func (j *JoinClause) Left() types.Selection {
+	return j.left
+}
+
+func (j *JoinClause) Right() types.Selection {
+	return j.right
 }
 
 func (j *JoinClause) ArgCount() int {
@@ -37,12 +37,12 @@ func (j *JoinClause) ArgCount() int {
 func (j *JoinClause) Size(scanner types.Scanner) int {
 	size := 0
 	size += len(scanner.FormatOptions().SeparateClauseWith)
-	switch j.JoinType {
-	case JOIN_INNER:
+	switch j.joinType {
+	case types.JOIN_INNER:
 		size += len(grammar.Symbols[grammar.SYM_JOIN])
-	case JOIN_OUTER:
+	case types.JOIN_OUTER:
 		size += len(grammar.Symbols[grammar.SYM_LEFT_JOIN])
-	case JOIN_CROSS:
+	case types.JOIN_CROSS:
 		size += len(grammar.Symbols[grammar.SYM_CROSS_JOIN])
 		// CROSS JOIN has no ON condition so just short-circuit here
 		return size + j.right.Size(scanner)
@@ -56,12 +56,12 @@ func (j *JoinClause) Size(scanner types.Scanner) int {
 func (j *JoinClause) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	bw += copy(b[bw:], scanner.FormatOptions().SeparateClauseWith)
-	switch j.JoinType {
-	case JOIN_INNER:
+	switch j.joinType {
+	case types.JOIN_INNER:
 		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_JOIN])
-	case JOIN_OUTER:
+	case types.JOIN_OUTER:
 		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_LEFT_JOIN])
-	case JOIN_CROSS:
+	case types.JOIN_CROSS:
 		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_CROSS_JOIN])
 	}
 	bw += j.right.Scan(scanner, b[bw:], args, curArg)
@@ -72,13 +72,18 @@ func (j *JoinClause) Scan(scanner types.Scanner, b []byte, args []interface{}, c
 	return bw
 }
 
-func Join(left types.Selection, right types.Selection, on *ast.Expression) *JoinClause {
-	return &JoinClause{left: left, right: right, on: on}
+func Join(left types.Selection, right types.Selection, on *Expression) *JoinClause {
+	return &JoinClause{
+		joinType: types.JOIN_INNER,
+		left:     left,
+		right:    right,
+		on:       on,
+	}
 }
 
-func OuterJoin(left types.Selection, right types.Selection, on *ast.Expression) *JoinClause {
+func OuterJoin(left types.Selection, right types.Selection, on *Expression) *JoinClause {
 	return &JoinClause{
-		JoinType: JOIN_OUTER,
+		joinType: types.JOIN_OUTER,
 		left:     left,
 		right:    right,
 		on:       on,
@@ -86,5 +91,26 @@ func OuterJoin(left types.Selection, right types.Selection, on *ast.Expression) 
 }
 
 func CrossJoin(left types.Selection, right types.Selection) *JoinClause {
-	return &JoinClause{JoinType: JOIN_CROSS, left: left, right: right}
+	return &JoinClause{
+		joinType: types.JOIN_CROSS,
+		left:     left,
+		right:    right,
+	}
+}
+
+func NewJoinClause(
+	jt types.JoinType,
+	left types.Selection,
+	right types.Selection,
+	on *Expression,
+) *JoinClause {
+	switch jt {
+	case types.JOIN_INNER:
+		return Join(left, right, on)
+	case types.JOIN_OUTER:
+		return OuterJoin(left, right, on)
+	case types.JOIN_CROSS:
+		return CrossJoin(left, right)
+	}
+	return nil
 }

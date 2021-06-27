@@ -157,12 +157,12 @@ func TestSelectClause(t *testing.T) {
 			s: &SelectStatement{
 				selections: []types.Selection{articles},
 				projs:      []types.Projection{colArticleId, colUserName.As("author")},
-				joins: []*JoinClause{
-					&JoinClause{
-						left:  articles,
-						right: users,
-						on:    ast.Equal(colArticleAuthor, colUserId),
-					},
+				joins: []*ast.JoinClause{
+					ast.Join(
+						articles,
+						users,
+						ast.Equal(colArticleAuthor, colUserId),
+					),
 				},
 			},
 			qs: "SELECT articles.id, users.name AS author FROM articles JOIN users ON articles.author = users.id",
@@ -172,17 +172,17 @@ func TestSelectClause(t *testing.T) {
 			s: &SelectStatement{
 				selections: []types.Selection{articles},
 				projs:      []types.Projection{colArticleId, colUserName.As("author"), colArticleStateName.As("state")},
-				joins: []*JoinClause{
-					&JoinClause{
-						left:  articles,
-						right: users,
-						on:    ast.Equal(colArticleAuthor, colUserId),
-					},
-					&JoinClause{
-						left:  articles,
-						right: article_states,
-						on:    ast.Equal(colArticleState, colArticleStateId),
-					},
+				joins: []*ast.JoinClause{
+					ast.Join(
+						articles,
+						users,
+						ast.Equal(colArticleAuthor, colUserId),
+					),
+					ast.Join(
+						articles,
+						article_states,
+						ast.Equal(colArticleState, colArticleStateId),
+					),
 				},
 			},
 			qs: "SELECT articles.id, users.name AS author, article_states.name AS state FROM articles JOIN users ON articles.author = users.id JOIN article_states ON articles.state = article_states.id",
