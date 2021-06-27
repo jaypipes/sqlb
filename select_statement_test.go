@@ -30,13 +30,13 @@ func TestSelectClause(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		s     *selectStatement
+		s     *SelectStatement
 		qs    string
 		qargs []interface{}
 	}{
 		{
 			name: "A literal value",
-			s: &selectStatement{
+			s: &SelectStatement{
 				projs: []types.Projection{&value{val: 1}},
 			},
 			qs:    "SELECT ?",
@@ -44,7 +44,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "A literal value aliased",
-			s: &selectStatement{
+			s: &SelectStatement{
 				projs: []types.Projection{
 					&value{alias: "foo", val: 1},
 				},
@@ -54,7 +54,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "Two literal values",
-			s: &selectStatement{
+			s: &SelectStatement{
 				projs: []types.Projection{
 					&value{val: 1},
 					&value{val: 1},
@@ -65,7 +65,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "Table and column",
-			s: &selectStatement{
+			s: &SelectStatement{
 				selections: []types.Selection{users},
 				projs:      []types.Projection{colUserName},
 			},
@@ -73,7 +73,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "aliased Table and Column",
-			s: &selectStatement{
+			s: &SelectStatement{
 				selections: []types.Selection{users.As("u")},
 				projs: []types.Projection{
 					users.As("u").C("name"),
@@ -83,7 +83,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "Table and multiple Column",
-			s: &selectStatement{
+			s: &SelectStatement{
 				selections: []types.Selection{users},
 				projs:      []types.Projection{colUserId, colUserName},
 			},
@@ -91,10 +91,10 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "Simple WHERE",
-			s: &selectStatement{
+			s: &SelectStatement{
 				selections: []types.Selection{users},
 				projs:      []types.Projection{colUserName},
-				where: &whereClause{
+				where: &WhereClause{
 					filters: []*Expression{
 						Equal(colUserName, "foo"),
 					},
@@ -105,31 +105,31 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "Simple LIMIT",
-			s: &selectStatement{
+			s: &SelectStatement{
 				selections: []types.Selection{users},
 				projs:      []types.Projection{colUserName},
-				limit:      &limitClause{limit: 10},
+				limit:      &LimitClause{limit: 10},
 			},
 			qs:    "SELECT users.name FROM users LIMIT ?",
 			qargs: []interface{}{10},
 		},
 		{
 			name: "Simple ORDER BY",
-			s: &selectStatement{
+			s: &SelectStatement{
 				selections: []types.Selection{users},
 				projs:      []types.Projection{colUserName},
-				orderBy: &orderByClause{
-					scols: []*sortColumn{colUserName.Desc()},
+				orderBy: &OrderByClause{
+					scols: []*SortColumn{colUserName.Desc()},
 				},
 			},
 			qs: "SELECT users.name FROM users ORDER BY users.name DESC",
 		},
 		{
 			name: "Simple GROUP BY",
-			s: &selectStatement{
+			s: &SelectStatement{
 				selections: []types.Selection{users},
 				projs:      []types.Projection{colUserName},
-				groupBy: &groupByClause{
+				groupBy: &GroupByClause{
 					cols: []types.Projection{colUserName},
 				},
 			},
@@ -137,27 +137,27 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "GROUP BY, ORDER BY and LIMIT",
-			s: &selectStatement{
+			s: &SelectStatement{
 				selections: []types.Selection{users},
 				projs:      []types.Projection{colUserName},
-				groupBy: &groupByClause{
+				groupBy: &GroupByClause{
 					cols: []types.Projection{colUserName},
 				},
-				orderBy: &orderByClause{
-					scols: []*sortColumn{colUserName.Desc()},
+				orderBy: &OrderByClause{
+					scols: []*SortColumn{colUserName.Desc()},
 				},
-				limit: &limitClause{limit: 10},
+				limit: &LimitClause{limit: 10},
 			},
 			qs:    "SELECT users.name FROM users GROUP BY users.name ORDER BY users.name DESC LIMIT ?",
 			qargs: []interface{}{10},
 		},
 		{
 			name: "Single JOIN",
-			s: &selectStatement{
+			s: &SelectStatement{
 				selections: []types.Selection{articles},
 				projs:      []types.Projection{colArticleId, colUserName.As("author")},
-				joins: []*joinClause{
-					&joinClause{
+				joins: []*JoinClause{
+					&JoinClause{
 						left:  articles,
 						right: users,
 						on:    Equal(colArticleAuthor, colUserId),
@@ -168,16 +168,16 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "Multiple JOINs",
-			s: &selectStatement{
+			s: &SelectStatement{
 				selections: []types.Selection{articles},
 				projs:      []types.Projection{colArticleId, colUserName.As("author"), colArticleStateName.As("state")},
-				joins: []*joinClause{
-					&joinClause{
+				joins: []*JoinClause{
+					&JoinClause{
 						left:  articles,
 						right: users,
 						on:    Equal(colArticleAuthor, colUserId),
 					},
-					&joinClause{
+					&JoinClause{
 						left:  articles,
 						right: article_states,
 						on:    Equal(colArticleState, colArticleStateId),
@@ -188,7 +188,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "COUNT(*) on a table",
-			s: &selectStatement{
+			s: &SelectStatement{
 				selections: []types.Selection{users},
 				projs:      []types.Projection{Count(users)},
 			},

@@ -13,12 +13,12 @@ import (
 
 // DELETE FROM <table> WHERE <predicates>
 
-type deleteStatement struct {
+type DeleteStatement struct {
 	table *Table
-	where *whereClause
+	where *WhereClause
 }
 
-func (s *deleteStatement) ArgCount() int {
+func (s *DeleteStatement) ArgCount() int {
 	argc := 0
 	if s.where != nil {
 		argc += s.where.ArgCount()
@@ -26,7 +26,7 @@ func (s *deleteStatement) ArgCount() int {
 	return argc
 }
 
-func (s *deleteStatement) Size(scanner types.Scanner) int {
+func (s *DeleteStatement) Size(scanner types.Scanner) int {
 	size := len(grammar.Symbols[grammar.SYM_DELETE]) + len(s.table.name)
 	if s.where != nil {
 		size += s.where.Size(scanner)
@@ -34,7 +34,7 @@ func (s *deleteStatement) Size(scanner types.Scanner) int {
 	return size
 }
 
-func (s *deleteStatement) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
+func (s *DeleteStatement) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_DELETE])
 	// We don't add any table alias when outputting the table identifier
@@ -45,9 +45,9 @@ func (s *deleteStatement) Scan(scanner types.Scanner, b []byte, args []interface
 	return bw
 }
 
-func (s *deleteStatement) addWhere(e *Expression) *deleteStatement {
+func (s *DeleteStatement) AddWhere(e *Expression) *DeleteStatement {
 	if s.where == nil {
-		s.where = &whereClause{filters: make([]*Expression, 0)}
+		s.where = &WhereClause{filters: make([]*Expression, 0)}
 	}
 	s.where.filters = append(s.where.filters, e)
 	return s

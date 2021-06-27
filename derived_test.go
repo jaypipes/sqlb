@@ -13,7 +13,7 @@ import (
 )
 
 type derivedTest struct {
-	c     *derivedTable
+	c     *DerivedTable
 	qs    string
 	qargs []interface{}
 }
@@ -28,8 +28,8 @@ func TestDerived(t *testing.T) {
 	tests := []derivedTest{
 		// Simple one-column sub-SELECT
 		derivedTest{
-			c: &derivedTable{
-				from: &selectStatement{
+			c: &DerivedTable{
+				from: &SelectStatement{
 					projs: []types.Projection{
 						colUserName,
 					},

@@ -21,7 +21,7 @@ type SelectQuery struct {
 	e       error
 	b       []byte
 	args    []interface{}
-	sel     *selectStatement
+	sel     *SelectStatement
 	scanner *sqlScanner
 }
 
@@ -72,7 +72,7 @@ func (q *SelectQuery) Having(e *Expression) *SelectQuery {
 	return q
 }
 
-func (q *SelectQuery) OrderBy(scols ...*sortColumn) *SelectQuery {
+func (q *SelectQuery) OrderBy(scols ...*SortColumn) *SelectQuery {
 	q.sel.addOrderBy(scols...)
 	return q
 }
@@ -90,24 +90,24 @@ func (q *SelectQuery) LimitWithOffset(limit int, offset int) *SelectQuery {
 // Returns a pointer to a new SelectQuery that has aliased its inner selection
 // to the supplied name
 func (q *SelectQuery) As(alias string) *SelectQuery {
-	dt := &derivedTable{
+	dt := &DerivedTable{
 		alias: alias,
 		from:  q.sel,
 	}
-	derivedSel := &selectStatement{
+	derivedSel := &SelectStatement{
 		projs:      dt.getAllDerivedColumns(),
 		selections: []types.Selection{dt},
 	}
 	return &SelectQuery{sel: derivedSel, scanner: q.scanner}
 }
 
-// Returns the projection of the underlying selectStatement that matches the name
+// Returns the projection of the underlying SelectStatement that matches the name
 // provided
 func (q *SelectQuery) C(name string) types.Projection {
 	for _, p := range q.sel.projs {
 		switch p.(type) {
-		case *derivedColumn:
-			dc := p.(*derivedColumn)
+		case *DerivedColumn:
+			dc := p.(*DerivedColumn)
 			if dc.alias != "" && dc.alias == name {
 				return dc
 			} else if dc.c.name == name {
@@ -155,11 +155,11 @@ func (q *SelectQuery) OuterJoin(right interface{}, on *Expression) *SelectQuery 
 }
 
 // Join to a supplied selection with the supplied ON expression. If the SelectQuery
-// does not yet contain a selectStatement OR if the supplied ON expression does
-// not reference any selection that is found in the SelectQuery's selectStatement, then
+// does not yet contain a SelectStatement OR if the supplied ON expression does
+// not reference any selection that is found in the SelectQuery's SelectStatement, then
 // SelectQuery.e will be set to an error.
 func (q *SelectQuery) doJoin(
-	jt joinType,
+	jt JoinType,
 	right types.Selection,
 	on *Expression,
 ) *SelectQuery {
@@ -180,7 +180,7 @@ func (q *SelectQuery) doJoin(
 				if exprSel == right {
 					continue
 				}
-				// Search through the SelectQuery's primary selectStatement, looking for
+				// Search through the SelectQuery's primary SelectStatement, looking for
 				// the selection that is referred to be the ON expression.
 				for _, sel := range q.sel.selections {
 					if sel == exprSel {
@@ -191,7 +191,7 @@ func (q *SelectQuery) doJoin(
 				if left != nil {
 					break
 				}
-				// Now search through the SelectQuery's joinClauses, looking
+				// Now search through the SelectQuery's JoinClauses, looking
 				// for a selection that is the left side of the ON expression
 				for _, j := range q.sel.joins {
 					if j.left == exprSel {
@@ -218,7 +218,7 @@ func (q *SelectQuery) doJoin(
 					if left != nil {
 						break
 					}
-					// Now search through the SelectQuery's joinClauses, looking
+					// Now search through the SelectQuery's JoinClauses, looking
 					// for a selection that is the left side of the ON expression
 					for _, j := range q.sel.joins {
 						if j.left == referrent {
@@ -238,22 +238,22 @@ func (q *SelectQuery) doJoin(
 		}
 	} else {
 		// TODO(jaypipes): Handle CROSS JOIN by joining the supplied right
-		// against a derivedTable constructed from the existing SelectQuery.sel
-		// selectStatement
+		// against a DerivedTable constructed from the existing SelectQuery.sel
+		// SelectStatement
 	}
 	if left == nil {
 		q.e = ERR_JOIN_INVALID_UNKNOWN_TARGET
 		return q
 	}
-	jc := &joinClause{
-		joinType: jt,
+	jc := &JoinClause{
+		JoinType: jt,
 		left:     left,
 		right:    right,
 		on:       on,
 	}
 	q.sel.addJoin(jc)
 
-	// Make sure we remove the right-hand selection from the selectStatement's
+	// Make sure we remove the right-hand selection from the SelectStatement's
 	// selections collection, since it's in a JOIN clause.
 	q.sel.removeSelection(right)
 	return q
@@ -267,7 +267,7 @@ func Select(items ...interface{}) *SelectQuery {
 	sq := &SelectQuery{
 		scanner: scanner,
 	}
-	sel := &selectStatement{
+	sel := &SelectStatement{
 		projs: make([]types.Projection, 0),
 	}
 
@@ -276,22 +276,22 @@ func Select(items ...interface{}) *SelectQuery {
 
 	// For each scannable item we've received in the call, check what concrete
 	// type they are and, depending on which type they are, either add them to
-	// the returned selectStatement's projections list or query the underlying
+	// the returned SelectStatement's projections list or query the underlying
 	// table metadata to generate a list of all columns in that table.
 	for _, item := range items {
 		switch item.(type) {
 		case *SelectQuery:
 			// Project all columns from the subquery to the outer
-			// selectStatement
+			// SelectStatement
 			isq := item.(*SelectQuery)
 			sq.scanner = isq.scanner
 			innerSelClause := isq.sel
 			if len(innerSelClause.selections) == 1 {
 				innerSel := innerSelClause.selections[0]
 				switch innerSel.(type) {
-				case *derivedTable:
+				case *DerivedTable:
 					// If the inner select clause contains a single
-					// selection and that selection is a derivedTable,
+					// selection and that selection is a DerivedTable,
 					// that means we were called like so:
 					//
 					//      Select(Select(...).As("alias"))
@@ -299,11 +299,11 @@ func Select(items ...interface{}) *SelectQuery {
 					// This means that we do *not* need to generate a
 					// derived table but instead simply grab the
 					// existing derived table as the single selection
-					// for the outer selectStatement and project all the
+					// for the outer SelectStatement and project all the
 					// derived table's projections out into the outer
-					// selectStatement.
+					// SelectStatement.
 					selectionMap[innerSel] = true
-					dt := innerSel.(*derivedTable)
+					dt := innerSel.(*DerivedTable)
 					for _, p := range dt.getAllDerivedColumns() {
 						addToProjections(sel, p)
 					}
@@ -315,7 +315,7 @@ func Select(items ...interface{}) *SelectQuery {
 					// So we need to construct a derived table manually
 					// and name it derivedN.
 					derivedName := fmt.Sprintf("derived%d", nDerived)
-					dt := &derivedTable{
+					dt := &DerivedTable{
 						alias: derivedName,
 						from:  innerSelClause,
 					}

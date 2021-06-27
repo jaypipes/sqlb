@@ -15,7 +15,7 @@ import (
 func TestLimitClause(t *testing.T) {
 	assert := assert.New(t)
 
-	lc := &limitClause{
+	lc := &LimitClause{
 		limit: 20,
 	}
 
@@ -43,7 +43,7 @@ func TestLimitClause(t *testing.T) {
 func TestLimitClauseWithOffset(t *testing.T) {
 	assert := assert.New(t)
 
-	lc := &limitClause{
+	lc := &LimitClause{
 		limit: 20,
 	}
 	offset := 10

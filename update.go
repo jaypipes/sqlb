@@ -19,7 +19,7 @@ type UpdateQuery struct {
 	e       error
 	b       []byte
 	args    []interface{}
-	stmt    *updateStatement
+	stmt    *UpdateStatement
 	scanner *sqlScanner
 }
 
@@ -56,7 +56,7 @@ func (q *UpdateQuery) StringArgs() (string, []interface{}) {
 }
 
 func (q *UpdateQuery) Where(e *Expression) *UpdateQuery {
-	q.stmt.addWhere(e)
+	q.stmt.AddWhere(e)
 	return q
 }
 
@@ -89,7 +89,7 @@ func Update(t *Table, values map[string]interface{}) *UpdateQuery {
 		dialect: t.meta.dialect,
 		format:  defaultFormatOptions,
 	}
-	stmt := &updateStatement{
+	stmt := &UpdateStatement{
 		table:   t,
 		columns: cols,
 		values:  vals,

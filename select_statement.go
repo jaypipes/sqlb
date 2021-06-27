@@ -10,18 +10,18 @@ import (
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
-type selectStatement struct {
+type SelectStatement struct {
 	projs      []types.Projection
 	selections []types.Selection
-	joins      []*joinClause
-	where      *whereClause
-	groupBy    *groupByClause
-	having     *havingClause
-	orderBy    *orderByClause
-	limit      *limitClause
+	joins      []*JoinClause
+	where      *WhereClause
+	groupBy    *GroupByClause
+	having     *HavingClause
+	orderBy    *OrderByClause
+	limit      *LimitClause
 }
 
-func (s *selectStatement) ArgCount() int {
+func (s *SelectStatement) ArgCount() int {
 	argc := 0
 	for _, p := range s.projs {
 		argc += p.ArgCount()
@@ -50,7 +50,7 @@ func (s *selectStatement) ArgCount() int {
 	return argc
 }
 
-func (s *selectStatement) Size(scanner types.Scanner) int {
+func (s *SelectStatement) Size(scanner types.Scanner) int {
 	size := len(grammar.Symbols[grammar.SYM_SELECT])
 	nprojs := len(s.projs)
 	for _, p := range s.projs {
@@ -87,7 +87,7 @@ func (s *selectStatement) Size(scanner types.Scanner) int {
 	return size
 }
 
-func (s *selectStatement) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
+func (s *SelectStatement) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_SELECT])
 	nprojs := len(s.projs)
@@ -129,28 +129,28 @@ func (s *selectStatement) Scan(scanner types.Scanner, b []byte, args []interface
 	return bw
 }
 
-func (s *selectStatement) addJoin(jc *joinClause) *selectStatement {
+func (s *SelectStatement) addJoin(jc *JoinClause) *SelectStatement {
 	s.joins = append(s.joins, jc)
 	return s
 }
 
-func (s *selectStatement) addWhere(e *Expression) *selectStatement {
+func (s *SelectStatement) addWhere(e *Expression) *SelectStatement {
 	if s.where == nil {
-		s.where = &whereClause{filters: make([]*Expression, 0)}
+		s.where = &WhereClause{filters: make([]*Expression, 0)}
 	}
 	s.where.filters = append(s.where.filters, e)
 	return s
 }
 
 // Given one or more columns, either set or add to the GROUP BY clause for
-// the selectStatement
-func (s *selectStatement) addGroupBy(cols ...types.Projection) *selectStatement {
+// the SelectStatement
+func (s *SelectStatement) addGroupBy(cols ...types.Projection) *SelectStatement {
 	if len(cols) == 0 {
 		return s
 	}
 	gb := s.groupBy
 	if gb == nil {
-		gb = &groupByClause{
+		gb = &GroupByClause{
 			cols: make([]types.Projection, len(cols)),
 		}
 		for x, c := range cols {
@@ -165,24 +165,24 @@ func (s *selectStatement) addGroupBy(cols ...types.Projection) *selectStatement 
 	return s
 }
 
-func (s *selectStatement) addHaving(e *Expression) *selectStatement {
+func (s *SelectStatement) addHaving(e *Expression) *SelectStatement {
 	if s.having == nil {
-		s.having = &havingClause{conditions: make([]*Expression, 0)}
+		s.having = &HavingClause{conditions: make([]*Expression, 0)}
 	}
 	s.having.conditions = append(s.having.conditions, e)
 	return s
 }
 
 // Given one or more sort columns, either set or add to the ORDER BY clause for
-// the selectStatement
-func (s *selectStatement) addOrderBy(sortCols ...*sortColumn) *selectStatement {
+// the SelectStatement
+func (s *SelectStatement) addOrderBy(sortCols ...*SortColumn) *SelectStatement {
 	if len(sortCols) == 0 {
 		return s
 	}
 	ob := s.orderBy
 	if ob == nil {
-		ob = &orderByClause{
-			scols: make([]*sortColumn, len(sortCols)),
+		ob = &OrderByClause{
+			scols: make([]*SortColumn, len(sortCols)),
 		}
 		for x, sc := range sortCols {
 			ob.scols[x] = sc
@@ -196,20 +196,20 @@ func (s *selectStatement) addOrderBy(sortCols ...*sortColumn) *selectStatement {
 	return s
 }
 
-func (s *selectStatement) setLimitWithOffset(limit int, offset int) *selectStatement {
-	lc := &limitClause{limit: limit}
+func (s *SelectStatement) setLimitWithOffset(limit int, offset int) *SelectStatement {
+	lc := &LimitClause{limit: limit}
 	lc.offset = &offset
 	s.limit = lc
 	return s
 }
 
-func (s *selectStatement) setLimit(limit int) *selectStatement {
-	lc := &limitClause{limit: limit}
+func (s *SelectStatement) setLimit(limit int) *SelectStatement {
+	lc := &LimitClause{limit: limit}
 	s.limit = lc
 	return s
 }
 
-func containsJoin(s *selectStatement, j *joinClause) bool {
+func containsJoin(s *SelectStatement, j *JoinClause) bool {
 	for _, sj := range s.joins {
 		if j == sj {
 			return true
@@ -218,11 +218,11 @@ func containsJoin(s *selectStatement, j *joinClause) bool {
 	return false
 }
 
-func addToProjections(s *selectStatement, p types.Projection) {
+func addToProjections(s *SelectStatement, p types.Projection) {
 	s.projs = append(s.projs, p)
 }
 
-func (s *selectStatement) removeSelection(toRemove types.Selection) {
+func (s *SelectStatement) removeSelection(toRemove types.Selection) {
 	idx := -1
 	for x, sel := range s.selections {
 		if sel == toRemove {

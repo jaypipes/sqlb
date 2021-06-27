@@ -10,16 +10,16 @@ import (
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
-type groupByClause struct {
+type GroupByClause struct {
 	cols []types.Projection
 }
 
-func (gb *groupByClause) ArgCount() int {
+func (gb *GroupByClause) ArgCount() int {
 	argc := 0
 	return argc
 }
 
-func (gb *groupByClause) Size(scanner types.Scanner) int {
+func (gb *GroupByClause) Size(scanner types.Scanner) int {
 	size := 0
 	size += len(scanner.FormatOptions().SeparateClauseWith)
 	size += len(grammar.Symbols[grammar.SYM_GROUP_BY])
@@ -32,7 +32,7 @@ func (gb *groupByClause) Size(scanner types.Scanner) int {
 	return size + (len(grammar.Symbols[grammar.SYM_COMMA_WS]) * (ncols - 1)) // the commas...
 }
 
-func (gb *groupByClause) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
+func (gb *GroupByClause) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	bw += copy(b[bw:], scanner.FormatOptions().SeparateClauseWith)
 	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_GROUP_BY])

@@ -10,19 +10,19 @@ import (
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
-type limitClause struct {
+type LimitClause struct {
 	limit  int
 	offset *int
 }
 
-func (lc *limitClause) ArgCount() int {
+func (lc *LimitClause) ArgCount() int {
 	if lc.offset == nil {
 		return 1
 	}
 	return 2
 }
 
-func (lc *limitClause) Size(scanner types.Scanner) int {
+func (lc *LimitClause) Size(scanner types.Scanner) int {
 	// Due to dialect handling, we do not include the length of interpolation
 	// markers for query parameters. This is calculated separately by the
 	// top-level scanning struct before malloc'ing the buffer to inject the SQL
@@ -36,7 +36,7 @@ func (lc *limitClause) Size(scanner types.Scanner) int {
 	return size
 }
 
-func (lc *limitClause) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
+func (lc *LimitClause) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	bw += copy(b[bw:], scanner.FormatOptions().SeparateClauseWith)
 	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_LIMIT])

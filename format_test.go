@@ -23,34 +23,34 @@ func TestFormatOptions(t *testing.T) {
 	colArticleId := articles.C("id")
 	colArticleAuthor := articles.C("author")
 
-	stmt := &selectStatement{
+	stmt := &SelectStatement{
 		selections: []types.Selection{articles},
 		projs:      []types.Projection{colArticleId, colUserName.As("author")},
-		joins: []*joinClause{
-			&joinClause{
+		joins: []*JoinClause{
+			&JoinClause{
 				left:  articles,
 				right: users,
 				on:    Equal(colArticleAuthor, colUserId),
 			},
 		},
-		where: &whereClause{
+		where: &WhereClause{
 			filters: []*Expression{
 				Equal(colUserName, "foo"),
 			},
 		},
-		groupBy: &groupByClause{
+		groupBy: &GroupByClause{
 			cols: []types.Projection{colUserName},
 		},
-		orderBy: &orderByClause{
-			scols: []*sortColumn{colUserName.Desc()},
+		orderBy: &OrderByClause{
+			scols: []*SortColumn{colUserName.Desc()},
 		},
-		limit: &limitClause{limit: 10},
+		limit: &LimitClause{limit: 10},
 	}
 
 	tests := []struct {
 		name    string
 		scanner *sqlScanner
-		s       *selectStatement
+		s       *SelectStatement
 		qs      string
 		qargs   []interface{}
 	}{

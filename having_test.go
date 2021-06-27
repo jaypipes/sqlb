@@ -22,18 +22,18 @@ func TestHavingClause(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		c     *havingClause
+		c     *HavingClause
 		qs    string
 		qargs []interface{}
 	}{
 		{
 			name: "Empty HAVING clause",
-			c:    &havingClause{},
+			c:    &HavingClause{},
 			qs:   "",
 		},
 		{
 			name: "Single expression",
-			c: &havingClause{
+			c: &HavingClause{
 				conditions: []*Expression{
 					Equal(colUserName, "foo"),
 				},
@@ -43,7 +43,7 @@ func TestHavingClause(t *testing.T) {
 		},
 		{
 			name: "AND expression",
-			c: &havingClause{
+			c: &HavingClause{
 				conditions: []*Expression{
 					And(
 						NotEqual(colUserName, "foo"),
@@ -56,7 +56,7 @@ func TestHavingClause(t *testing.T) {
 		},
 		{
 			name: "Multiple unary expressions should be AND'd together",
-			c: &havingClause{
+			c: &HavingClause{
 				conditions: []*Expression{
 					NotEqual(colUserName, "foo"),
 					NotEqual(colUserName, "bar"),
@@ -67,7 +67,7 @@ func TestHavingClause(t *testing.T) {
 		},
 		{
 			name: "OR expression",
-			c: &havingClause{
+			c: &HavingClause{
 				conditions: []*Expression{
 					Or(
 						Equal(colUserName, "foo"),
@@ -80,7 +80,7 @@ func TestHavingClause(t *testing.T) {
 		},
 		{
 			name: "OR and another unary expression",
-			c: &havingClause{
+			c: &HavingClause{
 				conditions: []*Expression{
 					Or(
 						Equal(colUserName, "foo"),
@@ -94,7 +94,7 @@ func TestHavingClause(t *testing.T) {
 		},
 		{
 			name: "Two AND expressions OR'd together",
-			c: &havingClause{
+			c: &HavingClause{
 				conditions: []*Expression{
 					Or(
 						And(

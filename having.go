@@ -10,11 +10,11 @@ import (
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
-type havingClause struct {
+type HavingClause struct {
 	conditions []*Expression
 }
 
-func (c *havingClause) ArgCount() int {
+func (c *HavingClause) ArgCount() int {
 	argc := 0
 	for _, condition := range c.conditions {
 		argc += condition.ArgCount()
@@ -22,7 +22,7 @@ func (c *havingClause) ArgCount() int {
 	return argc
 }
 
-func (c *havingClause) Size(scanner types.Scanner) int {
+func (c *HavingClause) Size(scanner types.Scanner) int {
 	size := 0
 	nconditions := len(c.conditions)
 	if nconditions > 0 {
@@ -36,7 +36,7 @@ func (c *havingClause) Size(scanner types.Scanner) int {
 	return size
 }
 
-func (c *havingClause) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
+func (c *HavingClause) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	if len(c.conditions) > 0 {
 		bw += copy(b[bw:], scanner.FormatOptions().SeparateClauseWith)

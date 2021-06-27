@@ -21,22 +21,22 @@ func TestDeleteStatement(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		s     *deleteStatement
+		s     *DeleteStatement
 		qs    string
 		qargs []interface{}
 	}{
 		{
 			name: "DELETE no WHERE",
-			s: &deleteStatement{
+			s: &DeleteStatement{
 				table: users,
 			},
 			qs: "DELETE FROM users",
 		},
 		{
 			name: "DELETE simple WHERE",
-			s: &deleteStatement{
+			s: &DeleteStatement{
 				table: users,
-				where: &whereClause{
+				where: &WhereClause{
 					filters: []*Expression{
 						Equal(colUserName, "foo"),
 					},

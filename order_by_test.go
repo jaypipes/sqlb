@@ -12,7 +12,7 @@ import (
 )
 
 type orderByTest struct {
-	c     *orderByClause
+	c     *OrderByClause
 	qs    string
 	qargs []interface{}
 }
@@ -28,36 +28,36 @@ func TestOrderBy(t *testing.T) {
 	tests := []orderByTest{
 		// column asc
 		orderByTest{
-			c: &orderByClause{
-				scols: []*sortColumn{colUserName.Asc()},
+			c: &OrderByClause{
+				scols: []*SortColumn{colUserName.Asc()},
 			},
 			qs: " ORDER BY users.name",
 		},
 		// column desc
 		orderByTest{
-			c: &orderByClause{
-				scols: []*sortColumn{colUserName.Desc()},
+			c: &OrderByClause{
+				scols: []*SortColumn{colUserName.Desc()},
 			},
 			qs: " ORDER BY users.name DESC",
 		},
 		// Aliased column should NOT output alias in ORDER BY
 		orderByTest{
-			c: &orderByClause{
-				scols: []*sortColumn{colUserName.As("user_name").Desc()},
+			c: &OrderByClause{
+				scols: []*SortColumn{colUserName.As("user_name").Desc()},
 			},
 			qs: " ORDER BY users.name DESC",
 		},
 		// multi column mixed
 		orderByTest{
-			c: &orderByClause{
-				scols: []*sortColumn{colUserName.Asc(), colUserId.Desc()},
+			c: &OrderByClause{
+				scols: []*SortColumn{colUserName.Asc(), colUserId.Desc()},
 			},
 			qs: " ORDER BY users.name, users.id DESC",
 		},
 		// sort by a function
 		orderByTest{
-			c: &orderByClause{
-				scols: []*sortColumn{Count(users).Desc()},
+			c: &OrderByClause{
+				scols: []*SortColumn{Count(users).Desc()},
 			},
 			qs: " ORDER BY COUNT(*) DESC",
 		},

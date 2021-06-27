@@ -12,8 +12,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type groupByClauseTest struct {
-	c     *groupByClause
+type GroupByClauseTest struct {
+	c     *GroupByClause
 	qs    string
 	qargs []interface{}
 }
@@ -26,24 +26,24 @@ func TestGroupByClause(t *testing.T) {
 	colUserId := users.C("id")
 	colUserName := users.C("name")
 
-	tests := []groupByClauseTest{
+	tests := []GroupByClauseTest{
 		// Single column
-		groupByClauseTest{
-			c: &groupByClause{
+		GroupByClauseTest{
+			c: &GroupByClause{
 				cols: []types.Projection{colUserName},
 			},
 			qs: " GROUP BY users.name",
 		},
 		// Multiple columns
-		groupByClauseTest{
-			c: &groupByClause{
+		GroupByClauseTest{
+			c: &GroupByClause{
 				cols: []types.Projection{colUserName, colUserId},
 			},
 			qs: " GROUP BY users.name, users.id",
 		},
 		// Aliased column should NOT output alias in GROUP BY
-		groupByClauseTest{
-			c: &groupByClause{
+		GroupByClauseTest{
+			c: &GroupByClause{
 				cols: []types.Projection{colUserName.As("user_name")},
 			},
 			qs: " GROUP BY users.name",

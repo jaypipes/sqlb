@@ -21,13 +21,13 @@ func TestUpdateStatement(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		s     *updateStatement
+		s     *UpdateStatement
 		qs    string
 		qargs []interface{}
 	}{
 		{
 			name: "UPDATE no WHERE",
-			s: &updateStatement{
+			s: &UpdateStatement{
 				table:   users,
 				columns: []*Column{colUserName},
 				values:  []interface{}{"foo"},
@@ -37,11 +37,11 @@ func TestUpdateStatement(t *testing.T) {
 		},
 		{
 			name: "UPDATE simple WHERE",
-			s: &updateStatement{
+			s: &UpdateStatement{
 				table:   users,
 				columns: []*Column{colUserName},
 				values:  []interface{}{"foo"},
-				where: &whereClause{
+				where: &WhereClause{
 					filters: []*Expression{
 						Equal(colUserName, "bar"),
 					},

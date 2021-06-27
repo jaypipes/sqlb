@@ -12,9 +12,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type whereClauseTest struct {
-}
-
 func TestWhereClause(t *testing.T) {
 	assert := assert.New(t)
 
@@ -25,18 +22,18 @@ func TestWhereClause(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		c     *whereClause
+		c     *WhereClause
 		qs    string
 		qargs []interface{}
 	}{
 		{
 			name: "Empty WHERE clause",
-			c:    &whereClause{},
+			c:    &WhereClause{},
 			qs:   "",
 		},
 		{
 			name: "Single expression",
-			c: &whereClause{
+			c: &WhereClause{
 				filters: []*Expression{
 					Equal(colUserName, "foo"),
 				},
@@ -46,7 +43,7 @@ func TestWhereClause(t *testing.T) {
 		},
 		{
 			name: "AND expression",
-			c: &whereClause{
+			c: &WhereClause{
 				filters: []*Expression{
 					And(
 						NotEqual(colUserName, "foo"),
@@ -59,7 +56,7 @@ func TestWhereClause(t *testing.T) {
 		},
 		{
 			name: "Multiple unary expressions should be AND'd together",
-			c: &whereClause{
+			c: &WhereClause{
 				filters: []*Expression{
 					NotEqual(colUserName, "foo"),
 					NotEqual(colUserName, "bar"),
@@ -70,7 +67,7 @@ func TestWhereClause(t *testing.T) {
 		},
 		{
 			name: "OR expression",
-			c: &whereClause{
+			c: &WhereClause{
 				filters: []*Expression{
 					Or(
 						Equal(colUserName, "foo"),
@@ -83,7 +80,7 @@ func TestWhereClause(t *testing.T) {
 		},
 		{
 			name: "OR and another unary expression",
-			c: &whereClause{
+			c: &WhereClause{
 				filters: []*Expression{
 					Or(
 						Equal(colUserName, "foo"),
@@ -97,7 +94,7 @@ func TestWhereClause(t *testing.T) {
 		},
 		{
 			name: "Two AND expressions OR'd together",
-			c: &whereClause{
+			c: &WhereClause{
 				filters: []*Expression{
 					Or(
 						And(

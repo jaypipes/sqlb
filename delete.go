@@ -17,7 +17,7 @@ type DeleteQuery struct {
 	e       error
 	b       []byte
 	args    []interface{}
-	stmt    *deleteStatement
+	stmt    *DeleteStatement
 	scanner *sqlScanner
 }
 
@@ -54,7 +54,7 @@ func (q *DeleteQuery) StringArgs() (string, []interface{}) {
 }
 
 func (q *DeleteQuery) Where(e *Expression) *DeleteQuery {
-	q.stmt.addWhere(e)
+	q.stmt.AddWhere(e)
 	return q
 }
 
@@ -69,7 +69,7 @@ func Delete(t *Table) *DeleteQuery {
 		dialect: t.meta.dialect,
 		format:  defaultFormatOptions,
 	}
-	stmt := &deleteStatement{
+	stmt := &DeleteStatement{
 		table: t,
 	}
 	return &DeleteQuery{
