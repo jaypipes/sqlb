@@ -9,17 +9,18 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestSelectQuery(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testFixtureMeta()
-	users := m.Table("users")
-	articles := m.Table("articles")
-	articleStates := m.Table("article_states")
-	userProfiles := m.Table("user_profiles")
+	sc := testutil.Schema()
+	users := T(sc, "users")
+	articles := T(sc, "articles")
+	articleStates := T(sc, "article_states")
+	userProfiles := T(sc, "user_profiles")
 	colUserId := users.C("id")
 	colUserName := users.C("name")
 	colArticleId := articles.C("id")
@@ -199,30 +200,8 @@ func TestNestedSetQueries(t *testing.T) {
 	// ref: https://github.com/jaypipes/sqlb/issues/49
 	assert := assert.New(t)
 
-	m := &Meta{}
-	orgs := &Table{
-		meta: m,
-		name: "organizations",
-	}
-	cols := []*Column{
-		&Column{
-			tbl:  orgs,
-			name: "id",
-		},
-		&Column{
-			tbl:  orgs,
-			name: "root_organization_id",
-		},
-		&Column{
-			tbl:  orgs,
-			name: "nested_set_left",
-		},
-		&Column{
-			tbl:  orgs,
-			name: "nested_set_right",
-		},
-	}
-	orgs.columns = cols
+	sc := testutil.Schema()
+	orgs := T(sc, "organizations")
 
 	o1 := orgs.As("o1")
 	o2 := orgs.As("o2")
@@ -255,46 +234,9 @@ func TestNestedSetWithAdditionalJoin(t *testing.T) {
 	// ref: https://github.com/jaypipes/sqlb/issues/60
 	assert := assert.New(t)
 
-	m := &Meta{}
-	orgs := &Table{
-		meta: m,
-		name: "organizations",
-	}
-	orgCols := []*Column{
-		&Column{
-			tbl:  orgs,
-			name: "id",
-		},
-		&Column{
-			tbl:  orgs,
-			name: "root_organization_id",
-		},
-		&Column{
-			tbl:  orgs,
-			name: "nested_set_left",
-		},
-		&Column{
-			tbl:  orgs,
-			name: "nested_set_right",
-		},
-	}
-	orgs.columns = orgCols
-
-	orgUsers := &Table{
-		meta: m,
-		name: "organization_users",
-	}
-	orgUsersCols := []*Column{
-		&Column{
-			tbl:  orgUsers,
-			name: "organization_id",
-		},
-		&Column{
-			tbl:  orgUsers,
-			name: "user_id",
-		},
-	}
-	orgUsers.columns = orgUsersCols
+	sc := testutil.Schema()
+	orgs := T(sc, "organizations")
+	orgUsers := T(sc, "organization_users")
 
 	o1 := orgs.As("o1")
 	o2 := orgs.As("o2")
@@ -357,50 +299,9 @@ func TestJoinDerivedWithMultipleSelections(t *testing.T) {
 	//   o.visibility = 1
 	//   OR (o.visibility = 0 AND private_orgs.id IS NOT NULL)
 
-	m := &Meta{}
-	orgs := &Table{
-		meta: m,
-		name: "organizations",
-	}
-	orgCols := []*Column{
-		&Column{
-			tbl:  orgs,
-			name: "id",
-		},
-		&Column{
-			tbl:  orgs,
-			name: "uuid",
-		},
-		&Column{
-			tbl:  orgs,
-			name: "root_organization_id",
-		},
-		&Column{
-			tbl:  orgs,
-			name: "nested_set_left",
-		},
-		&Column{
-			tbl:  orgs,
-			name: "nested_set_right",
-		},
-	}
-	orgs.columns = orgCols
-
-	orgUsers := &Table{
-		meta: m,
-		name: "organization_users",
-	}
-	orgUsersCols := []*Column{
-		&Column{
-			tbl:  orgUsers,
-			name: "organization_id",
-		},
-		&Column{
-			tbl:  orgUsers,
-			name: "user_id",
-		},
-	}
-	orgUsers.columns = orgUsersCols
+	sc := testutil.Schema()
+	orgs := T(sc, "organizations")
+	orgUsers := T(sc, "organization_users")
 
 	o1 := orgs.As("o1")
 	o2 := orgs.As("o2")
@@ -461,8 +362,8 @@ func TestJoinDerivedWithMultipleSelections(t *testing.T) {
 func TestModifyingSelectQueryUpdatesBuffer(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testFixtureMeta()
-	users := m.Table("users")
+	sc := testutil.Schema()
+	users := T(sc, "users")
 
 	q := Select(users)
 
@@ -485,8 +386,8 @@ func TestSelectQueryErrors(t *testing.T) {
 	assert.False(q.IsValid()) // Doesn't have a selectClause yet...
 	assert.Nil(q.Error())     // But there is no error set yet...
 
-	m := testFixtureMeta()
-	users := m.Table("users")
+	sc := testutil.Schema()
+	users := T(sc, "users")
 
 	q = Select(users)
 

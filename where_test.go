@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/jaypipes/sqlb/pkg/scanner"
+	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/jaypipes/sqlb/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
@@ -16,8 +17,8 @@ import (
 func TestWhereClause(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testFixtureMeta()
-	users := m.Table("users")
+	sc := testutil.Schema()
+	users := T(sc, "users")
 	colUserId := users.C("id")
 	colUserName := users.C("name")
 

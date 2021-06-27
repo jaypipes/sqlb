@@ -14,8 +14,8 @@ import (
 // UPDATE <table> SET <column_value_list>[ WHERE <predicates>]
 
 type UpdateStatement struct {
-	table   *Table
-	columns []*Column
+	table   *TableIdentifier
+	columns []*ColumnIdentifier
 	values  []interface{}
 	where   *WhereClause
 }

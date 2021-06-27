@@ -8,14 +8,15 @@ package sqlb
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestInsertQuery(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testFixtureMeta()
-	users := m.Table("users")
+	sc := testutil.Schema()
+	users := T(sc, "users")
 
 	tests := []struct {
 		name  string

@@ -106,7 +106,7 @@ func Max(p types.Projection) *sqlFunc {
 	}
 }
 
-func (c *Column) Max() *sqlFunc {
+func (c *ColumnIdentifier) Max() *sqlFunc {
 	return Max(c)
 }
 
@@ -118,7 +118,7 @@ func Min(p types.Projection) *sqlFunc {
 	}
 }
 
-func (c *Column) Min() *sqlFunc {
+func (c *ColumnIdentifier) Min() *sqlFunc {
 	return Min(c)
 }
 
@@ -130,7 +130,7 @@ func Sum(p types.Projection) *sqlFunc {
 	}
 }
 
-func (c *Column) Sum() *sqlFunc {
+func (c *ColumnIdentifier) Sum() *sqlFunc {
 	return Sum(c)
 }
 
@@ -142,7 +142,7 @@ func Avg(p types.Projection) *sqlFunc {
 	}
 }
 
-func (c *Column) Avg() *sqlFunc {
+func (c *ColumnIdentifier) Avg() *sqlFunc {
 	return Avg(c)
 }
 
@@ -181,7 +181,7 @@ func CharLength(p types.Projection) *sqlFunc {
 	}
 }
 
-func (c *Column) CharLength() *sqlFunc {
+func (c *ColumnIdentifier) CharLength() *sqlFunc {
 	return CharLength(c)
 }
 
@@ -193,7 +193,7 @@ func BitLength(p types.Projection) *sqlFunc {
 	}
 }
 
-func (c *Column) BitLength() *sqlFunc {
+func (c *ColumnIdentifier) BitLength() *sqlFunc {
 	return BitLength(c)
 }
 
@@ -205,7 +205,7 @@ func Ascii(p types.Projection) *sqlFunc {
 	}
 }
 
-func (c *Column) Ascii() *sqlFunc {
+func (c *ColumnIdentifier) Ascii() *sqlFunc {
 	return Ascii(c)
 }
 
@@ -217,7 +217,7 @@ func Reverse(p types.Projection) *sqlFunc {
 	}
 }
 
-func (c *Column) Reverse() *sqlFunc {
+func (c *ColumnIdentifier) Reverse() *sqlFunc {
 	return Reverse(c)
 }
 

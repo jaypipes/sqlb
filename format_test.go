@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/jaypipes/sqlb/pkg/scanner"
+	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/jaypipes/sqlb/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
@@ -16,9 +17,9 @@ import (
 func TestFormatOptions(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testFixtureMeta()
-	users := m.Table("users")
-	articles := m.Table("articles")
+	sc := testutil.Schema()
+	users := T(sc, "users")
+	articles := T(sc, "articles")
 	colUserName := users.C("name")
 	colUserId := users.C("id")
 	colArticleId := articles.C("id")

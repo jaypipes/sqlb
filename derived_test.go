@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/jaypipes/sqlb/pkg/scanner"
+	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/jaypipes/sqlb/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
@@ -22,8 +23,8 @@ type derivedTest struct {
 func TestDerived(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testFixtureMeta()
-	users := m.Table("users")
+	sc := testutil.Schema()
+	users := T(sc, "users")
 	colUserName := users.C("name")
 
 	tests := []derivedTest{

@@ -9,36 +9,15 @@ import (
 	"testing"
 
 	"github.com/jaypipes/sqlb/pkg/scanner"
-	"github.com/jaypipes/sqlb/pkg/types"
+	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/stretchr/testify/assert"
 )
-
-func TestTableMeta(t *testing.T) {
-	assert := assert.New(t)
-
-	m := NewMeta(types.DIALECT_MYSQL, "test")
-	td := m.Table("users")
-	assert.Nil(td)
-	td = m.NewTable("users")
-	assert.NotNil(td)
-	assert.Equal(td.meta, m)
-
-	assert.Equal(td, m.Table("users"))
-
-	cd := td.C("id")
-	assert.Nil(cd)
-
-	cd = td.NewColumn("id")
-	assert.NotNil(cd)
-
-	assert.Equal(cd, td.C("id"))
-}
 
 func TestTable(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testFixtureMeta()
-	users := m.Table("users")
+	sc := testutil.Schema()
+	users := T(sc, "users")
 
 	exp := "users"
 	expLen := len(exp)
@@ -55,8 +34,8 @@ func TestTable(t *testing.T) {
 func TestTableAlias(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testFixtureMeta()
-	u := m.Table("users").As("u")
+	sc := testutil.Schema()
+	u := T(sc, "users").As("u")
 
 	exp := "users AS u"
 	expLen := len(exp)
@@ -73,16 +52,16 @@ func TestTableAlias(t *testing.T) {
 func TestTableColumns(t *testing.T) {
 	assert := assert.New(t)
 
-	td := &Table{
+	td := &TableIdentifier{
 		name: "users",
 	}
 
-	cols := []*Column{
-		&Column{
+	cols := []*ColumnIdentifier{
+		&ColumnIdentifier{
 			name: "id",
 			tbl:  td,
 		},
-		&Column{
+		&ColumnIdentifier{
 			name: "email",
 			tbl:  td,
 		},
@@ -104,8 +83,8 @@ func TestTableColumns(t *testing.T) {
 func TestTableC(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testFixtureMeta()
-	users := m.Table("users")
+	sc := testutil.Schema()
+	users := T(sc, "users")
 
 	c := users.C("name")
 

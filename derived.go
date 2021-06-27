@@ -37,8 +37,8 @@ func (dt *DerivedTable) getAllDerivedColumns() []types.Projection {
 	for x := 0; x < nprojs; x++ {
 		p := dt.from.projs[x]
 		switch p.(type) {
-		case *Column:
-			projs[x] = &DerivedColumn{dt: dt, c: p.(*Column)}
+		case *ColumnIdentifier:
+			projs[x] = &DerivedColumn{dt: dt, c: p.(*ColumnIdentifier)}
 		}
 	}
 	return projs
@@ -50,7 +50,7 @@ func (dt *DerivedTable) Projections() []types.Projection {
 	for x := 0; x < nprojs; x++ {
 		p := dt.from.projs[x]
 		switch p.(type) {
-		case *Column:
+		case *ColumnIdentifier:
 		}
 	}
 	return projs
@@ -128,7 +128,7 @@ func (dt *DerivedTable) Scan(scanner types.Scanner, b []byte, args []interface{}
 // ) AS u
 type DerivedColumn struct {
 	alias string // This is the outermost alias
-	c     *Column
+	c     *ColumnIdentifier
 	dt    *DerivedTable
 }
 

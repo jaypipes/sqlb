@@ -35,6 +35,17 @@ func Schema() *schema.Schema {
 	userProfiles.AddColumn("content")
 	userProfiles.AddColumn("user")
 
+	orgs := s.AddTable("organizations")
+	orgs.AddColumn("id")
+	orgs.AddColumn("uuid")
+	orgs.AddColumn("root_organization_id")
+	orgs.AddColumn("nested_set_left")
+	orgs.AddColumn("nested_set_right")
+
+	orgUsers := s.AddTable("organization_users")
+	orgUsers.AddColumn("organization_id")
+	orgUsers.AddColumn("user_id")
+
 	return s
 }
 

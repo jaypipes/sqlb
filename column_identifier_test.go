@@ -9,14 +9,16 @@ import (
 	"testing"
 
 	"github.com/jaypipes/sqlb/pkg/scanner"
+	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestC(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testFixtureMeta()
-	c := m.Table("users").C("name")
+	sc := testutil.Schema()
+	users := T(sc, "users")
+	c := users.C("name")
 
 	exp := "users.name"
 	expLen := len(exp)
@@ -33,8 +35,9 @@ func TestC(t *testing.T) {
 func TestColumnWithTableAlias(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testFixtureMeta()
-	c := m.Table("users").As("u").C("name")
+	sc := testutil.Schema()
+	users := T(sc, "users").As("u")
+	c := users.C("name")
 
 	exp := "u.name"
 	expLen := len(exp)
@@ -51,8 +54,9 @@ func TestColumnWithTableAlias(t *testing.T) {
 func TestColumnAlias(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testFixtureMeta()
-	c := m.Table("users").C("name").As("user_name")
+	sc := testutil.Schema()
+	users := T(sc, "users")
+	c := users.C("name").As("user_name")
 
 	exp := "users.name AS user_name"
 	expLen := len(exp)

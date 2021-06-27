@@ -10,6 +10,7 @@ import (
 
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/scanner"
+	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/jaypipes/sqlb/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
@@ -17,8 +18,8 @@ import (
 func TestFunctions(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testFixtureMeta()
-	users := m.Table("users")
+	sc := testutil.Schema()
+	users := T(sc, "users")
 	colUserName := users.C("name")
 
 	tests := []struct {

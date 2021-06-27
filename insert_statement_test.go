@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/jaypipes/sqlb/pkg/scanner"
+	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/jaypipes/sqlb/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
@@ -16,22 +17,22 @@ import (
 func TestInsertStatement(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testFixtureMeta()
-	users := m.Table("users")
+	sc := testutil.Schema()
+	users := T(sc, "users")
 	colUserName := users.C("name")
 	colUserId := users.C("id")
 
 	tests := []struct {
 		name  string
-		s     *insertStatement
+		s     *InsertStatement
 		qs    string
 		qargs []interface{}
 	}{
 		{
 			name: "Simple INSERT",
-			s: &insertStatement{
+			s: &InsertStatement{
 				table:   users,
-				columns: []*Column{colUserId, colUserName},
+				columns: []*ColumnIdentifier{colUserId, colUserName},
 				values:  []interface{}{nil, "foo"},
 			},
 			qs:    "INSERT INTO users (id, name) VALUES (?, ?)",
@@ -39,9 +40,9 @@ func TestInsertStatement(t *testing.T) {
 		},
 		{
 			name: "Ensure no aliasing in table names",
-			s: &insertStatement{
+			s: &InsertStatement{
 				table:   users.As("u"),
-				columns: []*Column{colUserId, colUserName},
+				columns: []*ColumnIdentifier{colUserId, colUserName},
 				values:  []interface{}{nil, "foo"},
 			},
 			qs:    "INSERT INTO users (id, name) VALUES (?, ?)",
@@ -49,9 +50,9 @@ func TestInsertStatement(t *testing.T) {
 		},
 		{
 			name: "Ensure no aliasing in column names",
-			s: &insertStatement{
+			s: &InsertStatement{
 				table:   users,
-				columns: []*Column{colUserId.As("user_id"), colUserName},
+				columns: []*ColumnIdentifier{colUserId.As("user_id"), colUserName},
 				values:  []interface{}{nil, "foo"},
 			},
 			qs:    "INSERT INTO users (id, name) VALUES (?, ?)",

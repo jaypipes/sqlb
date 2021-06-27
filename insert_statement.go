@@ -13,17 +13,17 @@ import (
 
 // INSERT INTO <table> (<columns>) VALUES (<values>)
 
-type insertStatement struct {
-	table   *Table
-	columns []*Column
+type InsertStatement struct {
+	table   *TableIdentifier
+	columns []*ColumnIdentifier
 	values  []interface{}
 }
 
-func (s *insertStatement) ArgCount() int {
+func (s *InsertStatement) ArgCount() int {
 	return len(s.values)
 }
 
-func (s *insertStatement) Size(scanner types.Scanner) int {
+func (s *InsertStatement) Size(scanner types.Scanner) int {
 	size := len(grammar.Symbols[grammar.SYM_INSERT]) + len(s.table.name) + 1 // space after table name
 	ncols := len(s.columns)
 	for _, c := range s.columns {
@@ -41,7 +41,7 @@ func (s *insertStatement) Size(scanner types.Scanner) int {
 	return size
 }
 
-func (s *insertStatement) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
+func (s *InsertStatement) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_INSERT])
 	// We don't add any table alias when outputting the table identifier
