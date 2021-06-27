@@ -3,14 +3,15 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
-package sqlb
+
+package ast
 
 import (
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
-// A List is a concrete struct wrapper around an array of elements that
+// List is a concrete struct wrapper around an array of elements that
 // implements the element interface.
 type List struct {
 	elements []types.Element
@@ -43,4 +44,9 @@ func (l *List) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg 
 		}
 	}
 	return bw
+}
+
+// NewList returns a new List struct containing zero or more elements.
+func NewList(els ...types.Element) *List {
+	return &List{elements: els}
 }

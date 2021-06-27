@@ -3,14 +3,16 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
-package sqlb
+
+package ast_test
 
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb"
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
-	"github.com/jaypipes/sqlb/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,10 +20,10 @@ func TestListSingle(t *testing.T) {
 	assert := assert.New(t)
 
 	sc := testutil.Schema()
-	users := T(sc, "users")
+	users := sqlb.T(sc, "users")
 	colUserName := users.C("name")
 
-	cl := &List{elements: []types.Element{colUserName}}
+	cl := ast.NewList(colUserName)
 
 	exp := "users.name"
 	expLen := len(exp)
@@ -39,11 +41,11 @@ func TestListMulti(t *testing.T) {
 	assert := assert.New(t)
 
 	sc := testutil.Schema()
-	users := T(sc, "users")
+	users := sqlb.T(sc, "users")
 	colUserId := users.C("id")
 	colUserName := users.C("name")
 
-	cl := &List{elements: []types.Element{colUserId, colUserName}}
+	cl := ast.NewList(colUserId, colUserName)
 
 	exp := "users.id, users.name"
 	expLen := len(exp)

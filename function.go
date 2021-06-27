@@ -227,7 +227,7 @@ func Concat(projs ...types.Projection) *sqlFunc {
 	for x, p := range projs {
 		els[x] = p.(types.Element)
 	}
-	subjects := &List{elements: els}
+	subjects := ast.NewList(els...)
 	return &sqlFunc{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_CONCAT),
 		elements: []types.Element{subjects},
@@ -241,7 +241,7 @@ func ConcatWs(sep string, projs ...types.Projection) *sqlFunc {
 	for x, p := range projs {
 		els[x] = p.(types.Element)
 	}
-	subjects := &List{elements: els}
+	subjects := ast.NewList(els...)
 	return &sqlFunc{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_CONCAT_WS),
 		elements: []types.Element{ast.NewValue(nil, sep), subjects},

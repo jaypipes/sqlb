@@ -30,10 +30,10 @@ func toElements(vars ...interface{}) []types.Element {
 // Value structs for the variables
 // If any of the interface{} variables are *not* of type element already, we
 // construct a Value{} for the variable.
-func toValueList(vars ...interface{}) *List {
+func toValueList(vars ...interface{}) *ast.List {
 	els := make([]types.Element, len(vars))
 	for x, v := range vars {
 		els[x] = ast.NewValue(nil, v)
 	}
-	return &List{elements: els}
+	return ast.NewList(els...)
 }
