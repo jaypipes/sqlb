@@ -61,14 +61,14 @@ func (q *DeleteQuery) Where(e *Expression) *DeleteQuery {
 	return q
 }
 
-// Given a table and a map of column name to value for that column to insert,
-// returns an DeleteQuery that will produce an INSERT SQL statement
-func Delete(t *Table) *DeleteQuery {
+// Delete returns a DeleteQuery given a table that will produce a DELETE SQL
+// statement
+func Delete(t *TableIdentifier) *DeleteQuery {
 	if t == nil {
 		return &DeleteQuery{e: ERR_DELETE_NO_TARGET}
 	}
 
-	scanner := scanner.New(t.meta.dialect)
+	scanner := scanner.New(t.st.Schema.Dialect)
 	stmt := &DeleteStatement{
 		table: t,
 	}
@@ -78,6 +78,6 @@ func Delete(t *Table) *DeleteQuery {
 	}
 }
 
-func (t *Table) Delete() *DeleteQuery {
+func (t *TableIdentifier) Delete() *DeleteQuery {
 	return Delete(t)
 }

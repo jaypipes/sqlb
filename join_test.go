@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/jaypipes/sqlb/pkg/scanner"
+	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -21,9 +22,9 @@ type JoinClauseTest struct {
 func TestJoinClause(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testFixtureMeta()
-	users := m.Table("users")
-	articles := m.Table("articles")
+	sc := testutil.Schema()
+	users := T(sc, "users")
+	articles := T(sc, "articles")
 	colUserId := users.C("id")
 	colArticleAuthor := articles.C("author")
 

@@ -315,7 +315,7 @@ func Trim(p types.Projection) *trimFunc {
 	}
 }
 
-func (c *Column) Trim() *trimFunc {
+func (c *ColumnIdentifier) Trim() *trimFunc {
 	f := Trim(c)
 	return f
 }
@@ -331,7 +331,7 @@ func LTrim(p types.Projection) *trimFunc {
 	}
 }
 
-func (c *Column) LTrim() *trimFunc {
+func (c *ColumnIdentifier) LTrim() *trimFunc {
 	f := LTrim(c)
 	return f
 }
@@ -347,7 +347,7 @@ func RTrim(p types.Projection) *trimFunc {
 	}
 }
 
-func (c *Column) RTrim() *trimFunc {
+func (c *ColumnIdentifier) RTrim() *trimFunc {
 	f := LTrim(c)
 	return f
 }
@@ -363,7 +363,7 @@ func TrimChars(p types.Projection, chars string) *trimFunc {
 	}
 }
 
-func (c *Column) TrimChars(chars string) *trimFunc {
+func (c *ColumnIdentifier) TrimChars(chars string) *trimFunc {
 	f := TrimChars(c, chars)
 	return f
 }
@@ -379,7 +379,7 @@ func LTrimChars(p types.Projection, chars string) *trimFunc {
 	}
 }
 
-func (c *Column) LTrimChars(chars string) *trimFunc {
+func (c *ColumnIdentifier) LTrimChars(chars string) *trimFunc {
 	f := LTrimChars(c, chars)
 	return f
 }
@@ -396,7 +396,7 @@ func RTrimChars(p types.Projection, chars string) *trimFunc {
 	}
 }
 
-func (c *Column) RTrimChars(chars string) *trimFunc {
+func (c *ColumnIdentifier) RTrimChars(chars string) *trimFunc {
 	f := RTrimChars(c, chars)
 	return f
 }

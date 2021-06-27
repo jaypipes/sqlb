@@ -11,16 +11,17 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/jaypipes/sqlb/pkg/scanner"
+	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
 func TestSelectClause(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testFixtureMeta()
-	users := m.Table("users")
-	articles := m.Table("articles")
-	article_states := m.Table("article_states")
+	sc := testutil.Schema()
+	users := T(sc, "users")
+	articles := T(sc, "articles")
+	article_states := T(sc, "article_states")
 	colUserName := users.C("name")
 	colUserId := users.C("id")
 	colArticleId := articles.C("id")

@@ -114,8 +114,8 @@ func (q *SelectQuery) C(name string) types.Projection {
 			} else if dc.c.name == name {
 				return dc
 			}
-		case *Column:
-			c := p.(*Column)
+		case *ColumnIdentifier:
+			c := p.(*ColumnIdentifier)
 			if c.alias != "" && c.alias == name {
 				return c
 			} else if c.name == name {
@@ -324,16 +324,19 @@ func Select(items ...interface{}) *SelectQuery {
 					nDerived++
 				}
 			}
-		case *Column:
-			v := item.(*Column)
+		case *ColumnIdentifier:
+			v := item.(*ColumnIdentifier)
 			// Set scanner's dialect based on supplied meta's dialect
-			sq.scanner.WithDialect(v.tbl.meta.dialect)
+			if v == nil {
+				panic("specified a non-existent column")
+			}
+			sq.scanner.WithDialect(v.tbl.st.Schema.Dialect)
 			sel.projs = append(sel.projs, v)
 			selectionMap[v.tbl] = true
-		case *Table:
-			v := item.(*Table)
+		case *TableIdentifier:
+			v := item.(*TableIdentifier)
 			// Set scanner's dialect based on supplied meta's dialect
-			sq.scanner.WithDialect(v.meta.dialect)
+			sq.scanner.WithDialect(v.st.Schema.Dialect)
 			for _, c := range v.Projections() {
 				addToProjections(sel, c)
 			}

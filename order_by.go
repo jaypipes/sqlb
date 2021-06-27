@@ -74,11 +74,11 @@ func (ob *OrderByClause) Scan(scanner types.Scanner, b []byte, args []interface{
 	return bw
 }
 
-func (c *Column) Desc() *SortColumn {
+func (c *ColumnIdentifier) Desc() *SortColumn {
 	return &SortColumn{p: c, desc: true}
 }
 
-func (c *Column) Asc() *SortColumn {
+func (c *ColumnIdentifier) Asc() *SortColumn {
 	return &SortColumn{p: c}
 }
 

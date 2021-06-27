@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/jaypipes/sqlb/pkg/scanner"
+	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/jaypipes/sqlb/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
@@ -16,8 +17,8 @@ import (
 func TestUpdateStatement(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testFixtureMeta()
-	users := m.Table("users")
+	sc := testutil.Schema()
+	users := T(sc, "users")
 	colUserName := users.C("name")
 
 	tests := []struct {
@@ -30,7 +31,7 @@ func TestUpdateStatement(t *testing.T) {
 			name: "UPDATE no WHERE",
 			s: &UpdateStatement{
 				table:   users,
-				columns: []*Column{colUserName},
+				columns: []*ColumnIdentifier{colUserName},
 				values:  []interface{}{"foo"},
 			},
 			qs:    "UPDATE users SET name = ?",
@@ -40,7 +41,7 @@ func TestUpdateStatement(t *testing.T) {
 			name: "UPDATE simple WHERE",
 			s: &UpdateStatement{
 				table:   users,
-				columns: []*Column{colUserName},
+				columns: []*ColumnIdentifier{colUserName},
 				values:  []interface{}{"foo"},
 				where: &WhereClause{
 					filters: []*Expression{

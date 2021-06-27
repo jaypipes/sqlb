@@ -14,7 +14,7 @@ import (
 // DELETE FROM <table> WHERE <predicates>
 
 type DeleteStatement struct {
-	table *Table
+	table *TableIdentifier
 	where *WhereClause
 }
 
