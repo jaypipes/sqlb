@@ -39,11 +39,9 @@ func TestDeleteStatement(t *testing.T) {
 			name: "DELETE simple WHERE",
 			s: &DeleteStatement{
 				table: users,
-				where: &WhereClause{
-					filters: []*ast.Expression{
-						ast.Equal(colUserName, "foo"),
-					},
-				},
+				where: ast.NewWhereClause(
+					ast.Equal(colUserName, "foo"),
+				),
 			},
 			qs:    "DELETE FROM users WHERE users.name = ?",
 			qargs: []interface{}{"foo"},

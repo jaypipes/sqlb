@@ -16,7 +16,7 @@ import (
 
 type DeleteStatement struct {
 	table *TableIdentifier
-	where *WhereClause
+	where *ast.WhereClause
 }
 
 func (s *DeleteStatement) ArgCount() int {
@@ -48,8 +48,9 @@ func (s *DeleteStatement) Scan(scanner types.Scanner, b []byte, args []interface
 
 func (s *DeleteStatement) AddWhere(e *ast.Expression) *DeleteStatement {
 	if s.where == nil {
-		s.where = &WhereClause{filters: make([]*ast.Expression, 0)}
+		s.where = ast.NewWhereClause(e)
+		return s
 	}
-	s.where.filters = append(s.where.filters, e)
+	s.where.AddExpression(e)
 	return s
 }

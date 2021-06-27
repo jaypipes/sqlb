@@ -18,7 +18,7 @@ type UpdateStatement struct {
 	table   *TableIdentifier
 	columns []*ColumnIdentifier
 	values  []interface{}
-	where   *WhereClause
+	where   *ast.WhereClause
 }
 
 func (s *UpdateStatement) ArgCount() int {
@@ -79,8 +79,9 @@ func (s *UpdateStatement) Scan(scanner types.Scanner, b []byte, args []interface
 
 func (s *UpdateStatement) AddWhere(e *ast.Expression) *UpdateStatement {
 	if s.where == nil {
-		s.where = &WhereClause{filters: make([]*ast.Expression, 0)}
+		s.where = ast.NewWhereClause(e)
+		return s
 	}
-	s.where.filters = append(s.where.filters, e)
+	s.where.AddExpression(e)
 	return s
 }

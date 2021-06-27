@@ -44,11 +44,9 @@ func TestUpdateStatement(t *testing.T) {
 				table:   users,
 				columns: []*ColumnIdentifier{colUserName},
 				values:  []interface{}{"foo"},
-				where: &WhereClause{
-					filters: []*ast.Expression{
-						ast.Equal(colUserName, "bar"),
-					},
-				},
+				where: ast.NewWhereClause(
+					ast.Equal(colUserName, "bar"),
+				),
 			},
 			qs:    "UPDATE users SET name = ? WHERE users.name = ?",
 			qargs: []interface{}{"foo", "bar"},

@@ -15,7 +15,7 @@ type SelectStatement struct {
 	projs      []types.Projection
 	selections []types.Selection
 	joins      []*JoinClause
-	where      *WhereClause
+	where      *ast.WhereClause
 	groupBy    *GroupByClause
 	having     *HavingClause
 	orderBy    *OrderByClause
@@ -137,9 +137,10 @@ func (s *SelectStatement) AddJoin(jc *JoinClause) *SelectStatement {
 
 func (s *SelectStatement) AddWhere(e *ast.Expression) *SelectStatement {
 	if s.where == nil {
-		s.where = &WhereClause{filters: make([]*ast.Expression, 0)}
+		s.where = ast.NewWhereClause(e)
+		return s
 	}
-	s.where.filters = append(s.where.filters, e)
+	s.where.AddExpression(e)
 	return s
 }
 

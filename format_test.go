@@ -36,11 +36,9 @@ func TestFormatOptions(t *testing.T) {
 				on:    ast.Equal(colArticleAuthor, colUserId),
 			},
 		},
-		where: &WhereClause{
-			filters: []*ast.Expression{
-				ast.Equal(colUserName, "foo"),
-			},
-		},
+		where: ast.NewWhereClause(
+			ast.Equal(colUserName, "foo"),
+		),
 		groupBy: &GroupByClause{
 			cols: []types.Projection{colUserName},
 		},

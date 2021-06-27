@@ -3,11 +3,13 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
-package sqlb
+
+package ast_test
 
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb"
 	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
@@ -19,98 +21,86 @@ func TestWhereClause(t *testing.T) {
 	assert := assert.New(t)
 
 	sc := testutil.Schema()
-	users := T(sc, "users")
+	users := sqlb.T(sc, "users")
 	colUserId := users.C("id")
 	colUserName := users.C("name")
 
 	tests := []struct {
 		name  string
-		c     *WhereClause
+		c     *ast.WhereClause
 		qs    string
 		qargs []interface{}
 	}{
 		{
 			name: "Empty WHERE clause",
-			c:    &WhereClause{},
+			c:    &ast.WhereClause{},
 			qs:   "",
 		},
 		{
 			name: "Single expression",
-			c: &WhereClause{
-				filters: []*ast.Expression{
-					ast.Equal(colUserName, "foo"),
-				},
-			},
+			c: ast.NewWhereClause(
+				ast.Equal(colUserName, "foo"),
+			),
 			qs:    " WHERE users.name = ?",
 			qargs: []interface{}{"foo"},
 		},
 		{
 			name: "AND expression",
-			c: &WhereClause{
-				filters: []*ast.Expression{
-					ast.And(
-						ast.NotEqual(colUserName, "foo"),
-						ast.NotEqual(colUserName, "bar"),
-					),
-				},
-			},
+			c: ast.NewWhereClause(
+				ast.And(
+					ast.NotEqual(colUserName, "foo"),
+					ast.NotEqual(colUserName, "bar"),
+				),
+			),
 			qs:    " WHERE (users.name != ? AND users.name != ?)",
 			qargs: []interface{}{"foo", "bar"},
 		},
 		{
 			name: "Multiple unary expressions should be AND'd together",
-			c: &WhereClause{
-				filters: []*ast.Expression{
-					ast.NotEqual(colUserName, "foo"),
-					ast.NotEqual(colUserName, "bar"),
-				},
-			},
+			c: ast.NewWhereClause(
+				ast.NotEqual(colUserName, "foo"),
+				ast.NotEqual(colUserName, "bar"),
+			),
 			qs:    " WHERE users.name != ? AND users.name != ?",
 			qargs: []interface{}{"foo", "bar"},
 		},
 		{
 			name: "OR expression",
-			c: &WhereClause{
-				filters: []*ast.Expression{
-					ast.Or(
-						ast.Equal(colUserName, "foo"),
-						ast.Equal(colUserName, "bar"),
-					),
-				},
-			},
+			c: ast.NewWhereClause(
+				ast.Or(
+					ast.Equal(colUserName, "foo"),
+					ast.Equal(colUserName, "bar"),
+				),
+			),
 			qs:    " WHERE (users.name = ? OR users.name = ?)",
 			qargs: []interface{}{"foo", "bar"},
 		},
 		{
 			name: "OR and another unary expression",
-			c: &WhereClause{
-				filters: []*ast.Expression{
-					ast.Or(
-						ast.Equal(colUserName, "foo"),
-						ast.Equal(colUserName, "bar"),
-					),
-					ast.NotEqual(colUserName, "baz"),
-				},
-			},
+			c: ast.NewWhereClause(
+				ast.Or(
+					ast.Equal(colUserName, "foo"),
+					ast.Equal(colUserName, "bar"),
+				),
+				ast.NotEqual(colUserName, "baz"),
+			),
 			qs:    " WHERE (users.name = ? OR users.name = ?) AND users.name != ?",
 			qargs: []interface{}{"foo", "bar", "baz"},
 		},
 		{
 			name: "Two AND expressions OR'd together",
-			c: &WhereClause{
-				filters: []*ast.Expression{
-					ast.Or(
-						ast.And(
-							ast.NotEqual(colUserName, "foo"),
-							ast.NotEqual(colUserName, "bar"),
-						),
-						ast.And(
-							ast.NotEqual(colUserName, "baz"),
-							ast.Equal(colUserId, 1),
-						),
+			c: ast.NewWhereClause(
+				ast.Or(
+					ast.And(
+						ast.NotEqual(colUserName, "foo"),
+						ast.NotEqual(colUserName, "bar"),
 					),
-				},
-			},
+					ast.And(
+						ast.NotEqual(colUserName, "baz"),
+						ast.Equal(colUserId, 1),
+					),
+				),
+			),
 			qs:    " WHERE ((users.name != ? AND users.name != ?) OR (users.name != ? AND users.id = ?))",
 			qargs: []interface{}{"foo", "bar", "baz", 1},
 		},

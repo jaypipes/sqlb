@@ -3,16 +3,20 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
-package sqlb
+
+package ast
 
 import (
-	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
 type WhereClause struct {
-	filters []*ast.Expression
+	filters []*Expression
+}
+
+func (w *WhereClause) AddExpression(e *Expression) {
+	w.filters = append(w.filters, e)
 }
 
 func (w *WhereClause) ArgCount() int {
@@ -50,4 +54,11 @@ func (w *WhereClause) Scan(scanner types.Scanner, b []byte, args []interface{}, 
 		}
 	}
 	return bw
+}
+
+// NewWhereClause returns a WhereClause populated with zero or more expressions
+func NewWhereClause(exprs ...*Expression) *WhereClause {
+	return &WhereClause{
+		filters: exprs,
+	}
 }

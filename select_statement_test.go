@@ -97,11 +97,9 @@ func TestSelectClause(t *testing.T) {
 			s: &SelectStatement{
 				selections: []types.Selection{users},
 				projs:      []types.Projection{colUserName},
-				where: &WhereClause{
-					filters: []*ast.Expression{
-						ast.Equal(colUserName, "foo"),
-					},
-				},
+				where: ast.NewWhereClause(
+					ast.Equal(colUserName, "foo"),
+				),
 			},
 			qs:    "SELECT users.name FROM users WHERE users.name = ?",
 			qargs: []interface{}{"foo"},
