@@ -39,9 +39,7 @@ func TestFormatOptions(t *testing.T) {
 		where: ast.NewWhereClause(
 			ast.Equal(colUserName, "foo"),
 		),
-		groupBy: &GroupByClause{
-			cols: []types.Projection{colUserName},
-		},
+		groupBy: ast.NewGroupByClause(colUserName),
 		orderBy: &OrderByClause{
 			scols: []*ast.SortColumn{colUserName.Desc()},
 		},

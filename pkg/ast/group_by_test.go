@@ -3,19 +3,21 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
-package sqlb
+
+package ast_test
 
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb"
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
-	"github.com/jaypipes/sqlb/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
 
 type GroupByClauseTest struct {
-	c     *GroupByClause
+	c     *ast.GroupByClause
 	qs    string
 	qargs []interface{}
 }
@@ -24,30 +26,24 @@ func TestGroupByClause(t *testing.T) {
 	assert := assert.New(t)
 
 	sc := testutil.Schema()
-	users := T(sc, "users")
+	users := sqlb.T(sc, "users")
 	colUserId := users.C("id")
 	colUserName := users.C("name")
 
 	tests := []GroupByClauseTest{
 		// Single column
 		GroupByClauseTest{
-			c: &GroupByClause{
-				cols: []types.Projection{colUserName},
-			},
+			c:  ast.NewGroupByClause(colUserName),
 			qs: " GROUP BY users.name",
 		},
 		// Multiple columns
 		GroupByClauseTest{
-			c: &GroupByClause{
-				cols: []types.Projection{colUserName, colUserId},
-			},
+			c:  ast.NewGroupByClause(colUserName, colUserId),
 			qs: " GROUP BY users.name, users.id",
 		},
 		// Aliased column should NOT output alias in GROUP BY
 		GroupByClauseTest{
-			c: &GroupByClause{
-				cols: []types.Projection{colUserName.As("user_name")},
-			},
+			c:  ast.NewGroupByClause(colUserName.As("user_name")),
 			qs: " GROUP BY users.name",
 		},
 	}

@@ -130,9 +130,7 @@ func TestSelectClause(t *testing.T) {
 			s: &SelectStatement{
 				selections: []types.Selection{users},
 				projs:      []types.Projection{colUserName},
-				groupBy: &GroupByClause{
-					cols: []types.Projection{colUserName},
-				},
+				groupBy:    ast.NewGroupByClause(colUserName),
 			},
 			qs: "SELECT users.name FROM users GROUP BY users.name",
 		},
@@ -141,9 +139,7 @@ func TestSelectClause(t *testing.T) {
 			s: &SelectStatement{
 				selections: []types.Selection{users},
 				projs:      []types.Projection{colUserName},
-				groupBy: &GroupByClause{
-					cols: []types.Projection{colUserName},
-				},
+				groupBy:    ast.NewGroupByClause(colUserName),
 				orderBy: &OrderByClause{
 					scols: []*ast.SortColumn{colUserName.Desc()},
 				},

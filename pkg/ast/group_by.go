@@ -3,7 +3,8 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
-package sqlb
+
+package ast
 
 import (
 	"github.com/jaypipes/sqlb/pkg/grammar"
@@ -12,6 +13,14 @@ import (
 
 type GroupByClause struct {
 	cols []types.Projection
+}
+
+func (gb *GroupByClause) Columns() []types.Projection {
+	return gb.cols
+}
+
+func (gb *GroupByClause) AddColumn(c types.Projection) {
+	gb.cols = append(gb.cols, c)
 }
 
 func (gb *GroupByClause) ArgCount() int {
@@ -46,4 +55,11 @@ func (gb *GroupByClause) Scan(scanner types.Scanner, b []byte, args []interface{
 		}
 	}
 	return bw
+}
+
+// NewGroupByClause returns a new GroupByClause across one or more projections
+func NewGroupByClause(cols ...types.Projection) *GroupByClause {
+	return &GroupByClause{
+		cols: cols,
+	}
 }

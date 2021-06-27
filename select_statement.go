@@ -16,7 +16,7 @@ type SelectStatement struct {
 	selections []types.Selection
 	joins      []*ast.JoinClause
 	where      *ast.WhereClause
-	groupBy    *GroupByClause
+	groupBy    *ast.GroupByClause
 	having     *HavingClause
 	orderBy    *OrderByClause
 	limit      *LimitClause
@@ -150,20 +150,13 @@ func (s *SelectStatement) AddGroupBy(cols ...types.Projection) *SelectStatement 
 	if len(cols) == 0 {
 		return s
 	}
-	gb := s.groupBy
-	if gb == nil {
-		gb = &GroupByClause{
-			cols: make([]types.Projection, len(cols)),
-		}
-		for x, c := range cols {
-			gb.cols[x] = c
-		}
-	} else {
-		for _, c := range cols {
-			gb.cols = append(gb.cols, c)
-		}
+	if s.groupBy == nil {
+		s.groupBy = ast.NewGroupByClause(cols...)
+		return s
 	}
-	s.groupBy = gb
+	for _, c := range cols {
+		s.groupBy.AddColumn(c)
+	}
 	return s
 }
 
