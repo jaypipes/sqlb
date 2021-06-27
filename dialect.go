@@ -8,6 +8,7 @@ package sqlb
 import (
 	"strconv"
 
+	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
@@ -40,9 +41,9 @@ func interpolationLength(dialect types.Dialect, argc int) int {
 
 func scanInterpolationMarker(dialect types.Dialect, b []byte, position int) int {
 	if dialect == types.DIALECT_POSTGRESQL {
-		bw := copy(b, Symbols[SYM_DOLLAR])
+		bw := copy(b, grammar.Symbols[grammar.SYM_DOLLAR])
 		bw += copy(b[bw:], []byte(strconv.Itoa(position+1)))
 		return bw
 	}
-	return copy(b, Symbols[SYM_QUEST_MARK])
+	return copy(b, grammar.Symbols[grammar.SYM_QUEST_MARK])
 }

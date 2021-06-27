@@ -5,7 +5,10 @@
 //
 package sqlb
 
-import "github.com/jaypipes/sqlb/pkg/types"
+import (
+	"github.com/jaypipes/sqlb/pkg/grammar"
+	"github.com/jaypipes/sqlb/pkg/types"
+)
 
 type havingClause struct {
 	conditions []*Expression
@@ -24,8 +27,8 @@ func (c *havingClause) Size(scanner types.Scanner) int {
 	nconditions := len(c.conditions)
 	if nconditions > 0 {
 		size += len(scanner.FormatOptions().SeparateClauseWith)
-		size += len(Symbols[SYM_HAVING])
-		size += len(Symbols[SYM_AND]) * (nconditions - 1)
+		size += len(grammar.Symbols[grammar.SYM_HAVING])
+		size += len(grammar.Symbols[grammar.SYM_AND]) * (nconditions - 1)
 		for _, condition := range c.conditions {
 			size += condition.Size(scanner)
 		}
@@ -37,10 +40,10 @@ func (c *havingClause) Scan(scanner types.Scanner, b []byte, args []interface{},
 	bw := 0
 	if len(c.conditions) > 0 {
 		bw += copy(b[bw:], scanner.FormatOptions().SeparateClauseWith)
-		bw += copy(b[bw:], Symbols[SYM_HAVING])
+		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_HAVING])
 		for x, condition := range c.conditions {
 			if x > 0 {
-				bw += copy(b[bw:], Symbols[SYM_AND])
+				bw += copy(b[bw:], grammar.Symbols[grammar.SYM_AND])
 			}
 			bw += condition.Scan(scanner, b[bw:], args, curArg)
 		}

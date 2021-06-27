@@ -5,7 +5,10 @@
 //
 package sqlb
 
-import "github.com/jaypipes/sqlb/pkg/types"
+import (
+	"github.com/jaypipes/sqlb/pkg/grammar"
+	"github.com/jaypipes/sqlb/pkg/types"
+)
 
 // A derived table is a SELECT in the FROM clause. It is always aliased and the
 // projections for a derived table take this alias as their selection alias.
@@ -59,17 +62,17 @@ func (dt *derivedTable) ArgCount() int {
 
 func (dt *derivedTable) Size(scanner types.Scanner) int {
 	size := dt.from.Size(scanner)
-	size += (len(Symbols[SYM_LPAREN]) + len(Symbols[SYM_RPAREN]) +
-		len(Symbols[SYM_AS]) + len(dt.alias))
+	size += (len(grammar.Symbols[grammar.SYM_LPAREN]) + len(grammar.Symbols[grammar.SYM_RPAREN]) +
+		len(grammar.Symbols[grammar.SYM_AS]) + len(dt.alias))
 	return size
 }
 
 func (dt *derivedTable) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
-	bw += copy(b[bw:], Symbols[SYM_LPAREN])
+	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_LPAREN])
 	bw += dt.from.Scan(scanner, b[bw:], args, curArg)
-	bw += copy(b[bw:], Symbols[SYM_RPAREN])
-	bw += copy(b[bw:], Symbols[SYM_AS])
+	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_RPAREN])
+	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_AS])
 	bw += copy(b[bw:], dt.alias)
 	return bw
 }
@@ -145,14 +148,14 @@ func (dc *derivedColumn) ArgCount() int {
 
 func (dc *derivedColumn) Size(scanner types.Scanner) int {
 	size := len(dc.dt.alias)
-	size += len(Symbols[SYM_PERIOD])
+	size += len(grammar.Symbols[grammar.SYM_PERIOD])
 	if dc.c.alias != "" {
 		size += len(dc.c.alias)
 	} else {
 		size += len(dc.c.name)
 	}
 	if dc.alias != "" {
-		size += len(Symbols[SYM_AS]) + len(dc.alias)
+		size += len(grammar.Symbols[grammar.SYM_AS]) + len(dc.alias)
 	}
 	return size
 }
@@ -160,14 +163,14 @@ func (dc *derivedColumn) Size(scanner types.Scanner) int {
 func (dc *derivedColumn) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	bw += copy(b[bw:], dc.dt.alias)
-	bw += copy(b[bw:], Symbols[SYM_PERIOD])
+	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_PERIOD])
 	if dc.c.alias != "" {
 		bw += copy(b[bw:], dc.c.alias)
 	} else {
 		bw += copy(b[bw:], dc.c.name)
 	}
 	if dc.alias != "" {
-		bw += copy(b[bw:], Symbols[SYM_AS])
+		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_AS])
 		bw += copy(b[bw:], dc.alias)
 	}
 	return bw

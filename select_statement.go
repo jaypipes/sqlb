@@ -6,6 +6,7 @@
 package sqlb
 
 import (
+	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
@@ -50,20 +51,20 @@ func (s *selectStatement) ArgCount() int {
 }
 
 func (s *selectStatement) Size(scanner types.Scanner) int {
-	size := len(Symbols[SYM_SELECT])
+	size := len(grammar.Symbols[grammar.SYM_SELECT])
 	nprojs := len(s.projs)
 	for _, p := range s.projs {
 		size += p.Size(scanner)
 	}
-	size += (len(Symbols[SYM_COMMA_WS]) * (nprojs - 1)) // the commas...
+	size += (len(grammar.Symbols[grammar.SYM_COMMA_WS]) * (nprojs - 1)) // the commas...
 	nsels := len(s.selections)
 	if nsels > 0 {
 		size += len(scanner.FormatOptions().SeparateClauseWith)
-		size += len(Symbols[SYM_FROM])
+		size += len(grammar.Symbols[grammar.SYM_FROM])
 		for _, sel := range s.selections {
 			size += sel.Size(scanner)
 		}
-		size += (len(Symbols[SYM_COMMA_WS]) * (nsels - 1)) // the commas...
+		size += (len(grammar.Symbols[grammar.SYM_COMMA_WS]) * (nsels - 1)) // the commas...
 		for _, join := range s.joins {
 			size += join.Size(scanner)
 		}
@@ -88,22 +89,22 @@ func (s *selectStatement) Size(scanner types.Scanner) int {
 
 func (s *selectStatement) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
-	bw += copy(b[bw:], Symbols[SYM_SELECT])
+	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_SELECT])
 	nprojs := len(s.projs)
 	for x, p := range s.projs {
 		bw += p.Scan(scanner, b[bw:], args, curArg)
 		if x != (nprojs - 1) {
-			bw += copy(b[bw:], Symbols[SYM_COMMA_WS])
+			bw += copy(b[bw:], grammar.Symbols[grammar.SYM_COMMA_WS])
 		}
 	}
 	nsels := len(s.selections)
 	if nsels > 0 {
 		bw += copy(b[bw:], scanner.FormatOptions().SeparateClauseWith)
-		bw += copy(b[bw:], Symbols[SYM_FROM])
+		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_FROM])
 		for x, sel := range s.selections {
 			bw += sel.Scan(scanner, b[bw:], args, curArg)
 			if x != (nsels - 1) {
-				bw += copy(b[bw:], Symbols[SYM_COMMA_WS])
+				bw += copy(b[bw:], grammar.Symbols[grammar.SYM_COMMA_WS])
 			}
 		}
 		for _, join := range s.joins {

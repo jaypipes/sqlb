@@ -5,100 +5,15 @@
 //
 package sqlb
 
-import "github.com/jaypipes/sqlb/pkg/types"
-
-type funcId int
-
-const (
-	FUNC_MAX funcId = iota
-	FUNC_MIN
-	FUNC_SUM
-	FUNC_AVG
-	FUNC_COUNT_STAR
-	FUNC_COUNT_DISTINCT
-	FUNC_CAST
-	FUNC_CHAR_LENGTH
-	FUNC_BIT_LENGTH
-	FUNC_ASCII
-	FUNC_REVERSE
-	FUNC_CONCAT
-	FUNC_CONCAT_WS
-	FUNC_NOW
-	FUNC_CURRENT_TIMESTAMP
-	FUNC_CURRENT_TIME
-	FUNC_CURRENT_DATE
-	FUNC_EXTRACT
-)
-
-var (
-	// A static table containing information used in constructing the
-	// expression's SQL string during scan() calls
-	funcScanTable = map[funcId]scanInfo{
-		FUNC_MAX: scanInfo{
-			SYM_MAX, SYM_ELEMENT, SYM_RPAREN,
-		},
-		FUNC_MIN: scanInfo{
-			SYM_MIN, SYM_ELEMENT, SYM_RPAREN,
-		},
-		FUNC_SUM: scanInfo{
-			SYM_SUM, SYM_ELEMENT, SYM_RPAREN,
-		},
-		FUNC_AVG: scanInfo{
-			SYM_AVG, SYM_ELEMENT, SYM_RPAREN,
-		},
-		FUNC_COUNT_STAR: scanInfo{
-			SYM_COUNT_STAR,
-		},
-		FUNC_COUNT_DISTINCT: scanInfo{
-			SYM_COUNT_DISTINCT, SYM_ELEMENT, SYM_RPAREN,
-		},
-		FUNC_CAST: scanInfo{
-			SYM_CAST, SYM_ELEMENT, SYM_AS, SYM_PLACEHOLDER, SYM_RPAREN,
-		},
-		FUNC_CHAR_LENGTH: scanInfo{
-			SYM_CHAR_LENGTH, SYM_ELEMENT, SYM_RPAREN,
-		},
-		FUNC_BIT_LENGTH: scanInfo{
-			SYM_BIT_LENGTH, SYM_ELEMENT, SYM_RPAREN,
-		},
-		FUNC_ASCII: scanInfo{
-			SYM_ASCII, SYM_ELEMENT, SYM_RPAREN,
-		},
-		FUNC_REVERSE: scanInfo{
-			SYM_REVERSE, SYM_ELEMENT, SYM_RPAREN,
-		},
-		FUNC_CONCAT: scanInfo{
-			SYM_CONCAT, SYM_ELEMENT, SYM_RPAREN,
-		},
-		FUNC_CONCAT_WS: scanInfo{
-			SYM_CONCAT_WS, SYM_ELEMENT, SYM_COMMA_WS, SYM_ELEMENT, SYM_RPAREN,
-		},
-		FUNC_NOW: scanInfo{
-			SYM_NOW,
-		},
-		FUNC_CURRENT_TIMESTAMP: scanInfo{
-			SYM_CURRENT_TIMESTAMP,
-		},
-		FUNC_CURRENT_TIME: scanInfo{
-			SYM_CURRENT_TIME,
-		},
-		FUNC_CURRENT_DATE: scanInfo{
-			SYM_CURRENT_DATE,
-		},
-		// This is the MySQL variant of EXTRACT, which follows the form
-		// EXTRACT(field FROM source). PostgreSQL has a different format for
-		// EXTRACT() which follows the following format:
-		// EXTRACT(field FROM [interval|timestamp] source)
-		FUNC_EXTRACT: scanInfo{
-			SYM_EXTRACT, SYM_PLACEHOLDER, SYM_SPACE, SYM_FROM, SYM_ELEMENT, SYM_RPAREN,
-		},
-	}
+import (
+	"github.com/jaypipes/sqlb/pkg/grammar"
+	"github.com/jaypipes/sqlb/pkg/types"
 )
 
 type sqlFunc struct {
 	sel      types.Selection
 	alias    string
-	scanInfo scanInfo
+	ScanInfo grammar.ScanInfo
 	elements []types.Element
 }
 
@@ -132,9 +47,9 @@ func (e *sqlFunc) ArgCount() int {
 func (f *sqlFunc) Size(scanner types.Scanner) int {
 	size := 0
 	elidx := 0
-	for _, sym := range f.scanInfo {
+	for _, sym := range f.ScanInfo {
 		switch sym {
-		case SYM_ELEMENT:
+		case grammar.SYM_ELEMENT:
 			el := f.elements[elidx]
 			// We need to disable alias output for elements that are
 			// projections. We don't want to output, for example,
@@ -147,11 +62,11 @@ func (f *sqlFunc) Size(scanner types.Scanner) int {
 			elidx++
 			size += el.Size(scanner)
 		default:
-			size += len(Symbols[sym])
+			size += len(grammar.Symbols[sym])
 		}
 	}
 	if f.alias != "" {
-		size += len(Symbols[SYM_AS]) + len(f.alias)
+		size += len(grammar.Symbols[grammar.SYM_AS]) + len(f.alias)
 	}
 	return size
 }
@@ -159,8 +74,8 @@ func (f *sqlFunc) Size(scanner types.Scanner) int {
 func (f *sqlFunc) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	elidx := 0
-	for _, sym := range f.scanInfo {
-		if sym == SYM_ELEMENT {
+	for _, sym := range f.ScanInfo {
+		if sym == grammar.SYM_ELEMENT {
 			el := f.elements[elidx]
 			// We need to disable alias output for elements that are
 			// projections. We don't want to output, for example,
@@ -173,11 +88,11 @@ func (f *sqlFunc) Scan(scanner types.Scanner, b []byte, args []interface{}, curA
 			elidx++
 			bw += el.Scan(scanner, b[bw:], args, curArg)
 		} else {
-			bw += copy(b[bw:], Symbols[sym])
+			bw += copy(b[bw:], grammar.Symbols[sym])
 		}
 	}
 	if f.alias != "" {
-		bw += copy(b[bw:], Symbols[SYM_AS])
+		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_AS])
 		bw += copy(b[bw:], f.alias)
 	}
 	return bw
@@ -185,7 +100,7 @@ func (f *sqlFunc) Scan(scanner types.Scanner, b []byte, args []interface{}, curA
 
 func Max(p types.Projection) *sqlFunc {
 	return &sqlFunc{
-		scanInfo: funcScanTable[FUNC_MAX],
+		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_MAX),
 		elements: []types.Element{p.(types.Element)},
 		sel:      p.From(),
 	}
@@ -197,7 +112,7 @@ func (c *Column) Max() *sqlFunc {
 
 func Min(p types.Projection) *sqlFunc {
 	return &sqlFunc{
-		scanInfo: funcScanTable[FUNC_MIN],
+		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_MIN),
 		elements: []types.Element{p.(types.Element)},
 		sel:      p.From(),
 	}
@@ -209,7 +124,7 @@ func (c *Column) Min() *sqlFunc {
 
 func Sum(p types.Projection) *sqlFunc {
 	return &sqlFunc{
-		scanInfo: funcScanTable[FUNC_SUM],
+		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_SUM),
 		elements: []types.Element{p.(types.Element)},
 		sel:      p.From(),
 	}
@@ -221,7 +136,7 @@ func (c *Column) Sum() *sqlFunc {
 
 func Avg(p types.Projection) *sqlFunc {
 	return &sqlFunc{
-		scanInfo: funcScanTable[FUNC_AVG],
+		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_AVG),
 		elements: []types.Element{p.(types.Element)},
 		sel:      p.From(),
 	}
@@ -233,34 +148,34 @@ func (c *Column) Avg() *sqlFunc {
 
 func Count(sel types.Selection) *sqlFunc {
 	return &sqlFunc{
-		scanInfo: funcScanTable[FUNC_COUNT_STAR],
+		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_COUNT_STAR),
 		sel:      sel,
 	}
 }
 
 func CountDistinct(p types.Projection) *sqlFunc {
 	return &sqlFunc{
-		scanInfo: funcScanTable[FUNC_COUNT_DISTINCT],
+		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_COUNT_DISTINCT),
 		elements: []types.Element{p.(types.Element)},
 		sel:      p.From(),
 	}
 }
 
-func Cast(p types.Projection, stype SqlType) *sqlFunc {
-	si := make([]Symbol, len(funcScanTable[FUNC_CAST]))
-	copy(si, funcScanTable[FUNC_CAST])
+func Cast(p types.Projection, stype grammar.SqlType) *sqlFunc {
+	si := make([]grammar.Symbol, len(grammar.FunctionScanTable(grammar.FUNC_CAST)))
+	copy(si, grammar.FunctionScanTable(grammar.FUNC_CAST))
 	// Replace the placeholder with the SQL type's appropriate []byte
 	// representation
-	si[3] = sqlTypeToSymbol[stype]
+	si[3] = grammar.SQLTypeToSymbol(stype)
 	return &sqlFunc{
-		scanInfo: si,
+		ScanInfo: si,
 		elements: []types.Element{p.(types.Element)},
 	}
 }
 
 func CharLength(p types.Projection) *sqlFunc {
 	return &sqlFunc{
-		scanInfo: funcScanTable[FUNC_CHAR_LENGTH],
+		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_CHAR_LENGTH),
 		elements: []types.Element{p.(types.Element)},
 		sel:      p.From(),
 	}
@@ -272,7 +187,7 @@ func (c *Column) CharLength() *sqlFunc {
 
 func BitLength(p types.Projection) *sqlFunc {
 	return &sqlFunc{
-		scanInfo: funcScanTable[FUNC_BIT_LENGTH],
+		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_BIT_LENGTH),
 		elements: []types.Element{p.(types.Element)},
 		sel:      p.From(),
 	}
@@ -284,7 +199,7 @@ func (c *Column) BitLength() *sqlFunc {
 
 func Ascii(p types.Projection) *sqlFunc {
 	return &sqlFunc{
-		scanInfo: funcScanTable[FUNC_ASCII],
+		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_ASCII),
 		elements: []types.Element{p.(types.Element)},
 		sel:      p.From(),
 	}
@@ -296,7 +211,7 @@ func (c *Column) Ascii() *sqlFunc {
 
 func Reverse(p types.Projection) *sqlFunc {
 	return &sqlFunc{
-		scanInfo: funcScanTable[FUNC_REVERSE],
+		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_REVERSE),
 		elements: []types.Element{p.(types.Element)},
 		sel:      p.From(),
 	}
@@ -313,7 +228,7 @@ func Concat(projs ...types.Projection) *sqlFunc {
 	}
 	subjects := &List{elements: els}
 	return &sqlFunc{
-		scanInfo: funcScanTable[FUNC_CONCAT],
+		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_CONCAT),
 		elements: []types.Element{subjects},
 		// TODO(jaypipes): Clearly we need to support >1 selection...
 		sel: projs[0].From(),
@@ -327,7 +242,7 @@ func ConcatWs(sep string, projs ...types.Projection) *sqlFunc {
 	}
 	subjects := &List{elements: els}
 	return &sqlFunc{
-		scanInfo: funcScanTable[FUNC_CONCAT_WS],
+		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_CONCAT_WS),
 		elements: []types.Element{&value{val: sep}, subjects},
 		// TODO(jaypipes): Clearly we need to support >1 selection...
 		sel: projs[0].From(),
@@ -336,36 +251,36 @@ func ConcatWs(sep string, projs ...types.Projection) *sqlFunc {
 
 func Now() *sqlFunc {
 	return &sqlFunc{
-		scanInfo: funcScanTable[FUNC_NOW],
+		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_NOW),
 	}
 }
 
 func CurrentTimestamp() *sqlFunc {
 	return &sqlFunc{
-		scanInfo: funcScanTable[FUNC_CURRENT_TIMESTAMP],
+		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_CURRENT_TIMESTAMP),
 	}
 }
 
 func CurrentTime() *sqlFunc {
 	return &sqlFunc{
-		scanInfo: funcScanTable[FUNC_CURRENT_TIME],
+		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_CURRENT_TIME),
 	}
 }
 
 func CurrentDate() *sqlFunc {
 	return &sqlFunc{
-		scanInfo: funcScanTable[FUNC_CURRENT_DATE],
+		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_CURRENT_DATE),
 	}
 }
 
-func Extract(p types.Projection, unit IntervalUnit) *sqlFunc {
-	si := make([]Symbol, len(funcScanTable[FUNC_EXTRACT]))
-	copy(si, funcScanTable[FUNC_EXTRACT])
+func Extract(p types.Projection, unit grammar.IntervalUnit) *sqlFunc {
+	si := make([]grammar.Symbol, len(grammar.FunctionScanTable(grammar.FUNC_EXTRACT)))
+	copy(si, grammar.FunctionScanTable(grammar.FUNC_EXTRACT))
 	// Replace the placeholder with the interval unit's appropriate []byte
 	// representation
-	si[1] = intervalUnitToSymbol[unit]
+	si[1] = grammar.IntervalUnitToSymbol(unit)
 	return &sqlFunc{
-		scanInfo: si,
+		ScanInfo: si,
 		elements: []types.Element{p.(types.Element)},
 	}
 }

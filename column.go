@@ -7,6 +7,7 @@
 package sqlb
 
 import (
+	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
@@ -41,10 +42,10 @@ func (c *Column) Size(scanner types.Scanner) int {
 	} else {
 		size += len(c.tbl.name)
 	}
-	size += len(Symbols[SYM_PERIOD])
+	size += len(grammar.Symbols[grammar.SYM_PERIOD])
 	size += len(c.name)
 	if c.alias != "" {
-		size += len(Symbols[SYM_AS]) + len(c.alias)
+		size += len(grammar.Symbols[grammar.SYM_AS]) + len(c.alias)
 	}
 	return size
 }
@@ -56,10 +57,10 @@ func (c *Column) Scan(scanner types.Scanner, b []byte, args []interface{}, curAr
 	} else {
 		bw += copy(b[bw:], c.tbl.name)
 	}
-	bw += copy(b[bw:], Symbols[SYM_PERIOD])
+	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_PERIOD])
 	bw += copy(b[bw:], c.name)
 	if c.alias != "" {
-		bw += copy(b[bw:], Symbols[SYM_AS])
+		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_AS])
 		bw += copy(b[bw:], c.alias)
 	}
 	return bw

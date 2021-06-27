@@ -5,7 +5,10 @@
 //
 package sqlb
 
-import "github.com/jaypipes/sqlb/pkg/types"
+import (
+	"github.com/jaypipes/sqlb/pkg/grammar"
+	"github.com/jaypipes/sqlb/pkg/types"
+)
 
 type Table struct {
 	alias   string
@@ -53,7 +56,7 @@ func (t *Table) ArgCount() int {
 func (t *Table) Size(scanner types.Scanner) int {
 	size := len(t.name)
 	if t.alias != "" {
-		size += len(Symbols[SYM_AS]) + len(t.alias)
+		size += len(grammar.Symbols[grammar.SYM_AS]) + len(t.alias)
 	}
 	return size
 }
@@ -61,7 +64,7 @@ func (t *Table) Size(scanner types.Scanner) int {
 func (t *Table) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := copy(b, t.name)
 	if t.alias != "" {
-		bw += copy(b[bw:], Symbols[SYM_AS])
+		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_AS])
 		bw += copy(b[bw:], t.alias)
 	}
 	return bw

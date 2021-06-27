@@ -5,7 +5,10 @@
 //
 package sqlb
 
-import "github.com/jaypipes/sqlb/pkg/types"
+import (
+	"github.com/jaypipes/sqlb/pkg/grammar"
+	"github.com/jaypipes/sqlb/pkg/types"
+)
 
 // A List is a concrete struct wrapper around an array of elements that
 // implements the element interface.
@@ -27,7 +30,7 @@ func (l *List) Size(scanner types.Scanner) int {
 	for _, el := range l.elements {
 		size += el.Size(scanner)
 	}
-	return size + (len(Symbols[SYM_COMMA_WS]) * (nels - 1)) // the commas...
+	return size + (len(grammar.Symbols[grammar.SYM_COMMA_WS]) * (nels - 1)) // the commas...
 }
 
 func (l *List) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
@@ -36,7 +39,7 @@ func (l *List) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg 
 	for x, el := range l.elements {
 		bw += el.Scan(scanner, b[bw:], args, curArg)
 		if x != (nels - 1) {
-			bw += copy(b[bw:], Symbols[SYM_COMMA_WS])
+			bw += copy(b[bw:], grammar.Symbols[grammar.SYM_COMMA_WS])
 		}
 	}
 	return bw
