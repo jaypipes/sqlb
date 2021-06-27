@@ -17,7 +17,7 @@ type SelectStatement struct {
 	joins      []*ast.JoinClause
 	where      *ast.WhereClause
 	groupBy    *ast.GroupByClause
-	having     *HavingClause
+	having     *ast.HavingClause
 	orderBy    *OrderByClause
 	limit      *LimitClause
 }
@@ -162,9 +162,10 @@ func (s *SelectStatement) AddGroupBy(cols ...types.Projection) *SelectStatement 
 
 func (s *SelectStatement) AddHaving(e *ast.Expression) *SelectStatement {
 	if s.having == nil {
-		s.having = &HavingClause{conditions: make([]*ast.Expression, 0)}
+		s.having = ast.NewHavingClause(e)
+		return s
 	}
-	s.having.conditions = append(s.having.conditions, e)
+	s.having.AddCondition(e)
 	return s
 }
 

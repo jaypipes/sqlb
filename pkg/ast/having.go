@@ -3,16 +3,24 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
-package sqlb
+
+package ast
 
 import (
-	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
 type HavingClause struct {
-	conditions []*ast.Expression
+	conditions []*Expression
+}
+
+func (c *HavingClause) Conditions() []*Expression {
+	return c.conditions
+}
+
+func (c *HavingClause) AddCondition(e *Expression) {
+	c.conditions = append(c.conditions, e)
 }
 
 func (c *HavingClause) ArgCount() int {
@@ -50,4 +58,12 @@ func (c *HavingClause) Scan(scanner types.Scanner, b []byte, args []interface{},
 		}
 	}
 	return bw
+}
+
+// NewHavingClause returns a new HavingClause populated with zero or more
+// Expression conditions
+func NewHavingClause(conds ...*Expression) *HavingClause {
+	return &HavingClause{
+		conditions: conds,
+	}
 }
