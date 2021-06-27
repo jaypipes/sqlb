@@ -114,3 +114,33 @@ func (c *ColumnIdentifier) CharLength() *ast.Function {
 func (c *ColumnIdentifier) BitLength() *ast.Function {
 	return ast.BitLength(c)
 }
+
+func (c *ColumnIdentifier) Trim() *ast.TrimFunction {
+	f := ast.Trim(c)
+	return f
+}
+
+func (c *ColumnIdentifier) LTrim() *ast.TrimFunction {
+	f := ast.LTrim(c)
+	return f
+}
+
+func (c *ColumnIdentifier) RTrim() *ast.TrimFunction {
+	f := ast.LTrim(c)
+	return f
+}
+
+func (c *ColumnIdentifier) TrimChars(chars string) *ast.TrimFunction {
+	f := ast.TrimChars(c, chars)
+	return f
+}
+
+func (c *ColumnIdentifier) LTrimChars(chars string) *ast.TrimFunction {
+	f := ast.LTrimChars(c, chars)
+	return f
+}
+
+func (c *ColumnIdentifier) RTrimChars(chars string) *ast.TrimFunction {
+	f := ast.RTrimChars(c, chars)
+	return f
+}

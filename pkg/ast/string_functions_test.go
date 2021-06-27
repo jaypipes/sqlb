@@ -3,11 +3,14 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
-package sqlb
+
+package ast_test
 
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb"
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/jaypipes/sqlb/pkg/types"
@@ -18,7 +21,7 @@ func TestTrimFunctions(t *testing.T) {
 	assert := assert.New(t)
 
 	sc := testutil.Schema()
-	users := T(sc, "users")
+	users := sqlb.T(sc, "users")
 	colUserName := users.C("name")
 
 	tests := []struct {
@@ -29,7 +32,7 @@ func TestTrimFunctions(t *testing.T) {
 	}{
 		{
 			name: "TRIM(column) or BTRIM(column)",
-			el:   Trim(colUserName),
+			el:   ast.Trim(colUserName),
 			qs: map[types.Dialect]string{
 				types.DIALECT_MYSQL:      "TRIM(users.name)",
 				types.DIALECT_POSTGRESQL: "BTRIM(users.name)",
@@ -37,7 +40,7 @@ func TestTrimFunctions(t *testing.T) {
 		},
 		{
 			name: "LTRIM(column) or TRIM(LEADING FROM column)",
-			el:   LTrim(colUserName),
+			el:   ast.LTrim(colUserName),
 			qs: map[types.Dialect]string{
 				types.DIALECT_MYSQL:      "LTRIM(users.name)",
 				types.DIALECT_POSTGRESQL: "TRIM(LEADING FROM users.name)",
@@ -45,7 +48,7 @@ func TestTrimFunctions(t *testing.T) {
 		},
 		{
 			name: "RTRIM(column) or TRIM(TRAILING FROM column)",
-			el:   RTrim(colUserName),
+			el:   ast.RTrim(colUserName),
 			qs: map[types.Dialect]string{
 				types.DIALECT_MYSQL:      "RTRIM(users.name)",
 				types.DIALECT_POSTGRESQL: "TRIM(TRAILING FROM users.name)",
@@ -53,7 +56,7 @@ func TestTrimFunctions(t *testing.T) {
 		},
 		{
 			name: "TRIM(remstr FROM column) OR BTRIM(column, chars)",
-			el:   TrimChars(colUserName, "xyz"),
+			el:   ast.TrimChars(colUserName, "xyz"),
 			qs: map[types.Dialect]string{
 				types.DIALECT_MYSQL:      "TRIM(? FROM users.name)",
 				types.DIALECT_POSTGRESQL: "BTRIM(users.name, $1)",
@@ -62,7 +65,7 @@ func TestTrimFunctions(t *testing.T) {
 		},
 		{
 			name: "TRIM(LEADING remstr FROM column)",
-			el:   LTrimChars(colUserName, "xyz"),
+			el:   ast.LTrimChars(colUserName, "xyz"),
 			qs: map[types.Dialect]string{
 				types.DIALECT_MYSQL:      "TRIM(LEADING ? FROM users.name)",
 				types.DIALECT_POSTGRESQL: "TRIM(LEADING $1 FROM users.name)",
@@ -71,7 +74,7 @@ func TestTrimFunctions(t *testing.T) {
 		},
 		{
 			name: "TRIM(TRAILING remstr FROM column)",
-			el:   RTrimChars(colUserName, "xyz"),
+			el:   ast.RTrimChars(colUserName, "xyz"),
 			qs: map[types.Dialect]string{
 				types.DIALECT_MYSQL:      "TRIM(TRAILING ? FROM users.name)",
 				types.DIALECT_POSTGRESQL: "TRIM(TRAILING $1 FROM users.name)",
