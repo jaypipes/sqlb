@@ -8,6 +8,7 @@ package sqlb
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,7 +17,7 @@ func TestValue(t *testing.T) {
 
 	v := &value{val: "foo"}
 
-	s := v.Size(defaultScanner)
+	s := v.Size(scanner.DefaultScanner)
 	// Due to dialect handling, we can't include interpolation markers in the
 	// size calculation, so size() always returns 0 for non-aliased values.
 	assert.Equal(0, s)
@@ -27,7 +28,7 @@ func TestValue(t *testing.T) {
 	args := make([]interface{}, 1)
 	b := make([]byte, 1)
 	curArg := 0
-	written := v.Scan(defaultScanner, b, args, &curArg)
+	written := v.Scan(scanner.DefaultScanner, b, args, &curArg)
 
 	exp := "?"
 	expLen := len(exp)

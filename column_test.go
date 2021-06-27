@@ -8,6 +8,7 @@ package sqlb
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,11 +20,11 @@ func TestC(t *testing.T) {
 
 	exp := "users.name"
 	expLen := len(exp)
-	s := c.Size(defaultScanner)
+	s := c.Size(scanner.DefaultScanner)
 	assert.Equal(expLen, s)
 
 	b := make([]byte, s)
-	written := c.Scan(defaultScanner, b, nil, nil)
+	written := c.Scan(scanner.DefaultScanner, b, nil, nil)
 
 	assert.Equal(written, s)
 	assert.Equal(exp, string(b))
@@ -37,11 +38,11 @@ func TestColumnWithTableAlias(t *testing.T) {
 
 	exp := "u.name"
 	expLen := len(exp)
-	s := c.Size(defaultScanner)
+	s := c.Size(scanner.DefaultScanner)
 	assert.Equal(expLen, s)
 
 	b := make([]byte, s)
-	written := c.Scan(defaultScanner, b, nil, nil)
+	written := c.Scan(scanner.DefaultScanner, b, nil, nil)
 
 	assert.Equal(written, s)
 	assert.Equal(exp, string(b))
@@ -55,11 +56,11 @@ func TestColumnAlias(t *testing.T) {
 
 	exp := "users.name AS user_name"
 	expLen := len(exp)
-	s := c.Size(defaultScanner)
+	s := c.Size(scanner.DefaultScanner)
 	assert.Equal(expLen, s)
 
 	b := make([]byte, s)
-	written := c.Scan(defaultScanner, b, nil, nil)
+	written := c.Scan(scanner.DefaultScanner, b, nil, nil)
 
 	assert.Equal(written, s)
 	assert.Equal(exp, string(b))

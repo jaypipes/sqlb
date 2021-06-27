@@ -8,6 +8,7 @@ package sqlb
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
@@ -49,7 +50,7 @@ func TestFormatOptions(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		scanner *sqlScanner
+		scanner types.Scanner
 		s       *SelectStatement
 		qs      string
 		qargs   []interface{}
@@ -62,12 +63,11 @@ func TestFormatOptions(t *testing.T) {
 		},
 		{
 			name: "newline clause separator ",
-			scanner: &sqlScanner{
-				dialect: types.DIALECT_MYSQL,
-				format: &types.FormatOptions{
+			scanner: scanner.New(types.DIALECT_MYSQL).WithFormatOptions(
+				&types.FormatOptions{
 					SeparateClauseWith: "\n",
 				},
-			},
+			),
 			s: stmt,
 			qs: `SELECT articles.id, users.name AS author
 FROM articles
@@ -80,13 +80,12 @@ LIMIT ?`,
 		},
 		{
 			name: "newline clause separator with prefix newline",
-			scanner: &sqlScanner{
-				dialect: types.DIALECT_MYSQL,
-				format: &types.FormatOptions{
+			scanner: scanner.New(types.DIALECT_MYSQL).WithFormatOptions(
+				&types.FormatOptions{
 					SeparateClauseWith: "\n",
 					PrefixWith:         "\n",
 				},
-			},
+			),
 			s: stmt,
 			qs: `
 SELECT articles.id, users.name AS author
@@ -100,13 +99,13 @@ LIMIT ?`,
 		},
 	}
 	for _, test := range tests {
-		scanner := test.scanner
-		if scanner == nil {
-			scanner = defaultScanner
+		sc := test.scanner
+		if sc == nil {
+			sc = scanner.DefaultScanner
 		}
 		sel := &SelectQuery{
 			sel:     test.s,
-			scanner: scanner,
+			scanner: sc,
 		}
 		qs, qargs := sel.StringArgs()
 		assert.Equal(qs, test.qs)

@@ -10,6 +10,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
@@ -201,13 +202,13 @@ func TestSelectClause(t *testing.T) {
 		assert.Equal(expArgc, argc)
 
 		expLen := len(test.qs)
-		size := test.s.Size(defaultScanner)
-		size += interpolationLength(types.DIALECT_MYSQL, argc)
+		size := test.s.Size(scanner.DefaultScanner)
+		size += scanner.InterpolationLength(types.DIALECT_MYSQL, argc)
 		assert.Equal(expLen, size)
 
 		b := make([]byte, size)
 		curArg := 0
-		written := test.s.Scan(defaultScanner, b, test.qargs, &curArg)
+		written := test.s.Scan(scanner.DefaultScanner, b, test.qargs, &curArg)
 
 		assert.Equal(written, size)
 		assert.Equal(test.qs, string(b))

@@ -8,6 +8,7 @@ package sqlb
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -104,7 +105,7 @@ func TestJoinClause(t *testing.T) {
 	}
 	for _, test := range tests {
 		expLen := len(test.qs)
-		s := test.c.Size(defaultScanner)
+		s := test.c.Size(scanner.DefaultScanner)
 		assert.Equal(expLen, s)
 
 		expArgc := len(test.qargs)
@@ -112,7 +113,7 @@ func TestJoinClause(t *testing.T) {
 
 		b := make([]byte, s)
 		curArg := 0
-		written := test.c.Scan(defaultScanner, b, test.qargs, &curArg)
+		written := test.c.Scan(scanner.DefaultScanner, b, test.qargs, &curArg)
 
 		assert.Equal(written, s)
 		assert.Equal(test.qs, string(b))

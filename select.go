@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
@@ -22,7 +23,7 @@ type SelectQuery struct {
 	b       []byte
 	args    []interface{}
 	sel     *SelectStatement
-	scanner *sqlScanner
+	scanner types.Scanner
 }
 
 func (q *SelectQuery) IsValid() bool {
@@ -260,10 +261,7 @@ func (q *SelectQuery) doJoin(
 }
 
 func Select(items ...interface{}) *SelectQuery {
-	scanner := &sqlScanner{
-		dialect: types.DIALECT_UNKNOWN,
-		format:  defaultFormatOptions,
-	}
+	scanner := scanner.New(types.DIALECT_UNKNOWN)
 	sq := &SelectQuery{
 		scanner: scanner,
 	}
@@ -329,13 +327,13 @@ func Select(items ...interface{}) *SelectQuery {
 		case *Column:
 			v := item.(*Column)
 			// Set scanner's dialect based on supplied meta's dialect
-			sq.scanner.dialect = v.tbl.meta.dialect
+			sq.scanner.WithDialect(v.tbl.meta.dialect)
 			sel.projs = append(sel.projs, v)
 			selectionMap[v.tbl] = true
 		case *Table:
 			v := item.(*Table)
 			// Set scanner's dialect based on supplied meta's dialect
-			sq.scanner.dialect = v.meta.dialect
+			sq.scanner.WithDialect(v.meta.dialect)
 			for _, c := range v.Projections() {
 				addToProjections(sel, c)
 			}

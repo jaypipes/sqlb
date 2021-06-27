@@ -7,6 +7,7 @@ package sqlb
 
 import (
 	"github.com/jaypipes/sqlb/pkg/grammar"
+	pkgscanner "github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
@@ -40,12 +41,12 @@ func (lc *LimitClause) Scan(scanner types.Scanner, b []byte, args []interface{},
 	bw := 0
 	bw += copy(b[bw:], scanner.FormatOptions().SeparateClauseWith)
 	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_LIMIT])
-	bw += scanInterpolationMarker(scanner.Dialect(), b[bw:], *curArg)
+	bw += pkgscanner.ScanInterpolationMarker(scanner.Dialect(), b[bw:], *curArg)
 	args[*curArg] = lc.limit
 	*curArg++
 	if lc.offset != nil {
 		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_OFFSET])
-		bw += scanInterpolationMarker(scanner.Dialect(), b[bw:], *curArg)
+		bw += pkgscanner.ScanInterpolationMarker(scanner.Dialect(), b[bw:], *curArg)
 		args[*curArg] = *lc.offset
 		*curArg++
 	}

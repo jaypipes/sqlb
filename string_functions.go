@@ -7,6 +7,7 @@ package sqlb
 
 import (
 	"github.com/jaypipes/sqlb/pkg/grammar"
+	pkgscanner "github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
@@ -138,7 +139,7 @@ func trimFuncScanMySQL(f *trimFunc, scanner types.Scanner, b []byte, args []inte
 			bw += copy(b[bw:], grammar.Symbols[grammar.SYM_TRIM])
 			bw += copy(b[bw:], grammar.Symbols[grammar.SYM_LEADING])
 			bw += copy(b[bw:], " ")
-			bw += scanInterpolationMarker(types.DIALECT_MYSQL, b[bw:], *curArg)
+			bw += pkgscanner.ScanInterpolationMarker(types.DIALECT_MYSQL, b[bw:], *curArg)
 			args[*curArg] = f.chars
 			*curArg++
 			bw += copy(b[bw:], " ")
@@ -152,7 +153,7 @@ func trimFuncScanMySQL(f *trimFunc, scanner types.Scanner, b []byte, args []inte
 			bw += copy(b[bw:], grammar.Symbols[grammar.SYM_TRIM])
 			bw += copy(b[bw:], grammar.Symbols[grammar.SYM_TRAILING])
 			bw += copy(b[bw:], " ")
-			bw += scanInterpolationMarker(types.DIALECT_MYSQL, b[bw:], *curArg)
+			bw += pkgscanner.ScanInterpolationMarker(types.DIALECT_MYSQL, b[bw:], *curArg)
 			args[*curArg] = f.chars
 			*curArg++
 			bw += copy(b[bw:], " ")
@@ -164,7 +165,7 @@ func trimFuncScanMySQL(f *trimFunc, scanner types.Scanner, b []byte, args []inte
 			bw += copy(b[bw:], grammar.Symbols[grammar.SYM_TRIM])
 		} else {
 			bw += copy(b[bw:], grammar.Symbols[grammar.SYM_TRIM])
-			bw += scanInterpolationMarker(types.DIALECT_MYSQL, b[bw:], *curArg)
+			bw += pkgscanner.ScanInterpolationMarker(types.DIALECT_MYSQL, b[bw:], *curArg)
 			args[*curArg] = f.chars
 			*curArg++
 			bw += copy(b[bw:], " ")
@@ -219,7 +220,7 @@ func trimFuncScanPostgreSQL(f *trimFunc, scanner types.Scanner, b []byte, args [
 		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_LEADING])
 		if f.chars != "" {
 			bw += copy(b[bw:], " ")
-			bw += scanInterpolationMarker(types.DIALECT_POSTGRESQL, b[bw:], *curArg)
+			bw += pkgscanner.ScanInterpolationMarker(types.DIALECT_POSTGRESQL, b[bw:], *curArg)
 			args[*curArg] = f.chars
 			*curArg++
 		}
@@ -231,7 +232,7 @@ func trimFuncScanPostgreSQL(f *trimFunc, scanner types.Scanner, b []byte, args [
 		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_TRAILING])
 		if f.chars != "" {
 			bw += copy(b[bw:], " ")
-			bw += scanInterpolationMarker(types.DIALECT_POSTGRESQL, b[bw:], *curArg)
+			bw += pkgscanner.ScanInterpolationMarker(types.DIALECT_POSTGRESQL, b[bw:], *curArg)
 			args[*curArg] = f.chars
 			*curArg++
 		}
@@ -243,7 +244,7 @@ func trimFuncScanPostgreSQL(f *trimFunc, scanner types.Scanner, b []byte, args [
 		bw += trimFuncScanSubject(f, scanner, b[bw:], args, curArg)
 		if f.chars != "" {
 			bw += copy(b[bw:], grammar.Symbols[grammar.SYM_COMMA_WS])
-			bw += scanInterpolationMarker(types.DIALECT_POSTGRESQL, b[bw:], *curArg)
+			bw += pkgscanner.ScanInterpolationMarker(types.DIALECT_POSTGRESQL, b[bw:], *curArg)
 			args[*curArg] = f.chars
 			*curArg++
 		}

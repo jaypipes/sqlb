@@ -7,6 +7,7 @@ package sqlb
 
 import (
 	"github.com/jaypipes/sqlb/pkg/grammar"
+	pkgscanner "github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
@@ -59,7 +60,7 @@ func (s *insertStatement) Scan(scanner types.Scanner, b []byte, args []interface
 	}
 	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_VALUES])
 	for x, v := range s.values {
-		bw += scanInterpolationMarker(scanner.Dialect(), b[bw:], *curArg)
+		bw += pkgscanner.ScanInterpolationMarker(scanner.Dialect(), b[bw:], *curArg)
 		args[*curArg] = v
 		*curArg++
 		if x != (ncols - 1) {
