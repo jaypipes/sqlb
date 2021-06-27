@@ -349,7 +349,7 @@ func Select(items ...interface{}) *SelectQuery {
 			// Everything else, make it a literal value projection, so, for
 			// instance, a user can do SELECT 1, which is, technically
 			// valid SQL.
-			p := &value{val: item}
+			p := &Value{val: item}
 			addToProjections(sel, p)
 		}
 	}

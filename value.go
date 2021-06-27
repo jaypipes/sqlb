@@ -11,43 +11,43 @@ import (
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
-// A value is a concrete struct wrapper around a constant that implements the
+// Value is a concrete struct wrapper around a constant that implements the
 // scannable interface. Typically, users won't directly construct value
 // structs but instead helper functions like sqlb.Equal() will construct a
 // value and bind it to the containing element.
-type value struct {
+type Value struct {
 	sel   types.Selection
 	alias string
 	val   interface{}
 }
 
-func (v *value) From() types.Selection {
+func (v *Value) From() types.Selection {
 	return v.sel
 }
 
-func (v *value) setAlias(alias string) *value {
+func (v *Value) SetAlias(alias string) *Value {
 	v.alias = alias
 	return v
 }
 
-func (v *value) As(alias string) *value {
-	return &value{
+func (v *Value) As(alias string) *Value {
+	return &Value{
 		alias: alias,
 		val:   v.val,
 	}
 }
 
-func (v *value) DisableAliasScan() func() {
+func (v *Value) DisableAliasScan() func() {
 	origAlias := v.alias
 	v.alias = ""
 	return func() { v.alias = origAlias }
 }
 
-func (v *value) ArgCount() int {
+func (v *Value) ArgCount() int {
 	return 1
 }
 
-func (v *value) Size(scanner types.Scanner) int {
+func (v *Value) Size(scanner types.Scanner) int {
 	// Due to dialect handling, we do not include the length of interpolation
 	// markers for query parameters. This is calculated separately by the
 	// top-level scanning struct before malloc'ing the buffer to inject the SQL
@@ -59,7 +59,7 @@ func (v *value) Size(scanner types.Scanner) int {
 	return size
 }
 
-func (v *value) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
+func (v *Value) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	args[*curArg] = v.val
 	bw := pkgscanner.ScanInterpolationMarker(scanner.Dialect(), b, *curArg)
 	*curArg++

@@ -15,7 +15,7 @@ import (
 func TestValue(t *testing.T) {
 	assert := assert.New(t)
 
-	v := &value{val: "foo"}
+	v := &Value{val: "foo"}
 
 	s := v.Size(scanner.DefaultScanner)
 	// Due to dialect handling, we can't include interpolation markers in the

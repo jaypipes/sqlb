@@ -39,7 +39,7 @@ func TestSelectClause(t *testing.T) {
 		{
 			name: "A literal value",
 			s: &SelectStatement{
-				projs: []types.Projection{&value{val: 1}},
+				projs: []types.Projection{&Value{val: 1}},
 			},
 			qs:    "SELECT ?",
 			qargs: []interface{}{1},
@@ -48,7 +48,7 @@ func TestSelectClause(t *testing.T) {
 			name: "A literal value aliased",
 			s: &SelectStatement{
 				projs: []types.Projection{
-					&value{alias: "foo", val: 1},
+					&Value{alias: "foo", val: 1},
 				},
 			},
 			qs:    "SELECT ? AS foo",
@@ -58,8 +58,8 @@ func TestSelectClause(t *testing.T) {
 			name: "Two literal values",
 			s: &SelectStatement{
 				projs: []types.Projection{
-					&value{val: 1},
-					&value{val: 1},
+					&Value{val: 1},
+					&Value{val: 1},
 				},
 			},
 			qs:    "SELECT ?, ?",

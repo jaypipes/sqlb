@@ -243,7 +243,7 @@ func ConcatWs(sep string, projs ...types.Projection) *sqlFunc {
 	subjects := &List{elements: els}
 	return &sqlFunc{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_CONCAT_WS),
-		elements: []types.Element{&value{val: sep}, subjects},
+		elements: []types.Element{&Value{val: sep}, subjects},
 		// TODO(jaypipes): Clearly we need to support >1 selection...
 		sel: projs[0].From(),
 	}

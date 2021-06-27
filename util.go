@@ -17,7 +17,7 @@ func toElements(vars ...interface{}) []types.Element {
 		case types.Element:
 			els[x] = v.(types.Element)
 		default:
-			els[x] = &value{val: v}
+			els[x] = &Value{val: v}
 		}
 	}
 	return els
@@ -30,7 +30,7 @@ func toElements(vars ...interface{}) []types.Element {
 func toValueList(vars ...interface{}) *List {
 	els := make([]types.Element, len(vars))
 	for x, v := range vars {
-		els[x] = &value{val: v}
+		els[x] = &Value{val: v}
 	}
 	return &List{elements: els}
 }
