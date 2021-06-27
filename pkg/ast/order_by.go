@@ -3,16 +3,24 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
-package sqlb
+
+package ast
 
 import (
-	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
 type OrderByClause struct {
-	scols []*ast.SortColumn
+	scols []*SortColumn
+}
+
+func (ob *OrderByClause) SortColumns() []*SortColumn {
+	return ob.scols
+}
+
+func (ob *OrderByClause) AddSortColumn(sc *SortColumn) {
+	ob.scols = append(ob.scols, sc)
 }
 
 func (ob *OrderByClause) ArgCount() int {
@@ -43,4 +51,11 @@ func (ob *OrderByClause) Scan(scanner types.Scanner, b []byte, args []interface{
 		}
 	}
 	return bw
+}
+
+// NewOrderByClause returns a new OrderByClause with zero or more sort columns
+func NewOrderByClause(scols ...*SortColumn) *OrderByClause {
+	return &OrderByClause{
+		scols: scols,
+	}
 }

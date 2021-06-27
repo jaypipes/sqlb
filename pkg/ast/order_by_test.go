@@ -3,11 +3,13 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
-package sqlb
+
+package ast_test
 
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb"
 	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
@@ -15,7 +17,7 @@ import (
 )
 
 type orderByTest struct {
-	c     *OrderByClause
+	c     *ast.OrderByClause
 	qs    string
 	qargs []interface{}
 }
@@ -24,44 +26,34 @@ func TestOrderBy(t *testing.T) {
 	assert := assert.New(t)
 
 	sc := testutil.Schema()
-	users := T(sc, "users")
+	users := sqlb.T(sc, "users")
 	colUserId := users.C("id")
 	colUserName := users.C("name")
 
 	tests := []orderByTest{
 		// column asc
 		orderByTest{
-			c: &OrderByClause{
-				scols: []*ast.SortColumn{colUserName.Asc()},
-			},
+			c:  ast.NewOrderByClause(colUserName.Asc()),
 			qs: " ORDER BY users.name",
 		},
 		// column desc
 		orderByTest{
-			c: &OrderByClause{
-				scols: []*ast.SortColumn{colUserName.Desc()},
-			},
+			c:  ast.NewOrderByClause(colUserName.Desc()),
 			qs: " ORDER BY users.name DESC",
 		},
 		// Aliased column should NOT output alias in ORDER BY
 		orderByTest{
-			c: &OrderByClause{
-				scols: []*ast.SortColumn{colUserName.As("user_name").Desc()},
-			},
+			c:  ast.NewOrderByClause(colUserName.As("user_name").Desc()),
 			qs: " ORDER BY users.name DESC",
 		},
 		// multi column mixed
 		orderByTest{
-			c: &OrderByClause{
-				scols: []*ast.SortColumn{colUserName.Asc(), colUserId.Desc()},
-			},
+			c:  ast.NewOrderByClause(colUserName.Asc(), colUserId.Desc()),
 			qs: " ORDER BY users.name, users.id DESC",
 		},
 		// sort by a function
 		orderByTest{
-			c: &OrderByClause{
-				scols: []*ast.SortColumn{ast.Count(users).Desc()},
-			},
+			c:  ast.NewOrderByClause(ast.Count(users).Desc()),
 			qs: " ORDER BY COUNT(*) DESC",
 		},
 	}

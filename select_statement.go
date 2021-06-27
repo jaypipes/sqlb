@@ -18,7 +18,7 @@ type SelectStatement struct {
 	where      *ast.WhereClause
 	groupBy    *ast.GroupByClause
 	having     *ast.HavingClause
-	orderBy    *OrderByClause
+	orderBy    *ast.OrderByClause
 	limit      *LimitClause
 }
 
@@ -175,20 +175,14 @@ func (s *SelectStatement) AddOrderBy(sortCols ...*ast.SortColumn) *SelectStateme
 	if len(sortCols) == 0 {
 		return s
 	}
-	ob := s.orderBy
-	if ob == nil {
-		ob = &OrderByClause{
-			scols: make([]*ast.SortColumn, len(sortCols)),
-		}
-		for x, sc := range sortCols {
-			ob.scols[x] = sc
-		}
-	} else {
-		for _, sc := range sortCols {
-			ob.scols = append(ob.scols, sc)
-		}
+	if s.orderBy == nil {
+		s.orderBy = ast.NewOrderByClause(sortCols...)
+		return s
 	}
-	s.orderBy = ob
+
+	for _, sc := range sortCols {
+		s.orderBy.AddSortColumn(sc)
+	}
 	return s
 }
 
