@@ -32,7 +32,7 @@ func TestUpdateStatement(t *testing.T) {
 			name: "UPDATE no WHERE",
 			s: &UpdateStatement{
 				table:   users,
-				columns: []*ColumnIdentifier{colUserName},
+				columns: []*ast.ColumnIdentifier{colUserName},
 				values:  []interface{}{"foo"},
 			},
 			qs:    "UPDATE users SET name = ?",
@@ -42,7 +42,7 @@ func TestUpdateStatement(t *testing.T) {
 			name: "UPDATE simple WHERE",
 			s: &UpdateStatement{
 				table:   users,
-				columns: []*ColumnIdentifier{colUserName},
+				columns: []*ast.ColumnIdentifier{colUserName},
 				values:  []interface{}{"foo"},
 				where: ast.NewWhereClause(
 					ast.Equal(colUserName, "bar"),

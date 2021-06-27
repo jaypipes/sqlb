@@ -112,14 +112,14 @@ func (q *SelectQuery) C(name string) types.Projection {
 			dc := p.(*DerivedColumn)
 			if dc.alias != "" && dc.alias == name {
 				return dc
-			} else if dc.c.name == name {
+			} else if dc.c.Name == name {
 				return dc
 			}
-		case *ColumnIdentifier:
-			c := p.(*ColumnIdentifier)
-			if c.alias != "" && c.alias == name {
+		case *ast.ColumnIdentifier:
+			c := p.(*ast.ColumnIdentifier)
+			if c.Alias != "" && c.Alias == name {
 				return c
-			} else if c.name == name {
+			} else if c.Name == name {
 				return c
 			}
 		case *ast.Function:
@@ -320,19 +320,19 @@ func Select(items ...interface{}) *SelectQuery {
 					nDerived++
 				}
 			}
-		case *ColumnIdentifier:
-			v := item.(*ColumnIdentifier)
+		case *ast.ColumnIdentifier:
+			v := item.(*ast.ColumnIdentifier)
 			// Set scanner's dialect based on supplied meta's dialect
 			if v == nil {
 				panic("specified a non-existent column")
 			}
-			sq.scanner.WithDialect(v.tbl.st.Schema.Dialect)
+			sq.scanner.WithDialect(v.Schema().Dialect)
 			sel.projs = append(sel.projs, v)
-			selectionMap[v.tbl] = true
-		case *TableIdentifier:
-			v := item.(*TableIdentifier)
+			selectionMap[v.From()] = true
+		case *ast.TableIdentifier:
+			v := item.(*ast.TableIdentifier)
 			// Set scanner's dialect based on supplied meta's dialect
-			sq.scanner.WithDialect(v.st.Schema.Dialect)
+			sq.scanner.WithDialect(v.Schema().Dialect)
 			for _, c := range v.Projections() {
 				addToProjections(sel, c)
 			}

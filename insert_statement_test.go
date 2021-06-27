@@ -8,6 +8,7 @@ package sqlb
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/jaypipes/sqlb/pkg/types"
@@ -32,7 +33,7 @@ func TestInsertStatement(t *testing.T) {
 			name: "Simple INSERT",
 			s: &InsertStatement{
 				table:   users,
-				columns: []*ColumnIdentifier{colUserId, colUserName},
+				columns: []*ast.ColumnIdentifier{colUserId, colUserName},
 				values:  []interface{}{nil, "foo"},
 			},
 			qs:    "INSERT INTO users (id, name) VALUES (?, ?)",
@@ -42,7 +43,7 @@ func TestInsertStatement(t *testing.T) {
 			name: "Ensure no aliasing in table names",
 			s: &InsertStatement{
 				table:   users.As("u"),
-				columns: []*ColumnIdentifier{colUserId, colUserName},
+				columns: []*ast.ColumnIdentifier{colUserId, colUserName},
 				values:  []interface{}{nil, "foo"},
 			},
 			qs:    "INSERT INTO users (id, name) VALUES (?, ?)",
@@ -52,7 +53,7 @@ func TestInsertStatement(t *testing.T) {
 			name: "Ensure no aliasing in column names",
 			s: &InsertStatement{
 				table:   users,
-				columns: []*ColumnIdentifier{colUserId.As("user_id"), colUserName},
+				columns: []*ast.ColumnIdentifier{colUserId.As("user_id"), colUserName},
 				values:  []interface{}{nil, "foo"},
 			},
 			qs:    "INSERT INTO users (id, name) VALUES (?, ?)",

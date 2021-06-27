@@ -3,7 +3,8 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
-package sqlb
+
+package ast
 
 import (
 	"sort"
@@ -13,18 +14,24 @@ import (
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
+// TableIdentifier identifies a Table in a SQL statement
 type TableIdentifier struct {
 	st      *schema.Table
-	alias   string
-	name    string
+	Alias   string
+	Name    string
 	columns []*ColumnIdentifier
 }
 
-// Return a pointer to a ColumnIdentifier with a name or alias matching the supplied
+// Schema returns a pointer to the underlying Schema
+func (t *TableIdentifier) Schema() *schema.Schema {
+	return t.st.Schema
+}
+
+// C returns a pointer to a ColumnIdentifier with a name or alias matching the supplied
 // string, or nil if no such column is known
 func (t *TableIdentifier) C(name string) *ColumnIdentifier {
 	for _, c := range t.columns {
-		if c.name == name || c.alias == name {
+		if c.Name == name || c.Alias == name {
 			return c
 		}
 	}
@@ -44,33 +51,33 @@ func (t *TableIdentifier) ArgCount() int {
 }
 
 func (t *TableIdentifier) Size(scanner types.Scanner) int {
-	size := len(t.name)
-	if t.alias != "" {
-		size += len(grammar.Symbols[grammar.SYM_AS]) + len(t.alias)
+	size := len(t.Name)
+	if t.Alias != "" {
+		size += len(grammar.Symbols[grammar.SYM_AS]) + len(t.Alias)
 	}
 	return size
 }
 
 func (t *TableIdentifier) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
-	bw := copy(b, t.name)
-	if t.alias != "" {
+	bw := copy(b, t.Name)
+	if t.Alias != "" {
 		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_AS])
-		bw += copy(b[bw:], t.alias)
+		bw += copy(b[bw:], t.Alias)
 	}
 	return bw
 }
 
 func (t *TableIdentifier) As(alias string) *TableIdentifier {
-	cols := make([]*ColumnIdentifier, len(t.columns))
 	tbl := &TableIdentifier{
 		st:    t.st,
-		alias: alias,
-		name:  t.name,
+		Alias: alias,
+		Name:  t.Name,
 	}
+	cols := make([]*ColumnIdentifier, len(t.columns))
 	for x, c := range t.columns {
 		cols[x] = &ColumnIdentifier{
-			alias: c.alias,
-			name:  c.name,
+			Alias: c.Alias,
+			Name:  c.Name,
 			tbl:   tbl,
 		}
 	}
@@ -78,15 +85,19 @@ func (t *TableIdentifier) As(alias string) *TableIdentifier {
 	return tbl
 }
 
-// T returns a TableIdentifier of a given name from a supplied Schema
-func T(s *schema.Schema, name string) *TableIdentifier {
+// TableIdentifierFromSchema returns a TableIdentifier of a given name from a
+// supplied Schema
+func TableIdentifierFromSchema(
+	s *schema.Schema,
+	name string,
+) *TableIdentifier {
 	st := s.T(name)
 	if st == nil {
 		return nil
 	}
 	ti := &TableIdentifier{
 		st:   st,
-		name: name,
+		Name: name,
 	}
 	cols := make([]*ColumnIdentifier, len(st.Columns))
 	colNames := make([]string, len(st.Columns))
@@ -99,7 +110,7 @@ func T(s *schema.Schema, name string) *TableIdentifier {
 	for x, cname := range colNames {
 		cols[x] = &ColumnIdentifier{
 			tbl:  ti,
-			name: cname,
+			Name: cname,
 		}
 	}
 

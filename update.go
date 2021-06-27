@@ -66,7 +66,7 @@ func (q *UpdateQuery) Where(e *ast.Expression) *UpdateQuery {
 
 // Given a table and a map of column name to value for that column to update,
 // returns an UpdateQuery that will produce an UPDATE SQL statement
-func Update(t *TableIdentifier, values map[string]interface{}) *UpdateQuery {
+func Update(t *ast.TableIdentifier, values map[string]interface{}) *UpdateQuery {
 	if t == nil {
 		return &UpdateQuery{e: ERR_UPDATE_NO_TARGET}
 	}
@@ -76,7 +76,7 @@ func Update(t *TableIdentifier, values map[string]interface{}) *UpdateQuery {
 
 	// Make sure all keys in the map point to actual columns in the target
 	// table.
-	cols := make([]*ColumnIdentifier, len(values))
+	cols := make([]*ast.ColumnIdentifier, len(values))
 	vals := make([]interface{}, len(values))
 	x := 0
 	for k, v := range values {
@@ -89,7 +89,7 @@ func Update(t *TableIdentifier, values map[string]interface{}) *UpdateQuery {
 		x++
 	}
 
-	scanner := scanner.New(t.st.Schema.Dialect)
+	scanner := scanner.New(t.Schema().Dialect)
 	stmt := &UpdateStatement{
 		table:   t,
 		columns: cols,
@@ -101,6 +101,6 @@ func Update(t *TableIdentifier, values map[string]interface{}) *UpdateQuery {
 	}
 }
 
-func (t *TableIdentifier) Update(values map[string]interface{}) *UpdateQuery {
-	return Update(t, values)
-}
+//func (t *TableIdentifier) Update(values map[string]interface{}) *UpdateQuery {
+//	return Update(t, values)
+//}

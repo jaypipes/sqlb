@@ -3,11 +3,13 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
-package sqlb
+
+package ast_test
 
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/stretchr/testify/assert"
@@ -17,7 +19,7 @@ func TestTable(t *testing.T) {
 	assert := assert.New(t)
 
 	sc := testutil.Schema()
-	users := T(sc, "users")
+	users := ast.TableIdentifierFromSchema(sc, "users")
 
 	exp := "users"
 	expLen := len(exp)
@@ -35,7 +37,7 @@ func TestTableAlias(t *testing.T) {
 	assert := assert.New(t)
 
 	sc := testutil.Schema()
-	u := T(sc, "users").As("u")
+	u := ast.TableIdentifierFromSchema(sc, "users").As("u")
 
 	exp := "users AS u"
 	expLen := len(exp)
@@ -52,44 +54,22 @@ func TestTableAlias(t *testing.T) {
 func TestTableColumns(t *testing.T) {
 	assert := assert.New(t)
 
-	td := &TableIdentifier{
-		name: "users",
-	}
+	sc := testutil.Schema()
+	users := ast.TableIdentifierFromSchema(sc, "users").As("u")
 
-	cols := []*ColumnIdentifier{
-		&ColumnIdentifier{
-			name: "id",
-			tbl:  td,
-		},
-		&ColumnIdentifier{
-			name: "email",
-			tbl:  td,
-		},
-	}
-	td.columns = cols
-
-	defs := td.columns
-
-	assert.Equal(2, len(defs))
-	for _, def := range defs {
-		assert.Equal(td, def.tbl)
-	}
-
-	// Check stable order of insertion from above...
-	assert.Equal(defs[0].name, "id")
-	assert.Equal(defs[1].name, "email")
+	assert.Equal(2, len(users.Projections()))
 }
 
 func TestTableC(t *testing.T) {
 	assert := assert.New(t)
 
 	sc := testutil.Schema()
-	users := T(sc, "users")
+	users := ast.TableIdentifierFromSchema(sc, "users")
 
 	c := users.C("name")
 
-	assert.Equal(users, c.tbl)
-	assert.Equal("name", c.name)
+	assert.Equal(users, c.From())
+	assert.Equal("name", c.Name)
 
 	// Check an unknown column name returns nil
 	unknown := users.C("unknown")

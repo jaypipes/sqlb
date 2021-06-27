@@ -6,6 +6,7 @@
 package sqlb
 
 import (
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
@@ -37,8 +38,8 @@ func (dt *DerivedTable) DerivedColumns() []types.Projection {
 	for x := 0; x < nprojs; x++ {
 		p := dt.from.projs[x]
 		switch p.(type) {
-		case *ColumnIdentifier:
-			projs[x] = &DerivedColumn{dt: dt, c: p.(*ColumnIdentifier)}
+		case *ast.ColumnIdentifier:
+			projs[x] = &DerivedColumn{dt: dt, c: p.(*ast.ColumnIdentifier)}
 		}
 	}
 	return projs
@@ -50,7 +51,7 @@ func (dt *DerivedTable) Projections() []types.Projection {
 	for x := 0; x < nprojs; x++ {
 		p := dt.from.projs[x]
 		switch p.(type) {
-		case *ColumnIdentifier:
+		case *ast.ColumnIdentifier:
 		}
 	}
 	return projs
@@ -127,7 +128,7 @@ func (dt *DerivedTable) Scan(scanner types.Scanner, b []byte, args []interface{}
 // ) AS u
 type DerivedColumn struct {
 	alias string // This is the outermost alias
-	c     *ColumnIdentifier
+	c     *ast.ColumnIdentifier
 	dt    *DerivedTable
 }
 
@@ -148,10 +149,10 @@ func (dc *DerivedColumn) ArgCount() int {
 func (dc *DerivedColumn) Size(scanner types.Scanner) int {
 	size := len(dc.dt.alias)
 	size += len(grammar.Symbols[grammar.SYM_PERIOD])
-	if dc.c.alias != "" {
-		size += len(dc.c.alias)
+	if dc.c.Alias != "" {
+		size += len(dc.c.Alias)
 	} else {
-		size += len(dc.c.name)
+		size += len(dc.c.Name)
 	}
 	if dc.alias != "" {
 		size += len(grammar.Symbols[grammar.SYM_AS]) + len(dc.alias)
@@ -163,10 +164,10 @@ func (dc *DerivedColumn) Scan(scanner types.Scanner, b []byte, args []interface{
 	bw := 0
 	bw += copy(b[bw:], dc.dt.alias)
 	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_PERIOD])
-	if dc.c.alias != "" {
-		bw += copy(b[bw:], dc.c.alias)
+	if dc.c.Alias != "" {
+		bw += copy(b[bw:], dc.c.Alias)
 	} else {
-		bw += copy(b[bw:], dc.c.name)
+		bw += copy(b[bw:], dc.c.Name)
 	}
 	if dc.alias != "" {
 		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_AS])

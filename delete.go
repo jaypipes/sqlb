@@ -64,12 +64,12 @@ func (q *DeleteQuery) Where(e *ast.Expression) *DeleteQuery {
 
 // Delete returns a DeleteQuery given a table that will produce a DELETE SQL
 // statement
-func Delete(t *TableIdentifier) *DeleteQuery {
+func Delete(t *ast.TableIdentifier) *DeleteQuery {
 	if t == nil {
 		return &DeleteQuery{e: ERR_DELETE_NO_TARGET}
 	}
 
-	scanner := scanner.New(t.st.Schema.Dialect)
+	scanner := scanner.New(t.Schema().Dialect)
 	stmt := &DeleteStatement{
 		table: t,
 	}
@@ -79,6 +79,6 @@ func Delete(t *TableIdentifier) *DeleteQuery {
 	}
 }
 
-func (t *TableIdentifier) Delete() *DeleteQuery {
-	return Delete(t)
-}
+//func (t *ast.TableIdentifier) Delete() *DeleteQuery {
+//	return Delete(t)
+//}

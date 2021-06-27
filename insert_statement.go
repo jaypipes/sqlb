@@ -6,6 +6,7 @@
 package sqlb
 
 import (
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	pkgscanner "github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
@@ -14,8 +15,8 @@ import (
 // INSERT INTO <table> (<columns>) VALUES (<values>)
 
 type InsertStatement struct {
-	table   *TableIdentifier
-	columns []*ColumnIdentifier
+	table   *ast.TableIdentifier
+	columns []*ast.ColumnIdentifier
 	values  []interface{}
 }
 
@@ -24,12 +25,12 @@ func (s *InsertStatement) ArgCount() int {
 }
 
 func (s *InsertStatement) Size(scanner types.Scanner) int {
-	size := len(grammar.Symbols[grammar.SYM_INSERT]) + len(s.table.name) + 1 // space after table name
+	size := len(grammar.Symbols[grammar.SYM_INSERT]) + len(s.table.Name) + 1 // space after table name
 	ncols := len(s.columns)
 	for _, c := range s.columns {
 		// We don't add the table identifier or use an alias when outputting
 		// the column names in the <columns> element of the INSERT statement
-		size += len(c.name)
+		size += len(c.Name)
 	}
 	// We don't include interpolation marks in our sizing, since the length
 	// differs with SQL dialects. This is accounted for by callers of scan().
@@ -45,7 +46,7 @@ func (s *InsertStatement) Scan(scanner types.Scanner, b []byte, args []interface
 	bw := 0
 	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_INSERT])
 	// We don't add any table alias when outputting the table identifier
-	bw += copy(b[bw:], s.table.name)
+	bw += copy(b[bw:], s.table.Name)
 	bw += copy(b[bw:], " ")
 	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_LPAREN])
 
@@ -53,7 +54,7 @@ func (s *InsertStatement) Scan(scanner types.Scanner, b []byte, args []interface
 	for x, c := range s.columns {
 		// We don't add the table identifier or use an alias when outputting
 		// the column names in the <columns> element of the INSERT statement
-		bw += copy(b[bw:], c.name)
+		bw += copy(b[bw:], c.Name)
 		if x != (ncols - 1) {
 			bw += copy(b[bw:], grammar.Symbols[grammar.SYM_COMMA_WS])
 		}

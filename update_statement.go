@@ -15,8 +15,8 @@ import (
 // UPDATE <table> SET <column_value_list>[ WHERE <predicates>]
 
 type UpdateStatement struct {
-	table   *TableIdentifier
-	columns []*ColumnIdentifier
+	table   *ast.TableIdentifier
+	columns []*ast.ColumnIdentifier
 	values  []interface{}
 	where   *ast.WhereClause
 }
@@ -30,12 +30,12 @@ func (s *UpdateStatement) ArgCount() int {
 }
 
 func (s *UpdateStatement) Size(scanner types.Scanner) int {
-	size := len(grammar.Symbols[grammar.SYM_UPDATE]) + len(s.table.name) + len(grammar.Symbols[grammar.SYM_SET])
+	size := len(grammar.Symbols[grammar.SYM_UPDATE]) + len(s.table.Name) + len(grammar.Symbols[grammar.SYM_SET])
 	ncols := len(s.columns)
 	for _, c := range s.columns {
 		// We don't add the table identifier or use an alias when outputting
 		// the column names in the <columns> element of the INSERT statement
-		size += len(c.name)
+		size += len(c.Name)
 	}
 	// NOTE(jaypipes): We do not include the length of interpolation markers,
 	// since that differs based on the SQL dialect
@@ -53,7 +53,7 @@ func (s *UpdateStatement) Scan(scanner types.Scanner, b []byte, args []interface
 	bw := 0
 	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_UPDATE])
 	// We don't add any table alias when outputting the table identifier
-	bw += copy(b[bw:], s.table.name)
+	bw += copy(b[bw:], s.table.Name)
 	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_SET])
 
 	ncols := len(s.columns)
@@ -61,7 +61,7 @@ func (s *UpdateStatement) Scan(scanner types.Scanner, b []byte, args []interface
 		// We don't add the table identifier or use an alias when outputting
 		// the column names in the <column_value_lists> element of the UPDATE
 		// statement
-		bw += copy(b[bw:], c.name)
+		bw += copy(b[bw:], c.Name)
 		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_EQUAL])
 		bw += pkgscanner.ScanInterpolationMarker(scanner.Dialect(), b[bw:], *curArg)
 		args[*curArg] = s.values[x]

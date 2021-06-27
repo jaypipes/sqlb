@@ -3,11 +3,13 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
-package sqlb
+
+package ast_test
 
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/stretchr/testify/assert"
@@ -17,7 +19,7 @@ func TestC(t *testing.T) {
 	assert := assert.New(t)
 
 	sc := testutil.Schema()
-	users := T(sc, "users")
+	users := sqlb.T(sc, "users")
 	c := users.C("name")
 
 	exp := "users.name"
@@ -36,7 +38,7 @@ func TestColumnWithTableAlias(t *testing.T) {
 	assert := assert.New(t)
 
 	sc := testutil.Schema()
-	users := T(sc, "users").As("u")
+	users := sqlb.T(sc, "users").As("u")
 	c := users.C("name")
 
 	exp := "u.name"
@@ -55,7 +57,7 @@ func TestColumnAlias(t *testing.T) {
 	assert := assert.New(t)
 
 	sc := testutil.Schema()
-	users := T(sc, "users")
+	users := sqlb.T(sc, "users")
 	c := users.C("name").As("user_name")
 
 	exp := "users.name AS user_name"
