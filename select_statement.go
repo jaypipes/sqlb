@@ -129,12 +129,12 @@ func (s *SelectStatement) Scan(scanner types.Scanner, b []byte, args []interface
 	return bw
 }
 
-func (s *SelectStatement) addJoin(jc *JoinClause) *SelectStatement {
+func (s *SelectStatement) AddJoin(jc *JoinClause) *SelectStatement {
 	s.joins = append(s.joins, jc)
 	return s
 }
 
-func (s *SelectStatement) addWhere(e *Expression) *SelectStatement {
+func (s *SelectStatement) AddWhere(e *Expression) *SelectStatement {
 	if s.where == nil {
 		s.where = &WhereClause{filters: make([]*Expression, 0)}
 	}
@@ -144,7 +144,7 @@ func (s *SelectStatement) addWhere(e *Expression) *SelectStatement {
 
 // Given one or more columns, either set or add to the GROUP BY clause for
 // the SelectStatement
-func (s *SelectStatement) addGroupBy(cols ...types.Projection) *SelectStatement {
+func (s *SelectStatement) AddGroupBy(cols ...types.Projection) *SelectStatement {
 	if len(cols) == 0 {
 		return s
 	}
@@ -165,7 +165,7 @@ func (s *SelectStatement) addGroupBy(cols ...types.Projection) *SelectStatement 
 	return s
 }
 
-func (s *SelectStatement) addHaving(e *Expression) *SelectStatement {
+func (s *SelectStatement) AddHaving(e *Expression) *SelectStatement {
 	if s.having == nil {
 		s.having = &HavingClause{conditions: make([]*Expression, 0)}
 	}
@@ -175,7 +175,7 @@ func (s *SelectStatement) addHaving(e *Expression) *SelectStatement {
 
 // Given one or more sort columns, either set or add to the ORDER BY clause for
 // the SelectStatement
-func (s *SelectStatement) addOrderBy(sortCols ...*SortColumn) *SelectStatement {
+func (s *SelectStatement) AddOrderBy(sortCols ...*SortColumn) *SelectStatement {
 	if len(sortCols) == 0 {
 		return s
 	}
@@ -196,14 +196,14 @@ func (s *SelectStatement) addOrderBy(sortCols ...*SortColumn) *SelectStatement {
 	return s
 }
 
-func (s *SelectStatement) setLimitWithOffset(limit int, offset int) *SelectStatement {
+func (s *SelectStatement) SetLimitWithOffset(limit int, offset int) *SelectStatement {
 	lc := &LimitClause{limit: limit}
 	lc.offset = &offset
 	s.limit = lc
 	return s
 }
 
-func (s *SelectStatement) setLimit(limit int) *SelectStatement {
+func (s *SelectStatement) SetLimit(limit int) *SelectStatement {
 	lc := &LimitClause{limit: limit}
 	s.limit = lc
 	return s
@@ -222,7 +222,7 @@ func addToProjections(s *SelectStatement, p types.Projection) {
 	s.projs = append(s.projs, p)
 }
 
-func (s *SelectStatement) removeSelection(toRemove types.Selection) {
+func (s *SelectStatement) RemoveSelection(toRemove types.Selection) {
 	idx := -1
 	for x, sel := range s.selections {
 		if sel == toRemove {

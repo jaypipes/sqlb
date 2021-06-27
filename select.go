@@ -59,32 +59,32 @@ func (q *SelectQuery) StringArgs() (string, []interface{}) {
 }
 
 func (q *SelectQuery) Where(e *Expression) *SelectQuery {
-	q.sel.addWhere(e)
+	q.sel.AddWhere(e)
 	return q
 }
 
 func (q *SelectQuery) GroupBy(cols ...types.Projection) *SelectQuery {
-	q.sel.addGroupBy(cols...)
+	q.sel.AddGroupBy(cols...)
 	return q
 }
 
 func (q *SelectQuery) Having(e *Expression) *SelectQuery {
-	q.sel.addHaving(e)
+	q.sel.AddHaving(e)
 	return q
 }
 
 func (q *SelectQuery) OrderBy(scols ...*SortColumn) *SelectQuery {
-	q.sel.addOrderBy(scols...)
+	q.sel.AddOrderBy(scols...)
 	return q
 }
 
 func (q *SelectQuery) Limit(limit int) *SelectQuery {
-	q.sel.setLimit(limit)
+	q.sel.SetLimit(limit)
 	return q
 }
 
 func (q *SelectQuery) LimitWithOffset(limit int, offset int) *SelectQuery {
-	q.sel.setLimitWithOffset(limit, offset)
+	q.sel.SetLimitWithOffset(limit, offset)
 	return q
 }
 
@@ -96,7 +96,7 @@ func (q *SelectQuery) As(alias string) *SelectQuery {
 		from:  q.sel,
 	}
 	derivedSel := &SelectStatement{
-		projs:      dt.getAllDerivedColumns(),
+		projs:      dt.DerivedColumns(),
 		selections: []types.Selection{dt},
 	}
 	return &SelectQuery{sel: derivedSel, scanner: q.scanner}
@@ -252,11 +252,11 @@ func (q *SelectQuery) doJoin(
 		right:    right,
 		on:       on,
 	}
-	q.sel.addJoin(jc)
+	q.sel.AddJoin(jc)
 
 	// Make sure we remove the right-hand selection from the SelectStatement's
 	// selections collection, since it's in a JOIN clause.
-	q.sel.removeSelection(right)
+	q.sel.RemoveSelection(right)
 	return q
 }
 
@@ -302,7 +302,7 @@ func Select(items ...interface{}) *SelectQuery {
 					// SelectStatement.
 					selectionMap[innerSel] = true
 					dt := innerSel.(*DerivedTable)
-					for _, p := range dt.getAllDerivedColumns() {
+					for _, p := range dt.DerivedColumns() {
 						addToProjections(sel, p)
 					}
 				default:
@@ -318,7 +318,7 @@ func Select(items ...interface{}) *SelectQuery {
 						from:  innerSelClause,
 					}
 					selectionMap[dt] = true
-					for _, p := range dt.getAllDerivedColumns() {
+					for _, p := range dt.DerivedColumns() {
 						addToProjections(sel, p)
 					}
 					nDerived++

@@ -10,7 +10,7 @@ import (
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
-// A derived table is a SELECT in the FROM clause. It is always aliased and the
+// DerivedTable is a SELECT in the FROM clause. It is always aliased and the
 // projections for a derived table take this alias as their selection alias.
 //
 // The projections of a derived table are not the same as the projections for
@@ -29,9 +29,9 @@ type DerivedTable struct {
 	from  *SelectStatement
 }
 
-// Return a collection of DerivedColumn projections that have been constructed
-// to refer to this derived table and not have any outer alias
-func (dt *DerivedTable) getAllDerivedColumns() []types.Projection {
+// DerivedColumns returns a collection of DerivedColumn projections that have
+// been constructed to refer to this derived table and not have any outer alias
+func (dt *DerivedTable) DerivedColumns() []types.Projection {
 	nprojs := len(dt.from.projs)
 	projs := make([]types.Projection, nprojs)
 	for x := 0; x < nprojs; x++ {
@@ -77,10 +77,9 @@ func (dt *DerivedTable) Scan(scanner types.Scanner, b []byte, args []interface{}
 	return bw
 }
 
-// A DerivedColumn is a type of projection that is produced from a derived
-// table (SELECT in the FROM clause). What makes a derived column unique is
-// that it uses the alias of the underlying column as its name in the outer
-// projection.
+// DerivedColumn is a type of projection that is produced from a derived table
+// (SELECT in the FROM clause). What makes a derived column unique is that it
+// uses the alias of the underlying column as its name in the outer projection.
 //
 // The inner projection is a column against an underlying table or table def.
 // The outer projection will have the selection alias of the derived table and
