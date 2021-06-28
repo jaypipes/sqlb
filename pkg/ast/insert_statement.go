@@ -3,10 +3,10 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
-package sqlb
+
+package ast
 
 import (
-	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	pkgscanner "github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
@@ -15,8 +15,8 @@ import (
 // INSERT INTO <table> (<columns>) VALUES (<values>)
 
 type InsertStatement struct {
-	table   *ast.TableIdentifier
-	columns []*ast.ColumnIdentifier
+	table   *TableIdentifier
+	columns []*ColumnIdentifier
 	values  []interface{}
 }
 
@@ -70,4 +70,18 @@ func (s *InsertStatement) Scan(scanner types.Scanner, b []byte, args []interface
 	}
 	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_RPAREN])
 	return bw
+}
+
+// NewInsertStatement returns a new InsertStatement struct that scans into an
+// INSERT SQL statement
+func NewInsertStatement(
+	table *TableIdentifier,
+	columns []*ColumnIdentifier,
+	values []interface{},
+) *InsertStatement {
+	return &InsertStatement{
+		table:   table,
+		columns: columns,
+		values:  values,
+	}
 }

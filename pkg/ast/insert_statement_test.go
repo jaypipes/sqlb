@@ -3,11 +3,13 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
-package sqlb
+
+package ast_test
 
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb"
 	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
@@ -19,43 +21,43 @@ func TestInsertStatement(t *testing.T) {
 	assert := assert.New(t)
 
 	sc := testutil.Schema()
-	users := T(sc, "users")
+	users := sqlb.T(sc, "users")
 	colUserName := users.C("name")
 	colUserId := users.C("id")
 
 	tests := []struct {
 		name  string
-		s     *InsertStatement
+		s     *ast.InsertStatement
 		qs    string
 		qargs []interface{}
 	}{
 		{
 			name: "Simple INSERT",
-			s: &InsertStatement{
-				table:   users,
-				columns: []*ast.ColumnIdentifier{colUserId, colUserName},
-				values:  []interface{}{nil, "foo"},
-			},
+			s: ast.NewInsertStatement(
+				users,
+				[]*ast.ColumnIdentifier{colUserId, colUserName},
+				[]interface{}{nil, "foo"},
+			),
 			qs:    "INSERT INTO users (id, name) VALUES (?, ?)",
 			qargs: []interface{}{nil, "foo"},
 		},
 		{
 			name: "Ensure no aliasing in table names",
-			s: &InsertStatement{
-				table:   users.As("u"),
-				columns: []*ast.ColumnIdentifier{colUserId, colUserName},
-				values:  []interface{}{nil, "foo"},
-			},
+			s: ast.NewInsertStatement(
+				users.As("u"),
+				[]*ast.ColumnIdentifier{colUserId, colUserName},
+				[]interface{}{nil, "foo"},
+			),
 			qs:    "INSERT INTO users (id, name) VALUES (?, ?)",
 			qargs: []interface{}{nil, "foo"},
 		},
 		{
 			name: "Ensure no aliasing in column names",
-			s: &InsertStatement{
-				table:   users,
-				columns: []*ast.ColumnIdentifier{colUserId.As("user_id"), colUserName},
-				values:  []interface{}{nil, "foo"},
-			},
+			s: ast.NewInsertStatement(
+				users,
+				[]*ast.ColumnIdentifier{colUserId.As("user_id"), colUserName},
+				[]interface{}{nil, "foo"},
+			),
 			qs:    "INSERT INTO users (id, name) VALUES (?, ?)",
 			qargs: []interface{}{nil, "foo"},
 		},

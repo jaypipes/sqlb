@@ -22,7 +22,7 @@ type InsertQuery struct {
 	e       error
 	b       []byte
 	args    []interface{}
-	stmt    *InsertStatement
+	stmt    *ast.InsertStatement
 	scanner types.Scanner
 }
 
@@ -81,11 +81,7 @@ func Insert(t *ast.TableIdentifier, values map[string]interface{}) *InsertQuery 
 	}
 
 	scanner := scanner.New(t.Schema().Dialect)
-	stmt := &InsertStatement{
-		table:   t,
-		columns: cols,
-		values:  vals,
-	}
+	stmt := ast.NewInsertStatement(t, cols, vals)
 	return &InsertQuery{
 		stmt:    stmt,
 		scanner: scanner,
