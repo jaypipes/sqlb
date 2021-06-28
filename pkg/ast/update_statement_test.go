@@ -3,11 +3,13 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
-package sqlb
+
+package ast_test
 
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb"
 	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
@@ -19,35 +21,36 @@ func TestUpdateStatement(t *testing.T) {
 	assert := assert.New(t)
 
 	sc := testutil.Schema()
-	users := T(sc, "users")
+	users := sqlb.T(sc, "users")
 	colUserName := users.C("name")
 
 	tests := []struct {
 		name  string
-		s     *UpdateStatement
+		s     *ast.UpdateStatement
 		qs    string
 		qargs []interface{}
 	}{
 		{
 			name: "UPDATE no WHERE",
-			s: &UpdateStatement{
-				table:   users,
-				columns: []*ast.ColumnIdentifier{colUserName},
-				values:  []interface{}{"foo"},
-			},
+			s: ast.NewUpdateStatement(
+				users,
+				[]*ast.ColumnIdentifier{colUserName},
+				[]interface{}{"foo"},
+				nil,
+			),
 			qs:    "UPDATE users SET name = ?",
 			qargs: []interface{}{"foo"},
 		},
 		{
 			name: "UPDATE simple WHERE",
-			s: &UpdateStatement{
-				table:   users,
-				columns: []*ast.ColumnIdentifier{colUserName},
-				values:  []interface{}{"foo"},
-				where: ast.NewWhereClause(
+			s: ast.NewUpdateStatement(
+				users,
+				[]*ast.ColumnIdentifier{colUserName},
+				[]interface{}{"foo"},
+				ast.NewWhereClause(
 					ast.Equal(colUserName, "bar"),
 				),
-			},
+			),
 			qs:    "UPDATE users SET name = ? WHERE users.name = ?",
 			qargs: []interface{}{"foo", "bar"},
 		},

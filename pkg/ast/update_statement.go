@@ -3,10 +3,10 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
-package sqlb
+
+package ast
 
 import (
-	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	pkgscanner "github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
@@ -15,10 +15,10 @@ import (
 // UPDATE <table> SET <column_value_list>[ WHERE <predicates>]
 
 type UpdateStatement struct {
-	table   *ast.TableIdentifier
-	columns []*ast.ColumnIdentifier
+	table   *TableIdentifier
+	columns []*ColumnIdentifier
 	values  []interface{}
-	where   *ast.WhereClause
+	where   *WhereClause
 }
 
 func (s *UpdateStatement) ArgCount() int {
@@ -77,11 +77,27 @@ func (s *UpdateStatement) Scan(scanner types.Scanner, b []byte, args []interface
 	return bw
 }
 
-func (s *UpdateStatement) AddWhere(e *ast.Expression) *UpdateStatement {
+func (s *UpdateStatement) AddWhere(e *Expression) *UpdateStatement {
 	if s.where == nil {
-		s.where = ast.NewWhereClause(e)
+		s.where = NewWhereClause(e)
 		return s
 	}
 	s.where.AddExpression(e)
 	return s
+}
+
+// NewUpdateStatement returns a new UpdateStatement struct that scans into an
+// UPDATE SQL statement
+func NewUpdateStatement(
+	table *TableIdentifier,
+	columns []*ColumnIdentifier,
+	values []interface{},
+	where *WhereClause,
+) *UpdateStatement {
+	return &UpdateStatement{
+		table:   table,
+		columns: columns,
+		values:  values,
+		where:   where,
+	}
 }

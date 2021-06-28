@@ -23,7 +23,7 @@ type UpdateQuery struct {
 	e       error
 	b       []byte
 	args    []interface{}
-	stmt    *UpdateStatement
+	stmt    *ast.UpdateStatement
 	scanner types.Scanner
 }
 
@@ -90,11 +90,7 @@ func Update(t *ast.TableIdentifier, values map[string]interface{}) *UpdateQuery 
 	}
 
 	scanner := scanner.New(t.Schema().Dialect)
-	stmt := &UpdateStatement{
-		table:   t,
-		columns: cols,
-		values:  vals,
-	}
+	stmt := ast.NewUpdateStatement(t, cols, vals, nil)
 	return &UpdateQuery{
 		stmt:    stmt,
 		scanner: scanner,
