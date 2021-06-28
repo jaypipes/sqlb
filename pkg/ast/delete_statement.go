@@ -4,10 +4,9 @@
 // See the COPYING file in the root project directory for full text.
 //
 
-package sqlb
+package ast
 
 import (
-	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
@@ -15,8 +14,8 @@ import (
 // DELETE FROM <table> WHERE <predicates>
 
 type DeleteStatement struct {
-	table *ast.TableIdentifier
-	where *ast.WhereClause
+	table *TableIdentifier
+	where *WhereClause
 }
 
 func (s *DeleteStatement) ArgCount() int {
@@ -46,11 +45,20 @@ func (s *DeleteStatement) Scan(scanner types.Scanner, b []byte, args []interface
 	return bw
 }
 
-func (s *DeleteStatement) AddWhere(e *ast.Expression) *DeleteStatement {
+func (s *DeleteStatement) AddWhere(e *Expression) *DeleteStatement {
 	if s.where == nil {
-		s.where = ast.NewWhereClause(e)
+		s.where = NewWhereClause(e)
 		return s
 	}
 	s.where.AddExpression(e)
 	return s
+}
+
+// NewDeleteStatement returns a new DeleteStatement struct that scans into a
+// DELETE SQL statement
+func NewDeleteStatement(table *TableIdentifier, where *WhereClause) *DeleteStatement {
+	return &DeleteStatement{
+		table: table,
+		where: where,
+	}
 }

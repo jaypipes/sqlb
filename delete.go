@@ -21,7 +21,7 @@ type DeleteQuery struct {
 	e       error
 	b       []byte
 	args    []interface{}
-	stmt    *DeleteStatement
+	stmt    *ast.DeleteStatement
 	scanner types.Scanner
 }
 
@@ -70,9 +70,7 @@ func Delete(t *ast.TableIdentifier) *DeleteQuery {
 	}
 
 	scanner := scanner.New(t.Schema().Dialect)
-	stmt := &DeleteStatement{
-		table: t,
-	}
+	stmt := ast.NewDeleteStatement(t, nil)
 	return &DeleteQuery{
 		stmt:    stmt,
 		scanner: scanner,
