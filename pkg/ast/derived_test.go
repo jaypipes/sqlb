@@ -3,11 +3,14 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
-package sqlb
+
+package ast_test
 
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb"
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/jaypipes/sqlb/pkg/types"
@@ -15,7 +18,7 @@ import (
 )
 
 type derivedTest struct {
-	c     *DerivedTable
+	c     *ast.DerivedTable
 	qs    string
 	qargs []interface{}
 }
@@ -24,23 +27,29 @@ func TestDerived(t *testing.T) {
 	assert := assert.New(t)
 
 	sc := testutil.Schema()
-	users := T(sc, "users")
+	users := sqlb.T(sc, "users")
 	colUserName := users.C("name")
 
 	tests := []derivedTest{
 		// Simple one-column sub-SELECT
 		derivedTest{
-			c: &DerivedTable{
-				from: &SelectStatement{
-					projs: []types.Projection{
+			c: ast.NewDerivedTable(
+				"u",
+				ast.NewSelectStatement(
+					[]types.Projection{
 						colUserName,
 					},
-					selections: []types.Selection{
+					[]types.Selection{
 						users,
 					},
-				},
-				alias: "u",
-			},
+					nil,
+					nil,
+					nil,
+					nil,
+					nil,
+					nil,
+				),
+			),
 			qs: "(SELECT users.name FROM users) AS u",
 		},
 	}

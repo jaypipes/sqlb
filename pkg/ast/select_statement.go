@@ -3,10 +3,10 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
-package sqlb
+
+package ast
 
 import (
-	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
@@ -14,12 +14,32 @@ import (
 type SelectStatement struct {
 	projs      []types.Projection
 	selections []types.Selection
-	joins      []*ast.JoinClause
-	where      *ast.WhereClause
-	groupBy    *ast.GroupByClause
-	having     *ast.HavingClause
-	orderBy    *ast.OrderByClause
-	limit      *ast.LimitClause
+	joins      []*JoinClause
+	where      *WhereClause
+	groupBy    *GroupByClause
+	having     *HavingClause
+	orderBy    *OrderByClause
+	limit      *LimitClause
+}
+
+func (s *SelectStatement) Projections() []types.Projection {
+	return s.projs
+}
+
+func (s *SelectStatement) Selections() []types.Selection {
+	return s.selections
+}
+
+func (s *SelectStatement) Joins() []*JoinClause {
+	return s.joins
+}
+
+func (s *SelectStatement) AddProjection(p types.Projection) {
+	s.projs = append(s.projs, p)
+}
+
+func (s *SelectStatement) ReplaceSelections(sels []types.Selection) {
+	s.selections = sels
 }
 
 func (s *SelectStatement) ArgCount() int {
@@ -130,14 +150,14 @@ func (s *SelectStatement) Scan(scanner types.Scanner, b []byte, args []interface
 	return bw
 }
 
-func (s *SelectStatement) AddJoin(jc *ast.JoinClause) *SelectStatement {
+func (s *SelectStatement) AddJoin(jc *JoinClause) *SelectStatement {
 	s.joins = append(s.joins, jc)
 	return s
 }
 
-func (s *SelectStatement) AddWhere(e *ast.Expression) *SelectStatement {
+func (s *SelectStatement) AddWhere(e *Expression) *SelectStatement {
 	if s.where == nil {
-		s.where = ast.NewWhereClause(e)
+		s.where = NewWhereClause(e)
 		return s
 	}
 	s.where.AddExpression(e)
@@ -151,7 +171,7 @@ func (s *SelectStatement) AddGroupBy(cols ...types.Projection) *SelectStatement 
 		return s
 	}
 	if s.groupBy == nil {
-		s.groupBy = ast.NewGroupByClause(cols...)
+		s.groupBy = NewGroupByClause(cols...)
 		return s
 	}
 	for _, c := range cols {
@@ -160,9 +180,9 @@ func (s *SelectStatement) AddGroupBy(cols ...types.Projection) *SelectStatement 
 	return s
 }
 
-func (s *SelectStatement) AddHaving(e *ast.Expression) *SelectStatement {
+func (s *SelectStatement) AddHaving(e *Expression) *SelectStatement {
 	if s.having == nil {
-		s.having = ast.NewHavingClause(e)
+		s.having = NewHavingClause(e)
 		return s
 	}
 	s.having.AddCondition(e)
@@ -171,12 +191,12 @@ func (s *SelectStatement) AddHaving(e *ast.Expression) *SelectStatement {
 
 // Given one or more sort columns, either set or add to the ORDER BY clause for
 // the SelectStatement
-func (s *SelectStatement) AddOrderBy(sortCols ...*ast.SortColumn) *SelectStatement {
+func (s *SelectStatement) AddOrderBy(sortCols ...*SortColumn) *SelectStatement {
 	if len(sortCols) == 0 {
 		return s
 	}
 	if s.orderBy == nil {
-		s.orderBy = ast.NewOrderByClause(sortCols...)
+		s.orderBy = NewOrderByClause(sortCols...)
 		return s
 	}
 
@@ -188,28 +208,24 @@ func (s *SelectStatement) AddOrderBy(sortCols ...*ast.SortColumn) *SelectStateme
 
 func (s *SelectStatement) SetLimitWithOffset(limit int, offset int) *SelectStatement {
 	tmpOffset := offset
-	lc := ast.NewLimitClause(limit, &tmpOffset)
+	lc := NewLimitClause(limit, &tmpOffset)
 	s.limit = lc
 	return s
 }
 
 func (s *SelectStatement) SetLimit(limit int) *SelectStatement {
-	lc := ast.NewLimitClause(limit, nil)
+	lc := NewLimitClause(limit, nil)
 	s.limit = lc
 	return s
 }
 
-func containsJoin(s *SelectStatement, j *ast.JoinClause) bool {
+func containsJoin(s *SelectStatement, j *JoinClause) bool {
 	for _, sj := range s.joins {
 		if j == sj {
 			return true
 		}
 	}
 	return false
-}
-
-func addToProjections(s *SelectStatement, p types.Projection) {
-	s.projs = append(s.projs, p)
 }
 
 func (s *SelectStatement) RemoveSelection(toRemove types.Selection) {
@@ -224,4 +240,28 @@ func (s *SelectStatement) RemoveSelection(toRemove types.Selection) {
 		return
 	}
 	s.selections = append(s.selections[:idx], s.selections[idx+1:]...)
+}
+
+// NewSelectStatement returns a new SelectStatement struct that scans into a
+// SELECT SQL statement.
+func NewSelectStatement(
+	projs []types.Projection,
+	selections []types.Selection,
+	joins []*JoinClause,
+	where *WhereClause,
+	groupBy *GroupByClause,
+	having *HavingClause,
+	orderBy *OrderByClause,
+	limit *LimitClause,
+) *SelectStatement {
+	return &SelectStatement{
+		projs:      projs,
+		selections: selections,
+		joins:      joins,
+		where:      where,
+		groupBy:    groupBy,
+		having:     having,
+		orderBy:    orderBy,
+		limit:      limit,
+	}
 }

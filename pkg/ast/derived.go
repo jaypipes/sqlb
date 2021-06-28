@@ -3,10 +3,10 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
-package sqlb
+
+package ast
 
 import (
-	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
@@ -26,7 +26,7 @@ import (
 // However, the derived table's projections are separate and include the alias
 // of the derived table as the selection alias (u instead of users).
 type DerivedTable struct {
-	alias string
+	Alias string
 	from  *SelectStatement
 }
 
@@ -38,8 +38,8 @@ func (dt *DerivedTable) DerivedColumns() []types.Projection {
 	for x := 0; x < nprojs; x++ {
 		p := dt.from.projs[x]
 		switch p.(type) {
-		case *ast.ColumnIdentifier:
-			projs[x] = &DerivedColumn{dt: dt, c: p.(*ast.ColumnIdentifier)}
+		case *ColumnIdentifier:
+			projs[x] = &DerivedColumn{dt: dt, c: p.(*ColumnIdentifier)}
 		}
 	}
 	return projs
@@ -51,7 +51,7 @@ func (dt *DerivedTable) Projections() []types.Projection {
 	for x := 0; x < nprojs; x++ {
 		p := dt.from.projs[x]
 		switch p.(type) {
-		case *ast.ColumnIdentifier:
+		case *ColumnIdentifier:
 		}
 	}
 	return projs
@@ -64,7 +64,7 @@ func (dt *DerivedTable) ArgCount() int {
 func (dt *DerivedTable) Size(scanner types.Scanner) int {
 	size := dt.from.Size(scanner)
 	size += (len(grammar.Symbols[grammar.SYM_LPAREN]) + len(grammar.Symbols[grammar.SYM_RPAREN]) +
-		len(grammar.Symbols[grammar.SYM_AS]) + len(dt.alias))
+		len(grammar.Symbols[grammar.SYM_AS]) + len(dt.Alias))
 	return size
 }
 
@@ -74,8 +74,20 @@ func (dt *DerivedTable) Scan(scanner types.Scanner, b []byte, args []interface{}
 	bw += dt.from.Scan(scanner, b[bw:], args, curArg)
 	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_RPAREN])
 	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_AS])
-	bw += copy(b[bw:], dt.alias)
+	bw += copy(b[bw:], dt.Alias)
 	return bw
+}
+
+// NewDerivedTable returns a new DerivedTable struct representing a SELECT in
+// the FROM clause.
+func NewDerivedTable(
+	alias string,
+	sel *SelectStatement,
+) *DerivedTable {
+	return &DerivedTable{
+		Alias: alias,
+		from:  sel,
+	}
 }
 
 // DerivedColumn is a type of projection that is produced from a derived table
@@ -127,9 +139,13 @@ func (dt *DerivedTable) Scan(scanner types.Scanner, b []byte, args []interface{}
 //   FROM users
 // ) AS u
 type DerivedColumn struct {
-	alias string // This is the outermost alias
-	c     *ast.ColumnIdentifier
+	Alias string // This is the outermost alias
+	c     *ColumnIdentifier
 	dt    *DerivedTable
+}
+
+func (dc *DerivedColumn) C() *ColumnIdentifier {
+	return dc.c
 }
 
 func (dc *DerivedColumn) From() types.Selection {
@@ -137,9 +153,9 @@ func (dc *DerivedColumn) From() types.Selection {
 }
 
 func (dc *DerivedColumn) DisableAliasScan() func() {
-	origAlias := dc.alias
-	dc.alias = ""
-	return func() { dc.alias = origAlias }
+	origAlias := dc.Alias
+	dc.Alias = ""
+	return func() { dc.Alias = origAlias }
 }
 
 func (dc *DerivedColumn) ArgCount() int {
@@ -147,31 +163,31 @@ func (dc *DerivedColumn) ArgCount() int {
 }
 
 func (dc *DerivedColumn) Size(scanner types.Scanner) int {
-	size := len(dc.dt.alias)
+	size := len(dc.dt.Alias)
 	size += len(grammar.Symbols[grammar.SYM_PERIOD])
 	if dc.c.Alias != "" {
 		size += len(dc.c.Alias)
 	} else {
 		size += len(dc.c.Name)
 	}
-	if dc.alias != "" {
-		size += len(grammar.Symbols[grammar.SYM_AS]) + len(dc.alias)
+	if dc.Alias != "" {
+		size += len(grammar.Symbols[grammar.SYM_AS]) + len(dc.Alias)
 	}
 	return size
 }
 
 func (dc *DerivedColumn) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
-	bw += copy(b[bw:], dc.dt.alias)
+	bw += copy(b[bw:], dc.dt.Alias)
 	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_PERIOD])
 	if dc.c.Alias != "" {
 		bw += copy(b[bw:], dc.c.Alias)
 	} else {
 		bw += copy(b[bw:], dc.c.Name)
 	}
-	if dc.alias != "" {
+	if dc.Alias != "" {
 		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_AS])
-		bw += copy(b[bw:], dc.alias)
+		bw += copy(b[bw:], dc.Alias)
 	}
 	return bw
 }
