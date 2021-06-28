@@ -41,12 +41,12 @@ func TestInsertQuery(t *testing.T) {
 			qs:    "INSERT INTO users (id) VALUES (?)",
 			qargs: []interface{}{1},
 		},
-		{
-			name:  "INSERT using Table.Insert() adapter",
-			q:     users.Insert(map[string]interface{}{"id": 1}),
-			qs:    "INSERT INTO users (id) VALUES (?)",
-			qargs: []interface{}{1},
-		},
+		//{
+		//	name:  "INSERT using Table.Insert() adapter",
+		//	q:     users.Insert(map[string]interface{}{"id": 1}),
+		//	qs:    "INSERT INTO users (id) VALUES (?)",
+		//	qargs: []interface{}{1},
+		//},
 	}
 	for _, test := range tests {
 		if test.qe != nil {

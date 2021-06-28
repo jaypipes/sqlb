@@ -8,6 +8,7 @@ package sqlb
 import (
 	"errors"
 
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
@@ -20,7 +21,7 @@ type DeleteQuery struct {
 	e       error
 	b       []byte
 	args    []interface{}
-	stmt    *DeleteStatement
+	stmt    *ast.DeleteStatement
 	scanner types.Scanner
 }
 
@@ -56,28 +57,26 @@ func (q *DeleteQuery) StringArgs() (string, []interface{}) {
 	return string(q.b), q.args
 }
 
-func (q *DeleteQuery) Where(e *Expression) *DeleteQuery {
+func (q *DeleteQuery) Where(e *ast.Expression) *DeleteQuery {
 	q.stmt.AddWhere(e)
 	return q
 }
 
 // Delete returns a DeleteQuery given a table that will produce a DELETE SQL
 // statement
-func Delete(t *TableIdentifier) *DeleteQuery {
+func Delete(t *ast.TableIdentifier) *DeleteQuery {
 	if t == nil {
 		return &DeleteQuery{e: ERR_DELETE_NO_TARGET}
 	}
 
-	scanner := scanner.New(t.st.Schema.Dialect)
-	stmt := &DeleteStatement{
-		table: t,
-	}
+	scanner := scanner.New(t.Schema().Dialect)
+	stmt := ast.NewDeleteStatement(t, nil)
 	return &DeleteQuery{
 		stmt:    stmt,
 		scanner: scanner,
 	}
 }
 
-func (t *TableIdentifier) Delete() *DeleteQuery {
-	return Delete(t)
-}
+//func (t *ast.TableIdentifier) Delete() *DeleteQuery {
+//	return Delete(t)
+//}

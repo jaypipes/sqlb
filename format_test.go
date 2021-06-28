@@ -8,6 +8,7 @@ package sqlb
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/jaypipes/sqlb/pkg/types"
@@ -25,34 +26,29 @@ func TestFormatOptions(t *testing.T) {
 	colArticleId := articles.C("id")
 	colArticleAuthor := articles.C("author")
 
-	stmt := &SelectStatement{
-		selections: []types.Selection{articles},
-		projs:      []types.Projection{colArticleId, colUserName.As("author")},
-		joins: []*JoinClause{
-			&JoinClause{
-				left:  articles,
-				right: users,
-				on:    Equal(colArticleAuthor, colUserId),
-			},
+	stmt := ast.NewSelectStatement(
+		[]types.Projection{colArticleId, colUserName.As("author")},
+		[]types.Selection{articles},
+		[]*ast.JoinClause{
+			ast.Join(
+				articles,
+				users,
+				ast.Equal(colArticleAuthor, colUserId),
+			),
 		},
-		where: &WhereClause{
-			filters: []*Expression{
-				Equal(colUserName, "foo"),
-			},
-		},
-		groupBy: &GroupByClause{
-			cols: []types.Projection{colUserName},
-		},
-		orderBy: &OrderByClause{
-			scols: []*SortColumn{colUserName.Desc()},
-		},
-		limit: &LimitClause{limit: 10},
-	}
+		ast.NewWhereClause(
+			ast.Equal(colUserName, "foo"),
+		),
+		ast.NewGroupByClause(colUserName),
+		nil,
+		ast.NewOrderByClause(colUserName.Desc()),
+		ast.NewLimitClause(10, nil),
+	)
 
 	tests := []struct {
 		name    string
 		scanner types.Scanner
-		s       *SelectStatement
+		s       *ast.SelectStatement
 		qs      string
 		qargs   []interface{}
 	}{

@@ -8,6 +8,7 @@ package sqlb
 import (
 	"errors"
 
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
@@ -22,7 +23,7 @@ type UpdateQuery struct {
 	e       error
 	b       []byte
 	args    []interface{}
-	stmt    *UpdateStatement
+	stmt    *ast.UpdateStatement
 	scanner types.Scanner
 }
 
@@ -58,14 +59,14 @@ func (q *UpdateQuery) StringArgs() (string, []interface{}) {
 	return string(q.b), q.args
 }
 
-func (q *UpdateQuery) Where(e *Expression) *UpdateQuery {
+func (q *UpdateQuery) Where(e *ast.Expression) *UpdateQuery {
 	q.stmt.AddWhere(e)
 	return q
 }
 
 // Given a table and a map of column name to value for that column to update,
 // returns an UpdateQuery that will produce an UPDATE SQL statement
-func Update(t *TableIdentifier, values map[string]interface{}) *UpdateQuery {
+func Update(t *ast.TableIdentifier, values map[string]interface{}) *UpdateQuery {
 	if t == nil {
 		return &UpdateQuery{e: ERR_UPDATE_NO_TARGET}
 	}
@@ -75,7 +76,7 @@ func Update(t *TableIdentifier, values map[string]interface{}) *UpdateQuery {
 
 	// Make sure all keys in the map point to actual columns in the target
 	// table.
-	cols := make([]*ColumnIdentifier, len(values))
+	cols := make([]*ast.ColumnIdentifier, len(values))
 	vals := make([]interface{}, len(values))
 	x := 0
 	for k, v := range values {
@@ -88,18 +89,14 @@ func Update(t *TableIdentifier, values map[string]interface{}) *UpdateQuery {
 		x++
 	}
 
-	scanner := scanner.New(t.st.Schema.Dialect)
-	stmt := &UpdateStatement{
-		table:   t,
-		columns: cols,
-		values:  vals,
-	}
+	scanner := scanner.New(t.Schema().Dialect)
+	stmt := ast.NewUpdateStatement(t, cols, vals, nil)
 	return &UpdateQuery{
 		stmt:    stmt,
 		scanner: scanner,
 	}
 }
 
-func (t *TableIdentifier) Update(values map[string]interface{}) *UpdateQuery {
-	return Update(t, values)
-}
+//func (t *TableIdentifier) Update(values map[string]interface{}) *UpdateQuery {
+//	return Update(t, values)
+//}

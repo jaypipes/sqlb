@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
@@ -22,7 +23,7 @@ type SelectQuery struct {
 	e       error
 	b       []byte
 	args    []interface{}
-	sel     *SelectStatement
+	sel     *ast.SelectStatement
 	scanner types.Scanner
 }
 
@@ -58,72 +59,70 @@ func (q *SelectQuery) StringArgs() (string, []interface{}) {
 	return string(q.b), q.args
 }
 
-func (q *SelectQuery) Where(e *Expression) *SelectQuery {
-	q.sel.addWhere(e)
+func (q *SelectQuery) Where(e *ast.Expression) *SelectQuery {
+	q.sel.AddWhere(e)
 	return q
 }
 
 func (q *SelectQuery) GroupBy(cols ...types.Projection) *SelectQuery {
-	q.sel.addGroupBy(cols...)
+	q.sel.AddGroupBy(cols...)
 	return q
 }
 
-func (q *SelectQuery) Having(e *Expression) *SelectQuery {
-	q.sel.addHaving(e)
+func (q *SelectQuery) Having(e *ast.Expression) *SelectQuery {
+	q.sel.AddHaving(e)
 	return q
 }
 
-func (q *SelectQuery) OrderBy(scols ...*SortColumn) *SelectQuery {
-	q.sel.addOrderBy(scols...)
+func (q *SelectQuery) OrderBy(scols ...*ast.SortColumn) *SelectQuery {
+	q.sel.AddOrderBy(scols...)
 	return q
 }
 
 func (q *SelectQuery) Limit(limit int) *SelectQuery {
-	q.sel.setLimit(limit)
+	q.sel.SetLimit(limit)
 	return q
 }
 
 func (q *SelectQuery) LimitWithOffset(limit int, offset int) *SelectQuery {
-	q.sel.setLimitWithOffset(limit, offset)
+	q.sel.SetLimitWithOffset(limit, offset)
 	return q
 }
 
 // Returns a pointer to a new SelectQuery that has aliased its inner selection
 // to the supplied name
 func (q *SelectQuery) As(alias string) *SelectQuery {
-	dt := &DerivedTable{
-		alias: alias,
-		from:  q.sel,
-	}
-	derivedSel := &SelectStatement{
-		projs:      dt.getAllDerivedColumns(),
-		selections: []types.Selection{dt},
-	}
+	dt := ast.NewDerivedTable(alias, q.sel)
+	derivedSel := ast.NewSelectStatement(
+		dt.DerivedColumns(),
+		[]types.Selection{dt},
+		nil, nil, nil, nil, nil, nil,
+	)
 	return &SelectQuery{sel: derivedSel, scanner: q.scanner}
 }
 
 // Returns the projection of the underlying SelectStatement that matches the name
 // provided
 func (q *SelectQuery) C(name string) types.Projection {
-	for _, p := range q.sel.projs {
+	for _, p := range q.sel.Projections() {
 		switch p.(type) {
-		case *DerivedColumn:
-			dc := p.(*DerivedColumn)
-			if dc.alias != "" && dc.alias == name {
+		case *ast.DerivedColumn:
+			dc := p.(*ast.DerivedColumn)
+			if dc.Alias != "" && dc.Alias == name {
 				return dc
-			} else if dc.c.name == name {
+			} else if dc.C().Name == name {
 				return dc
 			}
-		case *ColumnIdentifier:
-			c := p.(*ColumnIdentifier)
-			if c.alias != "" && c.alias == name {
+		case *ast.ColumnIdentifier:
+			c := p.(*ast.ColumnIdentifier)
+			if c.Alias != "" && c.Alias == name {
 				return c
-			} else if c.name == name {
+			} else if c.Name == name {
 				return c
 			}
-		case *sqlFunc:
-			f := p.(*sqlFunc)
-			if f.alias != "" && f.alias == name {
+		case *ast.Function:
+			f := p.(*ast.Function)
+			if f.Alias != "" && f.Alias == name {
 				return f
 			}
 		}
@@ -131,28 +130,28 @@ func (q *SelectQuery) C(name string) types.Projection {
 	return nil
 }
 
-func (q *SelectQuery) Join(right interface{}, on *Expression) *SelectQuery {
+func (q *SelectQuery) Join(right interface{}, on *ast.Expression) *SelectQuery {
 	var rightSel types.Selection
 	switch right.(type) {
 	case *SelectQuery:
 		// Joining to a derived table
-		rightSel = right.(*SelectQuery).sel.selections[0]
+		rightSel = right.(*SelectQuery).sel.Selections()[0]
 	case types.Selection:
 		rightSel = right.(types.Selection)
 	}
-	return q.doJoin(JOIN_INNER, rightSel, on)
+	return q.doJoin(types.JOIN_INNER, rightSel, on)
 }
 
-func (q *SelectQuery) OuterJoin(right interface{}, on *Expression) *SelectQuery {
+func (q *SelectQuery) OuterJoin(right interface{}, on *ast.Expression) *SelectQuery {
 	var rightSel types.Selection
 	switch right.(type) {
 	case *SelectQuery:
 		// Joining to a derived table
-		rightSel = right.(*SelectQuery).sel.selections[0]
+		rightSel = right.(*SelectQuery).sel.Selections()[0]
 	case types.Selection:
 		rightSel = right.(types.Selection)
 	}
-	return q.doJoin(JOIN_OUTER, rightSel, on)
+	return q.doJoin(types.JOIN_OUTER, rightSel, on)
 }
 
 // Join to a supplied selection with the supplied ON expression. If the SelectQuery
@@ -160,11 +159,11 @@ func (q *SelectQuery) OuterJoin(right interface{}, on *Expression) *SelectQuery 
 // not reference any selection that is found in the SelectQuery's SelectStatement, then
 // SelectQuery.e will be set to an error.
 func (q *SelectQuery) doJoin(
-	jt JoinType,
+	jt types.JoinType,
 	right types.Selection,
-	on *Expression,
+	on *ast.Expression,
 ) *SelectQuery {
-	if q.sel == nil || len(q.sel.selections) == 0 {
+	if q.sel == nil || len(q.sel.Selections()) == 0 {
 		q.e = ERR_JOIN_INVALID_NO_SELECT
 		return q
 	}
@@ -173,7 +172,7 @@ func (q *SelectQuery) doJoin(
 	// the join.
 	var left types.Selection
 	if on != nil {
-		for _, el := range on.elements {
+		for _, el := range on.Elements() {
 			switch el.(type) {
 			case types.Projection:
 				p := el.(types.Projection)
@@ -183,7 +182,7 @@ func (q *SelectQuery) doJoin(
 				}
 				// Search through the SelectQuery's primary SelectStatement, looking for
 				// the selection that is referred to be the ON expression.
-				for _, sel := range q.sel.selections {
+				for _, sel := range q.sel.Selections() {
 					if sel == exprSel {
 						left = sel
 						break
@@ -194,23 +193,23 @@ func (q *SelectQuery) doJoin(
 				}
 				// Now search through the SelectQuery's JoinClauses, looking
 				// for a selection that is the left side of the ON expression
-				for _, j := range q.sel.joins {
-					if j.left == exprSel {
-						left = j.left
-					} else if j.right == exprSel {
-						left = j.right
+				for _, j := range q.sel.Joins() {
+					if j.Left() == exprSel {
+						left = j.Left()
+					} else if j.Right() == exprSel {
+						left = j.Right()
 					}
 				}
 				if left != nil {
 					break
 				}
-			case *Expression:
-				expr := el.(*Expression)
-				for _, referrent := range expr.referrents() {
+			case *ast.Expression:
+				expr := el.(*ast.Expression)
+				for _, referrent := range expr.Referrents() {
 					if referrent == right {
 						continue
 					}
-					for _, sel := range q.sel.selections {
+					for _, sel := range q.sel.Selections() {
 						if sel == referrent {
 							left = sel
 							break
@@ -221,11 +220,11 @@ func (q *SelectQuery) doJoin(
 					}
 					// Now search through the SelectQuery's JoinClauses, looking
 					// for a selection that is the left side of the ON expression
-					for _, j := range q.sel.joins {
-						if j.left == referrent {
-							left = j.left
-						} else if j.right == referrent {
-							left = j.right
+					for _, j := range q.sel.Joins() {
+						if j.Left() == referrent {
+							left = j.Left()
+						} else if j.Right() == referrent {
+							left = j.Right()
 						}
 					}
 					if left != nil {
@@ -246,17 +245,12 @@ func (q *SelectQuery) doJoin(
 		q.e = ERR_JOIN_INVALID_UNKNOWN_TARGET
 		return q
 	}
-	jc := &JoinClause{
-		JoinType: jt,
-		left:     left,
-		right:    right,
-		on:       on,
-	}
-	q.sel.addJoin(jc)
+	jc := ast.NewJoinClause(jt, left, right, on)
+	q.sel.AddJoin(jc)
 
 	// Make sure we remove the right-hand selection from the SelectStatement's
 	// selections collection, since it's in a JOIN clause.
-	q.sel.removeSelection(right)
+	q.sel.RemoveSelection(right)
 	return q
 }
 
@@ -265,9 +259,7 @@ func Select(items ...interface{}) *SelectQuery {
 	sq := &SelectQuery{
 		scanner: scanner,
 	}
-	sel := &SelectStatement{
-		projs: make([]types.Projection, 0),
-	}
+	sel := ast.NewSelectStatement(make([]types.Projection, 0), nil, nil, nil, nil, nil, nil, nil)
 
 	nDerived := 0
 	selectionMap := make(map[types.Selection]bool, 0)
@@ -284,10 +276,10 @@ func Select(items ...interface{}) *SelectQuery {
 			isq := item.(*SelectQuery)
 			sq.scanner = isq.scanner
 			innerSelClause := isq.sel
-			if len(innerSelClause.selections) == 1 {
-				innerSel := innerSelClause.selections[0]
+			if len(innerSelClause.Selections()) == 1 {
+				innerSel := innerSelClause.Selections()[0]
 				switch innerSel.(type) {
-				case *DerivedTable:
+				case *ast.DerivedTable:
 					// If the inner select clause contains a single
 					// selection and that selection is a DerivedTable,
 					// that means we were called like so:
@@ -301,9 +293,9 @@ func Select(items ...interface{}) *SelectQuery {
 					// derived table's projections out into the outer
 					// SelectStatement.
 					selectionMap[innerSel] = true
-					dt := innerSel.(*DerivedTable)
-					for _, p := range dt.getAllDerivedColumns() {
-						addToProjections(sel, p)
+					dt := innerSel.(*ast.DerivedTable)
+					for _, p := range dt.DerivedColumns() {
+						sel.AddProjection(p)
 					}
 				default:
 					// This means we were called like so:
@@ -313,44 +305,41 @@ func Select(items ...interface{}) *SelectQuery {
 					// So we need to construct a derived table manually
 					// and name it derivedN.
 					derivedName := fmt.Sprintf("derived%d", nDerived)
-					dt := &DerivedTable{
-						alias: derivedName,
-						from:  innerSelClause,
-					}
+					dt := ast.NewDerivedTable(derivedName, innerSelClause)
 					selectionMap[dt] = true
-					for _, p := range dt.getAllDerivedColumns() {
-						addToProjections(sel, p)
+					for _, p := range dt.DerivedColumns() {
+						sel.AddProjection(p)
 					}
 					nDerived++
 				}
 			}
-		case *ColumnIdentifier:
-			v := item.(*ColumnIdentifier)
+		case *ast.ColumnIdentifier:
+			v := item.(*ast.ColumnIdentifier)
 			// Set scanner's dialect based on supplied meta's dialect
 			if v == nil {
 				panic("specified a non-existent column")
 			}
-			sq.scanner.WithDialect(v.tbl.st.Schema.Dialect)
-			sel.projs = append(sel.projs, v)
-			selectionMap[v.tbl] = true
-		case *TableIdentifier:
-			v := item.(*TableIdentifier)
+			sq.scanner.WithDialect(v.Schema().Dialect)
+			sel.AddProjection(v)
+			selectionMap[v.From()] = true
+		case *ast.TableIdentifier:
+			v := item.(*ast.TableIdentifier)
 			// Set scanner's dialect based on supplied meta's dialect
-			sq.scanner.WithDialect(v.st.Schema.Dialect)
+			sq.scanner.WithDialect(v.Schema().Dialect)
 			for _, c := range v.Projections() {
-				addToProjections(sel, c)
+				sel.AddProjection(c)
 			}
 			selectionMap[v] = true
-		case *sqlFunc:
-			v := item.(*sqlFunc)
-			addToProjections(sel, v)
-			selectionMap[v.sel] = true
+		case *ast.Function:
+			v := item.(*ast.Function)
+			sel.AddProjection(v)
+			selectionMap[v.From()] = true
 		default:
 			// Everything else, make it a literal value projection, so, for
 			// instance, a user can do SELECT 1, which is, technically
 			// valid SQL.
-			p := &value{val: item}
-			addToProjections(sel, p)
+			p := ast.NewValue(nil, item)
+			sel.AddProjection(p)
 		}
 	}
 	selections := make([]types.Selection, len(selectionMap))
@@ -359,7 +348,7 @@ func Select(items ...interface{}) *SelectQuery {
 		selections[x] = sel
 		x++
 	}
-	sel.selections = selections
+	sel.ReplaceSelections(selections)
 	sq.sel = sel
 	return sq
 }
