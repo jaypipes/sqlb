@@ -9,6 +9,7 @@ import (
 	"errors"
 
 	"github.com/jaypipes/sqlb/pkg/ast"
+	"github.com/jaypipes/sqlb/pkg/grammar/statement"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
@@ -23,7 +24,7 @@ type UpdateQuery struct {
 	e       error
 	b       []byte
 	args    []interface{}
-	stmt    *ast.UpdateStatement
+	stmt    *statement.Update
 	scanner types.Scanner
 }
 
@@ -89,11 +90,9 @@ func Update(t *ast.TableIdentifier, values map[string]interface{}) *UpdateQuery 
 		x++
 	}
 
-	scanner := scanner.New(t.Schema().Dialect)
-	stmt := ast.NewUpdateStatement(t, cols, vals, nil)
 	return &UpdateQuery{
-		stmt:    stmt,
-		scanner: scanner,
+		scanner: scanner.New(t.Schema().Dialect),
+		stmt:    statement.NewUpdate(t, cols, vals, nil),
 	}
 }
 

@@ -4,13 +4,14 @@
 // See the COPYING file in the root project directory for full text.
 //
 
-package ast_test
+package statement_test
 
 import (
 	"testing"
 
 	"github.com/jaypipes/sqlb"
 	"github.com/jaypipes/sqlb/pkg/ast"
+	"github.com/jaypipes/sqlb/pkg/grammar/statement"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/jaypipes/sqlb/pkg/types"
@@ -26,13 +27,13 @@ func TestUpdateStatement(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		s     *ast.UpdateStatement
+		s     *statement.Update
 		qs    string
 		qargs []interface{}
 	}{
 		{
 			name: "UPDATE no WHERE",
-			s: ast.NewUpdateStatement(
+			s: statement.NewUpdate(
 				users,
 				[]*ast.ColumnIdentifier{colUserName},
 				[]interface{}{"foo"},
@@ -43,7 +44,7 @@ func TestUpdateStatement(t *testing.T) {
 		},
 		{
 			name: "UPDATE simple WHERE",
-			s: ast.NewUpdateStatement(
+			s: statement.NewUpdate(
 				users,
 				[]*ast.ColumnIdentifier{colUserName},
 				[]interface{}{"foo"},

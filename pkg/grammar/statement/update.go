@@ -4,24 +4,24 @@
 // See the COPYING file in the root project directory for full text.
 //
 
-package ast
+package statement
 
 import (
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	pkgscanner "github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
 // UPDATE <table> SET <column_value_list>[ WHERE <predicates>]
-
-type UpdateStatement struct {
-	table   *TableIdentifier
-	columns []*ColumnIdentifier
+type Update struct {
+	table   *ast.TableIdentifier
+	columns []*ast.ColumnIdentifier
 	values  []interface{}
-	where   *WhereClause
+	where   *ast.WhereClause
 }
 
-func (s *UpdateStatement) ArgCount() int {
+func (s *Update) ArgCount() int {
 	argc := len(s.values)
 	if s.where != nil {
 		argc += s.where.ArgCount()
@@ -29,7 +29,7 @@ func (s *UpdateStatement) ArgCount() int {
 	return argc
 }
 
-func (s *UpdateStatement) Size(scanner types.Scanner) int {
+func (s *Update) Size(scanner types.Scanner) int {
 	size := len(grammar.Symbols[grammar.SYM_UPDATE]) + len(s.table.Name) + len(grammar.Symbols[grammar.SYM_SET])
 	ncols := len(s.columns)
 	for _, c := range s.columns {
@@ -49,7 +49,7 @@ func (s *UpdateStatement) Size(scanner types.Scanner) int {
 	return size
 }
 
-func (s *UpdateStatement) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
+func (s *Update) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_UPDATE])
 	// We don't add any table alias when outputting the table identifier
@@ -77,24 +77,24 @@ func (s *UpdateStatement) Scan(scanner types.Scanner, b []byte, args []interface
 	return bw
 }
 
-func (s *UpdateStatement) AddWhere(e *Expression) *UpdateStatement {
+func (s *Update) AddWhere(e *ast.Expression) *Update {
 	if s.where == nil {
-		s.where = NewWhereClause(e)
+		s.where = ast.NewWhereClause(e)
 		return s
 	}
 	s.where.AddExpression(e)
 	return s
 }
 
-// NewUpdateStatement returns a new UpdateStatement struct that scans into an
-// UPDATE SQL statement
-func NewUpdateStatement(
-	table *TableIdentifier,
-	columns []*ColumnIdentifier,
+// NewUpdate returns a new UpdateStatement struct that scans into an UPDATE SQL
+// statement
+func NewUpdate(
+	table *ast.TableIdentifier,
+	columns []*ast.ColumnIdentifier,
 	values []interface{},
-	where *WhereClause,
-) *UpdateStatement {
-	return &UpdateStatement{
+	where *ast.WhereClause,
+) *Update {
+	return &Update{
 		table:   table,
 		columns: columns,
 		values:  values,
