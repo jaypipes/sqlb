@@ -3,6 +3,7 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
+
 package sqlb
 
 import (
@@ -10,6 +11,7 @@ import (
 	"fmt"
 
 	"github.com/jaypipes/sqlb/pkg/ast"
+	"github.com/jaypipes/sqlb/pkg/grammar/statement"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
@@ -23,7 +25,7 @@ type SelectQuery struct {
 	e       error
 	b       []byte
 	args    []interface{}
-	sel     *ast.SelectStatement
+	sel     *statement.Select
 	scanner types.Scanner
 }
 
@@ -93,7 +95,7 @@ func (q *SelectQuery) LimitWithOffset(limit int, offset int) *SelectQuery {
 // to the supplied name
 func (q *SelectQuery) As(alias string) *SelectQuery {
 	dt := ast.NewDerivedTable(alias, q.sel)
-	derivedSel := ast.NewSelectStatement(
+	derivedSel := statement.NewSelect(
 		dt.DerivedColumns(),
 		[]types.Selection{dt},
 		nil, nil, nil, nil, nil, nil,
@@ -259,7 +261,7 @@ func Select(items ...interface{}) *SelectQuery {
 	sq := &SelectQuery{
 		scanner: scanner,
 	}
-	sel := ast.NewSelectStatement(make([]types.Projection, 0), nil, nil, nil, nil, nil, nil, nil)
+	sel := statement.NewSelect(make([]types.Projection, 0), nil, nil, nil, nil, nil, nil, nil)
 
 	nDerived := 0
 	selectionMap := make(map[types.Selection]bool, 0)

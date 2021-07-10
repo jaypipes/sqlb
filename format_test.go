@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/jaypipes/sqlb/pkg/ast"
+	"github.com/jaypipes/sqlb/pkg/grammar/statement"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/jaypipes/sqlb/pkg/types"
@@ -26,7 +27,7 @@ func TestFormatOptions(t *testing.T) {
 	colArticleId := articles.C("id")
 	colArticleAuthor := articles.C("author")
 
-	stmt := ast.NewSelectStatement(
+	stmt := statement.NewSelect(
 		[]types.Projection{colArticleId, colUserName.As("author")},
 		[]types.Selection{articles},
 		[]*ast.JoinClause{
@@ -48,7 +49,7 @@ func TestFormatOptions(t *testing.T) {
 	tests := []struct {
 		name    string
 		scanner types.Scanner
-		s       *ast.SelectStatement
+		s       *statement.Select
 		qs      string
 		qargs   []interface{}
 	}{

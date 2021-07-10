@@ -4,44 +4,45 @@
 // See the COPYING file in the root project directory for full text.
 //
 
-package ast
+package statement
 
 import (
+	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
-type SelectStatement struct {
+type Select struct {
 	projs   []types.Projection
-	from    *FromClause
-	where   *WhereClause
-	groupBy *GroupByClause
-	having  *HavingClause
-	orderBy *OrderByClause
-	limit   *LimitClause
+	from    *ast.FromClause
+	where   *ast.WhereClause
+	groupBy *ast.GroupByClause
+	having  *ast.HavingClause
+	orderBy *ast.OrderByClause
+	limit   *ast.LimitClause
 }
 
-func (s *SelectStatement) Projections() []types.Projection {
+func (s *Select) Projections() []types.Projection {
 	return s.projs
 }
 
-func (s *SelectStatement) Selections() []types.Selection {
+func (s *Select) Selections() []types.Selection {
 	return s.from.Selections()
 }
 
-func (s *SelectStatement) Joins() []*JoinClause {
+func (s *Select) Joins() []*ast.JoinClause {
 	return s.from.Joins()
 }
 
-func (s *SelectStatement) AddProjection(p types.Projection) {
+func (s *Select) AddProjection(p types.Projection) {
 	s.projs = append(s.projs, p)
 }
 
-func (s *SelectStatement) ReplaceSelections(sels []types.Selection) {
+func (s *Select) ReplaceSelections(sels []types.Selection) {
 	s.from.ReplaceSelections(sels)
 }
 
-func (s *SelectStatement) ArgCount() int {
+func (s *Select) ArgCount() int {
 	argc := 0
 	for _, p := range s.projs {
 		argc += p.ArgCount()
@@ -67,7 +68,7 @@ func (s *SelectStatement) ArgCount() int {
 	return argc
 }
 
-func (s *SelectStatement) Size(scanner types.Scanner) int {
+func (s *Select) Size(scanner types.Scanner) int {
 	size := len(grammar.Symbols[grammar.SYM_SELECT])
 	nprojs := len(s.projs)
 	for _, p := range s.projs {
@@ -98,7 +99,7 @@ func (s *SelectStatement) Size(scanner types.Scanner) int {
 	return size
 }
 
-func (s *SelectStatement) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
+func (s *Select) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
 	bw := 0
 	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_SELECT])
 	nprojs := len(s.projs)
@@ -132,14 +133,14 @@ func (s *SelectStatement) Scan(scanner types.Scanner, b []byte, args []interface
 	return bw
 }
 
-func (s *SelectStatement) AddJoin(jc *JoinClause) *SelectStatement {
+func (s *Select) AddJoin(jc *ast.JoinClause) *Select {
 	s.from.AddJoin(jc)
 	return s
 }
 
-func (s *SelectStatement) AddWhere(e *Expression) *SelectStatement {
+func (s *Select) AddWhere(e *ast.Expression) *Select {
 	if s.where == nil {
-		s.where = NewWhereClause(e)
+		s.where = ast.NewWhereClause(e)
 		return s
 	}
 	s.where.AddExpression(e)
@@ -147,13 +148,13 @@ func (s *SelectStatement) AddWhere(e *Expression) *SelectStatement {
 }
 
 // Given one or more columns, either set or add to the GROUP BY clause for
-// the SelectStatement
-func (s *SelectStatement) AddGroupBy(cols ...types.Projection) *SelectStatement {
+// the Select
+func (s *Select) AddGroupBy(cols ...types.Projection) *Select {
 	if len(cols) == 0 {
 		return s
 	}
 	if s.groupBy == nil {
-		s.groupBy = NewGroupByClause(cols...)
+		s.groupBy = ast.NewGroupByClause(cols...)
 		return s
 	}
 	for _, c := range cols {
@@ -162,9 +163,9 @@ func (s *SelectStatement) AddGroupBy(cols ...types.Projection) *SelectStatement 
 	return s
 }
 
-func (s *SelectStatement) AddHaving(e *Expression) *SelectStatement {
+func (s *Select) AddHaving(e *ast.Expression) *Select {
 	if s.having == nil {
-		s.having = NewHavingClause(e)
+		s.having = ast.NewHavingClause(e)
 		return s
 	}
 	s.having.AddCondition(e)
@@ -172,13 +173,13 @@ func (s *SelectStatement) AddHaving(e *Expression) *SelectStatement {
 }
 
 // Given one or more sort columns, either set or add to the ORDER BY clause for
-// the SelectStatement
-func (s *SelectStatement) AddOrderBy(sortCols ...*SortColumn) *SelectStatement {
+// the Select
+func (s *Select) AddOrderBy(sortCols ...*ast.SortColumn) *Select {
 	if len(sortCols) == 0 {
 		return s
 	}
 	if s.orderBy == nil {
-		s.orderBy = NewOrderByClause(sortCols...)
+		s.orderBy = ast.NewOrderByClause(sortCols...)
 		return s
 	}
 
@@ -188,38 +189,38 @@ func (s *SelectStatement) AddOrderBy(sortCols ...*SortColumn) *SelectStatement {
 	return s
 }
 
-func (s *SelectStatement) SetLimitWithOffset(limit int, offset int) *SelectStatement {
+func (s *Select) SetLimitWithOffset(limit int, offset int) *Select {
 	tmpOffset := offset
-	lc := NewLimitClause(limit, &tmpOffset)
+	lc := ast.NewLimitClause(limit, &tmpOffset)
 	s.limit = lc
 	return s
 }
 
-func (s *SelectStatement) SetLimit(limit int) *SelectStatement {
-	lc := NewLimitClause(limit, nil)
+func (s *Select) SetLimit(limit int) *Select {
+	lc := ast.NewLimitClause(limit, nil)
 	s.limit = lc
 	return s
 }
 
-func (s *SelectStatement) RemoveSelection(toRemove types.Selection) {
+func (s *Select) RemoveSelection(toRemove types.Selection) {
 	s.from.RemoveSelection(toRemove)
 }
 
-// NewSelectStatement returns a new SelectStatement struct that scans into a
+// NewSelect returns a new Select struct that scans into a
 // SELECT SQL statement.
-func NewSelectStatement(
+func NewSelect(
 	projs []types.Projection,
 	selections []types.Selection,
-	joins []*JoinClause,
-	where *WhereClause,
-	groupBy *GroupByClause,
-	having *HavingClause,
-	orderBy *OrderByClause,
-	limit *LimitClause,
-) *SelectStatement {
-	return &SelectStatement{
+	joins []*ast.JoinClause,
+	where *ast.WhereClause,
+	groupBy *ast.GroupByClause,
+	having *ast.HavingClause,
+	orderBy *ast.OrderByClause,
+	limit *ast.LimitClause,
+) *Select {
+	return &Select{
 		projs:   projs,
-		from:    NewFromClause(selections, joins),
+		from:    ast.NewFromClause(selections, joins),
 		where:   where,
 		groupBy: groupBy,
 		having:  having,
