@@ -253,7 +253,7 @@ func getArticles() []*Article {
     q.Limit(10)
 
     articles := make([]*Article, 0)
-    rows, err := db.Query(q.String())
+    rows, err := sqlb.Query(db, q)
     if err != nil {
         log.Fatal(err)
     }
@@ -296,8 +296,7 @@ func getArticles(numArticles int, byAuthor string) []*Articles {
     q.Limit(numArticle)
 
     articles := make([]*Article, 0)
-    qs, qargs := q.StringArgs()
-    rows, err := db.Query(qs, qargs...)
+    rows, err := sqlb.Query(db, q)
     if err != nil {
         log.Fatal(err)
     }

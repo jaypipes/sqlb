@@ -27,34 +27,24 @@ import (
 // of the derived table as the selection alias (u instead of users).
 type DerivedTable struct {
 	Alias string
-	from  *SelectStatement
+	from  types.Selection
 }
 
 // DerivedColumns returns a collection of DerivedColumn projections that have
 // been constructed to refer to this derived table and not have any outer alias
 func (dt *DerivedTable) DerivedColumns() []types.Projection {
-	nprojs := len(dt.from.projs)
-	projs := make([]types.Projection, nprojs)
-	for x := 0; x < nprojs; x++ {
-		p := dt.from.projs[x]
+	projs := []types.Projection{}
+	for _, p := range dt.from.Projections() {
 		switch p.(type) {
 		case *ColumnIdentifier:
-			projs[x] = &DerivedColumn{dt: dt, c: p.(*ColumnIdentifier)}
+			projs = append(projs, &DerivedColumn{dt: dt, c: p.(*ColumnIdentifier)})
 		}
 	}
 	return projs
 }
 
 func (dt *DerivedTable) Projections() []types.Projection {
-	nprojs := len(dt.from.projs)
-	projs := make([]types.Projection, nprojs)
-	for x := 0; x < nprojs; x++ {
-		p := dt.from.projs[x]
-		switch p.(type) {
-		case *ColumnIdentifier:
-		}
-	}
-	return projs
+	return dt.from.Projections()
 }
 
 func (dt *DerivedTable) ArgCount() int {
@@ -82,7 +72,7 @@ func (dt *DerivedTable) Scan(scanner types.Scanner, b []byte, args []interface{}
 // the FROM clause.
 func NewDerivedTable(
 	alias string,
-	sel *SelectStatement,
+	sel types.Selection,
 ) *DerivedTable {
 	return &DerivedTable{
 		Alias: alias,

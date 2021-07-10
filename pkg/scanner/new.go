@@ -45,6 +45,16 @@ func (s *sqlScanner) Size(elements ...types.Element) *types.ElementSizes {
 	}
 }
 
+// StringArgs returns the built query string and a slice of interface{}
+// representing the values of the query args used in the query string, if any.
+func (s *sqlScanner) StringArgs(el types.Element) (string, []interface{}) {
+	sizes := s.Size(el)
+	qargs := make([]interface{}, sizes.ArgCount)
+	b := make([]byte, sizes.BufferSize)
+	s.Scan(b, qargs, el)
+	return string(b), qargs
+}
+
 func (s *sqlScanner) Dialect() types.Dialect {
 	return s.dialect
 }

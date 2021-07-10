@@ -11,6 +11,7 @@ import (
 
 	"github.com/jaypipes/sqlb"
 	"github.com/jaypipes/sqlb/pkg/ast"
+	"github.com/jaypipes/sqlb/pkg/grammar/statement"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/jaypipes/sqlb/pkg/types"
@@ -35,7 +36,7 @@ func TestDerived(t *testing.T) {
 		derivedTest{
 			c: ast.NewDerivedTable(
 				"u",
-				ast.NewSelectStatement(
+				statement.NewSelect(
 					[]types.Projection{
 						colUserName,
 					},

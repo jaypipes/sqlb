@@ -3,11 +3,13 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
-package sqlb
+
+package scanner_test
 
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb"
 	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
@@ -19,43 +21,31 @@ func TestFormatOptions(t *testing.T) {
 	assert := assert.New(t)
 
 	sc := testutil.Schema()
-	users := T(sc, "users")
-	articles := T(sc, "articles")
+	users := sqlb.T(sc, "users")
+	articles := sqlb.T(sc, "articles")
 	colUserName := users.C("name")
 	colUserId := users.C("id")
 	colArticleId := articles.C("id")
 	colArticleAuthor := articles.C("author")
 
-	stmt := ast.NewSelectStatement(
-		[]types.Projection{colArticleId, colUserName.As("author")},
-		[]types.Selection{articles},
-		[]*ast.JoinClause{
-			ast.Join(
-				articles,
-				users,
-				ast.Equal(colArticleAuthor, colUserId),
-			),
-		},
-		ast.NewWhereClause(
-			ast.Equal(colUserName, "foo"),
-		),
-		ast.NewGroupByClause(colUserName),
-		nil,
-		ast.NewOrderByClause(colUserName.Desc()),
-		ast.NewLimitClause(10, nil),
-	)
+	q := sqlb.Select(colArticleId, colUserName.As("author"))
+	q.Join(articles, ast.Equal(colUserId, colArticleAuthor))
+	q.Where(ast.Equal(colUserName, "foo"))
+	q.GroupBy(colUserName)
+	q.OrderBy(colUserName.Desc())
+	q.Limit(10)
 
 	tests := []struct {
 		name    string
 		scanner types.Scanner
-		s       *ast.SelectStatement
+		query   types.Element
 		qs      string
 		qargs   []interface{}
 	}{
 		{
 			name:  "default space clause separator",
-			s:     stmt,
-			qs:    "SELECT articles.id, users.name AS author FROM articles JOIN users ON articles.author = users.id WHERE users.name = ? GROUP BY users.name ORDER BY users.name DESC LIMIT ?",
+			query: q,
+			qs:    "SELECT articles.id, users.name AS author FROM users JOIN articles ON users.id = articles.author WHERE users.name = ? GROUP BY users.name ORDER BY users.name DESC LIMIT ?",
 			qargs: []interface{}{"foo", 10},
 		},
 		{
@@ -65,10 +55,10 @@ func TestFormatOptions(t *testing.T) {
 					SeparateClauseWith: "\n",
 				},
 			),
-			s: stmt,
+			query: q,
 			qs: `SELECT articles.id, users.name AS author
-FROM articles
-JOIN users ON articles.author = users.id
+FROM users
+JOIN articles ON users.id = articles.author
 WHERE users.name = ?
 GROUP BY users.name
 ORDER BY users.name DESC
@@ -83,11 +73,11 @@ LIMIT ?`,
 					PrefixWith:         "\n",
 				},
 			),
-			s: stmt,
+			query: q,
 			qs: `
 SELECT articles.id, users.name AS author
-FROM articles
-JOIN users ON articles.author = users.id
+FROM users
+JOIN articles ON users.id = articles.author
 WHERE users.name = ?
 GROUP BY users.name
 ORDER BY users.name DESC
@@ -100,12 +90,8 @@ LIMIT ?`,
 		if sc == nil {
 			sc = scanner.DefaultScanner
 		}
-		sel := &SelectQuery{
-			sel:     test.s,
-			scanner: sc,
-		}
-		qs, qargs := sel.StringArgs()
-		assert.Equal(qs, test.qs)
-		assert.Equal(qargs, test.qargs)
+		qs, qargs := sc.StringArgs(test.query)
+		assert.Equal(test.qs, qs)
+		assert.Equal(test.qargs, qargs)
 	}
 }

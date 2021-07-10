@@ -4,20 +4,21 @@
 // See the COPYING file in the root project directory for full text.
 //
 
-package ast_test
+package statement_test
 
 import (
 	"testing"
 
 	"github.com/jaypipes/sqlb"
 	"github.com/jaypipes/sqlb/pkg/ast"
+	"github.com/jaypipes/sqlb/pkg/grammar/statement"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/jaypipes/sqlb/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestUpdateStatement(t *testing.T) {
+func TestDeleteStatement(t *testing.T) {
 	assert := assert.New(t)
 
 	sc := testutil.Schema()
@@ -26,33 +27,25 @@ func TestUpdateStatement(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		s     *ast.UpdateStatement
+		s     *statement.Delete
 		qs    string
 		qargs []interface{}
 	}{
 		{
-			name: "UPDATE no WHERE",
-			s: ast.NewUpdateStatement(
-				users,
-				[]*ast.ColumnIdentifier{colUserName},
-				[]interface{}{"foo"},
-				nil,
-			),
-			qs:    "UPDATE users SET name = ?",
-			qargs: []interface{}{"foo"},
+			name: "DELETE no WHERE",
+			s:    statement.NewDelete(users, nil),
+			qs:   "DELETE FROM users",
 		},
 		{
-			name: "UPDATE simple WHERE",
-			s: ast.NewUpdateStatement(
+			name: "DELETE simple WHERE",
+			s: statement.NewDelete(
 				users,
-				[]*ast.ColumnIdentifier{colUserName},
-				[]interface{}{"foo"},
 				ast.NewWhereClause(
-					ast.Equal(colUserName, "bar"),
+					ast.Equal(colUserName, "foo"),
 				),
 			),
-			qs:    "UPDATE users SET name = ? WHERE users.name = ?",
-			qargs: []interface{}{"foo", "bar"},
+			qs:    "DELETE FROM users WHERE users.name = ?",
+			qargs: []interface{}{"foo"},
 		},
 	}
 	for _, test := range tests {

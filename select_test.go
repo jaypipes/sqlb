@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/jaypipes/sqlb/pkg/ast"
+	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/stretchr/testify/assert"
 )
@@ -191,7 +192,8 @@ func TestSelectQuery(t *testing.T) {
 			assert.Fail(qe.Error())
 			continue
 		}
-		qs, qargs := test.q.StringArgs()
+		sc := scanner.DefaultScanner
+		qs, qargs := sc.StringArgs(test.q)
 		assert.Equal(len(test.qargs), len(qargs))
 		assert.Equal(test.qs, qs)
 	}
@@ -222,7 +224,8 @@ func TestNestedSetQueries(t *testing.T) {
 	q := Select(o1id).Join(o2, joinCond)
 	q.Where(ast.Equal(o2id, 2))
 
-	qs, qargs := q.StringArgs()
+	scan := scanner.DefaultScanner
+	qs, qargs := scan.StringArgs(q)
 
 	expqs := "SELECT o1.id FROM organizations AS o1 JOIN organizations AS o2 ON (o1.root_organization_id = o2.root_organization_id AND o1.nested_set_left BETWEEN o2.nested_set_left AND o2.nested_set_right) WHERE o2.id = ?"
 	expqargs := []interface{}{2}
@@ -265,7 +268,8 @@ func TestNestedSetWithAdditionalJoin(t *testing.T) {
 
 	assert.Nil(q.e)
 
-	qs, qargs := q.StringArgs()
+	scan := scanner.DefaultScanner
+	qs, qargs := scan.StringArgs(q)
 
 	expqs := "SELECT o1.id FROM organizations AS o1 JOIN organizations AS o2 ON (o1.root_organization_id = o2.root_organization_id AND o1.nested_set_left BETWEEN o2.nested_set_left AND o2.nested_set_right) JOIN organization_users AS ou ON (o2.id = ou.organization_id AND ou.user_id = ?)"
 	expqargs := []interface{}{1}
@@ -331,7 +335,8 @@ func TestJoinDerivedWithMultipleSelections(t *testing.T) {
 
 	assert.Nil(subq.e)
 
-	qs, qargs := subq.StringArgs()
+	scan := scanner.DefaultScanner
+	qs, qargs := scan.StringArgs(subq)
 
 	expqs := "SELECT derived.id FROM (SELECT o1.id FROM organizations AS o1 JOIN organizations AS o2 ON (o1.root_organization_id = o2.root_organization_id AND o1.nested_set_left BETWEEN o2.nested_set_left AND o2.nested_set_right) JOIN organization_users AS ou ON (o2.id = ou.organization_id AND ou.user_id = ?)) AS derived"
 	expqargs := []interface{}{1}
@@ -351,7 +356,7 @@ func TestJoinDerivedWithMultipleSelections(t *testing.T) {
 
 	assert.Nil(q.e)
 
-	qs, qargs = q.StringArgs()
+	qs, qargs = scan.StringArgs(q)
 
 	expqs = "SELECT organizations.uuid FROM organizations LEFT JOIN (SELECT o1.id FROM organizations AS o1 JOIN organizations AS o2 ON (o1.root_organization_id = o2.root_organization_id AND o1.nested_set_left BETWEEN o2.nested_set_left AND o2.nested_set_right) JOIN organization_users AS ou ON (o2.id = ou.organization_id AND ou.user_id = ?)) AS derived ON organizations.id = derived.id WHERE derived.id IS NOT NULL"
 	expqargs = []interface{}{1}
@@ -363,18 +368,19 @@ func TestJoinDerivedWithMultipleSelections(t *testing.T) {
 func TestModifyingSelectQueryUpdatesBuffer(t *testing.T) {
 	assert := assert.New(t)
 
+	scan := scanner.DefaultScanner
 	sc := testutil.Schema()
 	users := T(sc, "users")
 
 	q := Select(users)
 
-	qs, qargs := q.StringArgs()
+	qs, qargs := scan.StringArgs(q)
 	assert.Equal("SELECT users.id, users.name FROM users", qs)
-	assert.Nil(qargs)
+	assert.Empty(qargs)
 
 	// Modify the underlying SELECT and verify string and args changed
 	q.Where(ast.Equal(users.C("id"), 1))
-	qs, qargs = q.StringArgs()
+	qs, qargs = scan.StringArgs(q)
 	assert.Equal("SELECT users.id, users.name FROM users WHERE users.id = ?", qs)
 	assert.Equal([]interface{}{1}, qargs)
 }

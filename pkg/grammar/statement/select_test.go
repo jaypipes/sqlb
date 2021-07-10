@@ -4,7 +4,7 @@
 // See the COPYING file in the root project directory for full text.
 //
 
-package ast_test
+package statement_test
 
 import (
 	"testing"
@@ -13,12 +13,13 @@ import (
 
 	"github.com/jaypipes/sqlb"
 	"github.com/jaypipes/sqlb/pkg/ast"
+	"github.com/jaypipes/sqlb/pkg/grammar/statement"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
-func TestSelectClause(t *testing.T) {
+func TestSelectStatement(t *testing.T) {
 	assert := assert.New(t)
 
 	sc := testutil.Schema()
@@ -35,13 +36,13 @@ func TestSelectClause(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		s     *ast.SelectStatement
+		s     *statement.Select
 		qs    string
 		qargs []interface{}
 	}{
 		{
 			name: "A literal value",
-			s: ast.NewSelectStatement(
+			s: statement.NewSelect(
 				[]types.Projection{ast.NewValue(nil, 1)},
 				nil, nil, nil, nil, nil, nil, nil,
 			),
@@ -50,7 +51,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "A literal value aliased",
-			s: ast.NewSelectStatement(
+			s: statement.NewSelect(
 				[]types.Projection{ast.NewValue(nil, 1).As("foo")},
 				nil, nil, nil, nil, nil, nil, nil,
 			),
@@ -59,7 +60,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "Two literal values",
-			s: ast.NewSelectStatement(
+			s: statement.NewSelect(
 				[]types.Projection{
 					ast.NewValue(nil, 1),
 					ast.NewValue(nil, 2),
@@ -71,7 +72,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "Table and column",
-			s: ast.NewSelectStatement(
+			s: statement.NewSelect(
 				[]types.Projection{colUserName},
 				[]types.Selection{users},
 				nil, nil, nil, nil, nil, nil,
@@ -80,7 +81,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "aliased Table and Column",
-			s: ast.NewSelectStatement(
+			s: statement.NewSelect(
 				[]types.Projection{
 					users.As("u").C("name"),
 				},
@@ -91,7 +92,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "Table and multiple Column",
-			s: ast.NewSelectStatement(
+			s: statement.NewSelect(
 				[]types.Projection{colUserId, colUserName},
 				[]types.Selection{users},
 				nil, nil, nil, nil, nil, nil,
@@ -100,7 +101,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "Simple WHERE",
-			s: ast.NewSelectStatement(
+			s: statement.NewSelect(
 				[]types.Projection{colUserName},
 				[]types.Selection{users},
 				nil,
@@ -114,7 +115,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "Simple LIMIT",
-			s: ast.NewSelectStatement(
+			s: statement.NewSelect(
 				[]types.Projection{colUserName},
 				[]types.Selection{users},
 				nil, nil, nil, nil, nil,
@@ -125,7 +126,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "Simple ORDER BY",
-			s: ast.NewSelectStatement(
+			s: statement.NewSelect(
 				[]types.Projection{colUserName},
 				[]types.Selection{users},
 				nil, nil, nil, nil,
@@ -136,7 +137,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "Simple GROUP BY",
-			s: ast.NewSelectStatement(
+			s: statement.NewSelect(
 				[]types.Projection{colUserName},
 				[]types.Selection{users},
 				nil, nil,
@@ -147,7 +148,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "GROUP BY, ORDER BY and LIMIT",
-			s: ast.NewSelectStatement(
+			s: statement.NewSelect(
 				[]types.Projection{colUserName},
 				[]types.Selection{users},
 				nil, nil,
@@ -161,7 +162,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "Single JOIN",
-			s: ast.NewSelectStatement(
+			s: statement.NewSelect(
 				[]types.Projection{colArticleId, colUserName.As("author")},
 				[]types.Selection{articles},
 				[]*ast.JoinClause{
@@ -177,7 +178,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "Multiple JOINs",
-			s: ast.NewSelectStatement(
+			s: statement.NewSelect(
 				[]types.Projection{colArticleId, colUserName.As("author"), colArticleStateName.As("state")},
 				[]types.Selection{articles},
 				[]*ast.JoinClause{
@@ -198,7 +199,7 @@ func TestSelectClause(t *testing.T) {
 		},
 		{
 			name: "COUNT(*) on a table",
-			s: ast.NewSelectStatement(
+			s: statement.NewSelect(
 				[]types.Projection{ast.Count(users)},
 				[]types.Selection{users},
 				nil, nil, nil, nil, nil, nil,

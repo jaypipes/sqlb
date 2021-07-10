@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/jaypipes/sqlb/pkg/ast"
+	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/stretchr/testify/assert"
 )
@@ -72,7 +73,8 @@ func TestUpdateQuery(t *testing.T) {
 			assert.Fail(qe.Error())
 			continue
 		}
-		qs, qargs := test.q.StringArgs()
+		scan := scanner.DefaultScanner
+		qs, qargs := scan.StringArgs(test.q)
 		assert.Equal(len(test.qargs), len(qargs))
 		assert.Equal(test.qs, qs)
 	}

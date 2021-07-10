@@ -9,6 +9,7 @@ import (
 	"errors"
 
 	"github.com/jaypipes/sqlb/pkg/ast"
+	"github.com/jaypipes/sqlb/pkg/grammar/statement"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
@@ -23,7 +24,7 @@ type UpdateQuery struct {
 	e       error
 	b       []byte
 	args    []interface{}
-	stmt    *ast.UpdateStatement
+	stmt    *statement.Update
 	scanner types.Scanner
 }
 
@@ -35,28 +36,16 @@ func (q *UpdateQuery) Error() error {
 	return q.e
 }
 
-func (q *UpdateQuery) String() string {
-	sizes := q.scanner.Size(q.stmt)
-	if len(q.args) != sizes.ArgCount {
-		q.args = make([]interface{}, sizes.ArgCount)
-	}
-	if len(q.b) != sizes.BufferSize {
-		q.b = make([]byte, sizes.BufferSize)
-	}
-	q.scanner.Scan(q.b, q.args, q.stmt)
-	return string(q.b)
+func (q *UpdateQuery) Scan(s types.Scanner, b []byte, qargs []interface{}, idx *int) int {
+	return q.stmt.Scan(s, b, qargs, idx)
 }
 
-func (q *UpdateQuery) StringArgs() (string, []interface{}) {
-	sizes := q.scanner.Size(q.stmt)
-	if len(q.args) != sizes.ArgCount {
-		q.args = make([]interface{}, sizes.ArgCount)
-	}
-	if len(q.b) != sizes.BufferSize {
-		q.b = make([]byte, sizes.BufferSize)
-	}
-	q.scanner.Scan(q.b, q.args, q.stmt)
-	return string(q.b), q.args
+func (q *UpdateQuery) ArgCount() int {
+	return q.stmt.ArgCount()
+}
+
+func (q *UpdateQuery) Size(s types.Scanner) int {
+	return q.stmt.Size(s)
 }
 
 func (q *UpdateQuery) Where(e *ast.Expression) *UpdateQuery {
@@ -89,11 +78,9 @@ func Update(t *ast.TableIdentifier, values map[string]interface{}) *UpdateQuery 
 		x++
 	}
 
-	scanner := scanner.New(t.Schema().Dialect)
-	stmt := ast.NewUpdateStatement(t, cols, vals, nil)
 	return &UpdateQuery{
-		stmt:    stmt,
-		scanner: scanner,
+		scanner: scanner.New(t.Schema().Dialect),
+		stmt:    statement.NewUpdate(t, cols, vals, nil),
 	}
 }
 
