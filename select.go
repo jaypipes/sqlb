@@ -12,7 +12,6 @@ import (
 
 	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/grammar/statement"
-	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
@@ -22,11 +21,20 @@ var (
 )
 
 type SelectQuery struct {
-	e       error
-	b       []byte
-	args    []interface{}
-	sel     *statement.Select
-	scanner types.Scanner
+	e   error
+	sel *statement.Select
+}
+
+func (q *SelectQuery) Scan(s types.Scanner, b []byte, qargs []interface{}, idx *int) int {
+	return q.sel.Scan(s, b, qargs, idx)
+}
+
+func (q *SelectQuery) ArgCount() int {
+	return q.sel.ArgCount()
+}
+
+func (q *SelectQuery) Size(s types.Scanner) int {
+	return q.sel.Size(s)
 }
 
 func (q *SelectQuery) IsValid() bool {
@@ -35,30 +43,6 @@ func (q *SelectQuery) IsValid() bool {
 
 func (q *SelectQuery) Error() error {
 	return q.e
-}
-
-func (q *SelectQuery) String() string {
-	sizes := q.scanner.Size(q.sel)
-	if len(q.args) != sizes.ArgCount {
-		q.args = make([]interface{}, sizes.ArgCount)
-	}
-	if len(q.b) != sizes.BufferSize {
-		q.b = make([]byte, sizes.BufferSize)
-	}
-	q.scanner.Scan(q.b, q.args, q.sel)
-	return string(q.b)
-}
-
-func (q *SelectQuery) StringArgs() (string, []interface{}) {
-	sizes := q.scanner.Size(q.sel)
-	if len(q.args) != sizes.ArgCount {
-		q.args = make([]interface{}, sizes.ArgCount)
-	}
-	if len(q.b) != sizes.BufferSize {
-		q.b = make([]byte, sizes.BufferSize)
-	}
-	q.scanner.Scan(q.b, q.args, q.sel)
-	return string(q.b), q.args
 }
 
 func (q *SelectQuery) Where(e *ast.Expression) *SelectQuery {
@@ -100,7 +84,7 @@ func (q *SelectQuery) As(alias string) *SelectQuery {
 		[]types.Selection{dt},
 		nil, nil, nil, nil, nil, nil,
 	)
-	return &SelectQuery{sel: derivedSel, scanner: q.scanner}
+	return &SelectQuery{sel: derivedSel}
 }
 
 // Returns the projection of the underlying SelectStatement that matches the name
@@ -183,7 +167,7 @@ func (q *SelectQuery) doJoin(
 					continue
 				}
 				// Search through the SelectQuery's primary SelectStatement, looking for
-				// the selection that is referred to be the ON expression.
+				// the selection that is referred to in the ON expression.
 				for _, sel := range q.sel.Selections() {
 					if sel == exprSel {
 						left = sel
@@ -257,10 +241,6 @@ func (q *SelectQuery) doJoin(
 }
 
 func Select(items ...interface{}) *SelectQuery {
-	scanner := scanner.New(types.DIALECT_UNKNOWN)
-	sq := &SelectQuery{
-		scanner: scanner,
-	}
 	sel := statement.NewSelect(make([]types.Projection, 0), nil, nil, nil, nil, nil, nil, nil)
 
 	nDerived := 0
@@ -276,7 +256,6 @@ func Select(items ...interface{}) *SelectQuery {
 			// Project all columns from the subquery to the outer
 			// SelectStatement
 			isq := item.(*SelectQuery)
-			sq.scanner = isq.scanner
 			innerSelClause := isq.sel
 			if len(innerSelClause.Selections()) == 1 {
 				innerSel := innerSelClause.Selections()[0]
@@ -321,13 +300,10 @@ func Select(items ...interface{}) *SelectQuery {
 			if v == nil {
 				panic("specified a non-existent column")
 			}
-			sq.scanner.WithDialect(v.Schema().Dialect)
 			sel.AddProjection(v)
 			selectionMap[v.From()] = true
 		case *ast.TableIdentifier:
 			v := item.(*ast.TableIdentifier)
-			// Set scanner's dialect based on supplied meta's dialect
-			sq.scanner.WithDialect(v.Schema().Dialect)
 			for _, c := range v.Projections() {
 				sel.AddProjection(c)
 			}
@@ -351,6 +327,5 @@ func Select(items ...interface{}) *SelectQuery {
 		x++
 	}
 	sel.ReplaceSelections(selections)
-	sq.sel = sel
-	return sq
+	return &SelectQuery{sel: sel}
 }

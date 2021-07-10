@@ -10,7 +10,6 @@ import (
 
 	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/grammar/statement"
-	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
@@ -20,11 +19,8 @@ var (
 )
 
 type InsertQuery struct {
-	e       error
-	b       []byte
-	args    []interface{}
-	stmt    *statement.Insert
-	scanner types.Scanner
+	e    error
+	stmt *statement.Insert
 }
 
 func (q *InsertQuery) IsValid() bool {
@@ -35,28 +31,16 @@ func (q *InsertQuery) Error() error {
 	return q.e
 }
 
-func (q *InsertQuery) String() string {
-	sizes := q.scanner.Size(q.stmt)
-	if len(q.args) != sizes.ArgCount {
-		q.args = make([]interface{}, sizes.ArgCount)
-	}
-	if len(q.b) != sizes.BufferSize {
-		q.b = make([]byte, sizes.BufferSize)
-	}
-	q.scanner.Scan(q.b, q.args, q.stmt)
-	return string(q.b)
+func (q *InsertQuery) Scan(s types.Scanner, b []byte, qargs []interface{}, idx *int) int {
+	return q.stmt.Scan(s, b, qargs, idx)
 }
 
-func (q *InsertQuery) StringArgs() (string, []interface{}) {
-	sizes := q.scanner.Size(q.stmt)
-	if len(q.args) != sizes.ArgCount {
-		q.args = make([]interface{}, sizes.ArgCount)
-	}
-	if len(q.b) != sizes.BufferSize {
-		q.b = make([]byte, sizes.BufferSize)
-	}
-	q.scanner.Scan(q.b, q.args, q.stmt)
-	return string(q.b), q.args
+func (q *InsertQuery) ArgCount() int {
+	return q.stmt.ArgCount()
+}
+
+func (q *InsertQuery) Size(s types.Scanner) int {
+	return q.stmt.Size(s)
 }
 
 // Given a table and a map of column name to value for that column to insert,
@@ -82,8 +66,7 @@ func Insert(t *ast.TableIdentifier, values map[string]interface{}) *InsertQuery 
 	}
 
 	return &InsertQuery{
-		stmt:    statement.NewInsert(t, cols, vals),
-		scanner: scanner.New(t.Schema().Dialect),
+		stmt: statement.NewInsert(t, cols, vals),
 	}
 }
 

@@ -25,4 +25,8 @@ type Scanner interface {
 	WithDialect(Dialect) Scanner
 	FormatOptions() *FormatOptions
 	WithFormatOptions(*FormatOptions) Scanner
+	// StringArgs returns the built query string and a slice of interface{}
+	// representing the values of the query args used in the query string, if
+	// any.
+	StringArgs(Element) (string, []interface{})
 }

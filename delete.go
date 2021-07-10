@@ -34,28 +34,16 @@ func (q *DeleteQuery) Error() error {
 	return q.e
 }
 
-func (q *DeleteQuery) String() string {
-	sizes := q.scanner.Size(q.stmt)
-	if len(q.args) != sizes.ArgCount {
-		q.args = make([]interface{}, sizes.ArgCount)
-	}
-	if len(q.b) != sizes.BufferSize {
-		q.b = make([]byte, sizes.BufferSize)
-	}
-	q.scanner.Scan(q.b, q.args, q.stmt)
-	return string(q.b)
+func (q *DeleteQuery) Scan(s types.Scanner, b []byte, qargs []interface{}, idx *int) int {
+	return q.stmt.Scan(s, b, qargs, idx)
 }
 
-func (q *DeleteQuery) StringArgs() (string, []interface{}) {
-	sizes := q.scanner.Size(q.stmt)
-	if len(q.args) != sizes.ArgCount {
-		q.args = make([]interface{}, sizes.ArgCount)
-	}
-	if len(q.b) != sizes.BufferSize {
-		q.b = make([]byte, sizes.BufferSize)
-	}
-	q.scanner.Scan(q.b, q.args, q.stmt)
-	return string(q.b), q.args
+func (q *DeleteQuery) ArgCount() int {
+	return q.stmt.ArgCount()
+}
+
+func (q *DeleteQuery) Size(s types.Scanner) int {
+	return q.stmt.Size(s)
 }
 
 func (q *DeleteQuery) Where(e *ast.Expression) *DeleteQuery {
