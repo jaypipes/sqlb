@@ -4,13 +4,14 @@
 // See the COPYING file in the root project directory for full text.
 //
 
-package ast_test
+package statement_test
 
 import (
 	"testing"
 
 	"github.com/jaypipes/sqlb"
 	"github.com/jaypipes/sqlb/pkg/ast"
+	"github.com/jaypipes/sqlb/pkg/grammar/statement"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/jaypipes/sqlb/pkg/types"
@@ -26,18 +27,18 @@ func TestDeleteStatement(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		s     *ast.DeleteStatement
+		s     *statement.Delete
 		qs    string
 		qargs []interface{}
 	}{
 		{
 			name: "DELETE no WHERE",
-			s:    ast.NewDeleteStatement(users, nil),
+			s:    statement.NewDelete(users, nil),
 			qs:   "DELETE FROM users",
 		},
 		{
 			name: "DELETE simple WHERE",
-			s: ast.NewDeleteStatement(
+			s: statement.NewDelete(
 				users,
 				ast.NewWhereClause(
 					ast.Equal(colUserName, "foo"),

@@ -9,6 +9,7 @@ import (
 	"errors"
 
 	"github.com/jaypipes/sqlb/pkg/ast"
+	"github.com/jaypipes/sqlb/pkg/grammar/statement"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
@@ -21,7 +22,7 @@ type DeleteQuery struct {
 	e       error
 	b       []byte
 	args    []interface{}
-	stmt    *ast.DeleteStatement
+	stmt    *statement.Delete
 	scanner types.Scanner
 }
 
@@ -69,11 +70,9 @@ func Delete(t *ast.TableIdentifier) *DeleteQuery {
 		return &DeleteQuery{e: ERR_DELETE_NO_TARGET}
 	}
 
-	scanner := scanner.New(t.Schema().Dialect)
-	stmt := ast.NewDeleteStatement(t, nil)
 	return &DeleteQuery{
-		stmt:    stmt,
-		scanner: scanner,
+		scanner: scanner.New(t.Schema().Dialect),
+		stmt:    statement.NewDelete(t, nil),
 	}
 }
 
