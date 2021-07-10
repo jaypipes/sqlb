@@ -9,6 +9,7 @@ import (
 	"errors"
 
 	"github.com/jaypipes/sqlb/pkg/ast"
+	"github.com/jaypipes/sqlb/pkg/grammar/statement"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
@@ -22,7 +23,7 @@ type InsertQuery struct {
 	e       error
 	b       []byte
 	args    []interface{}
-	stmt    *ast.InsertStatement
+	stmt    *statement.Insert
 	scanner types.Scanner
 }
 
@@ -80,11 +81,9 @@ func Insert(t *ast.TableIdentifier, values map[string]interface{}) *InsertQuery 
 		x++
 	}
 
-	scanner := scanner.New(t.Schema().Dialect)
-	stmt := ast.NewInsertStatement(t, cols, vals)
 	return &InsertQuery{
-		stmt:    stmt,
-		scanner: scanner,
+		stmt:    statement.NewInsert(t, cols, vals),
+		scanner: scanner.New(t.Schema().Dialect),
 	}
 }
 
