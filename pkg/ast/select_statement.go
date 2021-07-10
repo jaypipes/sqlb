@@ -12,14 +12,13 @@ import (
 )
 
 type SelectStatement struct {
-	projs      []types.Projection
-	selections []types.Selection
-	joins      []*JoinClause
-	where      *WhereClause
-	groupBy    *GroupByClause
-	having     *HavingClause
-	orderBy    *OrderByClause
-	limit      *LimitClause
+	projs   []types.Projection
+	from    *FromClause
+	where   *WhereClause
+	groupBy *GroupByClause
+	having  *HavingClause
+	orderBy *OrderByClause
+	limit   *LimitClause
 }
 
 func (s *SelectStatement) Projections() []types.Projection {
@@ -27,11 +26,11 @@ func (s *SelectStatement) Projections() []types.Projection {
 }
 
 func (s *SelectStatement) Selections() []types.Selection {
-	return s.selections
+	return s.from.Selections()
 }
 
 func (s *SelectStatement) Joins() []*JoinClause {
-	return s.joins
+	return s.from.Joins()
 }
 
 func (s *SelectStatement) AddProjection(p types.Projection) {
@@ -39,7 +38,7 @@ func (s *SelectStatement) AddProjection(p types.Projection) {
 }
 
 func (s *SelectStatement) ReplaceSelections(sels []types.Selection) {
-	s.selections = sels
+	s.from.ReplaceSelections(sels)
 }
 
 func (s *SelectStatement) ArgCount() int {
@@ -47,11 +46,8 @@ func (s *SelectStatement) ArgCount() int {
 	for _, p := range s.projs {
 		argc += p.ArgCount()
 	}
-	for _, sel := range s.selections {
-		argc += sel.ArgCount()
-	}
-	for _, join := range s.joins {
-		argc += join.ArgCount()
+	if s.from != nil {
+		argc += s.from.ArgCount()
 	}
 	if s.where != nil {
 		argc += s.where.ArgCount()
@@ -78,16 +74,10 @@ func (s *SelectStatement) Size(scanner types.Scanner) int {
 		size += p.Size(scanner)
 	}
 	size += (len(grammar.Symbols[grammar.SYM_COMMA_WS]) * (nprojs - 1)) // the commas...
-	nsels := len(s.selections)
-	if nsels > 0 {
-		size += len(scanner.FormatOptions().SeparateClauseWith)
-		size += len(grammar.Symbols[grammar.SYM_FROM])
-		for _, sel := range s.selections {
-			size += sel.Size(scanner)
-		}
-		size += (len(grammar.Symbols[grammar.SYM_COMMA_WS]) * (nsels - 1)) // the commas...
-		for _, join := range s.joins {
-			size += join.Size(scanner)
+	if s.from != nil {
+		if s.from.Size(scanner) > 0 {
+			size += len(scanner.FormatOptions().SeparateClauseWith)
+			size += s.from.Size(scanner)
 		}
 	}
 	if s.where != nil {
@@ -118,18 +108,10 @@ func (s *SelectStatement) Scan(scanner types.Scanner, b []byte, args []interface
 			bw += copy(b[bw:], grammar.Symbols[grammar.SYM_COMMA_WS])
 		}
 	}
-	nsels := len(s.selections)
-	if nsels > 0 {
-		bw += copy(b[bw:], scanner.FormatOptions().SeparateClauseWith)
-		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_FROM])
-		for x, sel := range s.selections {
-			bw += sel.Scan(scanner, b[bw:], args, curArg)
-			if x != (nsels - 1) {
-				bw += copy(b[bw:], grammar.Symbols[grammar.SYM_COMMA_WS])
-			}
-		}
-		for _, join := range s.joins {
-			bw += join.Scan(scanner, b[bw:], args, curArg)
+	if s.from != nil {
+		if s.from.Size(scanner) > 0 {
+			bw += copy(b[bw:], scanner.FormatOptions().SeparateClauseWith)
+			bw += s.from.Scan(scanner, b[bw:], args, curArg)
 		}
 	}
 	if s.where != nil {
@@ -151,7 +133,7 @@ func (s *SelectStatement) Scan(scanner types.Scanner, b []byte, args []interface
 }
 
 func (s *SelectStatement) AddJoin(jc *JoinClause) *SelectStatement {
-	s.joins = append(s.joins, jc)
+	s.from.AddJoin(jc)
 	return s
 }
 
@@ -219,27 +201,8 @@ func (s *SelectStatement) SetLimit(limit int) *SelectStatement {
 	return s
 }
 
-func containsJoin(s *SelectStatement, j *JoinClause) bool {
-	for _, sj := range s.joins {
-		if j == sj {
-			return true
-		}
-	}
-	return false
-}
-
 func (s *SelectStatement) RemoveSelection(toRemove types.Selection) {
-	idx := -1
-	for x, sel := range s.selections {
-		if sel == toRemove {
-			idx = x
-			break
-		}
-	}
-	if idx == -1 {
-		return
-	}
-	s.selections = append(s.selections[:idx], s.selections[idx+1:]...)
+	s.from.RemoveSelection(toRemove)
 }
 
 // NewSelectStatement returns a new SelectStatement struct that scans into a
@@ -255,13 +218,12 @@ func NewSelectStatement(
 	limit *LimitClause,
 ) *SelectStatement {
 	return &SelectStatement{
-		projs:      projs,
-		selections: selections,
-		joins:      joins,
-		where:      where,
-		groupBy:    groupBy,
-		having:     having,
-		orderBy:    orderBy,
-		limit:      limit,
+		projs:   projs,
+		from:    NewFromClause(selections, joins),
+		where:   where,
+		groupBy: groupBy,
+		having:  having,
+		orderBy: orderBy,
+		limit:   limit,
 	}
 }
