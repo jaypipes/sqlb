@@ -12,8 +12,8 @@ import (
 
 // SortColumn describes a column listed in the ORDER BY clause
 type SortColumn struct {
-	p    types.Projection
-	desc bool
+	p   types.Projection
+	asc bool
 }
 
 func (sc *SortColumn) ArgCount() int {
@@ -24,7 +24,7 @@ func (sc *SortColumn) Size(scanner types.Scanner) int {
 	reset := sc.p.DisableAliasScan()
 	defer reset()
 	size := sc.p.Size(scanner)
-	if sc.desc {
+	if !sc.asc {
 		size += len(grammar.Symbols[grammar.SYM_DESC])
 	}
 	return size
@@ -35,17 +35,21 @@ func (sc *SortColumn) Scan(scanner types.Scanner, b []byte, args []interface{}, 
 	defer reset()
 	bw := 0
 	bw += sc.p.Scan(scanner, b[bw:], args, curArg)
-	if sc.desc {
+	if !sc.asc {
 		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_DESC])
 	}
 	return bw
 }
 
+func (sc *SortColumn) IsAsc() bool {
+	return sc.asc
+}
+
 // NewSortColumn returns a new SortColumn on a supplied projection and sort
 // order.
-func NewSortColumn(p types.Projection, desc bool) *SortColumn {
+func NewSortColumn(p types.Projection, asc bool) types.Sortable {
 	return &SortColumn{
-		p:    p,
-		desc: desc,
+		p:   p,
+		asc: asc,
 	}
 }

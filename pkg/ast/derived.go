@@ -114,7 +114,7 @@ func NewDerivedTable(
 //
 // <outer> should instead contain:
 //
-// &DerivedColumn{dt: dt, c: &Column{alias: "user_id". name: "id", tbl: users}},
+// &DerivedColumn{dt: dt, c: &Column{alias: "user_id", name: "id", tbl: users}},
 // &DerivedColumn{dt: dt, c: &Column{alias: "user_name", name: "name", tbl: users}}
 //
 // which, when scanned into <outer>, should produce:
@@ -180,4 +180,20 @@ func (dc *DerivedColumn) Scan(scanner types.Scanner, b []byte, args []interface{
 		bw += copy(b[bw:], dc.Alias)
 	}
 	return bw
+}
+
+func (dc *DerivedColumn) As(alias string) types.Projection {
+	return &DerivedColumn{
+		Alias: alias,
+		c:     dc.c,
+		dt:    dc.dt,
+	}
+}
+
+func (dc *DerivedColumn) Desc() types.Sortable {
+	return NewSortColumn(dc, false)
+}
+
+func (dc *DerivedColumn) Asc() types.Sortable {
+	return NewSortColumn(dc, true)
 }

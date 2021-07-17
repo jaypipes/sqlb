@@ -60,7 +60,7 @@ func (q *SelectQuery) Having(e *ast.Expression) *SelectQuery {
 	return q
 }
 
-func (q *SelectQuery) OrderBy(scols ...*ast.SortColumn) *SelectQuery {
+func (q *SelectQuery) OrderBy(scols ...types.Sortable) *SelectQuery {
 	q.sel.AddOrderBy(scols...)
 	return q
 }

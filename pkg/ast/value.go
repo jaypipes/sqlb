@@ -26,12 +26,7 @@ func (v *Value) From() types.Selection {
 	return v.sel
 }
 
-func (v *Value) SetAlias(alias string) *Value {
-	v.alias = alias
-	return v
-}
-
-func (v *Value) As(alias string) *Value {
+func (v *Value) As(alias string) types.Projection {
 	return &Value{
 		alias: alias,
 		val:   v.val,
@@ -69,6 +64,14 @@ func (v *Value) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg
 		bw += copy(b[bw:], v.alias)
 	}
 	return bw
+}
+
+func (v *Value) Desc() types.Sortable {
+	return NewSortColumn(v, false)
+}
+
+func (v *Value) Asc() types.Sortable {
+	return NewSortColumn(v, true)
 }
 
 // NewValue returns an AST node representing a Value

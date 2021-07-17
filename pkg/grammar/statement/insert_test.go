@@ -56,7 +56,10 @@ func TestInsertStatement(t *testing.T) {
 			name: "Ensure no aliasing in column names",
 			s: statement.NewInsert(
 				users,
-				[]*ast.ColumnIdentifier{colUserId.As("user_id"), colUserName},
+				[]*ast.ColumnIdentifier{
+					colUserId.As("user_id").(*ast.ColumnIdentifier),
+					colUserName,
+				},
 				[]interface{}{nil, "foo"},
 			),
 			qs:    "INSERT INTO users (id, name) VALUES (?, ?)",

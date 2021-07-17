@@ -29,7 +29,7 @@ func (f *Function) DisableAliasScan() func() {
 	return func() { f.Alias = origAlias }
 }
 
-func (f *Function) As(alias string) *Function {
+func (f *Function) As(alias string) types.Projection {
 	return &Function{
 		sel:      f.sel,
 		Alias:    alias,
@@ -100,15 +100,15 @@ func (f *Function) Scan(scanner types.Scanner, b []byte, args []interface{}, cur
 	return bw
 }
 
-func (f *Function) Desc() *SortColumn {
-	return &SortColumn{p: f, desc: true}
+func (f *Function) Desc() types.Sortable {
+	return NewSortColumn(f, false)
 }
 
-func (f *Function) Asc() *SortColumn {
-	return &SortColumn{p: f}
+func (f *Function) Asc() types.Sortable {
+	return NewSortColumn(f, true)
 }
 
-func Max(p types.Projection) *Function {
+func Max(p types.Projection) types.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_MAX),
 		elements: []types.Element{p.(types.Element)},
@@ -116,7 +116,7 @@ func Max(p types.Projection) *Function {
 	}
 }
 
-func Min(p types.Projection) *Function {
+func Min(p types.Projection) types.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_MIN),
 		elements: []types.Element{p.(types.Element)},
@@ -124,7 +124,7 @@ func Min(p types.Projection) *Function {
 	}
 }
 
-func Sum(p types.Projection) *Function {
+func Sum(p types.Projection) types.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_SUM),
 		elements: []types.Element{p.(types.Element)},
@@ -132,7 +132,7 @@ func Sum(p types.Projection) *Function {
 	}
 }
 
-func Avg(p types.Projection) *Function {
+func Avg(p types.Projection) types.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_AVG),
 		elements: []types.Element{p.(types.Element)},
@@ -140,14 +140,14 @@ func Avg(p types.Projection) *Function {
 	}
 }
 
-func Count(sel types.Selection) *Function {
+func Count(sel types.Selection) types.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_COUNT_STAR),
 		sel:      sel,
 	}
 }
 
-func CountDistinct(p types.Projection) *Function {
+func CountDistinct(p types.Projection) types.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_COUNT_DISTINCT),
 		elements: []types.Element{p.(types.Element)},
@@ -155,7 +155,7 @@ func CountDistinct(p types.Projection) *Function {
 	}
 }
 
-func Cast(p types.Projection, stype grammar.SqlType) *Function {
+func Cast(p types.Projection, stype grammar.SqlType) types.Projection {
 	si := make([]grammar.Symbol, len(grammar.FunctionScanTable(grammar.FUNC_CAST)))
 	copy(si, grammar.FunctionScanTable(grammar.FUNC_CAST))
 	// Replace the placeholder with the SQL type's appropriate []byte
@@ -167,7 +167,7 @@ func Cast(p types.Projection, stype grammar.SqlType) *Function {
 	}
 }
 
-func CharLength(p types.Projection) *Function {
+func CharLength(p types.Projection) types.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_CHAR_LENGTH),
 		elements: []types.Element{p.(types.Element)},
@@ -175,7 +175,7 @@ func CharLength(p types.Projection) *Function {
 	}
 }
 
-func BitLength(p types.Projection) *Function {
+func BitLength(p types.Projection) types.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_BIT_LENGTH),
 		elements: []types.Element{p.(types.Element)},
@@ -183,7 +183,7 @@ func BitLength(p types.Projection) *Function {
 	}
 }
 
-func Ascii(p types.Projection) *Function {
+func Ascii(p types.Projection) types.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_ASCII),
 		elements: []types.Element{p.(types.Element)},
@@ -191,7 +191,7 @@ func Ascii(p types.Projection) *Function {
 	}
 }
 
-func Reverse(p types.Projection) *Function {
+func Reverse(p types.Projection) types.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_REVERSE),
 		elements: []types.Element{p.(types.Element)},
@@ -199,7 +199,7 @@ func Reverse(p types.Projection) *Function {
 	}
 }
 
-func Concat(projs ...types.Projection) *Function {
+func Concat(projs ...types.Projection) types.Projection {
 	els := make([]types.Element, len(projs))
 	for x, p := range projs {
 		els[x] = p.(types.Element)
@@ -213,7 +213,7 @@ func Concat(projs ...types.Projection) *Function {
 	}
 }
 
-func ConcatWs(sep string, projs ...types.Projection) *Function {
+func ConcatWs(sep string, projs ...types.Projection) types.Projection {
 	els := make([]types.Element, len(projs))
 	for x, p := range projs {
 		els[x] = p.(types.Element)
@@ -227,31 +227,31 @@ func ConcatWs(sep string, projs ...types.Projection) *Function {
 	}
 }
 
-func Now() *Function {
+func Now() types.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_NOW),
 	}
 }
 
-func CurrentTimestamp() *Function {
+func CurrentTimestamp() types.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_CURRENT_TIMESTAMP),
 	}
 }
 
-func CurrentTime() *Function {
+func CurrentTime() types.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_CURRENT_TIME),
 	}
 }
 
-func CurrentDate() *Function {
+func CurrentDate() types.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_CURRENT_DATE),
 	}
 }
 
-func Extract(p types.Projection, unit grammar.IntervalUnit) *Function {
+func Extract(p types.Projection, unit grammar.IntervalUnit) types.Projection {
 	si := make([]grammar.Symbol, len(grammar.FunctionScanTable(grammar.FUNC_EXTRACT)))
 	copy(si, grammar.FunctionScanTable(grammar.FUNC_EXTRACT))
 	// Replace the placeholder with the interval unit's appropriate []byte

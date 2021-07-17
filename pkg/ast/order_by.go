@@ -12,14 +12,10 @@ import (
 )
 
 type OrderByClause struct {
-	scols []*SortColumn
+	scols []types.Sortable
 }
 
-func (ob *OrderByClause) SortColumns() []*SortColumn {
-	return ob.scols
-}
-
-func (ob *OrderByClause) AddSortColumn(sc *SortColumn) {
+func (ob *OrderByClause) AddSortColumn(sc types.Sortable) {
 	ob.scols = append(ob.scols, sc)
 }
 
@@ -54,7 +50,7 @@ func (ob *OrderByClause) Scan(scanner types.Scanner, b []byte, args []interface{
 }
 
 // NewOrderByClause returns a new OrderByClause with zero or more sort columns
-func NewOrderByClause(scols ...*SortColumn) *OrderByClause {
+func NewOrderByClause(scols ...types.Sortable) *OrderByClause {
 	return &OrderByClause{
 		scols: scols,
 	}

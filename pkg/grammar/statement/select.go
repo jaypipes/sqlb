@@ -174,7 +174,7 @@ func (s *Select) AddHaving(e *ast.Expression) *Select {
 
 // Given one or more sort columns, either set or add to the ORDER BY clause for
 // the Select
-func (s *Select) AddOrderBy(sortCols ...*ast.SortColumn) *Select {
+func (s *Select) AddOrderBy(sortCols ...types.Sortable) *Select {
 	if len(sortCols) == 0 {
 		return s
 	}

@@ -73,7 +73,7 @@ func (f *TrimFunction) DisableAliasScan() func() {
 	return func() { f.alias = origAlias }
 }
 
-func (f *TrimFunction) As(alias string) *TrimFunction {
+func (f *TrimFunction) As(alias string) types.Projection {
 	aliased := &TrimFunction{
 		sel:      f.sel,
 		alias:    alias,
@@ -90,6 +90,14 @@ func (f *TrimFunction) ArgCount() int {
 		argc++
 	}
 	return argc
+}
+
+func (f *TrimFunction) Desc() types.Sortable {
+	return NewSortColumn(f, false)
+}
+
+func (f *TrimFunction) Asc() types.Sortable {
+	return NewSortColumn(f, true)
 }
 
 // Helper function that returns the non-subject, non-interpolation size of the
@@ -308,7 +316,7 @@ func (f *TrimFunction) Scan(scanner types.Scanner, b []byte, args []interface{},
 
 // Returns a struct that will output the TRIM() SQL function, trimming leading
 // and trailing whitespace from the supplied projection
-func Trim(p types.Projection) *TrimFunction {
+func Trim(p types.Projection) types.Projection {
 	return &TrimFunction{
 		subject:  p.(types.Element),
 		sel:      p.From(),
@@ -319,7 +327,7 @@ func Trim(p types.Projection) *TrimFunction {
 // Returns a struct that will output the LTRIM() SQL function for MySQL and the
 // TRIM(LEADING FROM column) SQL function for PostgreSQL. The SQL function in
 // either case will remove whitespace from the start of the supplied projection
-func LTrim(p types.Projection) *TrimFunction {
+func LTrim(p types.Projection) types.Projection {
 	return &TrimFunction{
 		subject:  p.(types.Element),
 		sel:      p.From(),
@@ -330,7 +338,7 @@ func LTrim(p types.Projection) *TrimFunction {
 // Returns a struct that will output the RTRIM() SQL function for MySQL and the
 // TRIM(TRAILING FROM column) SQL function for PostgreSQL. The SQL function in
 // either case will remove whitespace from the start of the supplied projection
-func RTrim(p types.Projection) *TrimFunction {
+func RTrim(p types.Projection) types.Projection {
 	return &TrimFunction{
 		subject:  p.(types.Element),
 		sel:      p.From(),
@@ -340,7 +348,7 @@ func RTrim(p types.Projection) *TrimFunction {
 
 // Returns a struct that will output the TRIM() SQL function, trimming leading
 // and trailing specified characters from the supplied projection
-func TrimChars(p types.Projection, chars string) *TrimFunction {
+func TrimChars(p types.Projection, chars string) types.Projection {
 	return &TrimFunction{
 		subject:  p.(types.Element),
 		sel:      p.From(),
@@ -351,7 +359,7 @@ func TrimChars(p types.Projection, chars string) *TrimFunction {
 
 // Returns a struct that will output the TRIM(LEADING chars FROM column) SQL
 // function, trimming leading specified characters from the supplied projection
-func LTrimChars(p types.Projection, chars string) *TrimFunction {
+func LTrimChars(p types.Projection, chars string) types.Projection {
 	return &TrimFunction{
 		subject:  p.(types.Element),
 		sel:      p.From(),
@@ -363,7 +371,7 @@ func LTrimChars(p types.Projection, chars string) *TrimFunction {
 // Returns a struct that will output the TRIM(TRAILING chars FROM column) SQL
 // function, trimming trailing specified characters from the supplied
 // projection
-func RTrimChars(p types.Projection, chars string) *TrimFunction {
+func RTrimChars(p types.Projection, chars string) types.Projection {
 	return &TrimFunction{
 		subject:  p.(types.Element),
 		sel:      p.From(),

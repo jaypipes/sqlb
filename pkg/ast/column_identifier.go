@@ -68,7 +68,7 @@ func (c *ColumnIdentifier) Scan(scanner types.Scanner, b []byte, args []interfac
 	return bw
 }
 
-func (c *ColumnIdentifier) As(alias string) *ColumnIdentifier {
+func (c *ColumnIdentifier) As(alias string) types.Projection {
 	return &ColumnIdentifier{
 		Alias: alias,
 		Name:  c.Name,
@@ -76,12 +76,12 @@ func (c *ColumnIdentifier) As(alias string) *ColumnIdentifier {
 	}
 }
 
-func (c *ColumnIdentifier) Desc() *SortColumn {
-	return NewSortColumn(c, true)
+func (c *ColumnIdentifier) Desc() types.Sortable {
+	return NewSortColumn(c, false)
 }
 
-func (c *ColumnIdentifier) Asc() *SortColumn {
-	return NewSortColumn(c, false)
+func (c *ColumnIdentifier) Asc() types.Sortable {
+	return NewSortColumn(c, true)
 }
 
 func (c *ColumnIdentifier) Reverse() types.Projection {

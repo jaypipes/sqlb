@@ -27,7 +27,7 @@ func TestFunctions(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		c     *ast.Function
+		c     types.Projection
 		qs    map[types.Dialect]string
 		qargs []interface{}
 	}{
