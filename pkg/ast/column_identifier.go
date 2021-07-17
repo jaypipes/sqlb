@@ -84,64 +84,64 @@ func (c *ColumnIdentifier) Asc() *SortColumn {
 	return NewSortColumn(c, false)
 }
 
-func (c *ColumnIdentifier) Reverse() *Function {
+func (c *ColumnIdentifier) Reverse() types.Projection {
 	return Reverse(c)
 }
 
-func (c *ColumnIdentifier) Ascii() *Function {
+func (c *ColumnIdentifier) Ascii() types.Projection {
 	return Ascii(c)
 }
 
-func (c *ColumnIdentifier) Max() *Function {
+func (c *ColumnIdentifier) Max() types.Projection {
 	return Max(c)
 }
 
-func (c *ColumnIdentifier) Min() *Function {
+func (c *ColumnIdentifier) Min() types.Projection {
 	return Min(c)
 }
 
-func (c *ColumnIdentifier) Sum() *Function {
+func (c *ColumnIdentifier) Sum() types.Projection {
 	return Sum(c)
 }
 
-func (c *ColumnIdentifier) Avg() *Function {
+func (c *ColumnIdentifier) Avg() types.Projection {
 	return Avg(c)
 }
 
-func (c *ColumnIdentifier) CharLength() *Function {
+func (c *ColumnIdentifier) CharLength() types.Projection {
 	return CharLength(c)
 }
 
-func (c *ColumnIdentifier) BitLength() *Function {
+func (c *ColumnIdentifier) BitLength() types.Projection {
 	return BitLength(c)
 }
 
-func (c *ColumnIdentifier) Trim() *TrimFunction {
+func (c *ColumnIdentifier) Trim() types.Projection {
 	f := Trim(c)
 	return f
 }
 
-func (c *ColumnIdentifier) LTrim() *TrimFunction {
+func (c *ColumnIdentifier) LTrim() types.Projection {
 	f := LTrim(c)
 	return f
 }
 
-func (c *ColumnIdentifier) RTrim() *TrimFunction {
+func (c *ColumnIdentifier) RTrim() types.Projection {
 	f := LTrim(c)
 	return f
 }
 
-func (c *ColumnIdentifier) TrimChars(chars string) *TrimFunction {
+func (c *ColumnIdentifier) TrimChars(chars string) types.Projection {
 	f := TrimChars(c, chars)
 	return f
 }
 
-func (c *ColumnIdentifier) LTrimChars(chars string) *TrimFunction {
+func (c *ColumnIdentifier) LTrimChars(chars string) types.Projection {
 	f := LTrimChars(c, chars)
 	return f
 }
 
-func (c *ColumnIdentifier) RTrimChars(chars string) *TrimFunction {
+func (c *ColumnIdentifier) RTrimChars(chars string) types.Projection {
 	f := RTrimChars(c, chars)
 	return f
 }
