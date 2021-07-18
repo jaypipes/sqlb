@@ -10,7 +10,8 @@ import (
 	"testing"
 
 	"github.com/jaypipes/sqlb"
-	"github.com/jaypipes/sqlb/pkg/ast"
+	"github.com/jaypipes/sqlb/pkg/grammar/clause"
+	"github.com/jaypipes/sqlb/pkg/grammar/expression"
 	"github.com/jaypipes/sqlb/pkg/grammar/statement"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
@@ -40,8 +41,8 @@ func TestDeleteStatement(t *testing.T) {
 			name: "DELETE simple WHERE",
 			s: statement.NewDelete(
 				users,
-				ast.NewWhereClause(
-					ast.Equal(colUserName, "foo"),
+				clause.NewWhere(
+					expression.Equal(colUserName, "foo"),
 				),
 			),
 			qs:    "DELETE FROM users WHERE users.name = ?",

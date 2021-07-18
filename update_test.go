@@ -3,12 +3,13 @@
 //
 // See the COPYING file in the root project directory for full text.
 //
+
 package sqlb
 
 import (
 	"testing"
 
-	"github.com/jaypipes/sqlb/pkg/ast"
+	"github.com/jaypipes/sqlb/pkg/grammar/expression"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/stretchr/testify/assert"
@@ -58,7 +59,7 @@ func TestUpdateQuery(t *testing.T) {
 		{
 			name: "UPDATE simple WHERE",
 			q: Update(users, map[string]interface{}{"name": "bar"}).Where(
-				ast.Equal(colUserName, "foo"),
+				expression.Equal(colUserName, "foo"),
 			),
 			qs:    "UPDATE users SET name = ? WHERE users.name = ?",
 			qargs: []interface{}{"bar", "foo"},

@@ -7,19 +7,20 @@
 package statement
 
 import (
-	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/grammar"
+	"github.com/jaypipes/sqlb/pkg/grammar/clause"
+	"github.com/jaypipes/sqlb/pkg/grammar/expression"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
 type Select struct {
 	projs   []types.Projection
-	from    *ast.FromClause
-	where   *ast.WhereClause
-	groupBy *ast.GroupByClause
-	having  *ast.HavingClause
-	orderBy *ast.OrderByClause
-	limit   *ast.LimitClause
+	from    *clause.From
+	where   *clause.Where
+	groupBy *clause.GroupBy
+	having  *clause.Having
+	orderBy *clause.OrderBy
+	limit   *clause.Limit
 }
 
 func (s *Select) Projections() []types.Projection {
@@ -30,7 +31,7 @@ func (s *Select) Selections() []types.Selection {
 	return s.from.Selections()
 }
 
-func (s *Select) Joins() []*ast.JoinClause {
+func (s *Select) Joins() []*clause.Join {
 	return s.from.Joins()
 }
 
@@ -133,14 +134,14 @@ func (s *Select) Scan(scanner types.Scanner, b []byte, args []interface{}, curAr
 	return bw
 }
 
-func (s *Select) AddJoin(jc *ast.JoinClause) *Select {
+func (s *Select) AddJoin(jc *clause.Join) *Select {
 	s.from.AddJoin(jc)
 	return s
 }
 
-func (s *Select) AddWhere(e *ast.Expression) *Select {
+func (s *Select) AddWhere(e *expression.Expression) *Select {
 	if s.where == nil {
-		s.where = ast.NewWhereClause(e)
+		s.where = clause.NewWhere(e)
 		return s
 	}
 	s.where.AddExpression(e)
@@ -154,7 +155,7 @@ func (s *Select) AddGroupBy(cols ...types.Projection) *Select {
 		return s
 	}
 	if s.groupBy == nil {
-		s.groupBy = ast.NewGroupByClause(cols...)
+		s.groupBy = clause.NewGroupBy(cols...)
 		return s
 	}
 	for _, c := range cols {
@@ -163,9 +164,9 @@ func (s *Select) AddGroupBy(cols ...types.Projection) *Select {
 	return s
 }
 
-func (s *Select) AddHaving(e *ast.Expression) *Select {
+func (s *Select) AddHaving(e *expression.Expression) *Select {
 	if s.having == nil {
-		s.having = ast.NewHavingClause(e)
+		s.having = clause.NewHaving(e)
 		return s
 	}
 	s.having.AddCondition(e)
@@ -179,7 +180,7 @@ func (s *Select) AddOrderBy(sortCols ...types.Sortable) *Select {
 		return s
 	}
 	if s.orderBy == nil {
-		s.orderBy = ast.NewOrderByClause(sortCols...)
+		s.orderBy = clause.NewOrderBy(sortCols...)
 		return s
 	}
 
@@ -191,13 +192,13 @@ func (s *Select) AddOrderBy(sortCols ...types.Sortable) *Select {
 
 func (s *Select) SetLimitWithOffset(limit int, offset int) *Select {
 	tmpOffset := offset
-	lc := ast.NewLimitClause(limit, &tmpOffset)
+	lc := clause.NewLimit(limit, &tmpOffset)
 	s.limit = lc
 	return s
 }
 
 func (s *Select) SetLimit(limit int) *Select {
-	lc := ast.NewLimitClause(limit, nil)
+	lc := clause.NewLimit(limit, nil)
 	s.limit = lc
 	return s
 }
@@ -211,16 +212,16 @@ func (s *Select) RemoveSelection(toRemove types.Selection) {
 func NewSelect(
 	projs []types.Projection,
 	selections []types.Selection,
-	joins []*ast.JoinClause,
-	where *ast.WhereClause,
-	groupBy *ast.GroupByClause,
-	having *ast.HavingClause,
-	orderBy *ast.OrderByClause,
-	limit *ast.LimitClause,
+	joins []*clause.Join,
+	where *clause.Where,
+	groupBy *clause.GroupBy,
+	having *clause.Having,
+	orderBy *clause.OrderBy,
+	limit *clause.Limit,
 ) *Select {
 	return &Select{
 		projs:   projs,
-		from:    ast.NewFromClause(selections, joins),
+		from:    clause.NewFrom(selections, joins),
 		where:   where,
 		groupBy: groupBy,
 		having:  having,

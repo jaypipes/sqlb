@@ -8,7 +8,8 @@ package sqlb
 import (
 	"errors"
 
-	"github.com/jaypipes/sqlb/pkg/ast"
+	"github.com/jaypipes/sqlb/pkg/grammar/expression"
+	"github.com/jaypipes/sqlb/pkg/grammar/identifier"
 	"github.com/jaypipes/sqlb/pkg/grammar/statement"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
@@ -46,14 +47,14 @@ func (q *DeleteQuery) Size(s types.Scanner) int {
 	return q.stmt.Size(s)
 }
 
-func (q *DeleteQuery) Where(e *ast.Expression) *DeleteQuery {
+func (q *DeleteQuery) Where(e *expression.Expression) *DeleteQuery {
 	q.stmt.AddWhere(e)
 	return q
 }
 
 // Delete returns a DeleteQuery given a table that will produce a DELETE SQL
 // statement
-func Delete(t *ast.TableIdentifier) *DeleteQuery {
+func Delete(t *identifier.Table) *DeleteQuery {
 	if t == nil {
 		return &DeleteQuery{e: ERR_DELETE_NO_TARGET}
 	}
@@ -64,6 +65,6 @@ func Delete(t *ast.TableIdentifier) *DeleteQuery {
 	}
 }
 
-//func (t *ast.TableIdentifier) Delete() *DeleteQuery {
+//func (t *ast.Table) Delete() *DeleteQuery {
 //	return Delete(t)
 //}

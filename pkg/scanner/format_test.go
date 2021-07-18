@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/jaypipes/sqlb"
-	"github.com/jaypipes/sqlb/pkg/ast"
+	"github.com/jaypipes/sqlb/pkg/grammar/expression"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/jaypipes/sqlb/pkg/types"
@@ -29,8 +29,8 @@ func TestFormatOptions(t *testing.T) {
 	colArticleAuthor := articles.C("author")
 
 	q := sqlb.Select(colArticleId, colUserName.As("author"))
-	q.Join(articles, ast.Equal(colUserId, colArticleAuthor))
-	q.Where(ast.Equal(colUserName, "foo"))
+	q.Join(articles, expression.Equal(colUserId, colArticleAuthor))
+	q.Where(expression.Equal(colUserName, "foo"))
 	q.GroupBy(colUserName)
 	q.OrderBy(colUserName.Desc())
 	q.Limit(10)

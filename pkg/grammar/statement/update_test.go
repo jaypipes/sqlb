@@ -10,7 +10,9 @@ import (
 	"testing"
 
 	"github.com/jaypipes/sqlb"
-	"github.com/jaypipes/sqlb/pkg/ast"
+	"github.com/jaypipes/sqlb/pkg/grammar/clause"
+	"github.com/jaypipes/sqlb/pkg/grammar/expression"
+	"github.com/jaypipes/sqlb/pkg/grammar/identifier"
 	"github.com/jaypipes/sqlb/pkg/grammar/statement"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
@@ -35,7 +37,7 @@ func TestUpdateStatement(t *testing.T) {
 			name: "UPDATE no WHERE",
 			s: statement.NewUpdate(
 				users,
-				[]*ast.ColumnIdentifier{colUserName},
+				[]*identifier.Column{colUserName},
 				[]interface{}{"foo"},
 				nil,
 			),
@@ -46,10 +48,10 @@ func TestUpdateStatement(t *testing.T) {
 			name: "UPDATE simple WHERE",
 			s: statement.NewUpdate(
 				users,
-				[]*ast.ColumnIdentifier{colUserName},
+				[]*identifier.Column{colUserName},
 				[]interface{}{"foo"},
-				ast.NewWhereClause(
-					ast.Equal(colUserName, "bar"),
+				clause.NewWhere(
+					expression.Equal(colUserName, "bar"),
 				),
 			),
 			qs:    "UPDATE users SET name = ? WHERE users.name = ?",

@@ -10,7 +10,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/jaypipes/sqlb/pkg/ast"
+	"github.com/jaypipes/sqlb/pkg/grammar/clause"
+	"github.com/jaypipes/sqlb/pkg/grammar/element"
+	"github.com/jaypipes/sqlb/pkg/grammar/expression"
+	"github.com/jaypipes/sqlb/pkg/grammar/function"
+	"github.com/jaypipes/sqlb/pkg/grammar/identifier"
 	"github.com/jaypipes/sqlb/pkg/grammar/statement"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
@@ -45,7 +49,7 @@ func (q *SelectQuery) Error() error {
 	return q.e
 }
 
-func (q *SelectQuery) Where(e *ast.Expression) *SelectQuery {
+func (q *SelectQuery) Where(e *expression.Expression) *SelectQuery {
 	q.sel.AddWhere(e)
 	return q
 }
@@ -55,7 +59,7 @@ func (q *SelectQuery) GroupBy(cols ...types.Projection) *SelectQuery {
 	return q
 }
 
-func (q *SelectQuery) Having(e *ast.Expression) *SelectQuery {
+func (q *SelectQuery) Having(e *expression.Expression) *SelectQuery {
 	q.sel.AddHaving(e)
 	return q
 }
@@ -78,7 +82,7 @@ func (q *SelectQuery) LimitWithOffset(limit int, offset int) *SelectQuery {
 // Returns a pointer to a new SelectQuery that has aliased its inner selection
 // to the supplied name
 func (q *SelectQuery) As(alias string) *SelectQuery {
-	dt := ast.NewDerivedTable(alias, q.sel)
+	dt := clause.NewDerivedTable(alias, q.sel)
 	derivedSel := statement.NewSelect(
 		dt.DerivedColumns(),
 		[]types.Selection{dt},
@@ -92,22 +96,22 @@ func (q *SelectQuery) As(alias string) *SelectQuery {
 func (q *SelectQuery) C(name string) types.Projection {
 	for _, p := range q.sel.Projections() {
 		switch p.(type) {
-		case *ast.DerivedColumn:
-			dc := p.(*ast.DerivedColumn)
+		case *clause.DerivedColumn:
+			dc := p.(*clause.DerivedColumn)
 			if dc.Alias != "" && dc.Alias == name {
 				return dc
 			} else if dc.C().Name == name {
 				return dc
 			}
-		case *ast.ColumnIdentifier:
-			c := p.(*ast.ColumnIdentifier)
+		case *identifier.Column:
+			c := p.(*identifier.Column)
 			if c.Alias != "" && c.Alias == name {
 				return c
 			} else if c.Name == name {
 				return c
 			}
-		case *ast.Function:
-			f := p.(*ast.Function)
+		case *function.Function:
+			f := p.(*function.Function)
 			if f.Alias != "" && f.Alias == name {
 				return f
 			}
@@ -116,7 +120,7 @@ func (q *SelectQuery) C(name string) types.Projection {
 	return nil
 }
 
-func (q *SelectQuery) Join(right interface{}, on *ast.Expression) *SelectQuery {
+func (q *SelectQuery) Join(right interface{}, on *expression.Expression) *SelectQuery {
 	var rightSel types.Selection
 	switch right.(type) {
 	case *SelectQuery:
@@ -128,7 +132,7 @@ func (q *SelectQuery) Join(right interface{}, on *ast.Expression) *SelectQuery {
 	return q.doJoin(types.JOIN_INNER, rightSel, on)
 }
 
-func (q *SelectQuery) OuterJoin(right interface{}, on *ast.Expression) *SelectQuery {
+func (q *SelectQuery) OuterJoin(right interface{}, on *expression.Expression) *SelectQuery {
 	var rightSel types.Selection
 	switch right.(type) {
 	case *SelectQuery:
@@ -147,7 +151,7 @@ func (q *SelectQuery) OuterJoin(right interface{}, on *ast.Expression) *SelectQu
 func (q *SelectQuery) doJoin(
 	jt types.JoinType,
 	right types.Selection,
-	on *ast.Expression,
+	on *expression.Expression,
 ) *SelectQuery {
 	if q.sel == nil || len(q.sel.Selections()) == 0 {
 		q.e = ERR_JOIN_INVALID_NO_SELECT
@@ -189,8 +193,8 @@ func (q *SelectQuery) doJoin(
 				if left != nil {
 					break
 				}
-			case *ast.Expression:
-				expr := el.(*ast.Expression)
+			case *expression.Expression:
+				expr := el.(*expression.Expression)
 				for _, referrent := range expr.Referrents() {
 					if referrent == right {
 						continue
@@ -231,7 +235,7 @@ func (q *SelectQuery) doJoin(
 		q.e = ERR_JOIN_INVALID_UNKNOWN_TARGET
 		return q
 	}
-	jc := ast.NewJoinClause(jt, left, right, on)
+	jc := clause.NewJoin(jt, left, right, on)
 	q.sel.AddJoin(jc)
 
 	// Make sure we remove the right-hand selection from the SelectStatement's
@@ -260,7 +264,7 @@ func Select(items ...interface{}) *SelectQuery {
 			if len(innerSelClause.Selections()) == 1 {
 				innerSel := innerSelClause.Selections()[0]
 				switch innerSel.(type) {
-				case *ast.DerivedTable:
+				case *clause.DerivedTable:
 					// If the inner select clause contains a single
 					// selection and that selection is a DerivedTable,
 					// that means we were called like so:
@@ -274,7 +278,7 @@ func Select(items ...interface{}) *SelectQuery {
 					// derived table's projections out into the outer
 					// SelectStatement.
 					selectionMap[innerSel] = true
-					dt := innerSel.(*ast.DerivedTable)
+					dt := innerSel.(*clause.DerivedTable)
 					for _, p := range dt.DerivedColumns() {
 						sel.AddProjection(p)
 					}
@@ -286,7 +290,7 @@ func Select(items ...interface{}) *SelectQuery {
 					// So we need to construct a derived table manually
 					// and name it derivedN.
 					derivedName := fmt.Sprintf("derived%d", nDerived)
-					dt := ast.NewDerivedTable(derivedName, innerSelClause)
+					dt := clause.NewDerivedTable(derivedName, innerSelClause)
 					selectionMap[dt] = true
 					for _, p := range dt.DerivedColumns() {
 						sel.AddProjection(p)
@@ -294,29 +298,29 @@ func Select(items ...interface{}) *SelectQuery {
 					nDerived++
 				}
 			}
-		case *ast.ColumnIdentifier:
-			v := item.(*ast.ColumnIdentifier)
+		case *identifier.Column:
+			v := item.(*identifier.Column)
 			// Set scanner's dialect based on supplied meta's dialect
 			if v == nil {
 				panic("specified a non-existent column")
 			}
 			sel.AddProjection(v)
 			selectionMap[v.From()] = true
-		case *ast.TableIdentifier:
-			v := item.(*ast.TableIdentifier)
+		case *identifier.Table:
+			v := item.(*identifier.Table)
 			for _, c := range v.Projections() {
 				sel.AddProjection(c)
 			}
 			selectionMap[v] = true
-		case *ast.Function:
-			v := item.(*ast.Function)
+		case *function.Function:
+			v := item.(*function.Function)
 			sel.AddProjection(v)
 			selectionMap[v.From()] = true
 		default:
 			// Everything else, make it a literal value projection, so, for
 			// instance, a user can do SELECT 1, which is, technically
 			// valid SQL.
-			p := ast.NewValue(nil, item)
+			p := element.NewValue(nil, item)
 			sel.AddProjection(p)
 		}
 	}
