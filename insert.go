@@ -8,7 +8,7 @@ package sqlb
 import (
 	"errors"
 
-	"github.com/jaypipes/sqlb/pkg/ast"
+	"github.com/jaypipes/sqlb/pkg/grammar/identifier"
 	"github.com/jaypipes/sqlb/pkg/grammar/statement"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
@@ -45,14 +45,14 @@ func (q *InsertQuery) Size(s types.Scanner) int {
 
 // Given a table and a map of column name to value for that column to insert,
 // returns an InsertQuery that will produce an INSERT SQL statement
-func Insert(t *ast.TableIdentifier, values map[string]interface{}) *InsertQuery {
+func Insert(t *identifier.Table, values map[string]interface{}) *InsertQuery {
 	if len(values) == 0 {
 		return &InsertQuery{e: ERR_INSERT_NO_VALUES}
 	}
 
 	// Make sure all keys in the map point to actual columns in the target
 	// table.
-	cols := make([]*ast.ColumnIdentifier, len(values))
+	cols := make([]*identifier.Column, len(values))
 	vals := make([]interface{}, len(values))
 	x := 0
 	for k, v := range values {
@@ -70,6 +70,6 @@ func Insert(t *ast.TableIdentifier, values map[string]interface{}) *InsertQuery 
 	}
 }
 
-//func (t *TableIdentifier) Insert(values map[string]interface{}) *InsertQuery {
+//func (t *Table) Insert(values map[string]interface{}) *InsertQuery {
 //	return Insert(t, values)
 //}

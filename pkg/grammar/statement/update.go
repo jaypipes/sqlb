@@ -7,18 +7,20 @@
 package statement
 
 import (
-	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/grammar"
+	"github.com/jaypipes/sqlb/pkg/grammar/clause"
+	"github.com/jaypipes/sqlb/pkg/grammar/expression"
+	"github.com/jaypipes/sqlb/pkg/grammar/identifier"
 	pkgscanner "github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
 // UPDATE <table> SET <column_value_list>[ WHERE <predicates>]
 type Update struct {
-	table   *ast.TableIdentifier
-	columns []*ast.ColumnIdentifier
+	table   *identifier.Table
+	columns []*identifier.Column
 	values  []interface{}
-	where   *ast.WhereClause
+	where   *clause.Where
 }
 
 func (s *Update) ArgCount() int {
@@ -77,9 +79,9 @@ func (s *Update) Scan(scanner types.Scanner, b []byte, args []interface{}, curAr
 	return bw
 }
 
-func (s *Update) AddWhere(e *ast.Expression) *Update {
+func (s *Update) AddWhere(e *expression.Expression) *Update {
 	if s.where == nil {
-		s.where = ast.NewWhereClause(e)
+		s.where = clause.NewWhere(e)
 		return s
 	}
 	s.where.AddExpression(e)
@@ -89,10 +91,10 @@ func (s *Update) AddWhere(e *ast.Expression) *Update {
 // NewUpdate returns a new UpdateStatement struct that scans into an UPDATE SQL
 // statement
 func NewUpdate(
-	table *ast.TableIdentifier,
-	columns []*ast.ColumnIdentifier,
+	table *identifier.Table,
+	columns []*identifier.Column,
 	values []interface{},
-	where *ast.WhereClause,
+	where *clause.Where,
 ) *Update {
 	return &Update{
 		table:   table,

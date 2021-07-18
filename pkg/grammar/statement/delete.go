@@ -7,15 +7,17 @@
 package statement
 
 import (
-	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/grammar"
+	"github.com/jaypipes/sqlb/pkg/grammar/clause"
+	"github.com/jaypipes/sqlb/pkg/grammar/expression"
+	"github.com/jaypipes/sqlb/pkg/grammar/identifier"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
 // DELETE FROM <table> WHERE <predicates>
 type Delete struct {
-	table *ast.TableIdentifier
-	where *ast.WhereClause
+	table *identifier.Table
+	where *clause.Where
 }
 
 func (s *Delete) ArgCount() int {
@@ -45,9 +47,9 @@ func (s *Delete) Scan(scanner types.Scanner, b []byte, args []interface{}, curAr
 	return bw
 }
 
-func (s *Delete) AddWhere(e *ast.Expression) *Delete {
+func (s *Delete) AddWhere(e *expression.Expression) *Delete {
 	if s.where == nil {
-		s.where = ast.NewWhereClause(e)
+		s.where = clause.NewWhere(e)
 		return s
 	}
 	s.where.AddExpression(e)
@@ -57,8 +59,8 @@ func (s *Delete) AddWhere(e *ast.Expression) *Delete {
 // NewDelete returns a new DeleteStatement struct that scans into a DELETE SQL
 // statement
 func NewDelete(
-	table *ast.TableIdentifier,
-	where *ast.WhereClause,
+	table *identifier.Table,
+	where *clause.Where,
 ) *Delete {
 	return &Delete{
 		table: table,

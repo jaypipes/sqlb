@@ -7,8 +7,8 @@
 package statement
 
 import (
-	"github.com/jaypipes/sqlb/pkg/ast"
 	"github.com/jaypipes/sqlb/pkg/grammar"
+	"github.com/jaypipes/sqlb/pkg/grammar/identifier"
 	pkgscanner "github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
@@ -16,8 +16,8 @@ import (
 // INSERT INTO <table> (<columns>) VALUES (<values>)
 
 type Insert struct {
-	table   *ast.TableIdentifier
-	columns []*ast.ColumnIdentifier
+	table   *identifier.Table
+	columns []*identifier.Column
 	values  []interface{}
 }
 
@@ -76,8 +76,8 @@ func (s *Insert) Scan(scanner types.Scanner, b []byte, args []interface{}, curAr
 // NewInsert returns a new InsertStatement struct that scans into an
 // INSERT SQL statement
 func NewInsert(
-	table *ast.TableIdentifier,
-	columns []*ast.ColumnIdentifier,
+	table *identifier.Table,
+	columns []*identifier.Column,
 	values []interface{},
 ) *Insert {
 	return &Insert{

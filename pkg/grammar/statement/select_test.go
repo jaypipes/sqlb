@@ -12,7 +12,10 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/jaypipes/sqlb"
-	"github.com/jaypipes/sqlb/pkg/ast"
+	"github.com/jaypipes/sqlb/pkg/grammar/clause"
+	"github.com/jaypipes/sqlb/pkg/grammar/element"
+	"github.com/jaypipes/sqlb/pkg/grammar/expression"
+	"github.com/jaypipes/sqlb/pkg/grammar/function"
 	"github.com/jaypipes/sqlb/pkg/grammar/statement"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
@@ -43,7 +46,7 @@ func TestSelectStatement(t *testing.T) {
 		{
 			name: "A literal value",
 			s: statement.NewSelect(
-				[]types.Projection{ast.NewValue(nil, 1)},
+				[]types.Projection{element.NewValue(nil, 1)},
 				nil, nil, nil, nil, nil, nil, nil,
 			),
 			qs:    "SELECT ?",
@@ -52,7 +55,7 @@ func TestSelectStatement(t *testing.T) {
 		{
 			name: "A literal value aliased",
 			s: statement.NewSelect(
-				[]types.Projection{ast.NewValue(nil, 1).As("foo")},
+				[]types.Projection{element.NewValue(nil, 1).As("foo")},
 				nil, nil, nil, nil, nil, nil, nil,
 			),
 			qs:    "SELECT ? AS foo",
@@ -62,8 +65,8 @@ func TestSelectStatement(t *testing.T) {
 			name: "Two literal values",
 			s: statement.NewSelect(
 				[]types.Projection{
-					ast.NewValue(nil, 1),
-					ast.NewValue(nil, 2),
+					element.NewValue(nil, 1),
+					element.NewValue(nil, 2),
 				},
 				nil, nil, nil, nil, nil, nil, nil,
 			),
@@ -105,8 +108,8 @@ func TestSelectStatement(t *testing.T) {
 				[]types.Projection{colUserName},
 				[]types.Selection{users},
 				nil,
-				ast.NewWhereClause(
-					ast.Equal(colUserName, "foo"),
+				clause.NewWhere(
+					expression.Equal(colUserName, "foo"),
 				),
 				nil, nil, nil, nil,
 			),
@@ -119,7 +122,7 @@ func TestSelectStatement(t *testing.T) {
 				[]types.Projection{colUserName},
 				[]types.Selection{users},
 				nil, nil, nil, nil, nil,
-				ast.NewLimitClause(10, nil),
+				clause.NewLimit(10, nil),
 			),
 			qs:    "SELECT users.name FROM users LIMIT ?",
 			qargs: []interface{}{10},
@@ -130,7 +133,7 @@ func TestSelectStatement(t *testing.T) {
 				[]types.Projection{colUserName},
 				[]types.Selection{users},
 				nil, nil, nil, nil,
-				ast.NewOrderByClause(colUserName.Desc()),
+				clause.NewOrderBy(colUserName.Desc()),
 				nil,
 			),
 			qs: "SELECT users.name FROM users ORDER BY users.name DESC",
@@ -141,7 +144,7 @@ func TestSelectStatement(t *testing.T) {
 				[]types.Projection{colUserName},
 				[]types.Selection{users},
 				nil, nil,
-				ast.NewGroupByClause(colUserName),
+				clause.NewGroupBy(colUserName),
 				nil, nil, nil,
 			),
 			qs: "SELECT users.name FROM users GROUP BY users.name",
@@ -152,10 +155,10 @@ func TestSelectStatement(t *testing.T) {
 				[]types.Projection{colUserName},
 				[]types.Selection{users},
 				nil, nil,
-				ast.NewGroupByClause(colUserName),
+				clause.NewGroupBy(colUserName),
 				nil,
-				ast.NewOrderByClause(colUserName.Desc()),
-				ast.NewLimitClause(10, nil),
+				clause.NewOrderBy(colUserName.Desc()),
+				clause.NewLimit(10, nil),
 			),
 			qs:    "SELECT users.name FROM users GROUP BY users.name ORDER BY users.name DESC LIMIT ?",
 			qargs: []interface{}{10},
@@ -165,11 +168,11 @@ func TestSelectStatement(t *testing.T) {
 			s: statement.NewSelect(
 				[]types.Projection{colArticleId, colUserName.As("author")},
 				[]types.Selection{articles},
-				[]*ast.JoinClause{
-					ast.Join(
+				[]*clause.Join{
+					clause.InnerJoin(
 						articles,
 						users,
-						ast.Equal(colArticleAuthor, colUserId),
+						expression.Equal(colArticleAuthor, colUserId),
 					),
 				},
 				nil, nil, nil, nil, nil,
@@ -181,16 +184,16 @@ func TestSelectStatement(t *testing.T) {
 			s: statement.NewSelect(
 				[]types.Projection{colArticleId, colUserName.As("author"), colArticleStateName.As("state")},
 				[]types.Selection{articles},
-				[]*ast.JoinClause{
-					ast.Join(
+				[]*clause.Join{
+					clause.InnerJoin(
 						articles,
 						users,
-						ast.Equal(colArticleAuthor, colUserId),
+						expression.Equal(colArticleAuthor, colUserId),
 					),
-					ast.Join(
+					clause.InnerJoin(
 						articles,
 						article_states,
-						ast.Equal(colArticleState, colArticleStateId),
+						expression.Equal(colArticleState, colArticleStateId),
 					),
 				},
 				nil, nil, nil, nil, nil,
@@ -200,7 +203,7 @@ func TestSelectStatement(t *testing.T) {
 		{
 			name: "COUNT(*) on a table",
 			s: statement.NewSelect(
-				[]types.Projection{ast.Count(users)},
+				[]types.Projection{function.Count(users)},
 				[]types.Selection{users},
 				nil, nil, nil, nil, nil, nil,
 			),
