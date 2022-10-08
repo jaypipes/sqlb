@@ -7,6 +7,7 @@ package sqlb
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/jaypipes/sqlb/pkg/grammar/expression"
 	"github.com/jaypipes/sqlb/pkg/grammar/identifier"
@@ -37,8 +38,8 @@ func (q *UpdateQuery) Error() error {
 	return q.e
 }
 
-func (q *UpdateQuery) Scan(s types.Scanner, b []byte, qargs []interface{}, idx *int) int {
-	return q.stmt.Scan(s, b, qargs, idx)
+func (q *UpdateQuery) Scan(s types.Scanner, b *strings.Builder, qargs []interface{}, idx *int) {
+	q.stmt.Scan(s, b, qargs, idx)
 }
 
 func (q *UpdateQuery) ArgCount() int {

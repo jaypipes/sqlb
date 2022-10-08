@@ -7,6 +7,8 @@
 package statement
 
 import (
+	"strings"
+
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/grammar/clause"
 	"github.com/jaypipes/sqlb/pkg/grammar/expression"
@@ -100,38 +102,36 @@ func (s *Select) Size(scanner types.Scanner) int {
 	return size
 }
 
-func (s *Select) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
-	bw := 0
-	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_SELECT])
+func (s *Select) Scan(scanner types.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
+	b.Write(grammar.Symbols[grammar.SYM_SELECT])
 	nprojs := len(s.projs)
 	for x, p := range s.projs {
-		bw += p.Scan(scanner, b[bw:], args, curArg)
+		p.Scan(scanner, b, args, curArg)
 		if x != (nprojs - 1) {
-			bw += copy(b[bw:], grammar.Symbols[grammar.SYM_COMMA_WS])
+			b.Write(grammar.Symbols[grammar.SYM_COMMA_WS])
 		}
 	}
 	if s.from != nil {
 		if s.from.Size(scanner) > 0 {
-			bw += copy(b[bw:], scanner.FormatOptions().SeparateClauseWith)
-			bw += s.from.Scan(scanner, b[bw:], args, curArg)
+			b.WriteString(scanner.FormatOptions().SeparateClauseWith)
+			s.from.Scan(scanner, b, args, curArg)
 		}
 	}
 	if s.where != nil {
-		bw += s.where.Scan(scanner, b[bw:], args, curArg)
+		s.where.Scan(scanner, b, args, curArg)
 	}
 	if s.groupBy != nil {
-		bw += s.groupBy.Scan(scanner, b[bw:], args, curArg)
+		s.groupBy.Scan(scanner, b, args, curArg)
 	}
 	if s.having != nil {
-		bw += s.having.Scan(scanner, b[bw:], args, curArg)
+		s.having.Scan(scanner, b, args, curArg)
 	}
 	if s.orderBy != nil {
-		bw += s.orderBy.Scan(scanner, b[bw:], args, curArg)
+		s.orderBy.Scan(scanner, b, args, curArg)
 	}
 	if s.limit != nil {
-		bw += s.limit.Scan(scanner, b[bw:], args, curArg)
+		s.limit.Scan(scanner, b, args, curArg)
 	}
-	return bw
 }
 
 func (s *Select) AddJoin(jc *clause.Join) *Select {

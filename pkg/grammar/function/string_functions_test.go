@@ -7,6 +7,7 @@
 package function_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/jaypipes/sqlb"
@@ -95,13 +96,13 @@ func TestTrimFunctions(t *testing.T) {
 			size += scanner.InterpolationLength(dialect, argc)
 			assert.Equal(expLen, size)
 
-			b := make([]byte, size)
+			var b strings.Builder
+			b.Grow(size)
 			args := make([]interface{}, argc)
 			curArg := 0
-			written := test.el.Scan(sc, b, args, &curArg)
+			test.el.Scan(sc, &b, args, &curArg)
 
-			assert.Equal(written, size)
-			assert.Equal(qs, string(b))
+			assert.Equal(qs, b.String())
 			if expArgc > 0 {
 				assert.Equal(args, test.qargs)
 			}

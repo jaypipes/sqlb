@@ -7,6 +7,8 @@
 package identifier
 
 import (
+	"strings"
+
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/grammar/function"
 	"github.com/jaypipes/sqlb/pkg/grammar/sortcolumn"
@@ -54,20 +56,18 @@ func (c *Column) Size(scanner types.Scanner) int {
 	return size
 }
 
-func (c *Column) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
-	bw := 0
+func (c *Column) Scan(scanner types.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
 	if c.tbl.Alias != "" {
-		bw += copy(b[bw:], c.tbl.Alias)
+		b.WriteString(c.tbl.Alias)
 	} else {
-		bw += copy(b[bw:], c.tbl.Name)
+		b.WriteString(c.tbl.Name)
 	}
-	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_PERIOD])
-	bw += copy(b[bw:], c.Name)
+	b.Write(grammar.Symbols[grammar.SYM_PERIOD])
+	b.WriteString(c.Name)
 	if c.Alias != "" {
-		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_AS])
-		bw += copy(b[bw:], c.Alias)
+		b.Write(grammar.Symbols[grammar.SYM_AS])
+		b.WriteString(c.Alias)
 	}
-	return bw
 }
 
 func (c *Column) As(alias string) types.Projection {

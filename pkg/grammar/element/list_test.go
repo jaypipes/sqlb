@@ -7,6 +7,7 @@
 package element_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/jaypipes/sqlb"
@@ -30,11 +31,11 @@ func TestListSingle(t *testing.T) {
 	s := cl.Size(scanner.DefaultScanner)
 	assert.Equal(expLen, s)
 
-	b := make([]byte, s)
-	written := cl.Scan(scanner.DefaultScanner, b, nil, nil)
+	var b strings.Builder
+	b.Grow(s)
+	cl.Scan(scanner.DefaultScanner, &b, nil, nil)
 
-	assert.Equal(written, s)
-	assert.Equal(exp, string(b))
+	assert.Equal(exp, b.String())
 }
 
 func TestListMulti(t *testing.T) {
@@ -52,9 +53,9 @@ func TestListMulti(t *testing.T) {
 	s := cl.Size(scanner.DefaultScanner)
 	assert.Equal(expLen, s)
 
-	b := make([]byte, s)
-	written := cl.Scan(scanner.DefaultScanner, b, nil, nil)
+	var b strings.Builder
+	b.Grow(s)
+	cl.Scan(scanner.DefaultScanner, &b, nil, nil)
 
-	assert.Equal(written, s)
-	assert.Equal(exp, string(b))
+	assert.Equal(exp, b.String())
 }

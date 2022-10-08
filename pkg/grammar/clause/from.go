@@ -7,6 +7,8 @@
 package clause
 
 import (
+	"strings"
+
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
@@ -56,22 +58,20 @@ func (s *From) Size(scanner types.Scanner) int {
 	return size
 }
 
-func (s *From) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
-	bw := 0
+func (s *From) Scan(scanner types.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
 	nsels := len(s.selections)
 	if nsels > 0 {
-		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_FROM])
+		b.Write(grammar.Symbols[grammar.SYM_FROM])
 		for x, sel := range s.selections {
-			bw += sel.Scan(scanner, b[bw:], args, curArg)
+			sel.Scan(scanner, b, args, curArg)
 			if x != (nsels - 1) {
-				bw += copy(b[bw:], grammar.Symbols[grammar.SYM_COMMA_WS])
+				b.Write(grammar.Symbols[grammar.SYM_COMMA_WS])
 			}
 		}
 		for _, join := range s.joins {
-			bw += join.Scan(scanner, b[bw:], args, curArg)
+			join.Scan(scanner, b, args, curArg)
 		}
 	}
-	return bw
 }
 
 func (s *From) AddJoin(jc *Join) *From {

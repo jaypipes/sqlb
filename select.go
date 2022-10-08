@@ -9,6 +9,7 @@ package sqlb
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/jaypipes/sqlb/pkg/grammar/clause"
 	"github.com/jaypipes/sqlb/pkg/grammar/element"
@@ -29,8 +30,8 @@ type SelectQuery struct {
 	sel *statement.Select
 }
 
-func (q *SelectQuery) Scan(s types.Scanner, b []byte, qargs []interface{}, idx *int) int {
-	return q.sel.Scan(s, b, qargs, idx)
+func (q *SelectQuery) Scan(s types.Scanner, b *strings.Builder, qargs []interface{}, idx *int) {
+	q.sel.Scan(s, b, qargs, idx)
 }
 
 func (q *SelectQuery) ArgCount() int {

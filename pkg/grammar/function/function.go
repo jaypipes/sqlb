@@ -7,6 +7,8 @@
 package function
 
 import (
+	"strings"
+
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/grammar/element"
 	"github.com/jaypipes/sqlb/pkg/grammar/sortcolumn"
@@ -75,8 +77,7 @@ func (f *Function) Size(scanner types.Scanner) int {
 	return size
 }
 
-func (f *Function) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
-	bw := 0
+func (f *Function) Scan(scanner types.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
 	elidx := 0
 	for _, sym := range f.ScanInfo {
 		if sym == grammar.SYM_ELEMENT {
@@ -90,16 +91,15 @@ func (f *Function) Scan(scanner types.Scanner, b []byte, args []interface{}, cur
 				defer reset()
 			}
 			elidx++
-			bw += el.Scan(scanner, b[bw:], args, curArg)
+			el.Scan(scanner, b, args, curArg)
 		} else {
-			bw += copy(b[bw:], grammar.Symbols[sym])
+			b.Write(grammar.Symbols[sym])
 		}
 	}
 	if f.Alias != "" {
-		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_AS])
-		bw += copy(b[bw:], f.Alias)
+		b.Write(grammar.Symbols[grammar.SYM_AS])
+		b.WriteString(f.Alias)
 	}
-	return bw
 }
 
 func (f *Function) Desc() types.Sortable {

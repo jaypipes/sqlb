@@ -6,6 +6,8 @@
 
 package types
 
+import "strings"
+
 // Scannable is a thing that knows how to describe itself to a Scanner for
 // construction in a SQL query string and query argument list.
 type Scannable interface {
@@ -15,7 +17,7 @@ type Scannable interface {
 	// that the element should add its arguments to. The pointer to an int is
 	// the index of the current argument to be processed. The method returns a
 	// single int, the number of bytes written to the buffer.
-	Scan(Scanner, []byte, []interface{}, *int) int
+	Scan(Scanner, *strings.Builder, []interface{}, *int)
 }
 
 // Element adds a Size and ArgCount method to the Scannable interface

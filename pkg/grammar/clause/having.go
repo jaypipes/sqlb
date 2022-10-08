@@ -7,6 +7,8 @@
 package clause
 
 import (
+	"strings"
+
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/grammar/expression"
 	"github.com/jaypipes/sqlb/pkg/types"
@@ -46,19 +48,17 @@ func (c *Having) Size(scanner types.Scanner) int {
 	return size
 }
 
-func (c *Having) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
-	bw := 0
+func (c *Having) Scan(scanner types.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
 	if len(c.conditions) > 0 {
-		bw += copy(b[bw:], scanner.FormatOptions().SeparateClauseWith)
-		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_HAVING])
+		b.WriteString(scanner.FormatOptions().SeparateClauseWith)
+		b.Write(grammar.Symbols[grammar.SYM_HAVING])
 		for x, condition := range c.conditions {
 			if x > 0 {
-				bw += copy(b[bw:], grammar.Symbols[grammar.SYM_AND])
+				b.Write(grammar.Symbols[grammar.SYM_AND])
 			}
-			bw += condition.Scan(scanner, b[bw:], args, curArg)
+			condition.Scan(scanner, b, args, curArg)
 		}
 	}
-	return bw
 }
 
 // NewHaving returns a new Having populated with zero or more

@@ -7,6 +7,7 @@
 package function_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/jaypipes/sqlb"
@@ -209,12 +210,12 @@ func TestFunctions(t *testing.T) {
 			size += scanner.InterpolationLength(dialect, argc)
 			assert.Equal(expLen, size)
 
-			b := make([]byte, size)
+			var b strings.Builder
+			b.Grow(size)
 			curArg := 0
-			written := test.c.Scan(sc, b, test.qargs, &curArg)
+			test.c.Scan(sc, &b, test.qargs, &curArg)
 
-			assert.Equal(written, size)
-			assert.Equal(qs, string(b))
+			assert.Equal(qs, b.String())
 		}
 	}
 }

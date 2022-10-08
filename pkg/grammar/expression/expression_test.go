@@ -7,6 +7,7 @@
 package expression_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/jaypipes/sqlb"
@@ -138,11 +139,11 @@ func TestExpressions(t *testing.T) {
 		size += scanner.InterpolationLength(types.DIALECT_MYSQL, argc)
 		assert.Equal(expLen, size)
 
-		b := make([]byte, size)
+		var b strings.Builder
+		b.Grow(size)
 		curArg := 0
-		written := test.c.Scan(scanner.DefaultScanner, b, test.qargs, &curArg)
+		test.c.Scan(scanner.DefaultScanner, &b, test.qargs, &curArg)
 
-		assert.Equal(written, size)
-		assert.Equal(test.qs, string(b))
+		assert.Equal(test.qs, b.String())
 	}
 }

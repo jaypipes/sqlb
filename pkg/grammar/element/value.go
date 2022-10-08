@@ -7,6 +7,8 @@
 package element
 
 import (
+	"strings"
+
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/grammar/sortcolumn"
 	pkgscanner "github.com/jaypipes/sqlb/pkg/scanner"
@@ -56,15 +58,14 @@ func (v *Value) Size(scanner types.Scanner) int {
 	return size
 }
 
-func (v *Value) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
+func (v *Value) Scan(scanner types.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
 	args[*curArg] = v.val
-	bw := pkgscanner.ScanInterpolationMarker(scanner.Dialect(), b, *curArg)
+	pkgscanner.ScanInterpolationMarker(scanner.Dialect(), b, *curArg)
 	*curArg++
 	if v.alias != "" {
-		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_AS])
-		bw += copy(b[bw:], v.alias)
+		b.Write(grammar.Symbols[grammar.SYM_AS])
+		b.WriteString(v.alias)
 	}
-	return bw
 }
 
 func (v *Value) Desc() types.Sortable {

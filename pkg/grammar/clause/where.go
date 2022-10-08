@@ -7,6 +7,8 @@
 package clause
 
 import (
+	"strings"
+
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/grammar/expression"
 	"github.com/jaypipes/sqlb/pkg/types"
@@ -43,19 +45,17 @@ func (w *Where) Size(scanner types.Scanner) int {
 	return size
 }
 
-func (w *Where) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
-	bw := 0
+func (w *Where) Scan(scanner types.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
 	if len(w.filters) > 0 {
-		bw += copy(b[bw:], scanner.FormatOptions().SeparateClauseWith)
-		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_WHERE])
+		b.WriteString(scanner.FormatOptions().SeparateClauseWith)
+		b.Write(grammar.Symbols[grammar.SYM_WHERE])
 		for x, filter := range w.filters {
 			if x > 0 {
-				bw += copy(b[bw:], grammar.Symbols[grammar.SYM_AND])
+				b.Write(grammar.Symbols[grammar.SYM_AND])
 			}
-			bw += filter.Scan(scanner, b[bw:], args, curArg)
+			filter.Scan(scanner, b, args, curArg)
 		}
 	}
-	return bw
 }
 
 // NewWhere returns a Where populated with zero or more expressions

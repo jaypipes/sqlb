@@ -7,6 +7,8 @@
 package clause
 
 import (
+	"strings"
+
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
@@ -36,18 +38,16 @@ func (ob *OrderBy) Size(scanner types.Scanner) int {
 	return size + (len(grammar.Symbols[grammar.SYM_COMMA_WS]) * (ncols - 1)) // the commas...
 }
 
-func (ob *OrderBy) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
-	bw := 0
-	bw += copy(b[bw:], scanner.FormatOptions().SeparateClauseWith)
-	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_ORDER_BY])
+func (ob *OrderBy) Scan(scanner types.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
+	b.WriteString(scanner.FormatOptions().SeparateClauseWith)
+	b.Write(grammar.Symbols[grammar.SYM_ORDER_BY])
 	ncols := len(ob.scols)
 	for x, sc := range ob.scols {
-		bw += sc.Scan(scanner, b[bw:], args, curArg)
+		sc.Scan(scanner, b, args, curArg)
 		if x != (ncols - 1) {
-			bw += copy(b[bw:], grammar.Symbols[grammar.SYM_COMMA_WS])
+			b.Write(grammar.Symbols[grammar.SYM_COMMA_WS])
 		}
 	}
-	return bw
 }
 
 // NewOrderBy returns a new OrderBy with zero or more sort columns

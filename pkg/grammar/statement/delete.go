@@ -7,6 +7,8 @@
 package statement
 
 import (
+	"strings"
+
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/grammar/clause"
 	"github.com/jaypipes/sqlb/pkg/grammar/expression"
@@ -36,15 +38,13 @@ func (s *Delete) Size(scanner types.Scanner) int {
 	return size
 }
 
-func (s *Delete) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
-	bw := 0
-	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_DELETE])
+func (s *Delete) Scan(scanner types.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
+	b.Write(grammar.Symbols[grammar.SYM_DELETE])
 	// We don't add any table alias when outputting the table identifier
-	bw += copy(b[bw:], s.table.Name)
+	b.WriteString(s.table.Name)
 	if s.where != nil {
-		bw += s.where.Scan(scanner, b[bw:], args, curArg)
+		s.where.Scan(scanner, b, args, curArg)
 	}
-	return bw
 }
 
 func (s *Delete) AddWhere(e *expression.Expression) *Delete {

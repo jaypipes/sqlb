@@ -7,6 +7,8 @@
 package statement
 
 import (
+	"strings"
+
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/grammar/clause"
 	"github.com/jaypipes/sqlb/pkg/grammar/expression"
@@ -51,32 +53,30 @@ func (s *Update) Size(scanner types.Scanner) int {
 	return size
 }
 
-func (s *Update) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
-	bw := 0
-	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_UPDATE])
+func (s *Update) Scan(scanner types.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
+	b.Write(grammar.Symbols[grammar.SYM_UPDATE])
 	// We don't add any table alias when outputting the table identifier
-	bw += copy(b[bw:], s.table.Name)
-	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_SET])
+	b.WriteString(s.table.Name)
+	b.Write(grammar.Symbols[grammar.SYM_SET])
 
 	ncols := len(s.columns)
 	for x, c := range s.columns {
 		// We don't add the table identifier or use an alias when outputting
 		// the column names in the <column_value_lists> element of the UPDATE
 		// statement
-		bw += copy(b[bw:], c.Name)
-		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_EQUAL])
-		bw += pkgscanner.ScanInterpolationMarker(scanner.Dialect(), b[bw:], *curArg)
+		b.WriteString(c.Name)
+		b.Write(grammar.Symbols[grammar.SYM_EQUAL])
+		pkgscanner.ScanInterpolationMarker(scanner.Dialect(), b, *curArg)
 		args[*curArg] = s.values[x]
 		*curArg++
 		if x != (ncols - 1) {
-			bw += copy(b[bw:], grammar.Symbols[grammar.SYM_COMMA_WS])
+			b.Write(grammar.Symbols[grammar.SYM_COMMA_WS])
 		}
 	}
 
 	if s.where != nil {
-		bw += s.where.Scan(scanner, b[bw:], args, curArg)
+		s.where.Scan(scanner, b, args, curArg)
 	}
-	return bw
 }
 
 func (s *Update) AddWhere(e *expression.Expression) *Update {

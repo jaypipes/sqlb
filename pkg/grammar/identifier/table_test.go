@@ -7,6 +7,7 @@
 package identifier_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/jaypipes/sqlb/pkg/grammar/identifier"
@@ -26,11 +27,11 @@ func TestTable(t *testing.T) {
 	s := users.Size(scanner.DefaultScanner)
 	assert.Equal(expLen, s)
 
-	b := make([]byte, s)
-	written := users.Scan(scanner.DefaultScanner, b, nil, nil)
+	var b strings.Builder
+	b.Grow(s)
+	users.Scan(scanner.DefaultScanner, &b, nil, nil)
 
-	assert.Equal(written, s)
-	assert.Equal(exp, string(b))
+	assert.Equal(exp, b.String())
 }
 
 func TestTableAlias(t *testing.T) {
@@ -44,11 +45,11 @@ func TestTableAlias(t *testing.T) {
 	s := u.Size(scanner.DefaultScanner)
 	assert.Equal(expLen, s)
 
-	b := make([]byte, s)
-	written := u.Scan(scanner.DefaultScanner, b, nil, nil)
+	var b strings.Builder
+	b.Grow(s)
+	u.Scan(scanner.DefaultScanner, &b, nil, nil)
 
-	assert.Equal(written, s)
-	assert.Equal(exp, string(b))
+	assert.Equal(exp, b.String())
 }
 
 func TestTableColumns(t *testing.T) {

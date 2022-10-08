@@ -7,6 +7,8 @@
 package statement
 
 import (
+	"strings"
+
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/grammar/identifier"
 	pkgscanner "github.com/jaypipes/sqlb/pkg/scanner"
@@ -43,34 +45,32 @@ func (s *Insert) Size(scanner types.Scanner) int {
 	return size
 }
 
-func (s *Insert) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
-	bw := 0
-	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_INSERT])
+func (s *Insert) Scan(scanner types.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
+	b.Write(grammar.Symbols[grammar.SYM_INSERT])
 	// We don't add any table alias when outputting the table identifier
-	bw += copy(b[bw:], s.table.Name)
-	bw += copy(b[bw:], " ")
-	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_LPAREN])
+	b.WriteString(s.table.Name)
+	b.WriteRune(' ')
+	b.Write(grammar.Symbols[grammar.SYM_LPAREN])
 
 	ncols := len(s.columns)
 	for x, c := range s.columns {
 		// We don't add the table identifier or use an alias when outputting
 		// the column names in the <columns> element of the INSERT statement
-		bw += copy(b[bw:], c.Name)
+		b.WriteString(c.Name)
 		if x != (ncols - 1) {
-			bw += copy(b[bw:], grammar.Symbols[grammar.SYM_COMMA_WS])
+			b.Write(grammar.Symbols[grammar.SYM_COMMA_WS])
 		}
 	}
-	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_VALUES])
+	b.Write(grammar.Symbols[grammar.SYM_VALUES])
 	for x, v := range s.values {
-		bw += pkgscanner.ScanInterpolationMarker(scanner.Dialect(), b[bw:], *curArg)
+		pkgscanner.ScanInterpolationMarker(scanner.Dialect(), b, *curArg)
 		args[*curArg] = v
 		*curArg++
 		if x != (ncols - 1) {
-			bw += copy(b[bw:], grammar.Symbols[grammar.SYM_COMMA_WS])
+			b.Write(grammar.Symbols[grammar.SYM_COMMA_WS])
 		}
 	}
-	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_RPAREN])
-	return bw
+	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
 }
 
 // NewInsert returns a new InsertStatement struct that scans into an

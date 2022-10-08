@@ -7,6 +7,7 @@
 package element_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/jaypipes/sqlb/pkg/grammar/element"
@@ -28,14 +29,13 @@ func TestValue(t *testing.T) {
 	assert.Equal(1, argc)
 
 	args := make([]interface{}, 1)
-	b := make([]byte, 1)
+	var b strings.Builder
+	b.Grow(s)
 	curArg := 0
-	written := v.Scan(scanner.DefaultScanner, b, args, &curArg)
+	v.Scan(scanner.DefaultScanner, &b, args, &curArg)
 
 	exp := "?"
-	expLen := len(exp)
 
-	assert.Equal(expLen, written)
-	assert.Equal(exp, string(b))
+	assert.Equal(exp, b.String())
 	assert.Equal("foo", args[0])
 }

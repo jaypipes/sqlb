@@ -7,6 +7,8 @@
 package expression
 
 import (
+	"strings"
+
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/grammar/element"
 	"github.com/jaypipes/sqlb/pkg/types"
@@ -67,8 +69,7 @@ func (e *Expression) Size(scanner types.Scanner) int {
 	return size
 }
 
-func (e *Expression) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
-	bw := 0
+func (e *Expression) Scan(scanner types.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
 	elidx := 0
 	for _, sym := range e.ScanInfo {
 		if sym == grammar.SYM_ELEMENT {
@@ -82,12 +83,11 @@ func (e *Expression) Scan(scanner types.Scanner, b []byte, args []interface{}, c
 				defer reset()
 			}
 			elidx++
-			bw += el.Scan(scanner, b[bw:], args, curArg)
+			el.Scan(scanner, b, args, curArg)
 		} else {
-			bw += copy(b[bw:], grammar.Symbols[sym])
+			b.Write(grammar.Symbols[sym])
 		}
 	}
-	return bw
 }
 
 // Given a slice of interface{} variables, returns a slice of element members.

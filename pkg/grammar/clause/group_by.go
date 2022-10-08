@@ -7,6 +7,8 @@
 package clause
 
 import (
+	"strings"
+
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
@@ -42,20 +44,18 @@ func (gb *GroupBy) Size(scanner types.Scanner) int {
 	return size + (len(grammar.Symbols[grammar.SYM_COMMA_WS]) * (ncols - 1)) // the commas...
 }
 
-func (gb *GroupBy) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
-	bw := 0
-	bw += copy(b[bw:], scanner.FormatOptions().SeparateClauseWith)
-	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_GROUP_BY])
+func (gb *GroupBy) Scan(scanner types.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
+	b.WriteString(scanner.FormatOptions().SeparateClauseWith)
+	b.Write(grammar.Symbols[grammar.SYM_GROUP_BY])
 	ncols := len(gb.cols)
 	for x, c := range gb.cols {
 		reset := c.DisableAliasScan()
 		defer reset()
-		bw += c.Scan(scanner, b[bw:], args, curArg)
+		c.Scan(scanner, b, args, curArg)
 		if x != (ncols - 1) {
-			bw += copy(b[bw:], grammar.Symbols[grammar.SYM_COMMA_WS])
+			b.Write(grammar.Symbols[grammar.SYM_COMMA_WS])
 		}
 	}
-	return bw
 }
 
 // NewGroupBy returns a new GroupBy across one or more projections

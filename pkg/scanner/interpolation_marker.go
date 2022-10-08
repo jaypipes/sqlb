@@ -8,6 +8,7 @@ package scanner
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/types"
@@ -43,11 +44,11 @@ func InterpolationLength(dialect types.Dialect, argc int) int {
 
 // ScanInterpolationMarker adds an interpolation marker of the specified
 // dialect and position into the supplied bytestream
-func ScanInterpolationMarker(dialect types.Dialect, b []byte, position int) int {
+func ScanInterpolationMarker(dialect types.Dialect, b *strings.Builder, position int) {
 	if dialect == types.DIALECT_POSTGRESQL {
-		bw := copy(b, grammar.Symbols[grammar.SYM_DOLLAR])
-		bw += copy(b[bw:], []byte(strconv.Itoa(position+1)))
-		return bw
+		b.Write(grammar.Symbols[grammar.SYM_DOLLAR])
+		b.WriteString(strconv.Itoa(position + 1))
+	} else {
+		b.Write(grammar.Symbols[grammar.SYM_QUEST_MARK])
 	}
-	return copy(b, grammar.Symbols[grammar.SYM_QUEST_MARK])
 }

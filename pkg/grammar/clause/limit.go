@@ -7,6 +7,8 @@
 package clause
 
 import (
+	"strings"
+
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	pkgscanner "github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
@@ -38,20 +40,18 @@ func (lc *Limit) Size(scanner types.Scanner) int {
 	return size
 }
 
-func (lc *Limit) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
-	bw := 0
-	bw += copy(b[bw:], scanner.FormatOptions().SeparateClauseWith)
-	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_LIMIT])
-	bw += pkgscanner.ScanInterpolationMarker(scanner.Dialect(), b[bw:], *curArg)
+func (lc *Limit) Scan(scanner types.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
+	b.WriteString(scanner.FormatOptions().SeparateClauseWith)
+	b.Write(grammar.Symbols[grammar.SYM_LIMIT])
+	pkgscanner.ScanInterpolationMarker(scanner.Dialect(), b, *curArg)
 	args[*curArg] = lc.limit
 	*curArg++
 	if lc.offset != nil {
-		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_OFFSET])
-		bw += pkgscanner.ScanInterpolationMarker(scanner.Dialect(), b[bw:], *curArg)
+		b.Write(grammar.Symbols[grammar.SYM_OFFSET])
+		pkgscanner.ScanInterpolationMarker(scanner.Dialect(), b, *curArg)
 		args[*curArg] = *lc.offset
 		*curArg++
 	}
-	return bw
 }
 
 // NewLimit returns a new Limit struct

@@ -7,6 +7,7 @@
 package clause_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/jaypipes/sqlb"
@@ -62,11 +63,11 @@ func TestDerived(t *testing.T) {
 		expArgc := len(test.qargs)
 		assert.Equal(expArgc, test.c.ArgCount())
 
-		b := make([]byte, s)
+		var b strings.Builder
+		b.Grow(s)
 		curArg := 0
-		written := test.c.Scan(scanner.DefaultScanner, b, test.qargs, &curArg)
+		test.c.Scan(scanner.DefaultScanner, &b, test.qargs, &curArg)
 
-		assert.Equal(written, s)
-		assert.Equal(test.qs, string(b))
+		assert.Equal(test.qs, b.String())
 	}
 }

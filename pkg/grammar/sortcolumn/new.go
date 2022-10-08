@@ -7,6 +7,8 @@
 package sortcolumn
 
 import (
+	"strings"
+
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
@@ -31,15 +33,13 @@ func (sc *SortColumn) Size(scanner types.Scanner) int {
 	return size
 }
 
-func (sc *SortColumn) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
+func (sc *SortColumn) Scan(scanner types.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
 	reset := sc.p.DisableAliasScan()
 	defer reset()
-	bw := 0
-	bw += sc.p.Scan(scanner, b[bw:], args, curArg)
+	sc.p.Scan(scanner, b, args, curArg)
 	if !sc.asc {
-		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_DESC])
+		b.Write(grammar.Symbols[grammar.SYM_DESC])
 	}
-	return bw
 }
 
 func (sc *SortColumn) IsAsc() bool {

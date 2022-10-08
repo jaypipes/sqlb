@@ -7,6 +7,8 @@
 package scanner
 
 import (
+	"strings"
+
 	"github.com/jaypipes/sqlb/pkg/types"
 )
 
@@ -19,12 +21,11 @@ type sqlScanner struct {
 	format  *types.FormatOptions
 }
 
-func (s *sqlScanner) Scan(b []byte, args []interface{}, scannables ...types.Scannable) {
+func (s *sqlScanner) Scan(b *strings.Builder, args []interface{}, scannables ...types.Scannable) {
 	curArg := 0
-	bw := 0
-	bw += copy(b[bw:], s.format.PrefixWith)
+	b.WriteString(s.format.PrefixWith)
 	for _, scannable := range scannables {
-		bw += scannable.Scan(s, b[bw:], args, &curArg)
+		scannable.Scan(s, b, args, &curArg)
 	}
 }
 
@@ -50,9 +51,10 @@ func (s *sqlScanner) Size(elements ...types.Element) *types.ElementSizes {
 func (s *sqlScanner) StringArgs(el types.Element) (string, []interface{}) {
 	sizes := s.Size(el)
 	qargs := make([]interface{}, sizes.ArgCount)
-	b := make([]byte, sizes.BufferSize)
-	s.Scan(b, qargs, el)
-	return string(b), qargs
+	var b strings.Builder
+	b.Grow(sizes.BufferSize)
+	s.Scan(&b, qargs, el)
+	return b.String(), qargs
 }
 
 func (s *sqlScanner) Dialect() types.Dialect {

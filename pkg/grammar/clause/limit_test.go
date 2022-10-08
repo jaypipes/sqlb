@@ -7,6 +7,7 @@
 package clause_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/jaypipes/sqlb/pkg/grammar/clause"
@@ -32,12 +33,12 @@ func TestLimitClause(t *testing.T) {
 	assert.Equal(expLen, size)
 
 	args := make([]interface{}, expArgCount)
-	b := make([]byte, size)
+	var b strings.Builder
+	b.Grow(size)
 	curArg := 0
-	written := lc.Scan(scanner.DefaultScanner, b, args, &curArg)
+	lc.Scan(scanner.DefaultScanner, &b, args, &curArg)
 
-	assert.Equal(size, written)
-	assert.Equal(exp, string(b))
+	assert.Equal(exp, b.String())
 	assert.Equal(20, args[0])
 }
 
@@ -59,12 +60,12 @@ func TestLimitClauseWithOffset(t *testing.T) {
 	assert.Equal(expLen, size)
 
 	args := make([]interface{}, expArgCount)
-	b := make([]byte, size)
+	var b strings.Builder
+	b.Grow(size)
 	curArg := 0
-	written := lc.Scan(scanner.DefaultScanner, b, args, &curArg)
+	lc.Scan(scanner.DefaultScanner, &b, args, &curArg)
 
-	assert.Equal(size, written)
-	assert.Equal(exp, string(b))
+	assert.Equal(exp, b.String())
 	assert.Equal(20, args[0])
 	assert.Equal(10, args[1])
 }

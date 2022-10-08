@@ -7,6 +7,8 @@
 package element
 
 import (
+	"strings"
+
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/types"
 )
@@ -34,16 +36,14 @@ func (l *List) Size(scanner types.Scanner) int {
 	return size + (len(grammar.Symbols[grammar.SYM_COMMA_WS]) * (nels - 1)) // the commas...
 }
 
-func (l *List) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
-	bw := 0
+func (l *List) Scan(scanner types.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
 	nels := len(l.elements)
 	for x, el := range l.elements {
-		bw += el.Scan(scanner, b[bw:], args, curArg)
+		el.Scan(scanner, b, args, curArg)
 		if x != (nels - 1) {
-			bw += copy(b[bw:], grammar.Symbols[grammar.SYM_COMMA_WS])
+			b.Write(grammar.Symbols[grammar.SYM_COMMA_WS])
 		}
 	}
-	return bw
 }
 
 // NewList returns a new List struct containing zero or more elements.

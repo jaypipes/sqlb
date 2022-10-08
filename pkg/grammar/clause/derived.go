@@ -7,6 +7,8 @@
 package clause
 
 import (
+	"strings"
+
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/grammar/identifier"
 	"github.com/jaypipes/sqlb/pkg/grammar/sortcolumn"
@@ -60,14 +62,12 @@ func (dt *DerivedTable) Size(scanner types.Scanner) int {
 	return size
 }
 
-func (dt *DerivedTable) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
-	bw := 0
-	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_LPAREN])
-	bw += dt.from.Scan(scanner, b[bw:], args, curArg)
-	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_RPAREN])
-	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_AS])
-	bw += copy(b[bw:], dt.Alias)
-	return bw
+func (dt *DerivedTable) Scan(scanner types.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
+	b.Write(grammar.Symbols[grammar.SYM_LPAREN])
+	dt.from.Scan(scanner, b, args, curArg)
+	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+	b.Write(grammar.Symbols[grammar.SYM_AS])
+	b.WriteString(dt.Alias)
 }
 
 // NewDerivedTable returns a new DerivedTable struct representing a SELECT in
@@ -168,20 +168,18 @@ func (dc *DerivedColumn) Size(scanner types.Scanner) int {
 	return size
 }
 
-func (dc *DerivedColumn) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
-	bw := 0
-	bw += copy(b[bw:], dc.dt.Alias)
-	bw += copy(b[bw:], grammar.Symbols[grammar.SYM_PERIOD])
+func (dc *DerivedColumn) Scan(scanner types.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
+	b.WriteString(dc.dt.Alias)
+	b.Write(grammar.Symbols[grammar.SYM_PERIOD])
 	if dc.c.Alias != "" {
-		bw += copy(b[bw:], dc.c.Alias)
+		b.WriteString(dc.c.Alias)
 	} else {
-		bw += copy(b[bw:], dc.c.Name)
+		b.WriteString(dc.c.Name)
 	}
 	if dc.Alias != "" {
-		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_AS])
-		bw += copy(b[bw:], dc.Alias)
+		b.Write(grammar.Symbols[grammar.SYM_AS])
+		b.WriteString(dc.Alias)
 	}
-	return bw
 }
 
 func (dc *DerivedColumn) As(alias string) types.Projection {

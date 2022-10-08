@@ -8,6 +8,7 @@ package identifier
 
 import (
 	"sort"
+	"strings"
 
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/schema"
@@ -58,13 +59,12 @@ func (t *Table) Size(scanner types.Scanner) int {
 	return size
 }
 
-func (t *Table) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
-	bw := copy(b, t.Name)
+func (t *Table) Scan(scanner types.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
+	b.WriteString(t.Name)
 	if t.Alias != "" {
-		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_AS])
-		bw += copy(b[bw:], t.Alias)
+		b.Write(grammar.Symbols[grammar.SYM_AS])
+		b.WriteString(t.Alias)
 	}
-	return bw
 }
 
 func (t *Table) As(alias string) *Table {

@@ -7,6 +7,8 @@
 package clause
 
 import (
+	"strings"
+
 	"github.com/jaypipes/sqlb/pkg/grammar"
 	"github.com/jaypipes/sqlb/pkg/grammar/expression"
 	"github.com/jaypipes/sqlb/pkg/types"
@@ -54,23 +56,21 @@ func (j *Join) Size(scanner types.Scanner) int {
 	return size
 }
 
-func (j *Join) Scan(scanner types.Scanner, b []byte, args []interface{}, curArg *int) int {
-	bw := 0
-	bw += copy(b[bw:], scanner.FormatOptions().SeparateClauseWith)
+func (j *Join) Scan(scanner types.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
+	b.WriteString(scanner.FormatOptions().SeparateClauseWith)
 	switch j.joinType {
 	case types.JOIN_INNER:
-		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_JOIN])
+		b.Write(grammar.Symbols[grammar.SYM_JOIN])
 	case types.JOIN_OUTER:
-		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_LEFT_JOIN])
+		b.Write(grammar.Symbols[grammar.SYM_LEFT_JOIN])
 	case types.JOIN_CROSS:
-		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_CROSS_JOIN])
+		b.Write(grammar.Symbols[grammar.SYM_CROSS_JOIN])
 	}
-	bw += j.right.Scan(scanner, b[bw:], args, curArg)
+	j.right.Scan(scanner, b, args, curArg)
 	if j.on != nil {
-		bw += copy(b[bw:], grammar.Symbols[grammar.SYM_ON])
-		bw += j.on.Scan(scanner, b[bw:], args, curArg)
+		b.Write(grammar.Symbols[grammar.SYM_ON])
+		j.on.Scan(scanner, b, args, curArg)
 	}
-	return bw
 }
 
 func InnerJoin(left types.Selection, right types.Selection, on *expression.Expression) *Join {

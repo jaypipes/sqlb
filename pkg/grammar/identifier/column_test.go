@@ -7,6 +7,7 @@
 package identifier_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/jaypipes/sqlb"
@@ -27,11 +28,11 @@ func TestC(t *testing.T) {
 	s := c.Size(scanner.DefaultScanner)
 	assert.Equal(expLen, s)
 
-	b := make([]byte, s)
-	written := c.Scan(scanner.DefaultScanner, b, nil, nil)
+	var b strings.Builder
+	b.Grow(s)
+	c.Scan(scanner.DefaultScanner, &b, nil, nil)
 
-	assert.Equal(written, s)
-	assert.Equal(exp, string(b))
+	assert.Equal(exp, b.String())
 }
 
 func TestColumnWithTableAlias(t *testing.T) {
@@ -46,11 +47,11 @@ func TestColumnWithTableAlias(t *testing.T) {
 	s := c.Size(scanner.DefaultScanner)
 	assert.Equal(expLen, s)
 
-	b := make([]byte, s)
-	written := c.Scan(scanner.DefaultScanner, b, nil, nil)
+	var b strings.Builder
+	b.Grow(s)
+	c.Scan(scanner.DefaultScanner, &b, nil, nil)
 
-	assert.Equal(written, s)
-	assert.Equal(exp, string(b))
+	assert.Equal(exp, b.String())
 }
 
 func TestColumnAlias(t *testing.T) {
@@ -65,9 +66,9 @@ func TestColumnAlias(t *testing.T) {
 	s := c.Size(scanner.DefaultScanner)
 	assert.Equal(expLen, s)
 
-	b := make([]byte, s)
-	written := c.Scan(scanner.DefaultScanner, b, nil, nil)
+	var b strings.Builder
+	b.Grow(s)
+	c.Scan(scanner.DefaultScanner, &b, nil, nil)
 
-	assert.Equal(written, s)
-	assert.Equal(exp, string(b))
+	assert.Equal(exp, b.String())
 }
