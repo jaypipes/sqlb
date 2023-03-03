@@ -157,7 +157,7 @@ func CountDistinct(p types.Projection) types.Projection {
 	}
 }
 
-func Cast(p types.Projection, stype grammar.SqlType) types.Projection {
+func Cast(p types.Projection, stype grammar.SQLType) types.Projection {
 	si := make([]grammar.Symbol, len(grammar.FunctionScanTable(grammar.FUNC_CAST)))
 	copy(si, grammar.FunctionScanTable(grammar.FUNC_CAST))
 	// Replace the placeholder with the SQL type's appropriate []byte

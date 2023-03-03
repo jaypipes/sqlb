@@ -6,10 +6,10 @@
 
 package grammar
 
-type SqlType int
+type SQLType int
 
 const (
-	SQL_TYPE_CHAR SqlType = iota
+	SQL_TYPE_CHAR SQLType = iota
 	SQL_TYPE_INT
 	SQL_TYPE_FLOAT
 	SQL_TYPE_DECIMAL
@@ -19,7 +19,7 @@ const (
 )
 
 var (
-	sqlTypeToSymbol = map[SqlType]Symbol{
+	sqlTypeToSymbol = map[SQLType]Symbol{
 		SQL_TYPE_CHAR:    SYM_TYPE_CHAR,
 		SQL_TYPE_VARCHAR: SYM_TYPE_VARCHAR,
 		SQL_TYPE_INT:     SYM_TYPE_INT,
@@ -30,6 +30,6 @@ var (
 	}
 )
 
-func SQLTypeToSymbol(st SqlType) Symbol {
+func SQLTypeToSymbol(st SQLType) Symbol {
 	return sqlTypeToSymbol[st]
 }
