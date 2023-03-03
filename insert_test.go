@@ -9,6 +9,7 @@ package sqlb
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/errors"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
 	"github.com/stretchr/testify/assert"
@@ -30,12 +31,12 @@ func TestInsertQuery(t *testing.T) {
 		{
 			name: "Values missing",
 			q:    Insert(users, nil),
-			qe:   ERR_INSERT_NO_VALUES,
+			qe:   errors.NoValues,
 		},
 		{
 			name: "Unknown column",
 			q:    Insert(users, map[string]interface{}{"unknown": 1}),
-			qe:   ERR_INSERT_UNKNOWN_COLUMN,
+			qe:   errors.UnknownColumn,
 		},
 		{
 			name:  "Simple INSERT",

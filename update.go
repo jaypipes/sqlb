@@ -52,10 +52,10 @@ func (q *UpdateQuery) Where(e *expression.Expression) *UpdateQuery {
 // returns an UpdateQuery that will produce an UPDATE SQL statement
 func Update(t *identifier.Table, values map[string]interface{}) *UpdateQuery {
 	if t == nil {
-		return &UpdateQuery{e: errors.InvalidUpdateNoTarget}
+		return &UpdateQuery{e: errors.NoTargetTable}
 	}
 	if len(values) == 0 {
-		return &UpdateQuery{e: errors.InvalidUpdateNoValues}
+		return &UpdateQuery{e: errors.NoValues}
 	}
 
 	// Make sure all keys in the map point to actual columns in the target
@@ -66,7 +66,7 @@ func Update(t *identifier.Table, values map[string]interface{}) *UpdateQuery {
 	for k, v := range values {
 		c := t.C(k)
 		if c == nil {
-			return &UpdateQuery{e: errors.InvalidUpdateUnknownColumn}
+			return &UpdateQuery{e: errors.UnknownColumn}
 		}
 		cols[x] = c
 		vals[x] = v

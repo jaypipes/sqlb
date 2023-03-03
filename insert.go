@@ -1,22 +1,16 @@
-//
 // Use and distribution licensed under the Apache license version 2.
 //
 // See the COPYING file in the root project directory for full text.
-//
+
 package sqlb
 
 import (
-	"errors"
 	"strings"
 
+	"github.com/jaypipes/sqlb/pkg/errors"
 	"github.com/jaypipes/sqlb/pkg/grammar/identifier"
 	"github.com/jaypipes/sqlb/pkg/grammar/statement"
 	"github.com/jaypipes/sqlb/pkg/types"
-)
-
-var (
-	ERR_INSERT_NO_VALUES      = errors.New("No values supplied.")
-	ERR_INSERT_UNKNOWN_COLUMN = errors.New("Received an unknown column.")
 )
 
 type InsertQuery struct {
@@ -48,7 +42,7 @@ func (q *InsertQuery) Size(s types.Scanner) int {
 // returns an InsertQuery that will produce an INSERT SQL statement
 func Insert(t *identifier.Table, values map[string]interface{}) *InsertQuery {
 	if len(values) == 0 {
-		return &InsertQuery{e: ERR_INSERT_NO_VALUES}
+		return &InsertQuery{e: errors.NoValues}
 	}
 
 	// Make sure all keys in the map point to actual columns in the target
@@ -59,7 +53,7 @@ func Insert(t *identifier.Table, values map[string]interface{}) *InsertQuery {
 	for k, v := range values {
 		c := t.C(k)
 		if c == nil {
-			return &InsertQuery{e: ERR_INSERT_UNKNOWN_COLUMN}
+			return &InsertQuery{e: errors.UnknownColumn}
 		}
 		cols[x] = c
 		vals[x] = v

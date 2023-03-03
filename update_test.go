@@ -31,17 +31,17 @@ func TestUpdateQuery(t *testing.T) {
 		{
 			name: "Values missing",
 			q:    Update(users, nil),
-			qe:   errors.InvalidUpdateNoValues,
+			qe:   errors.NoValues,
 		},
 		{
 			name: "Target table missing",
 			q:    Update(nil, map[string]interface{}{"name": "foo"}),
-			qe:   errors.InvalidUpdateNoTarget,
+			qe:   errors.NoTargetTable,
 		},
 		{
 			name: "Unknown column",
 			q:    Update(users, map[string]interface{}{"unknown": 1}),
-			qe:   errors.InvalidUpdateUnknownColumn,
+			qe:   errors.UnknownColumn,
 		},
 		{
 			name:  "UPDATE no WHERE",
