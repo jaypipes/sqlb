@@ -1,23 +1,17 @@
-//
 // Use and distribution licensed under the Apache license version 2.
 //
 // See the COPYING file in the root project directory for full text.
-//
 package sqlb
 
 import (
-	"errors"
 	"strings"
 
+	"github.com/jaypipes/sqlb/pkg/errors"
 	"github.com/jaypipes/sqlb/pkg/grammar/expression"
 	"github.com/jaypipes/sqlb/pkg/grammar/identifier"
 	"github.com/jaypipes/sqlb/pkg/grammar/statement"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
-)
-
-var (
-	ERR_DELETE_NO_TARGET = errors.New("No target table supplied.")
 )
 
 type DeleteQuery struct {
@@ -57,7 +51,7 @@ func (q *DeleteQuery) Where(e *expression.Expression) *DeleteQuery {
 // statement
 func Delete(t *identifier.Table) *DeleteQuery {
 	if t == nil {
-		return &DeleteQuery{e: ERR_DELETE_NO_TARGET}
+		return &DeleteQuery{e: errors.NoTargetTable}
 	}
 
 	return &DeleteQuery{

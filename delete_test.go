@@ -9,6 +9,7 @@ package sqlb
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/errors"
 	"github.com/jaypipes/sqlb/pkg/grammar/expression"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
@@ -32,7 +33,7 @@ func TestDeleteQuery(t *testing.T) {
 		{
 			name: "No target table",
 			q:    Delete(nil),
-			qe:   ERR_DELETE_NO_TARGET,
+			qe:   errors.NoTargetTable,
 		},
 		{
 			name: "DELETE all rows",
