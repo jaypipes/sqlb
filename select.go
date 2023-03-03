@@ -7,10 +7,10 @@
 package sqlb
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
+	"github.com/jaypipes/sqlb/pkg/errors"
 	"github.com/jaypipes/sqlb/pkg/grammar/clause"
 	"github.com/jaypipes/sqlb/pkg/grammar/element"
 	"github.com/jaypipes/sqlb/pkg/grammar/expression"
@@ -18,11 +18,6 @@ import (
 	"github.com/jaypipes/sqlb/pkg/grammar/identifier"
 	"github.com/jaypipes/sqlb/pkg/grammar/statement"
 	"github.com/jaypipes/sqlb/pkg/types"
-)
-
-var (
-	ERR_JOIN_INVALID_NO_SELECT      = errors.New("Unable to join selection. There was no selection to join to.")
-	ERR_JOIN_INVALID_UNKNOWN_TARGET = errors.New("Unable to join selection. Target selection was not found.")
 )
 
 type SelectQuery struct {
@@ -155,7 +150,7 @@ func (q *SelectQuery) doJoin(
 	on *expression.Expression,
 ) *SelectQuery {
 	if q.sel == nil || len(q.sel.Selections()) == 0 {
-		q.e = ERR_JOIN_INVALID_NO_SELECT
+		q.e = errors.InvalidJoinNoSelect
 		return q
 	}
 
@@ -233,7 +228,7 @@ func (q *SelectQuery) doJoin(
 		// SelectStatement
 	}
 	if left == nil {
-		q.e = ERR_JOIN_INVALID_UNKNOWN_TARGET
+		q.e = errors.InvalidJoinUnknownTarget
 		return q
 	}
 	jc := clause.NewJoin(jt, left, right, on)

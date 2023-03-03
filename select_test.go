@@ -1,14 +1,13 @@
-//
 // Use and distribution licensed under the Apache license version 2.
 //
 // See the COPYING file in the root project directory for full text.
-//
 package sqlb
 
 import (
 	"fmt"
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/errors"
 	"github.com/jaypipes/sqlb/pkg/grammar/expression"
 	"github.com/jaypipes/sqlb/pkg/grammar/function"
 	"github.com/jaypipes/sqlb/pkg/scanner"
@@ -111,12 +110,12 @@ func TestSelectQuery(t *testing.T) {
 		{
 			name: "Bad JOIN. Can't Join() against no selection",
 			q:    Select().Join(users, expression.Equal(colArticleAuthor, colUserId)),
-			qe:   ERR_JOIN_INVALID_NO_SELECT,
+			qe:   errors.InvalidJoinNoSelect,
 		},
 		{
 			name: "Bad JOIN. Can't Join() against a selection that isn't in the containing SELECT",
 			q:    Select(articleStates).Join(users, expression.Equal(colArticleAuthor, colUserId)),
-			qe:   ERR_JOIN_INVALID_UNKNOWN_TARGET,
+			qe:   errors.InvalidJoinUnknownTarget,
 		},
 		{
 			name: "Simple INNER JOIN",
