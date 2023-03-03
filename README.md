@@ -1,4 +1,4 @@
-# sqlb [![Build Status](https://github.com/jaypipes/sqlb/actions/workflows/on-push.yaml/badge.svg?branch=main)
+# sqlb ![Build Status](https://github.com/jaypipes/sqlb/actions/workflows/on-push.yaml/badge.svg?branch=main)
 
 `sqlb` is a Golang library designed for efficiently constructing SQL
 expressions. Instead of hand-constructing strings containing raw SQL, users of
