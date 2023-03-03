@@ -1,25 +1,18 @@
-//
 // Use and distribution licensed under the Apache license version 2.
 //
 // See the COPYING file in the root project directory for full text.
-//
+
 package sqlb
 
 import (
-	"errors"
 	"strings"
 
+	"github.com/jaypipes/sqlb/pkg/errors"
 	"github.com/jaypipes/sqlb/pkg/grammar/expression"
 	"github.com/jaypipes/sqlb/pkg/grammar/identifier"
 	"github.com/jaypipes/sqlb/pkg/grammar/statement"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/types"
-)
-
-var (
-	ERR_UPDATE_NO_TARGET      = errors.New("No target table supplied.")
-	ERR_UPDATE_NO_VALUES      = errors.New("No values supplied.")
-	ERR_UPDATE_UNKNOWN_COLUMN = errors.New("Received an unknown column.")
 )
 
 type UpdateQuery struct {
@@ -59,10 +52,10 @@ func (q *UpdateQuery) Where(e *expression.Expression) *UpdateQuery {
 // returns an UpdateQuery that will produce an UPDATE SQL statement
 func Update(t *identifier.Table, values map[string]interface{}) *UpdateQuery {
 	if t == nil {
-		return &UpdateQuery{e: ERR_UPDATE_NO_TARGET}
+		return &UpdateQuery{e: errors.InvalidUpdateNoTarget}
 	}
 	if len(values) == 0 {
-		return &UpdateQuery{e: ERR_UPDATE_NO_VALUES}
+		return &UpdateQuery{e: errors.InvalidUpdateNoValues}
 	}
 
 	// Make sure all keys in the map point to actual columns in the target
@@ -73,7 +66,7 @@ func Update(t *identifier.Table, values map[string]interface{}) *UpdateQuery {
 	for k, v := range values {
 		c := t.C(k)
 		if c == nil {
-			return &UpdateQuery{e: ERR_UPDATE_UNKNOWN_COLUMN}
+			return &UpdateQuery{e: errors.InvalidUpdateUnknownColumn}
 		}
 		cols[x] = c
 		vals[x] = v

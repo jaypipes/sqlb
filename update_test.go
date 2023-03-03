@@ -1,14 +1,13 @@
-//
 // Use and distribution licensed under the Apache license version 2.
 //
 // See the COPYING file in the root project directory for full text.
-//
 
 package sqlb
 
 import (
 	"testing"
 
+	"github.com/jaypipes/sqlb/pkg/errors"
 	"github.com/jaypipes/sqlb/pkg/grammar/expression"
 	"github.com/jaypipes/sqlb/pkg/scanner"
 	"github.com/jaypipes/sqlb/pkg/testutil"
@@ -32,17 +31,17 @@ func TestUpdateQuery(t *testing.T) {
 		{
 			name: "Values missing",
 			q:    Update(users, nil),
-			qe:   ERR_UPDATE_NO_VALUES,
+			qe:   errors.InvalidUpdateNoValues,
 		},
 		{
 			name: "Target table missing",
 			q:    Update(nil, map[string]interface{}{"name": "foo"}),
-			qe:   ERR_UPDATE_NO_TARGET,
+			qe:   errors.InvalidUpdateNoTarget,
 		},
 		{
 			name: "Unknown column",
 			q:    Update(users, map[string]interface{}{"unknown": 1}),
-			qe:   ERR_UPDATE_UNKNOWN_COLUMN,
+			qe:   errors.InvalidUpdateUnknownColumn,
 		},
 		{
 			name:  "UPDATE no WHERE",
