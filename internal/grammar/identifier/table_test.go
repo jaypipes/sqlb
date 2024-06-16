@@ -7,11 +7,10 @@
 package identifier_test
 
 import (
-	"strings"
 	"testing"
 
+	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar/identifier"
-	"github.com/jaypipes/sqlb/internal/scanner"
 	"github.com/jaypipes/sqlb/internal/testutil"
 	"github.com/stretchr/testify/assert"
 )
@@ -24,12 +23,12 @@ func TestTable(t *testing.T) {
 
 	exp := "users"
 	expLen := len(exp)
-	s := users.Size(scanner.DefaultScanner)
+
+	b := builder.New()
+	s := users.Size(b)
 	assert.Equal(expLen, s)
 
-	var b strings.Builder
-	b.Grow(s)
-	users.Scan(scanner.DefaultScanner, &b, nil, nil)
+	users.Scan(b, nil, nil)
 
 	assert.Equal(exp, b.String())
 }
@@ -42,12 +41,12 @@ func TestTableAlias(t *testing.T) {
 
 	exp := "users AS u"
 	expLen := len(exp)
-	s := u.Size(scanner.DefaultScanner)
+
+	b := builder.New()
+	s := u.Size(b)
 	assert.Equal(expLen, s)
 
-	var b strings.Builder
-	b.Grow(s)
-	u.Scan(scanner.DefaultScanner, &b, nil, nil)
+	u.Scan(b, nil, nil)
 
 	assert.Equal(exp, b.String())
 }

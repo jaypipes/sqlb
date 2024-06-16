@@ -7,11 +7,9 @@
 package clause
 
 import (
-	"strings"
-
+	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar"
 	"github.com/jaypipes/sqlb/internal/grammar/expression"
-	"github.com/jaypipes/sqlb/internal/scanner"
 )
 
 type Having struct {
@@ -34,29 +32,29 @@ func (c *Having) ArgCount() int {
 	return argc
 }
 
-func (c *Having) Size(s *scanner.Scanner) int {
+func (c *Having) Size(b *builder.Builder) int {
 	size := 0
 	nconditions := len(c.conditions)
 	if nconditions > 0 {
-		size += len(s.Format.SeparateClauseWith)
+		size += len(b.Format.SeparateClauseWith)
 		size += len(grammar.Symbols[grammar.SYM_HAVING])
 		size += len(grammar.Symbols[grammar.SYM_AND]) * (nconditions - 1)
 		for _, condition := range c.conditions {
-			size += condition.Size(s)
+			size += condition.Size(b)
 		}
 	}
 	return size
 }
 
-func (c *Having) Scan(s *scanner.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
+func (c *Having) Scan(b *builder.Builder, args []interface{}, curArg *int) {
 	if len(c.conditions) > 0 {
-		b.WriteString(s.Format.SeparateClauseWith)
+		b.WriteString(b.Format.SeparateClauseWith)
 		b.Write(grammar.Symbols[grammar.SYM_HAVING])
 		for x, condition := range c.conditions {
 			if x > 0 {
 				b.Write(grammar.Symbols[grammar.SYM_AND])
 			}
-			condition.Scan(s, b, args, curArg)
+			condition.Scan(b, args, curArg)
 		}
 	}
 }

@@ -7,11 +7,10 @@
 package element_test
 
 import (
-	"strings"
 	"testing"
 
+	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar/element"
-	"github.com/jaypipes/sqlb/internal/scanner"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,7 +19,8 @@ func TestValue(t *testing.T) {
 
 	v := element.NewValue(nil, "foo")
 
-	s := v.Size(scanner.DefaultScanner)
+	b := builder.New()
+	s := v.Size(b)
 	// Due to dialect handling, we can't include interpolation markers in the
 	// size calculation, so size() always returns 0 for non-aliased values.
 	assert.Equal(0, s)
@@ -29,10 +29,8 @@ func TestValue(t *testing.T) {
 	assert.Equal(1, argc)
 
 	args := make([]interface{}, 1)
-	var b strings.Builder
-	b.Grow(s)
 	curArg := 0
-	v.Scan(scanner.DefaultScanner, &b, args, &curArg)
+	v.Scan(b, args, &curArg)
 
 	exp := "?"
 

@@ -7,11 +7,10 @@
 package identifier_test
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/jaypipes/sqlb"
-	"github.com/jaypipes/sqlb/internal/scanner"
+	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/testutil"
 	"github.com/stretchr/testify/assert"
 )
@@ -23,14 +22,14 @@ func TestC(t *testing.T) {
 	users := sqlb.T(m, "users")
 	c := users.C("name")
 
+	b := builder.New()
+
 	exp := "users.name"
 	expLen := len(exp)
-	s := c.Size(scanner.DefaultScanner)
+	s := c.Size(b)
 	assert.Equal(expLen, s)
 
-	var b strings.Builder
-	b.Grow(s)
-	c.Scan(scanner.DefaultScanner, &b, nil, nil)
+	c.Scan(b, nil, nil)
 
 	assert.Equal(exp, b.String())
 }
@@ -42,14 +41,14 @@ func TestColumnWithTableAlias(t *testing.T) {
 	users := sqlb.T(m, "users").As("u")
 	c := users.C("name")
 
+	b := builder.New()
+
 	exp := "u.name"
 	expLen := len(exp)
-	s := c.Size(scanner.DefaultScanner)
+	s := c.Size(b)
 	assert.Equal(expLen, s)
 
-	var b strings.Builder
-	b.Grow(s)
-	c.Scan(scanner.DefaultScanner, &b, nil, nil)
+	c.Scan(b, nil, nil)
 
 	assert.Equal(exp, b.String())
 }
@@ -61,14 +60,14 @@ func TestColumnAlias(t *testing.T) {
 	users := sqlb.T(m, "users")
 	c := users.C("name").As("user_name")
 
+	b := builder.New()
+
 	exp := "users.name AS user_name"
 	expLen := len(exp)
-	s := c.Size(scanner.DefaultScanner)
+	s := c.Size(b)
 	assert.Equal(expLen, s)
 
-	var b strings.Builder
-	b.Grow(s)
-	c.Scan(scanner.DefaultScanner, &b, nil, nil)
+	c.Scan(b, nil, nil)
 
 	assert.Equal(exp, b.String())
 }

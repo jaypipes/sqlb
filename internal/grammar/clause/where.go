@@ -7,11 +7,9 @@
 package clause
 
 import (
-	"strings"
-
+	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar"
 	"github.com/jaypipes/sqlb/internal/grammar/expression"
-	"github.com/jaypipes/sqlb/internal/scanner"
 )
 
 // Where represents the SQL WHERE clause
@@ -31,29 +29,29 @@ func (w *Where) ArgCount() int {
 	return argc
 }
 
-func (w *Where) Size(s *scanner.Scanner) int {
+func (w *Where) Size(b *builder.Builder) int {
 	size := 0
 	nfilters := len(w.filters)
 	if nfilters > 0 {
-		size += len(s.Format.SeparateClauseWith)
+		size += len(b.Format.SeparateClauseWith)
 		size += len(grammar.Symbols[grammar.SYM_WHERE])
 		size += len(grammar.Symbols[grammar.SYM_AND]) * (nfilters - 1)
 		for _, filter := range w.filters {
-			size += filter.Size(s)
+			size += filter.Size(b)
 		}
 	}
 	return size
 }
 
-func (w *Where) Scan(s *scanner.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
+func (w *Where) Scan(b *builder.Builder, args []interface{}, curArg *int) {
 	if len(w.filters) > 0 {
-		b.WriteString(s.Format.SeparateClauseWith)
+		b.WriteString(b.Format.SeparateClauseWith)
 		b.Write(grammar.Symbols[grammar.SYM_WHERE])
 		for x, filter := range w.filters {
 			if x > 0 {
 				b.Write(grammar.Symbols[grammar.SYM_AND])
 			}
-			filter.Scan(s, b, args, curArg)
+			filter.Scan(b, args, curArg)
 		}
 	}
 }

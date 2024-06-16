@@ -7,15 +7,13 @@
 package sortcolumn
 
 import (
-	"strings"
-
+	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar"
-	"github.com/jaypipes/sqlb/internal/scanner"
 )
 
 // SortColumn describes a column listed in the ORDER BY clause
 type SortColumn struct {
-	p   scanner.Projection
+	p   builder.Projection
 	asc bool
 }
 
@@ -23,20 +21,20 @@ func (sc *SortColumn) ArgCount() int {
 	return sc.p.ArgCount()
 }
 
-func (sc *SortColumn) Size(s *scanner.Scanner) int {
+func (sc *SortColumn) Size(b *builder.Builder) int {
 	reset := sc.p.DisableAliasScan()
 	defer reset()
-	size := sc.p.Size(s)
+	size := sc.p.Size(b)
 	if !sc.asc {
 		size += len(grammar.Symbols[grammar.SYM_DESC])
 	}
 	return size
 }
 
-func (sc *SortColumn) Scan(s *scanner.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
+func (sc *SortColumn) Scan(b *builder.Builder, args []interface{}, curArg *int) {
 	reset := sc.p.DisableAliasScan()
 	defer reset()
-	sc.p.Scan(s, b, args, curArg)
+	sc.p.Scan(b, args, curArg)
 	if !sc.asc {
 		b.Write(grammar.Symbols[grammar.SYM_DESC])
 	}
@@ -48,7 +46,7 @@ func (sc *SortColumn) IsAsc() bool {
 
 // NewAsc returns a new SortColumn on a supplied projection and ascending sort
 // order.
-func NewAsc(p scanner.Projection) scanner.Sortable {
+func NewAsc(p builder.Projection) builder.Sortable {
 	return &SortColumn{
 		p:   p,
 		asc: true,
@@ -57,7 +55,7 @@ func NewAsc(p scanner.Projection) scanner.Sortable {
 
 // NewDesc returns a new SortColumn on a supplied projection and descending
 // sort order.
-func NewDesc(p scanner.Projection) scanner.Sortable {
+func NewDesc(p builder.Projection) builder.Sortable {
 	return &SortColumn{
 		p:   p,
 		asc: false,

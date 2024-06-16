@@ -7,20 +7,18 @@
 package statement_test
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/jaypipes/sqlb"
+	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar/clause"
 	"github.com/jaypipes/sqlb/internal/grammar/element"
 	"github.com/jaypipes/sqlb/internal/grammar/expression"
 	"github.com/jaypipes/sqlb/internal/grammar/function"
 	"github.com/jaypipes/sqlb/internal/grammar/statement"
-	"github.com/jaypipes/sqlb/internal/scanner"
 	"github.com/jaypipes/sqlb/internal/testutil"
-	"github.com/jaypipes/sqlb/types"
 )
 
 func TestSelectStatement(t *testing.T) {
@@ -47,7 +45,7 @@ func TestSelectStatement(t *testing.T) {
 		{
 			name: "A literal value",
 			s: statement.NewSelect(
-				[]scanner.Projection{element.NewValue(nil, 1)},
+				[]builder.Projection{element.NewValue(nil, 1)},
 				nil, nil, nil, nil, nil, nil, nil,
 			),
 			qs:    "SELECT ?",
@@ -56,7 +54,7 @@ func TestSelectStatement(t *testing.T) {
 		{
 			name: "A literal value aliased",
 			s: statement.NewSelect(
-				[]scanner.Projection{element.NewValue(nil, 1).As("foo")},
+				[]builder.Projection{element.NewValue(nil, 1).As("foo")},
 				nil, nil, nil, nil, nil, nil, nil,
 			),
 			qs:    "SELECT ? AS foo",
@@ -65,7 +63,7 @@ func TestSelectStatement(t *testing.T) {
 		{
 			name: "Two literal values",
 			s: statement.NewSelect(
-				[]scanner.Projection{
+				[]builder.Projection{
 					element.NewValue(nil, 1),
 					element.NewValue(nil, 2),
 				},
@@ -77,8 +75,8 @@ func TestSelectStatement(t *testing.T) {
 		{
 			name: "Table and column",
 			s: statement.NewSelect(
-				[]scanner.Projection{colUserName},
-				[]scanner.Selection{users},
+				[]builder.Projection{colUserName},
+				[]builder.Selection{users},
 				nil, nil, nil, nil, nil, nil,
 			),
 			qs: "SELECT users.name FROM users",
@@ -86,10 +84,10 @@ func TestSelectStatement(t *testing.T) {
 		{
 			name: "aliased Table and Column",
 			s: statement.NewSelect(
-				[]scanner.Projection{
+				[]builder.Projection{
 					users.As("u").C("name"),
 				},
-				[]scanner.Selection{users.As("u")},
+				[]builder.Selection{users.As("u")},
 				nil, nil, nil, nil, nil, nil,
 			),
 			qs: "SELECT u.name FROM users AS u",
@@ -97,8 +95,8 @@ func TestSelectStatement(t *testing.T) {
 		{
 			name: "Table and multiple Column",
 			s: statement.NewSelect(
-				[]scanner.Projection{colUserId, colUserName},
-				[]scanner.Selection{users},
+				[]builder.Projection{colUserId, colUserName},
+				[]builder.Selection{users},
 				nil, nil, nil, nil, nil, nil,
 			),
 			qs: "SELECT users.id, users.name FROM users",
@@ -106,8 +104,8 @@ func TestSelectStatement(t *testing.T) {
 		{
 			name: "Simple WHERE",
 			s: statement.NewSelect(
-				[]scanner.Projection{colUserName},
-				[]scanner.Selection{users},
+				[]builder.Projection{colUserName},
+				[]builder.Selection{users},
 				nil,
 				clause.NewWhere(
 					expression.Equal(colUserName, "foo"),
@@ -120,8 +118,8 @@ func TestSelectStatement(t *testing.T) {
 		{
 			name: "Simple LIMIT",
 			s: statement.NewSelect(
-				[]scanner.Projection{colUserName},
-				[]scanner.Selection{users},
+				[]builder.Projection{colUserName},
+				[]builder.Selection{users},
 				nil, nil, nil, nil, nil,
 				clause.NewLimit(10, nil),
 			),
@@ -131,8 +129,8 @@ func TestSelectStatement(t *testing.T) {
 		{
 			name: "Simple ORDER BY",
 			s: statement.NewSelect(
-				[]scanner.Projection{colUserName},
-				[]scanner.Selection{users},
+				[]builder.Projection{colUserName},
+				[]builder.Selection{users},
 				nil, nil, nil, nil,
 				clause.NewOrderBy(colUserName.Desc()),
 				nil,
@@ -142,8 +140,8 @@ func TestSelectStatement(t *testing.T) {
 		{
 			name: "Simple GROUP BY",
 			s: statement.NewSelect(
-				[]scanner.Projection{colUserName},
-				[]scanner.Selection{users},
+				[]builder.Projection{colUserName},
+				[]builder.Selection{users},
 				nil, nil,
 				clause.NewGroupBy(colUserName),
 				nil, nil, nil,
@@ -153,8 +151,8 @@ func TestSelectStatement(t *testing.T) {
 		{
 			name: "GROUP BY, ORDER BY and LIMIT",
 			s: statement.NewSelect(
-				[]scanner.Projection{colUserName},
-				[]scanner.Selection{users},
+				[]builder.Projection{colUserName},
+				[]builder.Selection{users},
 				nil, nil,
 				clause.NewGroupBy(colUserName),
 				nil,
@@ -167,8 +165,8 @@ func TestSelectStatement(t *testing.T) {
 		{
 			name: "Single JOIN",
 			s: statement.NewSelect(
-				[]scanner.Projection{colArticleId, colUserName.As("author")},
-				[]scanner.Selection{articles},
+				[]builder.Projection{colArticleId, colUserName.As("author")},
+				[]builder.Selection{articles},
 				[]*clause.Join{
 					clause.InnerJoin(
 						articles,
@@ -183,8 +181,8 @@ func TestSelectStatement(t *testing.T) {
 		{
 			name: "Multiple JOINs",
 			s: statement.NewSelect(
-				[]scanner.Projection{colArticleId, colUserName.As("author"), colArticleStateName.As("state")},
-				[]scanner.Selection{articles},
+				[]builder.Projection{colArticleId, colUserName.As("author"), colArticleStateName.As("state")},
+				[]builder.Selection{articles},
 				[]*clause.Join{
 					clause.InnerJoin(
 						articles,
@@ -204,27 +202,27 @@ func TestSelectStatement(t *testing.T) {
 		{
 			name: "COUNT(*) on a table",
 			s: statement.NewSelect(
-				[]scanner.Projection{function.Count(users)},
-				[]scanner.Selection{users},
+				[]builder.Projection{function.Count(users)},
+				[]builder.Selection{users},
 				nil, nil, nil, nil, nil, nil,
 			),
 			qs: "SELECT COUNT(*) FROM users",
 		},
 	}
 	for _, test := range tests {
+		b := builder.New()
+
 		expArgc := len(test.qargs)
 		argc := test.s.ArgCount()
 		assert.Equal(expArgc, argc)
 
 		expLen := len(test.qs)
-		size := test.s.Size(scanner.DefaultScanner)
-		size += scanner.InterpolationLength(types.DialectMySQL, argc)
+		size := test.s.Size(b)
+		size += b.InterpolationLength(argc)
 		assert.Equal(expLen, size)
 
-		var b strings.Builder
-		b.Grow(size)
 		curArg := 0
-		test.s.Scan(scanner.DefaultScanner, &b, test.qargs, &curArg)
+		test.s.Scan(b, test.qargs, &curArg)
 
 		assert.Equal(test.qs, b.String())
 	}

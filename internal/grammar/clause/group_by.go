@@ -7,22 +7,20 @@
 package clause
 
 import (
-	"strings"
-
+	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar"
-	"github.com/jaypipes/sqlb/internal/scanner"
 )
 
 // GroupBy represents the SQL GROUP BY clause
 type GroupBy struct {
-	cols []scanner.Projection
+	cols []builder.Projection
 }
 
-func (gb *GroupBy) Columns() []scanner.Projection {
+func (gb *GroupBy) Columns() []builder.Projection {
 	return gb.cols
 }
 
-func (gb *GroupBy) AddColumn(c scanner.Projection) {
+func (gb *GroupBy) AddColumn(c builder.Projection) {
 	gb.cols = append(gb.cols, c)
 }
 
@@ -31,27 +29,27 @@ func (gb *GroupBy) ArgCount() int {
 	return argc
 }
 
-func (gb *GroupBy) Size(s *scanner.Scanner) int {
+func (gb *GroupBy) Size(b *builder.Builder) int {
 	size := 0
-	size += len(s.Format.SeparateClauseWith)
+	size += len(b.Format.SeparateClauseWith)
 	size += len(grammar.Symbols[grammar.SYM_GROUP_BY])
 	ncols := len(gb.cols)
 	for _, c := range gb.cols {
 		reset := c.DisableAliasScan()
 		defer reset()
-		size += c.Size(s)
+		size += c.Size(b)
 	}
 	return size + (len(grammar.Symbols[grammar.SYM_COMMA_WS]) * (ncols - 1)) // the commas...
 }
 
-func (gb *GroupBy) Scan(s *scanner.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
-	b.WriteString(s.Format.SeparateClauseWith)
+func (gb *GroupBy) Scan(b *builder.Builder, args []interface{}, curArg *int) {
+	b.WriteString(b.Format.SeparateClauseWith)
 	b.Write(grammar.Symbols[grammar.SYM_GROUP_BY])
 	ncols := len(gb.cols)
 	for x, c := range gb.cols {
 		reset := c.DisableAliasScan()
 		defer reset()
-		c.Scan(s, b, args, curArg)
+		c.Scan(b, args, curArg)
 		if x != (ncols - 1) {
 			b.Write(grammar.Symbols[grammar.SYM_COMMA_WS])
 		}
@@ -59,7 +57,7 @@ func (gb *GroupBy) Scan(s *scanner.Scanner, b *strings.Builder, args []interface
 }
 
 // NewGroupBy returns a new GroupBy across one or more projections
-func NewGroupBy(cols ...scanner.Projection) *GroupBy {
+func NewGroupBy(cols ...builder.Projection) *GroupBy {
 	return &GroupBy{
 		cols: cols,
 	}

@@ -7,16 +7,14 @@
 package element
 
 import (
-	"strings"
-
+	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar"
-	"github.com/jaypipes/sqlb/internal/scanner"
 )
 
 // List is a concrete struct wrapper around an array of elements that
 // implements the element interface.
 type List struct {
-	elements []scanner.Element
+	elements []builder.Element
 }
 
 func (l *List) ArgCount() int {
@@ -27,19 +25,19 @@ func (l *List) ArgCount() int {
 	return ac
 }
 
-func (l *List) Size(s *scanner.Scanner) int {
+func (l *List) Size(b *builder.Builder) int {
 	nels := len(l.elements)
 	size := 0
 	for _, el := range l.elements {
-		size += el.Size(s)
+		size += el.Size(b)
 	}
 	return size + (len(grammar.Symbols[grammar.SYM_COMMA_WS]) * (nels - 1)) // the commas...
 }
 
-func (l *List) Scan(s *scanner.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
+func (l *List) Scan(b *builder.Builder, args []interface{}, curArg *int) {
 	nels := len(l.elements)
 	for x, el := range l.elements {
-		el.Scan(s, b, args, curArg)
+		el.Scan(b, args, curArg)
 		if x != (nels - 1) {
 			b.Write(grammar.Symbols[grammar.SYM_COMMA_WS])
 		}
@@ -47,6 +45,6 @@ func (l *List) Scan(s *scanner.Scanner, b *strings.Builder, args []interface{}, 
 }
 
 // NewList returns a new List struct containing zero or more elements.
-func NewList(els ...scanner.Element) *List {
+func NewList(els ...builder.Element) *List {
 	return &List{elements: els}
 }

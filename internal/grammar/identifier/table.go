@@ -8,10 +8,9 @@ package identifier
 
 import (
 	"sort"
-	"strings"
 
+	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar"
-	"github.com/jaypipes/sqlb/internal/scanner"
 	"github.com/jaypipes/sqlb/meta"
 )
 
@@ -39,8 +38,8 @@ func (t *Table) C(name string) *Column {
 	return nil
 }
 
-func (t *Table) Projections() []scanner.Projection {
-	res := make([]scanner.Projection, len(t.columns))
+func (t *Table) Projections() []builder.Projection {
+	res := make([]builder.Projection, len(t.columns))
 	for x, c := range t.columns {
 		res[x] = c
 	}
@@ -51,7 +50,7 @@ func (t *Table) ArgCount() int {
 	return 0
 }
 
-func (t *Table) Size(s *scanner.Scanner) int {
+func (t *Table) Size(b *builder.Builder) int {
 	size := len(t.Name)
 	if t.Alias != "" {
 		size += len(grammar.Symbols[grammar.SYM_AS]) + len(t.Alias)
@@ -59,7 +58,7 @@ func (t *Table) Size(s *scanner.Scanner) int {
 	return size
 }
 
-func (t *Table) Scan(s *scanner.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
+func (t *Table) Scan(b *builder.Builder, args []interface{}, curArg *int) {
 	b.WriteString(t.Name)
 	if t.Alias != "" {
 		b.Write(grammar.Symbols[grammar.SYM_AS])

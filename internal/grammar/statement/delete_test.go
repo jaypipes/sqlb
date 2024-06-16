@@ -7,16 +7,14 @@
 package statement_test
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/jaypipes/sqlb"
+	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar/clause"
 	"github.com/jaypipes/sqlb/internal/grammar/expression"
 	"github.com/jaypipes/sqlb/internal/grammar/statement"
-	"github.com/jaypipes/sqlb/internal/scanner"
 	"github.com/jaypipes/sqlb/internal/testutil"
-	"github.com/jaypipes/sqlb/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -51,19 +49,19 @@ func TestDeleteStatement(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
+		b := builder.New()
+
 		expArgc := len(test.qargs)
 		argc := test.s.ArgCount()
 		assert.Equal(expArgc, argc)
 
 		expLen := len(test.qs)
-		size := test.s.Size(scanner.DefaultScanner)
-		size += scanner.InterpolationLength(types.DialectMySQL, argc)
+		size := test.s.Size(b)
+		size += b.InterpolationLength(argc)
 		assert.Equal(expLen, size)
 
-		var b strings.Builder
-		b.Grow(size)
 		curArg := 0
-		test.s.Scan(scanner.DefaultScanner, &b, test.qargs, &curArg)
+		test.s.Scan(b, test.qargs, &curArg)
 
 		assert.Equal(test.qs, b.String())
 	}

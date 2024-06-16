@@ -7,13 +7,11 @@
 package statement
 
 import (
-	"strings"
-
+	builder "github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar"
 	"github.com/jaypipes/sqlb/internal/grammar/clause"
 	"github.com/jaypipes/sqlb/internal/grammar/expression"
 	"github.com/jaypipes/sqlb/internal/grammar/identifier"
-	scanner "github.com/jaypipes/sqlb/internal/scanner"
 )
 
 // UPDATE <table> SET <column_value_list>[ WHERE <predicates>]
@@ -32,7 +30,7 @@ func (s *Update) ArgCount() int {
 	return argc
 }
 
-func (st *Update) Size(s *scanner.Scanner) int {
+func (st *Update) Size(b *builder.Builder) int {
 	size := len(grammar.Symbols[grammar.SYM_UPDATE]) + len(st.table.Name) + len(grammar.Symbols[grammar.SYM_SET])
 	ncols := len(st.columns)
 	for _, c := range st.columns {
@@ -47,12 +45,12 @@ func (st *Update) Size(s *scanner.Scanner) int {
 	// values)
 	size += 2 * (len(grammar.Symbols[grammar.SYM_COMMA_WS]) * (ncols - 1)) // the commas...
 	if st.where != nil {
-		size += st.where.Size(s)
+		size += st.where.Size(b)
 	}
 	return size
 }
 
-func (st *Update) Scan(s *scanner.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
+func (st *Update) Scan(b *builder.Builder, args []interface{}, curArg *int) {
 	b.Write(grammar.Symbols[grammar.SYM_UPDATE])
 	// We don't add any table alias when outputting the table identifier
 	b.WriteString(st.table.Name)
@@ -65,7 +63,7 @@ func (st *Update) Scan(s *scanner.Scanner, b *strings.Builder, args []interface{
 		// statement
 		b.WriteString(c.Name)
 		b.Write(grammar.Symbols[grammar.SYM_EQUAL])
-		scanner.ScanInterpolationMarker(s.Dialect, b, *curArg)
+		b.AddInterpolationMarker(*curArg)
 		args[*curArg] = st.values[x]
 		*curArg++
 		if x != (ncols - 1) {
@@ -74,7 +72,7 @@ func (st *Update) Scan(s *scanner.Scanner, b *strings.Builder, args []interface{
 	}
 
 	if st.where != nil {
-		st.where.Scan(s, b, args, curArg)
+		st.where.Scan(b, args, curArg)
 	}
 }
 

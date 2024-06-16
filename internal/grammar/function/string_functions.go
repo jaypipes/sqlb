@@ -7,11 +7,9 @@
 package function
 
 import (
-	"strings"
-
+	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar"
 	"github.com/jaypipes/sqlb/internal/grammar/sortcolumn"
-	"github.com/jaypipes/sqlb/internal/scanner"
 	"github.com/jaypipes/sqlb/types"
 )
 
@@ -59,14 +57,14 @@ const (
 )
 
 type TrimFunction struct {
-	sel      scanner.Selection
+	sel      builder.Selection
 	alias    string
-	subject  scanner.Element
+	subject  builder.Element
 	chars    string
 	location TrimLocation
 }
 
-func (f *TrimFunction) From() scanner.Selection {
+func (f *TrimFunction) From() builder.Selection {
 	return f.sel
 }
 
@@ -76,7 +74,7 @@ func (f *TrimFunction) DisableAliasScan() func() {
 	return func() { f.alias = origAlias }
 }
 
-func (f *TrimFunction) As(alias string) scanner.Projection {
+func (f *TrimFunction) As(alias string) builder.Projection {
 	aliased := &TrimFunction{
 		sel:      f.sel,
 		alias:    alias,
@@ -95,11 +93,11 @@ func (f *TrimFunction) ArgCount() int {
 	return argc
 }
 
-func (f *TrimFunction) Desc() scanner.Sortable {
+func (f *TrimFunction) Desc() builder.Sortable {
 	return sortcolumn.NewDesc(f)
 }
 
-func (f *TrimFunction) Asc() scanner.Sortable {
+func (f *TrimFunction) Asc() builder.Sortable {
 	return sortcolumn.NewAsc(f)
 }
 
@@ -141,7 +139,7 @@ func TrimFunctionSizeMySQL(f *TrimFunction) int {
 // Helper function that scans into the supplied SQL []byte buffer for the
 // TRIM/BTRIM() SQL function for MySQL
 // TRIM() function for MySQL variants
-func TrimFunctionScanMySQL(f *TrimFunction, s *scanner.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
+func TrimFunctionScanMySQL(f *TrimFunction, b *builder.Builder, args []interface{}, curArg *int) {
 	switch f.location {
 	case TRIM_LEADING:
 		if f.chars == "" {
@@ -150,13 +148,13 @@ func TrimFunctionScanMySQL(f *TrimFunction, s *scanner.Scanner, b *strings.Build
 			b.Write(grammar.Symbols[grammar.SYM_TRIM])
 			b.Write(grammar.Symbols[grammar.SYM_LEADING])
 			b.Write(grammar.Symbols[grammar.SYM_SPACE])
-			scanner.ScanInterpolationMarker(types.DialectMySQL, b, *curArg)
+			b.AddInterpolationMarker(*curArg)
 			args[*curArg] = f.chars
 			*curArg++
 			b.Write(grammar.Symbols[grammar.SYM_SPACE])
 			b.Write(grammar.Symbols[grammar.SYM_FROM])
 		}
-		TrimFunctionScanSubject(f, s, b, args, curArg)
+		TrimFunctionScanSubject(f, b, args, curArg)
 	case TRIM_TRAILING:
 		if f.chars == "" {
 			b.Write(grammar.Symbols[grammar.SYM_RTRIM])
@@ -164,25 +162,25 @@ func TrimFunctionScanMySQL(f *TrimFunction, s *scanner.Scanner, b *strings.Build
 			b.Write(grammar.Symbols[grammar.SYM_TRIM])
 			b.Write(grammar.Symbols[grammar.SYM_TRAILING])
 			b.Write(grammar.Symbols[grammar.SYM_SPACE])
-			scanner.ScanInterpolationMarker(types.DialectMySQL, b, *curArg)
+			b.AddInterpolationMarker(*curArg)
 			args[*curArg] = f.chars
 			*curArg++
 			b.Write(grammar.Symbols[grammar.SYM_SPACE])
 			b.Write(grammar.Symbols[grammar.SYM_FROM])
 		}
-		TrimFunctionScanSubject(f, s, b, args, curArg)
+		TrimFunctionScanSubject(f, b, args, curArg)
 	case TRIM_BOTH:
 		if f.chars == "" {
 			b.Write(grammar.Symbols[grammar.SYM_TRIM])
 		} else {
 			b.Write(grammar.Symbols[grammar.SYM_TRIM])
-			scanner.ScanInterpolationMarker(types.DialectMySQL, b, *curArg)
+			b.AddInterpolationMarker(*curArg)
 			args[*curArg] = f.chars
 			*curArg++
 			b.Write(grammar.Symbols[grammar.SYM_SPACE])
 			b.Write(grammar.Symbols[grammar.SYM_FROM])
 		}
-		TrimFunctionScanSubject(f, s, b, args, curArg)
+		TrimFunctionScanSubject(f, b, args, curArg)
 	}
 }
 
@@ -222,38 +220,43 @@ func TrimFunctionSizePostgreSQL(f *TrimFunction) int {
 // Helper function that scans into the supplied SQL []byte buffer for the
 // TRIM/BTRIM() SQL function for PostgreSQL
 // TRIM() function for PostgreSQL variants
-func TrimFunctionScanPostgreSQL(f *TrimFunction, s *scanner.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
+func TrimFunctionScanPostgreSQL(
+	f *TrimFunction,
+	b *builder.Builder,
+	args []interface{},
+	curArg *int,
+) {
 	switch f.location {
 	case TRIM_LEADING:
 		b.Write(grammar.Symbols[grammar.SYM_TRIM])
 		b.Write(grammar.Symbols[grammar.SYM_LEADING])
 		if f.chars != "" {
 			b.WriteRune(' ')
-			scanner.ScanInterpolationMarker(types.DialectPostgreSQL, b, *curArg)
+			b.AddInterpolationMarker(*curArg)
 			args[*curArg] = f.chars
 			*curArg++
 		}
 		b.Write(grammar.Symbols[grammar.SYM_SPACE])
 		b.Write(grammar.Symbols[grammar.SYM_FROM])
-		TrimFunctionScanSubject(f, s, b, args, curArg)
+		TrimFunctionScanSubject(f, b, args, curArg)
 	case TRIM_TRAILING:
 		b.Write(grammar.Symbols[grammar.SYM_TRIM])
 		b.Write(grammar.Symbols[grammar.SYM_TRAILING])
 		if f.chars != "" {
 			b.Write(grammar.Symbols[grammar.SYM_SPACE])
-			scanner.ScanInterpolationMarker(types.DialectPostgreSQL, b, *curArg)
+			b.AddInterpolationMarker(*curArg)
 			args[*curArg] = f.chars
 			*curArg++
 		}
 		b.Write(grammar.Symbols[grammar.SYM_SPACE])
 		b.Write(grammar.Symbols[grammar.SYM_FROM])
-		TrimFunctionScanSubject(f, s, b, args, curArg)
+		TrimFunctionScanSubject(f, b, args, curArg)
 	case TRIM_BOTH:
 		b.Write(grammar.Symbols[grammar.SYM_BTRIM])
-		TrimFunctionScanSubject(f, s, b, args, curArg)
+		TrimFunctionScanSubject(f, b, args, curArg)
 		if f.chars != "" {
 			b.Write(grammar.Symbols[grammar.SYM_COMMA_WS])
-			scanner.ScanInterpolationMarker(types.DialectPostgreSQL, b, *curArg)
+			b.AddInterpolationMarker(*curArg)
 			args[*curArg] = f.chars
 			*curArg++
 		}
@@ -261,21 +264,26 @@ func TrimFunctionScanPostgreSQL(f *TrimFunction, s *scanner.Scanner, b *strings.
 }
 
 // Scan in the subject of the TRIM() function
-func TrimFunctionScanSubject(f *TrimFunction, s *scanner.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
+func TrimFunctionScanSubject(
+	f *TrimFunction,
+	b *builder.Builder,
+	args []interface{},
+	curArg *int,
+) {
 	// We need to disable alias output for elements that are
 	// projections. We don't want to output, for example,
 	// "ON users.id AS user_id = TRIM(articles.author)"
 	switch f.subject.(type) {
-	case scanner.Projection:
-		reset := f.subject.(scanner.Projection).DisableAliasScan()
+	case builder.Projection:
+		reset := f.subject.(builder.Projection).DisableAliasScan()
 		defer reset()
 	}
-	f.subject.Scan(s, b, args, curArg)
+	f.subject.Scan(b, args, curArg)
 }
 
-func (f *TrimFunction) Size(s *scanner.Scanner) int {
+func (f *TrimFunction) Size(b *builder.Builder) int {
 	size := 0
-	switch s.Dialect {
+	switch b.Dialect {
 	case types.DialectPostgreSQL:
 		size = TrimFunctionSizePostgreSQL(f)
 	default:
@@ -286,23 +294,23 @@ func (f *TrimFunction) Size(s *scanner.Scanner) int {
 	// projections. We don't want to output, for example,
 	// "ON users.id AS user_id = TRIM(articles.author)"
 	switch f.subject.(type) {
-	case scanner.Projection:
-		reset := f.subject.(scanner.Projection).DisableAliasScan()
+	case builder.Projection:
+		reset := f.subject.(builder.Projection).DisableAliasScan()
 		defer reset()
 	}
-	size += f.subject.Size(s)
+	size += f.subject.Size(b)
 	if f.alias != "" {
 		size += len(grammar.Symbols[grammar.SYM_AS]) + len(f.alias)
 	}
 	return size
 }
 
-func (f *TrimFunction) Scan(s *scanner.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
-	switch s.Dialect {
+func (f *TrimFunction) Scan(b *builder.Builder, args []interface{}, curArg *int) {
+	switch b.Dialect {
 	case types.DialectPostgreSQL:
-		TrimFunctionScanPostgreSQL(f, s, b, args, curArg)
+		TrimFunctionScanPostgreSQL(f, b, args, curArg)
 	default:
-		TrimFunctionScanMySQL(f, s, b, args, curArg)
+		TrimFunctionScanMySQL(f, b, args, curArg)
 	}
 	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
 	if f.alias != "" {
@@ -313,9 +321,9 @@ func (f *TrimFunction) Scan(s *scanner.Scanner, b *strings.Builder, args []inter
 
 // Returns a struct that will output the TRIM() SQL function, trimming leading
 // and trailing whitespace from the supplied projection
-func Trim(p scanner.Projection) scanner.Projection {
+func Trim(p builder.Projection) builder.Projection {
 	return &TrimFunction{
-		subject:  p.(scanner.Element),
+		subject:  p.(builder.Element),
 		sel:      p.From(),
 		location: TRIM_BOTH,
 	}
@@ -324,9 +332,9 @@ func Trim(p scanner.Projection) scanner.Projection {
 // Returns a struct that will output the LTRIM() SQL function for MySQL and the
 // TRIM(LEADING FROM column) SQL function for PostgreSQL. The SQL function in
 // either case will remove whitespace from the start of the supplied projection
-func LTrim(p scanner.Projection) scanner.Projection {
+func LTrim(p builder.Projection) builder.Projection {
 	return &TrimFunction{
-		subject:  p.(scanner.Element),
+		subject:  p.(builder.Element),
 		sel:      p.From(),
 		location: TRIM_LEADING,
 	}
@@ -335,9 +343,9 @@ func LTrim(p scanner.Projection) scanner.Projection {
 // Returns a struct that will output the RTRIM() SQL function for MySQL and the
 // TRIM(TRAILING FROM column) SQL function for PostgreSQL. The SQL function in
 // either case will remove whitespace from the start of the supplied projection
-func RTrim(p scanner.Projection) scanner.Projection {
+func RTrim(p builder.Projection) builder.Projection {
 	return &TrimFunction{
-		subject:  p.(scanner.Element),
+		subject:  p.(builder.Element),
 		sel:      p.From(),
 		location: TRIM_TRAILING,
 	}
@@ -345,9 +353,9 @@ func RTrim(p scanner.Projection) scanner.Projection {
 
 // Returns a struct that will output the TRIM() SQL function, trimming leading
 // and trailing specified characters from the supplied projection
-func TrimChars(p scanner.Projection, chars string) scanner.Projection {
+func TrimChars(p builder.Projection, chars string) builder.Projection {
 	return &TrimFunction{
-		subject:  p.(scanner.Element),
+		subject:  p.(builder.Element),
 		sel:      p.From(),
 		location: TRIM_BOTH,
 		chars:    chars,
@@ -356,9 +364,9 @@ func TrimChars(p scanner.Projection, chars string) scanner.Projection {
 
 // Returns a struct that will output the TRIM(LEADING chars FROM column) SQL
 // function, trimming leading specified characters from the supplied projection
-func LTrimChars(p scanner.Projection, chars string) scanner.Projection {
+func LTrimChars(p builder.Projection, chars string) builder.Projection {
 	return &TrimFunction{
-		subject:  p.(scanner.Element),
+		subject:  p.(builder.Element),
 		sel:      p.From(),
 		location: TRIM_LEADING,
 		chars:    chars,
@@ -368,9 +376,9 @@ func LTrimChars(p scanner.Projection, chars string) scanner.Projection {
 // Returns a struct that will output the TRIM(TRAILING chars FROM column) SQL
 // function, trimming trailing specified characters from the supplied
 // projection
-func RTrimChars(p scanner.Projection, chars string) scanner.Projection {
+func RTrimChars(p builder.Projection, chars string) builder.Projection {
 	return &TrimFunction{
-		subject:  p.(scanner.Element),
+		subject:  p.(builder.Element),
 		sel:      p.From(),
 		location: TRIM_TRAILING,
 		chars:    chars,

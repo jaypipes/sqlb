@@ -7,12 +7,11 @@
 package function_test
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/jaypipes/sqlb"
+	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar/function"
-	"github.com/jaypipes/sqlb/internal/scanner"
 	"github.com/jaypipes/sqlb/internal/testutil"
 	"github.com/jaypipes/sqlb/types"
 	"github.com/stretchr/testify/assert"
@@ -27,7 +26,7 @@ func TestTrimFunctions(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		el    scanner.Element
+		el    builder.Element
 		qs    map[types.Dialect]string
 		qargs []interface{}
 	}{
@@ -90,19 +89,16 @@ func TestTrimFunctions(t *testing.T) {
 
 		// Test each SQL dialect output
 		for dialect, qs := range test.qs {
-			sc := &scanner.Scanner{
-				Dialect: dialect,
-			}
+			b := builder.New(builder.WithDialect(dialect))
+
 			expLen := len(qs)
-			size := test.el.Size(sc)
-			size += scanner.InterpolationLength(dialect, argc)
+			size := test.el.Size(b)
+			size += b.InterpolationLength(argc)
 			assert.Equal(expLen, size)
 
-			var b strings.Builder
-			b.Grow(size)
 			args := make([]interface{}, argc)
 			curArg := 0
-			test.el.Scan(sc, &b, args, &curArg)
+			test.el.Scan(b, args, &curArg)
 
 			assert.Equal(qs, b.String())
 			if expArgc > 0 {

@@ -7,12 +7,10 @@
 package identifier
 
 import (
-	"strings"
-
+	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar"
 	"github.com/jaypipes/sqlb/internal/grammar/function"
 	"github.com/jaypipes/sqlb/internal/grammar/sortcolumn"
-	"github.com/jaypipes/sqlb/internal/scanner"
 	"github.com/jaypipes/sqlb/meta"
 )
 
@@ -27,7 +25,7 @@ func (c *Column) Meta() *meta.Meta {
 	return c.tbl.Meta()
 }
 
-func (c *Column) From() scanner.Selection {
+func (c *Column) From() builder.Selection {
 	return c.tbl
 }
 
@@ -41,7 +39,7 @@ func (c *Column) ArgCount() int {
 	return 0
 }
 
-func (c *Column) Size(s *scanner.Scanner) int {
+func (c *Column) Size(b *builder.Builder) int {
 	size := 0
 	if c.tbl.Alias != "" {
 		size += len(c.tbl.Alias)
@@ -56,7 +54,7 @@ func (c *Column) Size(s *scanner.Scanner) int {
 	return size
 }
 
-func (c *Column) Scan(s *scanner.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
+func (c *Column) Scan(b *builder.Builder, args []interface{}, curArg *int) {
 	if c.tbl.Alias != "" {
 		b.WriteString(c.tbl.Alias)
 	} else {
@@ -70,7 +68,7 @@ func (c *Column) Scan(s *scanner.Scanner, b *strings.Builder, args []interface{}
 	}
 }
 
-func (c *Column) As(alias string) scanner.Projection {
+func (c *Column) As(alias string) builder.Projection {
 	return &Column{
 		Alias: alias,
 		Name:  c.Name,
@@ -78,72 +76,72 @@ func (c *Column) As(alias string) scanner.Projection {
 	}
 }
 
-func (c *Column) Desc() scanner.Sortable {
+func (c *Column) Desc() builder.Sortable {
 	return sortcolumn.NewDesc(c)
 }
 
-func (c *Column) Asc() scanner.Sortable {
+func (c *Column) Asc() builder.Sortable {
 	return sortcolumn.NewAsc(c)
 }
 
-func (c *Column) Reverse() scanner.Projection {
+func (c *Column) Reverse() builder.Projection {
 	return function.Reverse(c)
 }
 
-func (c *Column) Ascii() scanner.Projection {
+func (c *Column) Ascii() builder.Projection {
 	return function.Ascii(c)
 }
 
-func (c *Column) Max() scanner.Projection {
+func (c *Column) Max() builder.Projection {
 	return function.Max(c)
 }
 
-func (c *Column) Min() scanner.Projection {
+func (c *Column) Min() builder.Projection {
 	return function.Min(c)
 }
 
-func (c *Column) Sum() scanner.Projection {
+func (c *Column) Sum() builder.Projection {
 	return function.Sum(c)
 }
 
-func (c *Column) Avg() scanner.Projection {
+func (c *Column) Avg() builder.Projection {
 	return function.Avg(c)
 }
 
-func (c *Column) CharLength() scanner.Projection {
+func (c *Column) CharLength() builder.Projection {
 	return function.CharLength(c)
 }
 
-func (c *Column) BitLength() scanner.Projection {
+func (c *Column) BitLength() builder.Projection {
 	return function.BitLength(c)
 }
 
-func (c *Column) Trim() scanner.Projection {
+func (c *Column) Trim() builder.Projection {
 	f := function.Trim(c)
 	return f
 }
 
-func (c *Column) LTrim() scanner.Projection {
+func (c *Column) LTrim() builder.Projection {
 	f := function.LTrim(c)
 	return f
 }
 
-func (c *Column) RTrim() scanner.Projection {
+func (c *Column) RTrim() builder.Projection {
 	f := function.RTrim(c)
 	return f
 }
 
-func (c *Column) TrimChars(chars string) scanner.Projection {
+func (c *Column) TrimChars(chars string) builder.Projection {
 	f := function.TrimChars(c, chars)
 	return f
 }
 
-func (c *Column) LTrimChars(chars string) scanner.Projection {
+func (c *Column) LTrimChars(chars string) builder.Projection {
 	f := function.LTrimChars(c, chars)
 	return f
 }
 
-func (c *Column) RTrimChars(chars string) scanner.Projection {
+func (c *Column) RTrimChars(chars string) builder.Projection {
 	f := function.RTrimChars(c, chars)
 	return f
 }
