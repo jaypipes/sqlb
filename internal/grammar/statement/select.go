@@ -7,16 +7,14 @@
 package statement
 
 import (
-	"strings"
-
+	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar"
 	"github.com/jaypipes/sqlb/internal/grammar/clause"
 	"github.com/jaypipes/sqlb/internal/grammar/expression"
-	"github.com/jaypipes/sqlb/internal/scanner"
 )
 
 type Select struct {
-	projs   []scanner.Projection
+	projs   []builder.Projection
 	from    *clause.From
 	where   *clause.Where
 	groupBy *clause.GroupBy
@@ -25,11 +23,11 @@ type Select struct {
 	limit   *clause.Limit
 }
 
-func (st *Select) Projections() []scanner.Projection {
+func (st *Select) Projections() []builder.Projection {
 	return st.projs
 }
 
-func (st *Select) Selections() []scanner.Selection {
+func (st *Select) Selections() []builder.Selection {
 	return st.from.Selections()
 }
 
@@ -37,11 +35,11 @@ func (st *Select) Joins() []*clause.Join {
 	return st.from.Joins()
 }
 
-func (st *Select) AddProjection(p scanner.Projection) {
+func (st *Select) AddProjection(p builder.Projection) {
 	st.projs = append(st.projs, p)
 }
 
-func (st *Select) ReplaceSelections(sels []scanner.Selection) {
+func (st *Select) ReplaceSelections(sels []builder.Selection) {
 	st.from.ReplaceSelections(sels)
 }
 
@@ -71,66 +69,66 @@ func (st *Select) ArgCount() int {
 	return argc
 }
 
-func (st *Select) Size(s *scanner.Scanner) int {
+func (st *Select) Size(b *builder.Builder) int {
 	size := len(grammar.Symbols[grammar.SYM_SELECT])
 	nprojs := len(st.projs)
 	for _, p := range st.projs {
-		size += p.Size(s)
+		size += p.Size(b)
 	}
 	size += (len(grammar.Symbols[grammar.SYM_COMMA_WS]) * (nprojs - 1)) // the commas...
 	if st.from != nil {
-		if st.from.Size(s) > 0 {
-			size += len(s.Format.SeparateClauseWith)
-			size += st.from.Size(s)
+		if st.from.Size(b) > 0 {
+			size += len(b.Format.SeparateClauseWith)
+			size += st.from.Size(b)
 		}
 	}
 	if st.where != nil {
-		size += st.where.Size(s)
+		size += st.where.Size(b)
 	}
 	if st.groupBy != nil {
-		size += st.groupBy.Size(s)
+		size += st.groupBy.Size(b)
 	}
 	if st.having != nil {
-		size += st.having.Size(s)
+		size += st.having.Size(b)
 	}
 	if st.orderBy != nil {
-		size += st.orderBy.Size(s)
+		size += st.orderBy.Size(b)
 	}
 	if st.limit != nil {
-		size += st.limit.Size(s)
+		size += st.limit.Size(b)
 	}
 	return size
 }
 
-func (st *Select) Scan(s *scanner.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
+func (st *Select) Scan(b *builder.Builder, args []interface{}, curArg *int) {
 	b.Write(grammar.Symbols[grammar.SYM_SELECT])
 	nprojs := len(st.projs)
 	for x, p := range st.projs {
-		p.Scan(s, b, args, curArg)
+		p.Scan(b, args, curArg)
 		if x != (nprojs - 1) {
 			b.Write(grammar.Symbols[grammar.SYM_COMMA_WS])
 		}
 	}
 	if st.from != nil {
-		if st.from.Size(s) > 0 {
-			b.WriteString(s.Format.SeparateClauseWith)
-			st.from.Scan(s, b, args, curArg)
+		if st.from.Size(b) > 0 {
+			b.WriteString(b.Format.SeparateClauseWith)
+			st.from.Scan(b, args, curArg)
 		}
 	}
 	if st.where != nil {
-		st.where.Scan(s, b, args, curArg)
+		st.where.Scan(b, args, curArg)
 	}
 	if st.groupBy != nil {
-		st.groupBy.Scan(s, b, args, curArg)
+		st.groupBy.Scan(b, args, curArg)
 	}
 	if st.having != nil {
-		st.having.Scan(s, b, args, curArg)
+		st.having.Scan(b, args, curArg)
 	}
 	if st.orderBy != nil {
-		st.orderBy.Scan(s, b, args, curArg)
+		st.orderBy.Scan(b, args, curArg)
 	}
 	if st.limit != nil {
-		st.limit.Scan(s, b, args, curArg)
+		st.limit.Scan(b, args, curArg)
 	}
 }
 
@@ -150,7 +148,7 @@ func (st *Select) AddWhere(e *expression.Expression) *Select {
 
 // Given one or more columns, either set or add to the GROUP BY clause for
 // the Select
-func (st *Select) AddGroupBy(cols ...scanner.Projection) *Select {
+func (st *Select) AddGroupBy(cols ...builder.Projection) *Select {
 	if len(cols) == 0 {
 		return st
 	}
@@ -175,7 +173,7 @@ func (st *Select) AddHaving(e *expression.Expression) *Select {
 
 // Given one or more sort columns, either set or add to the ORDER BY clause for
 // the Select
-func (st *Select) AddOrderBy(sortCols ...scanner.Sortable) *Select {
+func (st *Select) AddOrderBy(sortCols ...builder.Sortable) *Select {
 	if len(sortCols) == 0 {
 		return st
 	}
@@ -203,15 +201,15 @@ func (st *Select) SetLimit(limit int) *Select {
 	return st
 }
 
-func (st *Select) RemoveSelection(toRemove scanner.Selection) {
+func (st *Select) RemoveSelection(toRemove builder.Selection) {
 	st.from.RemoveSelection(toRemove)
 }
 
 // NewSelect returns a new Select struct that scans into a
 // SELECT SQL statement.
 func NewSelect(
-	projs []scanner.Projection,
-	selections []scanner.Selection,
+	projs []builder.Projection,
+	selections []builder.Selection,
 	joins []*clause.Join,
 	where *clause.Where,
 	groupBy *clause.GroupBy,

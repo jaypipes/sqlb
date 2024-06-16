@@ -7,19 +7,17 @@
 package clause
 
 import (
-	"strings"
-
+	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar"
-	"github.com/jaypipes/sqlb/internal/scanner"
 )
 
 // From represents the SQL FROM clause
 type From struct {
-	selections []scanner.Selection
+	selections []builder.Selection
 	joins      []*Join
 }
 
-func (f *From) Selections() []scanner.Selection {
+func (f *From) Selections() []builder.Selection {
 	return f.selections
 }
 
@@ -27,7 +25,7 @@ func (f *From) Joins() []*Join {
 	return f.joins
 }
 
-func (f *From) ReplaceSelections(sels []scanner.Selection) {
+func (f *From) ReplaceSelections(sels []builder.Selection) {
 	f.selections = sels
 }
 
@@ -42,34 +40,34 @@ func (f *From) ArgCount() int {
 	return argc
 }
 
-func (f *From) Size(s *scanner.Scanner) int {
+func (f *From) Size(b *builder.Builder) int {
 	size := 0
 	nsels := len(f.selections)
 	if nsels > 0 {
 		size += len(grammar.Symbols[grammar.SYM_FROM])
 		for _, sel := range f.selections {
-			size += sel.Size(s)
+			size += sel.Size(b)
 		}
 		size += (len(grammar.Symbols[grammar.SYM_COMMA_WS]) * (nsels - 1)) // the commas...
 		for _, join := range f.joins {
-			size += join.Size(s)
+			size += join.Size(b)
 		}
 	}
 	return size
 }
 
-func (f *From) Scan(s *scanner.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
+func (f *From) Scan(b *builder.Builder, args []interface{}, curArg *int) {
 	nsels := len(f.selections)
 	if nsels > 0 {
 		b.Write(grammar.Symbols[grammar.SYM_FROM])
 		for x, sel := range f.selections {
-			sel.Scan(s, b, args, curArg)
+			sel.Scan(b, args, curArg)
 			if x != (nsels - 1) {
 				b.Write(grammar.Symbols[grammar.SYM_COMMA_WS])
 			}
 		}
 		for _, join := range f.joins {
-			join.Scan(s, b, args, curArg)
+			join.Scan(b, args, curArg)
 		}
 	}
 }
@@ -79,7 +77,7 @@ func (f *From) AddJoin(jc *Join) *From {
 	return f
 }
 
-func (f *From) RemoveSelection(toRemove scanner.Selection) {
+func (f *From) RemoveSelection(toRemove builder.Selection) {
 	idx := -1
 	for x, sel := range f.selections {
 		if sel == toRemove {
@@ -96,7 +94,7 @@ func (f *From) RemoveSelection(toRemove scanner.Selection) {
 // NewFrom returns a new From struct that scans into a
 // FROM clause.
 func NewFrom(
-	selections []scanner.Selection,
+	selections []builder.Selection,
 	joins []*Join,
 ) *From {
 	return &From{

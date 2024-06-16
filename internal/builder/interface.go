@@ -4,13 +4,9 @@
 // See the COPYING file in the root project directory for full text.
 //
 
-package scanner
+package builder
 
-import (
-	"strings"
-)
-
-// Scannable is a thing that knows how to describe itself to a Scanner for
+// Scannable is a thing that knows how to describe itself to a Builder for
 // construction in a SQL query string and query argument list.
 type Scannable interface {
 	// Scan takes two slices and a pointer to an int. The first slice is a
@@ -19,7 +15,7 @@ type Scannable interface {
 	// that the element should add its arguments to. The pointer to an int is
 	// the index of the current argument to be processed. The method returns a
 	// single int, the number of bytes written to the buffer.
-	Scan(*Scanner, *strings.Builder, []interface{}, *int)
+	Scan(*Builder, []interface{}, *int)
 }
 
 // Element adds a Size and ArgCount method to the Scannable interface
@@ -27,7 +23,7 @@ type Element interface {
 	Scannable
 	// Size returns the number of bytes that the scannable element would
 	// consume as a SQL string
-	Size(*Scanner) int
+	Size(*Builder) int
 	// ArgCount returns the number of interface{} arguments that the element
 	// will add to the slice of interface{} arguments passed to Scan()
 	ArgCount() int

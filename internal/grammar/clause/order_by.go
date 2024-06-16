@@ -7,18 +7,16 @@
 package clause
 
 import (
-	"strings"
-
+	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar"
-	"github.com/jaypipes/sqlb/internal/scanner"
 )
 
 // OrderBy represents the SQL ORDER BY clause
 type OrderBy struct {
-	scols []scanner.Sortable
+	scols []builder.Sortable
 }
 
-func (ob *OrderBy) AddSortColumn(sc scanner.Sortable) {
+func (ob *OrderBy) AddSortColumn(sc builder.Sortable) {
 	ob.scols = append(ob.scols, sc)
 }
 
@@ -27,23 +25,23 @@ func (ob *OrderBy) ArgCount() int {
 	return argc
 }
 
-func (ob *OrderBy) Size(s *scanner.Scanner) int {
+func (ob *OrderBy) Size(b *builder.Builder) int {
 	size := 0
-	size += len(s.Format.SeparateClauseWith)
+	size += len(b.Format.SeparateClauseWith)
 	size += len(grammar.Symbols[grammar.SYM_ORDER_BY])
 	ncols := len(ob.scols)
 	for _, sc := range ob.scols {
-		size += sc.Size(s)
+		size += sc.Size(b)
 	}
 	return size + (len(grammar.Symbols[grammar.SYM_COMMA_WS]) * (ncols - 1)) // the commas...
 }
 
-func (ob *OrderBy) Scan(s *scanner.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
-	b.WriteString(s.Format.SeparateClauseWith)
+func (ob *OrderBy) Scan(b *builder.Builder, args []interface{}, curArg *int) {
+	b.WriteString(b.Format.SeparateClauseWith)
 	b.Write(grammar.Symbols[grammar.SYM_ORDER_BY])
 	ncols := len(ob.scols)
 	for x, sc := range ob.scols {
-		sc.Scan(s, b, args, curArg)
+		sc.Scan(b, args, curArg)
 		if x != (ncols - 1) {
 			b.Write(grammar.Symbols[grammar.SYM_COMMA_WS])
 		}
@@ -51,7 +49,7 @@ func (ob *OrderBy) Scan(s *scanner.Scanner, b *strings.Builder, args []interface
 }
 
 // NewOrderBy returns a new OrderBy with zero or more sort columns
-func NewOrderBy(scols ...scanner.Sortable) *OrderBy {
+func NewOrderBy(scols ...builder.Sortable) *OrderBy {
 	return &OrderBy{
 		scols: scols,
 	}

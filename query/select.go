@@ -2,46 +2,36 @@
 //
 // See the COPYING file in the root project directory for full text.
 
-package sqlb
+package query
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/jaypipes/sqlb/errors"
+	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar/clause"
 	"github.com/jaypipes/sqlb/internal/grammar/element"
 	"github.com/jaypipes/sqlb/internal/grammar/expression"
 	"github.com/jaypipes/sqlb/internal/grammar/function"
 	"github.com/jaypipes/sqlb/internal/grammar/identifier"
 	"github.com/jaypipes/sqlb/internal/grammar/statement"
-	"github.com/jaypipes/sqlb/internal/scanner"
 	"github.com/jaypipes/sqlb/types"
 )
 
 type SelectQuery struct {
-	e   error
 	sel *statement.Select
 }
 
-func (q *SelectQuery) Scan(s *scanner.Scanner, b *strings.Builder, qargs []interface{}, idx *int) {
-	q.sel.Scan(s, b, qargs, idx)
+func (q *SelectQuery) Scan(b *builder.Builder, qargs []interface{}, idx *int) {
+	q.sel.Scan(b, qargs, idx)
 }
 
 func (q *SelectQuery) ArgCount() int {
 	return q.sel.ArgCount()
 }
 
-func (q *SelectQuery) Size(s *scanner.Scanner) int {
-	return q.sel.Size(s)
-}
-
-func (q *SelectQuery) IsValid() bool {
-	return q.e == nil && q.sel != nil
-}
-
-func (q *SelectQuery) Error() error {
-	return q.e
+func (q *SelectQuery) Size(b *builder.Builder) int {
+	return q.sel.Size(b)
 }
 
 func (q *SelectQuery) Where(e *expression.Expression) *SelectQuery {
@@ -49,7 +39,7 @@ func (q *SelectQuery) Where(e *expression.Expression) *SelectQuery {
 	return q
 }
 
-func (q *SelectQuery) GroupBy(cols ...scanner.Projection) *SelectQuery {
+func (q *SelectQuery) GroupBy(cols ...builder.Projection) *SelectQuery {
 	q.sel.AddGroupBy(cols...)
 	return q
 }
@@ -59,7 +49,7 @@ func (q *SelectQuery) Having(e *expression.Expression) *SelectQuery {
 	return q
 }
 
-func (q *SelectQuery) OrderBy(scols ...scanner.Sortable) *SelectQuery {
+func (q *SelectQuery) OrderBy(scols ...builder.Sortable) *SelectQuery {
 	q.sel.AddOrderBy(scols...)
 	return q
 }
@@ -80,7 +70,7 @@ func (q *SelectQuery) As(alias string) *SelectQuery {
 	dt := clause.NewDerivedTable(alias, q.sel)
 	derivedSel := statement.NewSelect(
 		dt.DerivedColumns(),
-		[]scanner.Selection{dt},
+		[]builder.Selection{dt},
 		nil, nil, nil, nil, nil, nil,
 	)
 	return &SelectQuery{sel: derivedSel}
@@ -88,7 +78,7 @@ func (q *SelectQuery) As(alias string) *SelectQuery {
 
 // Returns the projection of the underlying SelectStatement that matches the name
 // provided
-func (q *SelectQuery) C(name string) scanner.Projection {
+func (q *SelectQuery) C(name string) builder.Projection {
 	for _, p := range q.sel.Projections() {
 		switch p.(type) {
 		case *clause.DerivedColumn:
@@ -115,26 +105,32 @@ func (q *SelectQuery) C(name string) scanner.Projection {
 	return nil
 }
 
-func (q *SelectQuery) Join(right interface{}, on *expression.Expression) *SelectQuery {
-	var rightSel scanner.Selection
+func (q *SelectQuery) Join(
+	right interface{},
+	on *expression.Expression,
+) *SelectQuery {
+	var rightSel builder.Selection
 	switch right.(type) {
 	case *SelectQuery:
 		// Joining to a derived table
 		rightSel = right.(*SelectQuery).sel.Selections()[0]
-	case scanner.Selection:
-		rightSel = right.(scanner.Selection)
+	case builder.Selection:
+		rightSel = right.(builder.Selection)
 	}
 	return q.doJoin(types.JOIN_INNER, rightSel, on)
 }
 
-func (q *SelectQuery) OuterJoin(right interface{}, on *expression.Expression) *SelectQuery {
-	var rightSel scanner.Selection
+func (q *SelectQuery) OuterJoin(
+	right interface{},
+	on *expression.Expression,
+) *SelectQuery {
+	var rightSel builder.Selection
 	switch right.(type) {
 	case *SelectQuery:
 		// Joining to a derived table
 		rightSel = right.(*SelectQuery).sel.Selections()[0]
-	case scanner.Selection:
-		rightSel = right.(scanner.Selection)
+	case builder.Selection:
+		rightSel = right.(builder.Selection)
 	}
 	return q.doJoin(types.JOIN_OUTER, rightSel, on)
 }
@@ -145,22 +141,21 @@ func (q *SelectQuery) OuterJoin(right interface{}, on *expression.Expression) *S
 // SelectQuery.e will be set to an error.
 func (q *SelectQuery) doJoin(
 	jt types.JoinType,
-	right scanner.Selection,
+	right builder.Selection,
 	on *expression.Expression,
 ) *SelectQuery {
 	if q.sel == nil || len(q.sel.Selections()) == 0 {
-		q.e = errors.InvalidJoinNoSelect
-		return q
+		panic(errors.InvalidJoinNoSelect)
 	}
 
 	// Let's first determine which selection is targeted as the LEFT part of
 	// the join.
-	var left scanner.Selection
+	var left builder.Selection
 	if on != nil {
 		for _, el := range on.Elements() {
 			switch el.(type) {
-			case scanner.Projection:
-				p := el.(scanner.Projection)
+			case builder.Projection:
+				p := el.(builder.Projection)
 				exprSel := p.From()
 				if exprSel == right {
 					continue
@@ -227,8 +222,7 @@ func (q *SelectQuery) doJoin(
 		// SelectStatement
 	}
 	if left == nil {
-		q.e = errors.InvalidJoinUnknownTarget
-		return q
+		panic(errors.InvalidJoinUnknownTarget)
 	}
 	jc := clause.NewJoin(jt, left, right, on)
 	q.sel.AddJoin(jc)
@@ -239,11 +233,13 @@ func (q *SelectQuery) doJoin(
 	return q
 }
 
-func Select(items ...interface{}) *SelectQuery {
-	sel := statement.NewSelect(make([]scanner.Projection, 0), nil, nil, nil, nil, nil, nil, nil)
+func Select(
+	items ...interface{},
+) *SelectQuery {
+	sel := statement.NewSelect(make([]builder.Projection, 0), nil, nil, nil, nil, nil, nil, nil)
 
 	nDerived := 0
-	selectionMap := make(map[scanner.Selection]bool, 0)
+	selectionMap := make(map[builder.Selection]bool, 0)
 
 	// For each scannable item we've received in the call, check what concrete
 	// type they are and, depending on which type they are, either add them to
@@ -295,7 +291,6 @@ func Select(items ...interface{}) *SelectQuery {
 			}
 		case *identifier.Column:
 			v := item.(*identifier.Column)
-			// Set scanner's dialect based on supplied meta's dialect
 			if v == nil {
 				panic("specified a non-existent column")
 			}
@@ -319,7 +314,7 @@ func Select(items ...interface{}) *SelectQuery {
 			sel.AddProjection(p)
 		}
 	}
-	selections := make([]scanner.Selection, len(selectionMap))
+	selections := make([]builder.Selection, len(selectionMap))
 	x := 0
 	for sel, _ := range selectionMap {
 		selections[x] = sel

@@ -7,31 +7,29 @@
 package expression
 
 import (
-	"strings"
-
+	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar"
 	"github.com/jaypipes/sqlb/internal/grammar/element"
-	"github.com/jaypipes/sqlb/internal/scanner"
 )
 
 // Expression represents a comparison expression in the SQL statement, e.g. "a
 // = b"
 type Expression struct {
 	ScanInfo grammar.ScanInfo
-	elements []scanner.Element
+	elements []builder.Element
 }
 
 // Elements returns the expression's list of contained elements
-func (e *Expression) Elements() []scanner.Element {
+func (e *Expression) Elements() []builder.Element {
 	return e.elements
 }
 
-func (e *Expression) Referrents() []scanner.Selection {
-	res := make([]scanner.Selection, 0)
+func (e *Expression) Referrents() []builder.Selection {
+	res := make([]builder.Selection, 0)
 	for _, el := range e.elements {
 		switch el.(type) {
-		case scanner.Projection:
-			p := el.(scanner.Projection)
+		case builder.Projection:
+			p := el.(builder.Projection)
 			res = append(res, p.From())
 		}
 	}
@@ -46,7 +44,7 @@ func (e *Expression) ArgCount() int {
 	return ac
 }
 
-func (e *Expression) Size(s *scanner.Scanner) int {
+func (e *Expression) Size(b *builder.Builder) int {
 	size := 0
 	elidx := 0
 	for _, sym := range e.ScanInfo {
@@ -56,12 +54,12 @@ func (e *Expression) Size(s *scanner.Scanner) int {
 			// projections. We don't want to output, for example,
 			// "ON users.id AS user_id = articles.author"
 			switch el.(type) {
-			case scanner.Projection:
-				reset := el.(scanner.Projection).DisableAliasScan()
+			case builder.Projection:
+				reset := el.(builder.Projection).DisableAliasScan()
 				defer reset()
 			}
 			elidx++
-			size += el.Size(s)
+			size += el.Size(b)
 		} else {
 			size += len(grammar.Symbols[sym])
 		}
@@ -69,7 +67,7 @@ func (e *Expression) Size(s *scanner.Scanner) int {
 	return size
 }
 
-func (e *Expression) Scan(s *scanner.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
+func (e *Expression) Scan(b *builder.Builder, args []interface{}, curArg *int) {
 	elidx := 0
 	for _, sym := range e.ScanInfo {
 		if sym == grammar.SYM_ELEMENT {
@@ -78,12 +76,12 @@ func (e *Expression) Scan(s *scanner.Scanner, b *strings.Builder, args []interfa
 			// projections. We don't want to output, for example,
 			// "ON users.id AS user_id = articles.author"
 			switch el.(type) {
-			case scanner.Projection:
-				reset := el.(scanner.Projection).DisableAliasScan()
+			case builder.Projection:
+				reset := el.(builder.Projection).DisableAliasScan()
 				defer reset()
 			}
 			elidx++
-			el.Scan(s, b, args, curArg)
+			el.Scan(b, args, curArg)
 		} else {
 			b.Write(grammar.Symbols[sym])
 		}
@@ -93,12 +91,12 @@ func (e *Expression) Scan(s *scanner.Scanner, b *strings.Builder, args []interfa
 // Given a slice of interface{} variables, returns a slice of element members.
 // If any of the interface{} variables are *not* of type element already, we
 // construct a Value{} for the variable.
-func toElements(vars ...interface{}) []scanner.Element {
-	els := make([]scanner.Element, len(vars))
+func toElements(vars ...interface{}) []builder.Element {
+	els := make([]builder.Element, len(vars))
 	for x, v := range vars {
 		switch v.(type) {
-		case scanner.Element:
-			els[x] = v.(scanner.Element)
+		case builder.Element:
+			els[x] = v.(builder.Element)
 		default:
 			els[x] = element.NewValue(nil, v)
 		}
@@ -111,7 +109,7 @@ func toElements(vars ...interface{}) []scanner.Element {
 // If any of the interface{} variables are *not* of type element already, we
 // construct a Value{} for the variable.
 func toValueList(vars ...interface{}) *element.List {
-	els := make([]scanner.Element, len(vars))
+	els := make([]builder.Element, len(vars))
 	for x, v := range vars {
 		els[x] = element.NewValue(nil, v)
 	}
@@ -137,25 +135,25 @@ func NotEqual(left interface{}, right interface{}) *Expression {
 func And(a *Expression, b *Expression) *Expression {
 	return &Expression{
 		ScanInfo: grammar.ExpressionScanTable(grammar.EXP_AND),
-		elements: []scanner.Element{a, b},
+		elements: []builder.Element{a, b},
 	}
 }
 
 func Or(a *Expression, b *Expression) *Expression {
 	return &Expression{
 		ScanInfo: grammar.ExpressionScanTable(grammar.EXP_OR),
-		elements: []scanner.Element{a, b},
+		elements: []builder.Element{a, b},
 	}
 }
 
-func In(subject scanner.Element, values ...interface{}) *Expression {
+func In(subject builder.Element, values ...interface{}) *Expression {
 	return &Expression{
 		ScanInfo: grammar.ExpressionScanTable(grammar.EXP_IN),
-		elements: []scanner.Element{subject, toValueList(values...)},
+		elements: []builder.Element{subject, toValueList(values...)},
 	}
 }
 
-func Between(subject scanner.Element, start interface{}, end interface{}) *Expression {
+func Between(subject builder.Element, start interface{}, end interface{}) *Expression {
 	els := toElements(subject, start, end)
 	return &Expression{
 		ScanInfo: grammar.ExpressionScanTable(grammar.EXP_BETWEEN),
@@ -163,17 +161,17 @@ func Between(subject scanner.Element, start interface{}, end interface{}) *Expre
 	}
 }
 
-func IsNull(subject scanner.Element) *Expression {
+func IsNull(subject builder.Element) *Expression {
 	return &Expression{
 		ScanInfo: grammar.ExpressionScanTable(grammar.EXP_IS_NULL),
-		elements: []scanner.Element{subject},
+		elements: []builder.Element{subject},
 	}
 }
 
-func IsNotNull(subject scanner.Element) *Expression {
+func IsNotNull(subject builder.Element) *Expression {
 	return &Expression{
 		ScanInfo: grammar.ExpressionScanTable(grammar.EXP_IS_NOT_NULL),
-		elements: []scanner.Element{subject},
+		elements: []builder.Element{subject},
 	}
 }
 

@@ -7,11 +7,9 @@
 package element
 
 import (
-	"strings"
-
+	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar"
 	"github.com/jaypipes/sqlb/internal/grammar/sortcolumn"
-	"github.com/jaypipes/sqlb/internal/scanner"
 )
 
 // Value is a concrete struct wrapper around a constant that implements the
@@ -19,16 +17,16 @@ import (
 // structs but instead helper functions like sqlb.Equal() will construct a
 // value and bind it to the containing element.
 type Value struct {
-	sel   scanner.Selection
+	sel   builder.Selection
 	alias string
 	val   interface{}
 }
 
-func (v *Value) From() scanner.Selection {
+func (v *Value) From() builder.Selection {
 	return v.sel
 }
 
-func (v *Value) As(alias string) scanner.Projection {
+func (v *Value) As(alias string) builder.Projection {
 	return &Value{
 		alias: alias,
 		val:   v.val,
@@ -45,7 +43,7 @@ func (v *Value) ArgCount() int {
 	return 1
 }
 
-func (v *Value) Size(s *scanner.Scanner) int {
+func (v *Value) Size(b *builder.Builder) int {
 	// Due to dialect handling, we do not include the length of interpolation
 	// markers for query parameters. This is calculated separately by the
 	// top-level scanning struct before malloc'ing the buffer to inject the SQL
@@ -57,9 +55,9 @@ func (v *Value) Size(s *scanner.Scanner) int {
 	return size
 }
 
-func (v *Value) Scan(s *scanner.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
+func (v *Value) Scan(b *builder.Builder, args []interface{}, curArg *int) {
 	args[*curArg] = v.val
-	scanner.ScanInterpolationMarker(s.Dialect, b, *curArg)
+	b.AddInterpolationMarker(*curArg)
 	*curArg++
 	if v.alias != "" {
 		b.Write(grammar.Symbols[grammar.SYM_AS])
@@ -67,16 +65,16 @@ func (v *Value) Scan(s *scanner.Scanner, b *strings.Builder, args []interface{},
 	}
 }
 
-func (v *Value) Desc() scanner.Sortable {
+func (v *Value) Desc() builder.Sortable {
 	return sortcolumn.NewDesc(v)
 }
 
-func (v *Value) Asc() scanner.Sortable {
+func (v *Value) Asc() builder.Sortable {
 	return sortcolumn.NewAsc(v)
 }
 
 // NewValue returns an AST node representing a Value
-func NewValue(sel scanner.Selection, val interface{}) *Value {
+func NewValue(sel builder.Selection, val interface{}) *Value {
 	return &Value{
 		sel: sel,
 		val: val,

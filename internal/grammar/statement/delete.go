@@ -7,13 +7,11 @@
 package statement
 
 import (
-	"strings"
-
+	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar"
 	"github.com/jaypipes/sqlb/internal/grammar/clause"
 	"github.com/jaypipes/sqlb/internal/grammar/expression"
 	"github.com/jaypipes/sqlb/internal/grammar/identifier"
-	"github.com/jaypipes/sqlb/internal/scanner"
 )
 
 // DELETE FROM <table> WHERE <predicates>
@@ -30,20 +28,20 @@ func (st *Delete) ArgCount() int {
 	return argc
 }
 
-func (st *Delete) Size(s *scanner.Scanner) int {
+func (st *Delete) Size(b *builder.Builder) int {
 	size := len(grammar.Symbols[grammar.SYM_DELETE]) + len(st.table.Name)
 	if st.where != nil {
-		size += st.where.Size(s)
+		size += st.where.Size(b)
 	}
 	return size
 }
 
-func (st *Delete) Scan(s *scanner.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
+func (st *Delete) Scan(b *builder.Builder, args []interface{}, curArg *int) {
 	b.Write(grammar.Symbols[grammar.SYM_DELETE])
 	// We don't add any table alias when outputting the table identifier
 	b.WriteString(st.table.Name)
 	if st.where != nil {
-		st.where.Scan(s, b, args, curArg)
+		st.where.Scan(b, args, curArg)
 	}
 }
 

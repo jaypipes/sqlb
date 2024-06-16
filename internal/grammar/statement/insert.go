@@ -7,11 +7,9 @@
 package statement
 
 import (
-	"strings"
-
+	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar"
 	"github.com/jaypipes/sqlb/internal/grammar/identifier"
-	"github.com/jaypipes/sqlb/internal/scanner"
 )
 
 // INSERT INTO <table> (<columns>) VALUES (<values>)
@@ -26,7 +24,7 @@ func (st *Insert) ArgCount() int {
 	return len(st.values)
 }
 
-func (st *Insert) Size(s *scanner.Scanner) int {
+func (st *Insert) Size(b *builder.Builder) int {
 	size := len(grammar.Symbols[grammar.SYM_INSERT]) + len(st.table.Name) + 1 // space after table name
 	ncols := len(st.columns)
 	for _, c := range st.columns {
@@ -44,7 +42,7 @@ func (st *Insert) Size(s *scanner.Scanner) int {
 	return size
 }
 
-func (st *Insert) Scan(s *scanner.Scanner, b *strings.Builder, args []interface{}, curArg *int) {
+func (st *Insert) Scan(b *builder.Builder, args []interface{}, curArg *int) {
 	b.Write(grammar.Symbols[grammar.SYM_INSERT])
 	// We don't add any table alias when outputting the table identifier
 	b.WriteString(st.table.Name)
@@ -62,7 +60,7 @@ func (st *Insert) Scan(s *scanner.Scanner, b *strings.Builder, args []interface{
 	}
 	b.Write(grammar.Symbols[grammar.SYM_VALUES])
 	for x, v := range st.values {
-		scanner.ScanInterpolationMarker(s.Dialect, b, *curArg)
+		b.AddInterpolationMarker(*curArg)
 		args[*curArg] = v
 		*curArg++
 		if x != (ncols - 1) {

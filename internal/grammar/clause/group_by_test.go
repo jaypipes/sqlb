@@ -7,12 +7,11 @@
 package clause_test
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/jaypipes/sqlb"
+	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar/clause"
-	"github.com/jaypipes/sqlb/internal/scanner"
 	"github.com/jaypipes/sqlb/internal/testutil"
 	"github.com/stretchr/testify/assert"
 )
@@ -49,17 +48,17 @@ func TestGroupBy(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
+		b := builder.New()
+
 		expLen := len(test.qs)
-		s := test.c.Size(scanner.DefaultScanner)
+		s := test.c.Size(b)
 		assert.Equal(expLen, s)
 
 		expArgc := len(test.qargs)
 		assert.Equal(expArgc, test.c.ArgCount())
 
-		var b strings.Builder
-		b.Grow(s)
 		curArg := 0
-		test.c.Scan(scanner.DefaultScanner, &b, test.qargs, &curArg)
+		test.c.Scan(b, test.qargs, &curArg)
 
 		assert.Equal(test.qs, b.String())
 	}

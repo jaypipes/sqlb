@@ -7,17 +7,15 @@
 package clause_test
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/jaypipes/sqlb"
+	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar/clause"
 	"github.com/jaypipes/sqlb/internal/grammar/expression"
-	"github.com/jaypipes/sqlb/internal/scanner"
 	"github.com/jaypipes/sqlb/internal/testutil"
-	"github.com/jaypipes/sqlb/types"
 )
 
 func TestFrom(t *testing.T) {
@@ -42,7 +40,7 @@ func TestFrom(t *testing.T) {
 		{
 			name: "Table",
 			s: clause.NewFrom(
-				[]scanner.Selection{users},
+				[]builder.Selection{users},
 				[]*clause.Join{},
 			),
 			qs: "FROM users",
@@ -50,7 +48,7 @@ func TestFrom(t *testing.T) {
 		{
 			name: "aliased Table",
 			s: clause.NewFrom(
-				[]scanner.Selection{users.As("u")},
+				[]builder.Selection{users.As("u")},
 				[]*clause.Join{},
 			),
 			qs: "FROM users AS u",
@@ -58,7 +56,7 @@ func TestFrom(t *testing.T) {
 		{
 			name: "Single JOIN",
 			s: clause.NewFrom(
-				[]scanner.Selection{articles},
+				[]builder.Selection{articles},
 				[]*clause.Join{
 					clause.InnerJoin(
 						articles,
@@ -72,7 +70,7 @@ func TestFrom(t *testing.T) {
 		{
 			name: "Multiple JOINs",
 			s: clause.NewFrom(
-				[]scanner.Selection{articles},
+				[]builder.Selection{articles},
 				[]*clause.Join{
 					clause.InnerJoin(
 						articles,
@@ -90,19 +88,19 @@ func TestFrom(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
+		b := builder.New()
+
 		expArgc := len(test.qargs)
 		argc := test.s.ArgCount()
 		assert.Equal(expArgc, argc)
 
 		expLen := len(test.qs)
-		size := test.s.Size(scanner.DefaultScanner)
-		size += scanner.InterpolationLength(types.DialectMySQL, argc)
+		size := test.s.Size(b)
+		size += b.InterpolationLength(argc)
 		assert.Equal(expLen, size)
 
-		var b strings.Builder
-		b.Grow(size)
 		curArg := 0
-		test.s.Scan(scanner.DefaultScanner, &b, test.qargs, &curArg)
+		test.s.Scan(b, test.qargs, &curArg)
 
 		assert.Equal(test.qs, b.String())
 	}
