@@ -7,11 +7,16 @@
 package sqlb
 
 import (
-	"github.com/jaypipes/sqlb/pkg/grammar/identifier"
-	"github.com/jaypipes/sqlb/pkg/schema"
+	"github.com/jaypipes/sqlb/internal/grammar/identifier"
+	"github.com/jaypipes/sqlb/meta"
 )
 
-// T returns a TableIdentifier of a given name from a supplied Schema
-func T(s *schema.Schema, name string) *identifier.Table {
-	return identifier.TableFromSchema(s, name)
+// T returns a TableIdentifier of a given name from a supplied Meta
+func T(m *meta.Meta, name string) *identifier.Table {
+	return identifier.TableFromMeta(m, name)
 }
+
+// Reflect examines the supplied database connection and discovers Table
+// definitions within that connection's associated database, returning a
+// pointer to a Meta struct with the discovered information.
+var Reflect = meta.Reflect

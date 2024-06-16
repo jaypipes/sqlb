@@ -8,22 +8,22 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/jaypipes/sqlb/pkg/errors"
-	"github.com/jaypipes/sqlb/pkg/grammar/expression"
-	"github.com/jaypipes/sqlb/pkg/grammar/function"
-	"github.com/jaypipes/sqlb/pkg/scanner"
-	"github.com/jaypipes/sqlb/pkg/testutil"
+	"github.com/jaypipes/sqlb/errors"
+	"github.com/jaypipes/sqlb/internal/grammar/expression"
+	"github.com/jaypipes/sqlb/internal/grammar/function"
+	"github.com/jaypipes/sqlb/internal/scanner"
+	"github.com/jaypipes/sqlb/internal/testutil"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestSelectQuery(t *testing.T) {
 	assert := assert.New(t)
 
-	sc := testutil.Schema()
-	users := T(sc, "users")
-	articles := T(sc, "articles")
-	articleStates := T(sc, "article_states")
-	userProfiles := T(sc, "user_profiles")
+	m := testutil.Meta()
+	users := T(m, "users")
+	articles := T(m, "articles")
+	articleStates := T(m, "article_states")
+	userProfiles := T(m, "user_profiles")
 	colUserId := users.C("id")
 	colUserName := users.C("name")
 	colArticleId := articles.C("id")
@@ -204,8 +204,8 @@ func TestNestedSetQueries(t *testing.T) {
 	// ref: https://github.com/jaypipes/sqlb/issues/49
 	assert := assert.New(t)
 
-	sc := testutil.Schema()
-	orgs := T(sc, "organizations")
+	m := testutil.Meta()
+	orgs := T(m, "organizations")
 
 	o1 := orgs.As("o1")
 	o2 := orgs.As("o2")
@@ -239,9 +239,9 @@ func TestNestedSetWithAdditionalJoin(t *testing.T) {
 	// ref: https://github.com/jaypipes/sqlb/issues/60
 	assert := assert.New(t)
 
-	sc := testutil.Schema()
-	orgs := T(sc, "organizations")
-	orgUsers := T(sc, "organization_users")
+	m := testutil.Meta()
+	orgs := T(m, "organizations")
+	orgUsers := T(m, "organization_users")
 
 	o1 := orgs.As("o1")
 	o2 := orgs.As("o2")
@@ -305,9 +305,9 @@ func TestJoinDerivedWithMultipleSelections(t *testing.T) {
 	//   o.visibility = 1
 	//   OR (o.visibility = 0 AND private_orgs.id IS NOT NULL)
 
-	sc := testutil.Schema()
-	orgs := T(sc, "organizations")
-	orgUsers := T(sc, "organization_users")
+	m := testutil.Meta()
+	orgs := T(m, "organizations")
+	orgUsers := T(m, "organization_users")
 
 	o1 := orgs.As("o1")
 	o2 := orgs.As("o2")
@@ -370,8 +370,8 @@ func TestModifyingSelectQueryUpdatesBuffer(t *testing.T) {
 	assert := assert.New(t)
 
 	scan := scanner.DefaultScanner
-	sc := testutil.Schema()
-	users := T(sc, "users")
+	m := testutil.Meta()
+	users := T(m, "users")
 
 	q := Select(users)
 
@@ -394,8 +394,8 @@ func TestSelectQueryErrors(t *testing.T) {
 	assert.False(q.IsValid()) // Doesn't have a selectClause yet...
 	assert.Nil(q.Error())     // But there is no error set yet...
 
-	sc := testutil.Schema()
-	users := T(sc, "users")
+	m := testutil.Meta()
+	users := T(m, "users")
 
 	q = Select(users)
 
