@@ -8,14 +8,15 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jaypipes/sqlb/pkg/errors"
-	"github.com/jaypipes/sqlb/pkg/grammar/clause"
-	"github.com/jaypipes/sqlb/pkg/grammar/element"
-	"github.com/jaypipes/sqlb/pkg/grammar/expression"
-	"github.com/jaypipes/sqlb/pkg/grammar/function"
-	"github.com/jaypipes/sqlb/pkg/grammar/identifier"
-	"github.com/jaypipes/sqlb/pkg/grammar/statement"
-	"github.com/jaypipes/sqlb/pkg/types"
+	"github.com/jaypipes/sqlb/errors"
+	"github.com/jaypipes/sqlb/internal/grammar/clause"
+	"github.com/jaypipes/sqlb/internal/grammar/element"
+	"github.com/jaypipes/sqlb/internal/grammar/expression"
+	"github.com/jaypipes/sqlb/internal/grammar/function"
+	"github.com/jaypipes/sqlb/internal/grammar/identifier"
+	"github.com/jaypipes/sqlb/internal/grammar/statement"
+	"github.com/jaypipes/sqlb/internal/scanner"
+	"github.com/jaypipes/sqlb/types"
 )
 
 type SelectQuery struct {
@@ -23,7 +24,7 @@ type SelectQuery struct {
 	sel *statement.Select
 }
 
-func (q *SelectQuery) Scan(s types.Scanner, b *strings.Builder, qargs []interface{}, idx *int) {
+func (q *SelectQuery) Scan(s *scanner.Scanner, b *strings.Builder, qargs []interface{}, idx *int) {
 	q.sel.Scan(s, b, qargs, idx)
 }
 
@@ -31,7 +32,7 @@ func (q *SelectQuery) ArgCount() int {
 	return q.sel.ArgCount()
 }
 
-func (q *SelectQuery) Size(s types.Scanner) int {
+func (q *SelectQuery) Size(s *scanner.Scanner) int {
 	return q.sel.Size(s)
 }
 
@@ -48,7 +49,7 @@ func (q *SelectQuery) Where(e *expression.Expression) *SelectQuery {
 	return q
 }
 
-func (q *SelectQuery) GroupBy(cols ...types.Projection) *SelectQuery {
+func (q *SelectQuery) GroupBy(cols ...scanner.Projection) *SelectQuery {
 	q.sel.AddGroupBy(cols...)
 	return q
 }
@@ -58,7 +59,7 @@ func (q *SelectQuery) Having(e *expression.Expression) *SelectQuery {
 	return q
 }
 
-func (q *SelectQuery) OrderBy(scols ...types.Sortable) *SelectQuery {
+func (q *SelectQuery) OrderBy(scols ...scanner.Sortable) *SelectQuery {
 	q.sel.AddOrderBy(scols...)
 	return q
 }
@@ -79,7 +80,7 @@ func (q *SelectQuery) As(alias string) *SelectQuery {
 	dt := clause.NewDerivedTable(alias, q.sel)
 	derivedSel := statement.NewSelect(
 		dt.DerivedColumns(),
-		[]types.Selection{dt},
+		[]scanner.Selection{dt},
 		nil, nil, nil, nil, nil, nil,
 	)
 	return &SelectQuery{sel: derivedSel}
@@ -87,7 +88,7 @@ func (q *SelectQuery) As(alias string) *SelectQuery {
 
 // Returns the projection of the underlying SelectStatement that matches the name
 // provided
-func (q *SelectQuery) C(name string) types.Projection {
+func (q *SelectQuery) C(name string) scanner.Projection {
 	for _, p := range q.sel.Projections() {
 		switch p.(type) {
 		case *clause.DerivedColumn:
@@ -115,25 +116,25 @@ func (q *SelectQuery) C(name string) types.Projection {
 }
 
 func (q *SelectQuery) Join(right interface{}, on *expression.Expression) *SelectQuery {
-	var rightSel types.Selection
+	var rightSel scanner.Selection
 	switch right.(type) {
 	case *SelectQuery:
 		// Joining to a derived table
 		rightSel = right.(*SelectQuery).sel.Selections()[0]
-	case types.Selection:
-		rightSel = right.(types.Selection)
+	case scanner.Selection:
+		rightSel = right.(scanner.Selection)
 	}
 	return q.doJoin(types.JOIN_INNER, rightSel, on)
 }
 
 func (q *SelectQuery) OuterJoin(right interface{}, on *expression.Expression) *SelectQuery {
-	var rightSel types.Selection
+	var rightSel scanner.Selection
 	switch right.(type) {
 	case *SelectQuery:
 		// Joining to a derived table
 		rightSel = right.(*SelectQuery).sel.Selections()[0]
-	case types.Selection:
-		rightSel = right.(types.Selection)
+	case scanner.Selection:
+		rightSel = right.(scanner.Selection)
 	}
 	return q.doJoin(types.JOIN_OUTER, rightSel, on)
 }
@@ -144,7 +145,7 @@ func (q *SelectQuery) OuterJoin(right interface{}, on *expression.Expression) *S
 // SelectQuery.e will be set to an error.
 func (q *SelectQuery) doJoin(
 	jt types.JoinType,
-	right types.Selection,
+	right scanner.Selection,
 	on *expression.Expression,
 ) *SelectQuery {
 	if q.sel == nil || len(q.sel.Selections()) == 0 {
@@ -154,12 +155,12 @@ func (q *SelectQuery) doJoin(
 
 	// Let's first determine which selection is targeted as the LEFT part of
 	// the join.
-	var left types.Selection
+	var left scanner.Selection
 	if on != nil {
 		for _, el := range on.Elements() {
 			switch el.(type) {
-			case types.Projection:
-				p := el.(types.Projection)
+			case scanner.Projection:
+				p := el.(scanner.Projection)
 				exprSel := p.From()
 				if exprSel == right {
 					continue
@@ -239,10 +240,10 @@ func (q *SelectQuery) doJoin(
 }
 
 func Select(items ...interface{}) *SelectQuery {
-	sel := statement.NewSelect(make([]types.Projection, 0), nil, nil, nil, nil, nil, nil, nil)
+	sel := statement.NewSelect(make([]scanner.Projection, 0), nil, nil, nil, nil, nil, nil, nil)
 
 	nDerived := 0
-	selectionMap := make(map[types.Selection]bool, 0)
+	selectionMap := make(map[scanner.Selection]bool, 0)
 
 	// For each scannable item we've received in the call, check what concrete
 	// type they are and, depending on which type they are, either add them to
@@ -318,7 +319,7 @@ func Select(items ...interface{}) *SelectQuery {
 			sel.AddProjection(p)
 		}
 	}
-	selections := make([]types.Selection, len(selectionMap))
+	selections := make([]scanner.Selection, len(selectionMap))
 	x := 0
 	for sel, _ := range selectionMap {
 		selections[x] = sel

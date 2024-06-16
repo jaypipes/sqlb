@@ -9,18 +9,18 @@ package sqlb
 import (
 	"testing"
 
-	"github.com/jaypipes/sqlb/pkg/errors"
-	"github.com/jaypipes/sqlb/pkg/grammar/expression"
-	"github.com/jaypipes/sqlb/pkg/scanner"
-	"github.com/jaypipes/sqlb/pkg/testutil"
+	"github.com/jaypipes/sqlb/errors"
+	"github.com/jaypipes/sqlb/internal/grammar/expression"
+	"github.com/jaypipes/sqlb/internal/scanner"
+	"github.com/jaypipes/sqlb/internal/testutil"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestDeleteQuery(t *testing.T) {
 	assert := assert.New(t)
 
-	sc := testutil.Schema()
-	users := T(sc, "users")
+	m := testutil.Meta()
+	users := T(m, "users")
 	colUserName := users.C("name")
 
 	tests := []struct {

@@ -1,17 +1,18 @@
 # sqlb ![Build Status](https://github.com/jaypipes/sqlb/actions/workflows/on-push.yaml/badge.svg?branch=main)
 
-`sqlb` is a Golang library designed for efficiently constructing SQL
-expressions. Instead of hand-constructing strings containing raw SQL, users of
-the `sqlb` library instead construct query expressions and the `sqlb` library
-does the work of producing the raw strings that get sent to a database.
+`sqlb` is a Go library designed for efficiently constructing SQL expressions in
+a concise, readable fashion.
+
+Instead of hand-constructing strings containing raw SQL, users of the `sqlb`
+library instead construct query expressions and the `sqlb` library does the
+work of producing the raw strings that get sent to a SQL database.
 
 ## Building SQL expressions, not strings
 
-It's best to learn by example, so let's walk through a common way in which
-Golang applications might typically work with an underlying SQL database and
-transform this application to instead work with the `sqlb` library, showing the
-resulting gains in both code expressiveness, application speed and memory
-efficiency.
+It's best to learn by example, so let's walk through a common way in which Go
+applications might typically work with an underlying SQL database and transform
+this application to instead work with the `sqlb` library, showing the resulting
+gains in both code expressiveness, application speed and memory efficiency.
 
 Our example will be a simple blogging application.
 
@@ -59,8 +60,8 @@ ORDER BY articles.created_on DESC
 LIMIT 10
 ```
 
-Our Golang code for the server side of our application might look something
-like this:
+Our Go code for the server side of our application might look something like
+this:
 
 ```go
 package main
@@ -198,11 +199,12 @@ LIMIT ?`
 As you can see above, the minor enhancements to our application of allowing a
 configurable number of articles and filtering by author have already begun to
 make the `getArticles()` function unwieldy. The string being generated for our
-SQL SELECT statement is both more difficult to read and less efficient to
-construct (due to the multiple string concatenations and memory allocations
-being performed). Adding more filtering capability would bring yet more
-conditionals and more string concatenation, leading to ever-increasing
-complexity and reduced code readability.
+SQL `SELECT` statement is difficult to read and hides the *intent* of the query
+expression in the ugliness of string concatenation.
+
+Adding more filtering capability brings more conditionals and more string
+concatenation, leading to ever-increasing complexity and reduced code
+readability.
 
 `sqlb` is designed to solve this problem.
 
@@ -216,24 +218,26 @@ We start by initializing `sqlb`'s reflection system in our application's
 
 ```go
 import (
+    "database/sql"
+
     "github.com/jaypipes/sqlb"
 )
 
-var meta sqlb.Meta
+var meta *sqlb.Meta
 
 func main() {
     if db, err := sql.Open("mysql", DSN); err != nil {
         log.Fatal(err)
     }
-    if err := sqlb.Reflect(sqlb.DIALECT_MYSQL, db, &meta); err != nil {
+    if meta, err := sqlb.Reflect(db); err != nil {
         log.Fatal(err)
     }
 }
 ```
 
 The `sqlb.Meta` struct is now populated with information about the database,
-including metadata about tables, columns, indexes, and relations. You can use
-this meta information when constructing `sqlb` Query Expressions.
+including metadata about tables, columns, indexes, and relations. You use
+`sqlb.Meta` when constructing `sqlb` Query Expressions.
 
 Let's transform our original `getArticles()` function -- before we added
 support for a configurable number of articles and filtering by author -- to use
@@ -273,9 +277,8 @@ func getArticles() []*Article {
 }
 ```
 
-The above code ends up producing an identical SQL string as the original code,
-however the `sqlb` version uses only a single memory allocation to construct
-the SQL string (when `q.String()` is called).
+The above code ends up producing an identical SQL string as the original code
+without any of the string concatenation.
 
 Let's add in functionality to have a configurable number of returned articles
 and optionally filter for a specific author's articles.
@@ -292,7 +295,7 @@ func getArticles(numArticles int, byAuthor string) []*Articles {
         q.Where(sqlb.Equal(users.C("name"), byAuthor))
     }
     q.OrderBy(articles.C("created_by").Desc())
-    q.Limit(numArticle)
+    q.Limit(numArticles)
 
     articles := make([]*Article, 0)
     rows, err := sqlb.Query(db, q)
@@ -317,9 +320,9 @@ func getArticles(numArticles int, byAuthor string) []*Articles {
 ```
 
 No more manually constructing and reconstructing strings or tracking query
-arguments. `sqlb` handles the SQL string construction for you as well as
-properly construct the slice of query arguments, allowing you to write custom
-query code in a more natural and efficient manner.
+arguments. `sqlb` handles the SQL string construction for you as well as the
+slice of query arguments, allowing you to write custom query code in a more
+natural and efficient manner.
 
 ## License
 

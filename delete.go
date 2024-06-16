@@ -6,20 +6,18 @@ package sqlb
 import (
 	"strings"
 
-	"github.com/jaypipes/sqlb/pkg/errors"
-	"github.com/jaypipes/sqlb/pkg/grammar/expression"
-	"github.com/jaypipes/sqlb/pkg/grammar/identifier"
-	"github.com/jaypipes/sqlb/pkg/grammar/statement"
-	"github.com/jaypipes/sqlb/pkg/scanner"
-	"github.com/jaypipes/sqlb/pkg/types"
+	"github.com/jaypipes/sqlb/errors"
+	"github.com/jaypipes/sqlb/internal/grammar/expression"
+	"github.com/jaypipes/sqlb/internal/grammar/identifier"
+	"github.com/jaypipes/sqlb/internal/grammar/statement"
+	"github.com/jaypipes/sqlb/internal/scanner"
 )
 
 type DeleteQuery struct {
-	e       error
-	b       []byte
-	args    []interface{}
-	stmt    *statement.Delete
-	scanner types.Scanner
+	e    error
+	b    []byte
+	args []interface{}
+	stmt *statement.Delete
 }
 
 func (q *DeleteQuery) IsValid() bool {
@@ -30,7 +28,7 @@ func (q *DeleteQuery) Error() error {
 	return q.e
 }
 
-func (q *DeleteQuery) Scan(s types.Scanner, b *strings.Builder, qargs []interface{}, idx *int) {
+func (q *DeleteQuery) Scan(s *scanner.Scanner, b *strings.Builder, qargs []interface{}, idx *int) {
 	q.stmt.Scan(s, b, qargs, idx)
 }
 
@@ -38,7 +36,7 @@ func (q *DeleteQuery) ArgCount() int {
 	return q.stmt.ArgCount()
 }
 
-func (q *DeleteQuery) Size(s types.Scanner) int {
+func (q *DeleteQuery) Size(s *scanner.Scanner) int {
 	return q.stmt.Size(s)
 }
 
@@ -55,8 +53,7 @@ func Delete(t *identifier.Table) *DeleteQuery {
 	}
 
 	return &DeleteQuery{
-		scanner: scanner.New(t.Schema().Dialect),
-		stmt:    statement.NewDelete(t, nil),
+		stmt: statement.NewDelete(t, nil),
 	}
 }
 

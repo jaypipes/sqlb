@@ -7,10 +7,10 @@ package sqlb
 import (
 	"strings"
 
-	"github.com/jaypipes/sqlb/pkg/errors"
-	"github.com/jaypipes/sqlb/pkg/grammar/identifier"
-	"github.com/jaypipes/sqlb/pkg/grammar/statement"
-	"github.com/jaypipes/sqlb/pkg/types"
+	"github.com/jaypipes/sqlb/errors"
+	"github.com/jaypipes/sqlb/internal/grammar/identifier"
+	"github.com/jaypipes/sqlb/internal/grammar/statement"
+	"github.com/jaypipes/sqlb/internal/scanner"
 )
 
 type InsertQuery struct {
@@ -26,7 +26,7 @@ func (q *InsertQuery) Error() error {
 	return q.e
 }
 
-func (q *InsertQuery) Scan(s types.Scanner, b *strings.Builder, qargs []interface{}, idx *int) {
+func (q *InsertQuery) Scan(s *scanner.Scanner, b *strings.Builder, qargs []interface{}, idx *int) {
 	q.stmt.Scan(s, b, qargs, idx)
 }
 
@@ -34,7 +34,7 @@ func (q *InsertQuery) ArgCount() int {
 	return q.stmt.ArgCount()
 }
 
-func (q *InsertQuery) Size(s types.Scanner) int {
+func (q *InsertQuery) Size(s *scanner.Scanner) int {
 	return q.stmt.Size(s)
 }
 
