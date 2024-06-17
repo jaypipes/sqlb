@@ -316,7 +316,7 @@ func Select(
 	}
 	selections := make([]builder.Selection, len(selectionMap))
 	x := 0
-	for sel, _ := range selectionMap {
+	for sel := range selectionMap {
 		selections[x] = sel
 		x++
 	}

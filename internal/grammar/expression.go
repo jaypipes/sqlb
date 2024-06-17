@@ -27,40 +27,40 @@ var (
 	// A static table containing information used in constructing the
 	// expression's SQL string during scan() calls
 	exprScanTable = map[ExpressionType]ScanInfo{
-		EXP_EQUAL: ScanInfo{
+		EXP_EQUAL: {
 			SYM_ELEMENT, SYM_EQUAL, SYM_ELEMENT,
 		},
-		EXP_NEQUAL: ScanInfo{
+		EXP_NEQUAL: {
 			SYM_ELEMENT, SYM_NEQUAL, SYM_ELEMENT,
 		},
-		EXP_AND: ScanInfo{
+		EXP_AND: {
 			SYM_LPAREN, SYM_ELEMENT, SYM_AND, SYM_ELEMENT, SYM_RPAREN,
 		},
-		EXP_OR: ScanInfo{
+		EXP_OR: {
 			SYM_LPAREN, SYM_ELEMENT, SYM_OR, SYM_ELEMENT, SYM_RPAREN,
 		},
-		EXP_IN: ScanInfo{
+		EXP_IN: {
 			SYM_ELEMENT, SYM_IN, SYM_ELEMENT, SYM_RPAREN,
 		},
-		EXP_BETWEEN: ScanInfo{
+		EXP_BETWEEN: {
 			SYM_ELEMENT, SYM_BETWEEN, SYM_ELEMENT, SYM_AND, SYM_ELEMENT,
 		},
-		EXP_IS_NULL: ScanInfo{
+		EXP_IS_NULL: {
 			SYM_ELEMENT, SYM_IS_NULL,
 		},
-		EXP_IS_NOT_NULL: ScanInfo{
+		EXP_IS_NOT_NULL: {
 			SYM_ELEMENT, SYM_IS_NOT_NULL,
 		},
-		EXP_GREATER: ScanInfo{
+		EXP_GREATER: {
 			SYM_ELEMENT, SYM_GREATER, SYM_ELEMENT,
 		},
-		EXP_GREATER_EQUAL: ScanInfo{
+		EXP_GREATER_EQUAL: {
 			SYM_ELEMENT, SYM_GREATER_EQUAL, SYM_ELEMENT,
 		},
-		EXP_LESS: ScanInfo{
+		EXP_LESS: {
 			SYM_ELEMENT, SYM_LESS, SYM_ELEMENT,
 		},
-		EXP_LESS_EQUAL: ScanInfo{
+		EXP_LESS_EQUAL: {
 			SYM_ELEMENT, SYM_LESS_EQUAL, SYM_ELEMENT,
 		},
 	}

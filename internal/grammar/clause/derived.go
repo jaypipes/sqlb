@@ -21,7 +21,9 @@ import (
 // statement:
 //
 // SELECT u.id, u.name FROM (
-//   SELECT users.id, users.name FROM users
+//
+//	SELECT users.id, users.name FROM users
+//
 // ) AS u
 //
 // The inner SELECT's projections are columns from the users Table or TableDef.
@@ -90,7 +92,9 @@ func NewDerivedTable(
 // column. For example, given the following SQL:
 //
 // SELECT <outer> FROM (
-//   SELECT users.id, users.name FROM users
+//
+//	SELECT users.id, users.name FROM users
+//
 // ) AS u
 //
 // <outer> should contain:
@@ -106,10 +110,12 @@ func NewDerivedTable(
 // aliased, like so:
 //
 // SELECT <outer> FROM (
-//   SELECT
-//     users.id AS user_id,
-//     users.name AS user_name
-//   FROM users
+//
+//	SELECT
+//	  users.id AS user_id,
+//	  users.name AS user_name
+//	FROM users
+//
 // ) AS u
 //
 // <outer> should instead contain:
@@ -125,8 +131,10 @@ func NewDerivedTable(
 // outermost projection looking like so:
 //
 // SELECT u.user_name AS uname FROM (
-//   SELECT users.name AS user_name
-//   FROM users
+//
+//	SELECT users.name AS user_name
+//	FROM users
+//
 // ) AS u
 type DerivedColumn struct {
 	Alias string // This is the outermost alias
