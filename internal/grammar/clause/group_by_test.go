@@ -32,17 +32,17 @@ func TestGroupBy(t *testing.T) {
 
 	tests := []GroupByTest{
 		// Single column
-		GroupByTest{
+		{
 			c:  clause.NewGroupBy(colUserName),
 			qs: " GROUP BY users.name",
 		},
 		// Multiple columns
-		GroupByTest{
+		{
 			c:  clause.NewGroupBy(colUserName, colUserId),
 			qs: " GROUP BY users.name, users.id",
 		},
 		// Aliased column should NOT output alias in GROUP BY
-		GroupByTest{
+		{
 			c:  clause.NewGroupBy(colUserName.As("user_name")),
 			qs: " GROUP BY users.name",
 		},

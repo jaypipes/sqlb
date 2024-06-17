@@ -37,22 +37,22 @@ func TestJoin(t *testing.T) {
 
 	tests := []JoinTest{
 		// articles to users table defs
-		JoinTest{
+		{
 			c:  clause.InnerJoin(articles, users, auCond),
 			qs: " JOIN users ON articles.author = users.id",
 		},
 		// users to articles table defs
-		JoinTest{
+		{
 			c:  clause.InnerJoin(users, articles, uaCond),
 			qs: " JOIN articles ON users.id = articles.author",
 		},
 		// articles to users tables
-		JoinTest{
+		{
 			c:  clause.InnerJoin(articles, users, auCond),
 			qs: " JOIN users ON articles.author = users.id",
 		},
 		// join an aliased table to non-aliased table
-		JoinTest{
+		{
 			c: clause.InnerJoin(
 				articles.As("a"),
 				users,
@@ -61,7 +61,7 @@ func TestJoin(t *testing.T) {
 			qs: " JOIN users ON a.author = users.id",
 		},
 		// join a non-aliased table to aliased table
-		JoinTest{
+		{
 			c: clause.InnerJoin(
 				articles,
 				users.As("u"),
@@ -70,7 +70,7 @@ func TestJoin(t *testing.T) {
 			qs: " JOIN users AS u ON articles.author = u.id",
 		},
 		// aliased projections should not include "AS alias" in output
-		JoinTest{
+		{
 			c: clause.InnerJoin(
 				articles,
 				users,
@@ -79,7 +79,7 @@ func TestJoin(t *testing.T) {
 			qs: " JOIN users ON articles.author = users.id",
 		},
 		// OuterJoin() function
-		JoinTest{
+		{
 			c: clause.OuterJoin(
 				articles,
 				users,
@@ -88,7 +88,7 @@ func TestJoin(t *testing.T) {
 			qs: " LEFT JOIN users ON articles.author = users.id",
 		},
 		// CrossJoin() function
-		JoinTest{
+		{
 			c:  clause.CrossJoin(articles, users),
 			qs: " CROSS JOIN users",
 		},

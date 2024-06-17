@@ -101,7 +101,7 @@ func TableFromMeta(
 	cols := make([]*Column, len(st.Columns))
 	colNames := make([]string, len(st.Columns))
 	x := 0
-	for cname, _ := range st.Columns {
+	for cname := range st.Columns {
 		colNames[x] = cname
 		x++
 	}

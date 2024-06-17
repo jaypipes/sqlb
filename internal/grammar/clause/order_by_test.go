@@ -33,27 +33,27 @@ func TestOrderBy(t *testing.T) {
 
 	tests := []orderByTest{
 		// column asc
-		orderByTest{
+		{
 			c:  clause.NewOrderBy(colUserName.Asc()),
 			qs: " ORDER BY users.name",
 		},
 		// column desc
-		orderByTest{
+		{
 			c:  clause.NewOrderBy(colUserName.Desc()),
 			qs: " ORDER BY users.name DESC",
 		},
 		// Aliased column should NOT output alias in ORDER BY
-		orderByTest{
+		{
 			c:  clause.NewOrderBy(colUserName.As("user_name").Desc()),
 			qs: " ORDER BY users.name DESC",
 		},
 		// multi column mixed
-		orderByTest{
+		{
 			c:  clause.NewOrderBy(colUserName.Asc(), colUserId.Desc()),
 			qs: " ORDER BY users.name, users.id DESC",
 		},
 		// sort by a function
-		orderByTest{
+		{
 			c:  clause.NewOrderBy(function.Count(users).Desc()),
 			qs: " ORDER BY COUNT(*) DESC",
 		},

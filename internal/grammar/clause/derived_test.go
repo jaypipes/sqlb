@@ -32,7 +32,7 @@ func TestDerived(t *testing.T) {
 
 	tests := []derivedTest{
 		// Simple one-column sub-SELECT
-		derivedTest{
+		{
 			c: clause.NewDerivedTable(
 				"u",
 				statement.NewSelect(

@@ -33,62 +33,62 @@ var (
 	// A static table containing information used in constructing the
 	// expression's SQL string during scan() calls
 	funcScanTable = map[FunctionID]ScanInfo{
-		FUNC_MAX: ScanInfo{
+		FUNC_MAX: {
 			SYM_MAX, SYM_ELEMENT, SYM_RPAREN,
 		},
-		FUNC_MIN: ScanInfo{
+		FUNC_MIN: {
 			SYM_MIN, SYM_ELEMENT, SYM_RPAREN,
 		},
-		FUNC_SUM: ScanInfo{
+		FUNC_SUM: {
 			SYM_SUM, SYM_ELEMENT, SYM_RPAREN,
 		},
-		FUNC_AVG: ScanInfo{
+		FUNC_AVG: {
 			SYM_AVG, SYM_ELEMENT, SYM_RPAREN,
 		},
-		FUNC_COUNT_STAR: ScanInfo{
+		FUNC_COUNT_STAR: {
 			SYM_COUNT_STAR,
 		},
-		FUNC_COUNT_DISTINCT: ScanInfo{
+		FUNC_COUNT_DISTINCT: {
 			SYM_COUNT_DISTINCT, SYM_ELEMENT, SYM_RPAREN,
 		},
-		FUNC_CAST: ScanInfo{
+		FUNC_CAST: {
 			SYM_CAST, SYM_ELEMENT, SYM_AS, SYM_PLACEHOLDER, SYM_RPAREN,
 		},
-		FUNC_CHAR_LENGTH: ScanInfo{
+		FUNC_CHAR_LENGTH: {
 			SYM_CHAR_LENGTH, SYM_ELEMENT, SYM_RPAREN,
 		},
-		FUNC_BIT_LENGTH: ScanInfo{
+		FUNC_BIT_LENGTH: {
 			SYM_BIT_LENGTH, SYM_ELEMENT, SYM_RPAREN,
 		},
-		FUNC_ASCII: ScanInfo{
+		FUNC_ASCII: {
 			SYM_ASCII, SYM_ELEMENT, SYM_RPAREN,
 		},
-		FUNC_REVERSE: ScanInfo{
+		FUNC_REVERSE: {
 			SYM_REVERSE, SYM_ELEMENT, SYM_RPAREN,
 		},
-		FUNC_CONCAT: ScanInfo{
+		FUNC_CONCAT: {
 			SYM_CONCAT, SYM_ELEMENT, SYM_RPAREN,
 		},
-		FUNC_CONCAT_WS: ScanInfo{
+		FUNC_CONCAT_WS: {
 			SYM_CONCAT_WS, SYM_ELEMENT, SYM_COMMA_WS, SYM_ELEMENT, SYM_RPAREN,
 		},
-		FUNC_NOW: ScanInfo{
+		FUNC_NOW: {
 			SYM_NOW,
 		},
-		FUNC_CURRENT_TIMESTAMP: ScanInfo{
+		FUNC_CURRENT_TIMESTAMP: {
 			SYM_CURRENT_TIMESTAMP,
 		},
-		FUNC_CURRENT_TIME: ScanInfo{
+		FUNC_CURRENT_TIME: {
 			SYM_CURRENT_TIME,
 		},
-		FUNC_CURRENT_DATE: ScanInfo{
+		FUNC_CURRENT_DATE: {
 			SYM_CURRENT_DATE,
 		},
 		// This is the MySQL variant of EXTRACT, which follows the form
 		// EXTRACT(field FROM source). PostgreSQL has a different format for
 		// EXTRACT() which follows the following format:
 		// EXTRACT(field FROM [interval|timestamp] source)
-		FUNC_EXTRACT: ScanInfo{
+		FUNC_EXTRACT: {
 			SYM_EXTRACT, SYM_PLACEHOLDER, SYM_SPACE, SYM_FROM, SYM_ELEMENT, SYM_RPAREN,
 		},
 	}
