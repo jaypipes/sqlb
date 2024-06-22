@@ -203,7 +203,7 @@ func TestFunctions(t *testing.T) {
 
 		// Test each SQL dialect output
 		for dialect, qs := range test.qs {
-			b := builder.New(builder.WithDialect(dialect))
+			b := builder.New(api.WithDialect(dialect))
 			expLen := len(qs)
 			size := test.c.Size(b)
 			size += b.InterpolationLength(argc)

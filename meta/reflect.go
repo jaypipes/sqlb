@@ -35,17 +35,24 @@ ORDER BY t.TABLE_NAME
 // pointer to a Meta struct with the discovered information.
 func Reflect(
 	db *sql.DB,
-	mods ...MetaOptionModifier,
+	mods ...api.OptionModifier,
 ) (*api.Meta, error) {
 	var err error
-	opts := mergeOpts(mods)
-	if opts.Dialect == api.DialectUnknown {
-		opts.Dialect = Dialect(db)
+	opts := api.MergeOptions(mods)
+	if opts.Dialect != nil {
+		if *opts.Dialect == api.DialectUnknown {
+			d := Dialect(db)
+			opts.Dialect = &d
+		}
 	}
-	dbName := DatabaseName(db, WithDialect(opts.Dialect))
+	if opts.Dialect == nil {
+		d := Dialect(db)
+		opts.Dialect = &d
+	}
+	dbName := DatabaseName(db, api.WithDialect(*opts.Dialect))
 	m := &api.Meta{
 		DB:      db,
-		Dialect: opts.Dialect,
+		Dialect: *opts.Dialect,
 		Name:    dbName,
 		Tables:  map[string]*api.Table{},
 	}

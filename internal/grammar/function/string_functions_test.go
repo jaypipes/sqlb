@@ -89,7 +89,7 @@ func TestTrimFunctions(t *testing.T) {
 
 		// Test each SQL dialect output
 		for dialect, qs := range test.qs {
-			b := builder.New(builder.WithDialect(dialect))
+			b := builder.New(api.WithDialect(dialect))
 
 			expLen := len(qs)
 			size := test.el.Size(b)

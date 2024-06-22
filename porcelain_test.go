@@ -637,8 +637,8 @@ func TestFormat(t *testing.T) {
 		{
 			name: "newline clause separator ",
 			b: builder.New(
-				builder.WithDialect(api.DialectMySQL),
-				builder.WithFormatSeparateClauseWith("\n"),
+				api.WithDialect(api.DialectMySQL),
+				api.WithFormatSeparateClauseWith("\n"),
 			),
 			query: q,
 			qs: `SELECT articles.id, users.name AS author
@@ -653,9 +653,9 @@ LIMIT ?`,
 		{
 			name: "newline clause separator with prefix newline",
 			b: builder.New(
-				builder.WithDialect(api.DialectMySQL),
-				builder.WithFormatSeparateClauseWith("\n"),
-				builder.WithFormatPrefixWith("\n"),
+				api.WithDialect(api.DialectMySQL),
+				api.WithFormatSeparateClauseWith("\n"),
+				api.WithFormatPrefixWith("\n"),
 			),
 			query: q,
 			qs: `

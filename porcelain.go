@@ -18,6 +18,20 @@ import (
 	"github.com/jaypipes/sqlb/query"
 )
 
+// Dialect is the SQL variant of the underlying RDBMS
+type Dialect = api.Dialect
+
+// WithDialect informs sqlb of the Dialect
+var WithDialect = api.WithDialect
+
+// WithFormatSeparateClauseWith instructs sqlb to use a supplied string as the
+// separator between clauses
+var WithFormatSeparateClauseWith = api.WithFormatSeparateClauseWith
+
+// WithFormatPrefixWith instructs sqlb to use a supplied string as a prefix for
+// the resulting SQL string
+var WithFormatPrefixWith = api.WithFormatPrefixWith
+
 // Reflect examines the supplied database connection and discovers Table
 // definitions within that connection's associated database, returning a
 // pointer to a Meta struct with the discovered information.

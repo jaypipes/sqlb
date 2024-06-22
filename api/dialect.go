@@ -6,10 +6,11 @@
 
 package api
 
+// Dialect is the SQL variant of the underlying RDBMS
 type Dialect int
 
 const (
-	DialectUnknown = iota
+	DialectUnknown Dialect = iota
 	DialectMySQL
 	DialectPostgreSQL
 	DialectTSQL

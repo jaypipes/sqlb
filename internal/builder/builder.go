@@ -113,9 +113,9 @@ func (b *Builder) InterpolationLength(argc int) int {
 
 // New returns a builder for the supplied dialect
 func New(
-	mods ...BuilderOptionModifier,
+	mods ...api.OptionModifier,
 ) *Builder {
-	opts := mergeOpts(mods)
+	opts := api.MergeOptions(mods)
 	if opts.Format == nil {
 		opts.Format = &defaultFormatOptions
 	}

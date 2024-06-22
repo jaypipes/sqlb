@@ -20,14 +20,22 @@ const (
 // DatabaseName returns the database schema name given a sql.DB handle
 func DatabaseName(
 	db *sql.DB,
-	mods ...MetaOptionModifier,
+	mods ...api.OptionModifier,
 ) string {
-	opts := mergeOpts(mods)
-	if opts.Dialect == api.DialectUnknown {
-		opts.Dialect = Dialect(db)
+	opts := api.MergeOptions(mods)
+	if opts.Dialect != nil {
+		if *opts.Dialect == api.DialectUnknown {
+			d := Dialect(db)
+			opts.Dialect = &d
+		}
 	}
+	if opts.Dialect == nil {
+		d := Dialect(db)
+		opts.Dialect = &d
+	}
+	d := *opts.Dialect
 	var qs string
-	switch opts.Dialect {
+	switch d {
 	case api.DialectMySQL:
 		qs = selDBNameMySQL
 	case api.DialectPostgreSQL:
