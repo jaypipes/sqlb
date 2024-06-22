@@ -54,6 +54,10 @@ func QueryContext(
 // Select returns a Queryable that produces a SELECT SQL statement for one or
 // more items. Items can be a Table, a Column, a Function, another SELECT
 // query, or even a literal value.
+//
+// Select panics if sqlb cannot compile the supplied arguments into a valid
+// SELECT SQL query. This is intentional, as we want compile-time failures for
+// invalid SQL construction.
 func Select(
 	items ...interface{},
 ) *query.SelectQuery {
@@ -66,6 +70,9 @@ func Insert(
 	t *identifier.Table,
 	values map[string]interface{},
 ) (builder.Element, error) {
+	if t == nil {
+		return nil, errors.TableRequired
+	}
 	if len(values) == 0 {
 		return nil, errors.NoValues
 	}
@@ -94,7 +101,7 @@ func Delete(
 	t *identifier.Table,
 ) (builder.Element, error) {
 	if t == nil {
-		return nil, errors.NoTargetTable
+		return nil, errors.TableRequired
 	}
 
 	return statement.NewDelete(t, nil), nil
@@ -107,7 +114,7 @@ func Update(
 	values map[string]interface{},
 ) (builder.Element, error) {
 	if t == nil {
-		return nil, errors.NoTargetTable
+		return nil, errors.TableRequired
 	}
 	if len(values) == 0 {
 		return nil, errors.NoValues

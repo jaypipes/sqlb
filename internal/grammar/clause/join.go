@@ -40,11 +40,11 @@ func (j *Join) Size(b *builder.Builder) int {
 	size := 0
 	size += len(b.Format.SeparateClauseWith)
 	switch j.joinType {
-	case types.JOIN_INNER:
+	case types.JoinInner:
 		size += len(grammar.Symbols[grammar.SYM_JOIN])
-	case types.JOIN_OUTER:
+	case types.JoinOuter:
 		size += len(grammar.Symbols[grammar.SYM_LEFT_JOIN])
-	case types.JOIN_CROSS:
+	case types.JoinCross:
 		size += len(grammar.Symbols[grammar.SYM_CROSS_JOIN])
 		// CROSS JOIN has no ON condition so just short-circuit here
 		return size + j.right.Size(b)
@@ -58,11 +58,11 @@ func (j *Join) Size(b *builder.Builder) int {
 func (j *Join) Scan(b *builder.Builder, args []interface{}, curArg *int) {
 	b.WriteString(b.Format.SeparateClauseWith)
 	switch j.joinType {
-	case types.JOIN_INNER:
+	case types.JoinInner:
 		b.Write(grammar.Symbols[grammar.SYM_JOIN])
-	case types.JOIN_OUTER:
+	case types.JoinOuter:
 		b.Write(grammar.Symbols[grammar.SYM_LEFT_JOIN])
-	case types.JOIN_CROSS:
+	case types.JoinCross:
 		b.Write(grammar.Symbols[grammar.SYM_CROSS_JOIN])
 	}
 	j.right.Scan(b, args, curArg)
@@ -74,7 +74,7 @@ func (j *Join) Scan(b *builder.Builder, args []interface{}, curArg *int) {
 
 func InnerJoin(left builder.Selection, right builder.Selection, on *expression.Expression) *Join {
 	return &Join{
-		joinType: types.JOIN_INNER,
+		joinType: types.JoinInner,
 		left:     left,
 		right:    right,
 		on:       on,
@@ -83,7 +83,7 @@ func InnerJoin(left builder.Selection, right builder.Selection, on *expression.E
 
 func OuterJoin(left builder.Selection, right builder.Selection, on *expression.Expression) *Join {
 	return &Join{
-		joinType: types.JOIN_OUTER,
+		joinType: types.JoinOuter,
 		left:     left,
 		right:    right,
 		on:       on,
@@ -92,7 +92,7 @@ func OuterJoin(left builder.Selection, right builder.Selection, on *expression.E
 
 func CrossJoin(left builder.Selection, right builder.Selection) *Join {
 	return &Join{
-		joinType: types.JOIN_CROSS,
+		joinType: types.JoinCross,
 		left:     left,
 		right:    right,
 	}
@@ -105,11 +105,11 @@ func NewJoin(
 	on *expression.Expression,
 ) *Join {
 	switch jt {
-	case types.JOIN_INNER:
+	case types.JoinInner:
 		return InnerJoin(left, right, on)
-	case types.JOIN_OUTER:
+	case types.JoinOuter:
 		return OuterJoin(left, right, on)
-	case types.JOIN_CROSS:
+	case types.JoinCross:
 		return CrossJoin(left, right)
 	}
 	return nil

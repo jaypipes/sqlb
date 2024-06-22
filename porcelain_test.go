@@ -36,6 +36,12 @@ func TestInsert(t *testing.T) {
 		qe     error
 	}{
 		{
+			name:   "Table missing",
+			t:      nil,
+			values: map[string]interface{}{"unknown": 1},
+			qe:     errors.TableRequired,
+		},
+		{
 			name:   "Values missing",
 			t:      users,
 			values: nil,
@@ -91,7 +97,7 @@ func TestDelete(t *testing.T) {
 	}{
 		{
 			name: "No target table",
-			qe:   errors.NoTargetTable,
+			qe:   errors.TableRequired,
 		},
 		{
 			name: "DELETE all rows",
@@ -149,7 +155,7 @@ func TestUpdate(t *testing.T) {
 			name:   "Target table missing",
 			t:      nil,
 			values: map[string]interface{}{"name": "foo"},
-			qe:     errors.NoTargetTable,
+			qe:     errors.TableRequired,
 		},
 		{
 			name:   "Unknown column",

@@ -9,7 +9,7 @@ package types
 type JoinType int
 
 const (
-	JOIN_INNER JoinType = iota
-	JOIN_OUTER
-	JOIN_CROSS
+	JoinInner JoinType = iota
+	JoinOuter
+	JoinCross
 )

@@ -117,7 +117,14 @@ func (q *SelectQuery) Join(
 	case builder.Selection:
 		rightSel = right.(builder.Selection)
 	}
-	return q.doJoin(types.JOIN_INNER, rightSel, on)
+	return q.doJoin(types.JoinInner, rightSel, on)
+}
+
+func (q *SelectQuery) InnerJoin(
+	right interface{},
+	on *expression.Expression,
+) *SelectQuery {
+	return q.Join(right, on)
 }
 
 func (q *SelectQuery) OuterJoin(
@@ -132,7 +139,7 @@ func (q *SelectQuery) OuterJoin(
 	case builder.Selection:
 		rightSel = right.(builder.Selection)
 	}
-	return q.doJoin(types.JOIN_OUTER, rightSel, on)
+	return q.doJoin(types.JoinOuter, rightSel, on)
 }
 
 // Join to a supplied selection with the supplied ON expression. If the SelectQuery
