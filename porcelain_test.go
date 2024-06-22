@@ -623,7 +623,7 @@ func TestFormat(t *testing.T) {
 	tests := []struct {
 		name  string
 		b     *builder.Builder
-		query builder.Element
+		query api.Element
 		qs    string
 		qargs []interface{}
 	}{

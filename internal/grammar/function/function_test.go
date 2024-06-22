@@ -27,7 +27,7 @@ func TestFunctions(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		c     builder.Projection
+		c     api.Projection
 		qs    map[api.Dialect]string
 		qargs []interface{}
 	}{
@@ -204,15 +204,13 @@ func TestFunctions(t *testing.T) {
 		// Test each SQL dialect output
 		for dialect, qs := range test.qs {
 			b := builder.New(api.WithDialect(dialect))
-			expLen := len(qs)
-			size := test.c.Size(b)
-			size += b.InterpolationLength(argc)
-			assert.Equal(expLen, size)
 
-			curArg := 0
-			test.c.Scan(b, test.qargs, &curArg)
+			gotqs, gotargs := b.StringArgs(test.c)
 
-			assert.Equal(qs, b.String())
+			assert.Equal(qs, gotqs)
+			if len(test.qargs) > 0 {
+				assert.Equal(test.qargs, gotargs)
+			}
 		}
 	}
 }

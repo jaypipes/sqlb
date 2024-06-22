@@ -26,15 +26,12 @@ func TestListSingle(t *testing.T) {
 	cl := element.NewList(colUserName)
 
 	exp := "users.name"
-	expLen := len(exp)
 
 	b := builder.New()
-	s := cl.Size(b)
-	assert.Equal(expLen, s)
 
-	cl.Scan(b, nil, nil)
+	qs, _ := b.StringArgs(cl)
 
-	assert.Equal(exp, b.String())
+	assert.Equal(exp, qs)
 }
 
 func TestListMulti(t *testing.T) {
@@ -48,13 +45,10 @@ func TestListMulti(t *testing.T) {
 	cl := element.NewList(colUserId, colUserName)
 
 	exp := "users.id, users.name"
-	expLen := len(exp)
 
 	b := builder.New()
-	s := cl.Size(b)
-	assert.Equal(expLen, s)
 
-	cl.Scan(b, nil, nil)
+	qs, _ := b.StringArgs(cl)
 
-	assert.Equal(exp, b.String())
+	assert.Equal(exp, qs)
 }

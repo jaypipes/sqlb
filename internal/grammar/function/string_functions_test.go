@@ -26,7 +26,7 @@ func TestTrimFunctions(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		el    builder.Element
+		el    api.Element
 		qs    map[api.Dialect]string
 		qargs []interface{}
 	}{
@@ -91,18 +91,11 @@ func TestTrimFunctions(t *testing.T) {
 		for dialect, qs := range test.qs {
 			b := builder.New(api.WithDialect(dialect))
 
-			expLen := len(qs)
-			size := test.el.Size(b)
-			size += b.InterpolationLength(argc)
-			assert.Equal(expLen, size)
+			gotqs, gotargs := b.StringArgs(test.el)
 
-			args := make([]interface{}, argc)
-			curArg := 0
-			test.el.Scan(b, args, &curArg)
-
-			assert.Equal(qs, b.String())
-			if expArgc > 0 {
-				assert.Equal(args, test.qargs)
+			assert.Equal(qs, gotqs)
+			if len(test.qargs) > 0 {
+				assert.Equal(test.qargs, gotargs)
 			}
 		}
 	}

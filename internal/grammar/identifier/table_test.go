@@ -23,15 +23,12 @@ func TestTable(t *testing.T) {
 	users := identifier.TableFromMeta(ut, "users")
 
 	exp := "users"
-	expLen := len(exp)
 
 	b := builder.New()
-	s := users.Size(b)
-	assert.Equal(expLen, s)
 
-	users.Scan(b, nil, nil)
+	qs, _ := b.StringArgs(users)
 
-	assert.Equal(exp, b.String())
+	assert.Equal(exp, qs)
 }
 
 func TestTableAlias(t *testing.T) {
@@ -42,15 +39,12 @@ func TestTableAlias(t *testing.T) {
 	u := identifier.TableFromMeta(ut, "users").As("u")
 
 	exp := "users AS u"
-	expLen := len(exp)
 
 	b := builder.New()
-	s := u.Size(b)
-	assert.Equal(expLen, s)
 
-	u.Scan(b, nil, nil)
+	qs, _ := b.StringArgs(u)
 
-	assert.Equal(exp, b.String())
+	assert.Equal(exp, qs)
 }
 
 func TestTableColumns(t *testing.T) {

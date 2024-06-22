@@ -7,6 +7,9 @@
 package clause
 
 import (
+	"strings"
+
+	"github.com/jaypipes/sqlb/api"
 	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar"
 )
@@ -23,32 +26,24 @@ func (lc *Limit) ArgCount() int {
 	return 2
 }
 
-func (lc *Limit) Size(b *builder.Builder) int {
-	// Due to dialect handling, we do not include the length of interpolation
-	// markers for query parameters. This is calculated separately by the
-	// top-level scanning struct before malloc'ing the buffer to inject the SQL
-	// string into.
-	size := 0
-	size += len(b.Format.SeparateClauseWith)
-	size += len(grammar.Symbols[grammar.SYM_LIMIT])
-	if lc.offset != nil {
-		size += len(grammar.Symbols[grammar.SYM_OFFSET])
-	}
-	return size
-}
-
-func (lc *Limit) Scan(b *builder.Builder, args []interface{}, curArg *int) {
-	b.WriteString(b.Format.SeparateClauseWith)
+func (lc *Limit) String(
+	opts api.Options,
+	qargs []interface{},
+	curarg *int,
+) string {
+	b := &strings.Builder{}
+	b.WriteString(opts.FormatSeparateClauseWith())
 	b.Write(grammar.Symbols[grammar.SYM_LIMIT])
-	b.AddInterpolationMarker(*curArg)
-	args[*curArg] = lc.limit
-	*curArg++
+	b.WriteString(builder.InterpolationMarker(opts, *curarg))
+	qargs[*curarg] = lc.limit
+	*curarg++
 	if lc.offset != nil {
 		b.Write(grammar.Symbols[grammar.SYM_OFFSET])
-		b.AddInterpolationMarker(*curArg)
-		args[*curArg] = *lc.offset
-		*curArg++
+		b.WriteString(builder.InterpolationMarker(opts, *curarg))
+		qargs[*curarg] = *lc.offset
+		*curarg++
 	}
+	return b.String()
 }
 
 // NewLimit returns a new Limit struct

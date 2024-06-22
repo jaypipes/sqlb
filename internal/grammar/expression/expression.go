@@ -7,7 +7,9 @@
 package expression
 
 import (
-	"github.com/jaypipes/sqlb/internal/builder"
+	"strings"
+
+	"github.com/jaypipes/sqlb/api"
 	"github.com/jaypipes/sqlb/internal/grammar"
 	"github.com/jaypipes/sqlb/internal/grammar/element"
 )
@@ -16,20 +18,20 @@ import (
 // = b"
 type Expression struct {
 	ScanInfo grammar.ScanInfo
-	elements []builder.Element
+	elements []api.Element
 }
 
 // Elements returns the expression's list of contained elements
-func (e *Expression) Elements() []builder.Element {
+func (e *Expression) Elements() []api.Element {
 	return e.elements
 }
 
-func (e *Expression) Referrents() []builder.Selection {
-	res := make([]builder.Selection, 0)
+func (e *Expression) Referrents() []api.Selection {
+	res := make([]api.Selection, 0)
 	for _, el := range e.elements {
 		switch el.(type) {
-		case builder.Projection:
-			p := el.(builder.Projection)
+		case api.Projection:
+			p := el.(api.Projection)
 			res = append(res, p.From())
 		}
 	}
@@ -44,8 +46,12 @@ func (e *Expression) ArgCount() int {
 	return ac
 }
 
-func (e *Expression) Size(b *builder.Builder) int {
-	size := 0
+func (e *Expression) String(
+	opts api.Options,
+	qargs []interface{},
+	curarg *int,
+) string {
+	b := &strings.Builder{}
 	elidx := 0
 	for _, sym := range e.ScanInfo {
 		if sym == grammar.SYM_ELEMENT {
@@ -54,49 +60,28 @@ func (e *Expression) Size(b *builder.Builder) int {
 			// projections. We don't want to output, for example,
 			// "ON users.id AS user_id = articles.author"
 			switch el.(type) {
-			case builder.Projection:
-				reset := el.(builder.Projection).DisableAliasScan()
+			case api.Projection:
+				reset := el.(api.Projection).DisableAliasScan()
 				defer reset()
 			}
 			elidx++
-			size += el.Size(b)
-		} else {
-			size += len(grammar.Symbols[sym])
-		}
-	}
-	return size
-}
-
-func (e *Expression) Scan(b *builder.Builder, args []interface{}, curArg *int) {
-	elidx := 0
-	for _, sym := range e.ScanInfo {
-		if sym == grammar.SYM_ELEMENT {
-			el := e.elements[elidx]
-			// We need to disable alias output for elements that are
-			// projections. We don't want to output, for example,
-			// "ON users.id AS user_id = articles.author"
-			switch el.(type) {
-			case builder.Projection:
-				reset := el.(builder.Projection).DisableAliasScan()
-				defer reset()
-			}
-			elidx++
-			el.Scan(b, args, curArg)
+			b.WriteString(el.String(opts, qargs, curarg))
 		} else {
 			b.Write(grammar.Symbols[sym])
 		}
 	}
+	return b.String()
 }
 
 // Given a slice of interface{} variables, returns a slice of element members.
 // If any of the interface{} variables are *not* of type element already, we
 // construct a Value{} for the variable.
-func toElements(vars ...interface{}) []builder.Element {
-	els := make([]builder.Element, len(vars))
+func toElements(vars ...interface{}) []api.Element {
+	els := make([]api.Element, len(vars))
 	for x, v := range vars {
 		switch v.(type) {
-		case builder.Element:
-			els[x] = v.(builder.Element)
+		case api.Element:
+			els[x] = v.(api.Element)
 		default:
 			els[x] = element.NewValue(nil, v)
 		}
@@ -109,13 +94,15 @@ func toElements(vars ...interface{}) []builder.Element {
 // If any of the interface{} variables are *not* of type element already, we
 // construct a Value{} for the variable.
 func toValueList(vars ...interface{}) *element.List {
-	els := make([]builder.Element, len(vars))
+	els := make([]api.Element, len(vars))
 	for x, v := range vars {
 		els[x] = element.NewValue(nil, v)
 	}
 	return element.NewList(els...)
 }
 
+// Equal accepts two things and returns an Element representing an equality
+// expression that can be passed to a Join or Where clause.
 func Equal(left interface{}, right interface{}) *Expression {
 	els := toElements(left, right)
 	return &Expression{
@@ -124,6 +111,8 @@ func Equal(left interface{}, right interface{}) *Expression {
 	}
 }
 
+// NotEqual accepts two things and returns an Element representing an
+// inequality expression that can be passed to a Join or Where clause.
 func NotEqual(left interface{}, right interface{}) *Expression {
 	els := toElements(left, right)
 	return &Expression{
@@ -132,28 +121,37 @@ func NotEqual(left interface{}, right interface{}) *Expression {
 	}
 }
 
+// And accepts two things and returns an Element representing an AND expression
+// that can be passed to a Join or Where clause.
 func And(a *Expression, b *Expression) *Expression {
 	return &Expression{
 		ScanInfo: grammar.ExpressionScanTable(grammar.EXP_AND),
-		elements: []builder.Element{a, b},
+		elements: []api.Element{a, b},
 	}
 }
 
+// Or accepts two things and returns an Element representing an OR expression
+// that can be passed to a Join or Where clause.
 func Or(a *Expression, b *Expression) *Expression {
 	return &Expression{
 		ScanInfo: grammar.ExpressionScanTable(grammar.EXP_OR),
-		elements: []builder.Element{a, b},
+		elements: []api.Element{a, b},
 	}
 }
 
-func In(subject builder.Element, values ...interface{}) *Expression {
+// In accepts two things and returns an Element representing an IN expression
+// that can be passed to a Join or Where clause.
+func In(subject api.Element, values ...interface{}) *Expression {
 	return &Expression{
 		ScanInfo: grammar.ExpressionScanTable(grammar.EXP_IN),
-		elements: []builder.Element{subject, toValueList(values...)},
+		elements: []api.Element{subject, toValueList(values...)},
 	}
 }
 
-func Between(subject builder.Element, start interface{}, end interface{}) *Expression {
+// Between accepts an element and a start and end things and returns an Element
+// representing a BETWEEN expression that can be passed to a Join or Where
+// clause.
+func Between(subject api.Element, start interface{}, end interface{}) *Expression {
 	els := toElements(subject, start, end)
 	return &Expression{
 		ScanInfo: grammar.ExpressionScanTable(grammar.EXP_BETWEEN),
@@ -161,20 +159,26 @@ func Between(subject builder.Element, start interface{}, end interface{}) *Expre
 	}
 }
 
-func IsNull(subject builder.Element) *Expression {
+// IsNull accepts an element and returns an Element representing an IS NULL
+// expression that can be passed to a Join or Where clause.
+func IsNull(subject api.Element) *Expression {
 	return &Expression{
 		ScanInfo: grammar.ExpressionScanTable(grammar.EXP_IS_NULL),
-		elements: []builder.Element{subject},
+		elements: []api.Element{subject},
 	}
 }
 
-func IsNotNull(subject builder.Element) *Expression {
+// IsNotNull accepts an element and returns an Element representing an IS NOT
+// NULL expression that can be passed to a Join or Where clause.
+func IsNotNull(subject api.Element) *Expression {
 	return &Expression{
 		ScanInfo: grammar.ExpressionScanTable(grammar.EXP_IS_NOT_NULL),
-		elements: []builder.Element{subject},
+		elements: []api.Element{subject},
 	}
 }
 
+// GreaterThan accepts two things and returns an Element representing a greater
+// than expression that can be passed to a Join or Where clause.
 func GreaterThan(left interface{}, right interface{}) *Expression {
 	els := toElements(left, right)
 	return &Expression{
@@ -183,6 +187,9 @@ func GreaterThan(left interface{}, right interface{}) *Expression {
 	}
 }
 
+// GreaterThanOrEqual accepts two things and returns an Element representing a
+// greater than or equality expression that can be passed to a Join or Where
+// clause.
 func GreaterThanOrEqual(left interface{}, right interface{}) *Expression {
 	els := toElements(left, right)
 	return &Expression{
@@ -191,6 +198,8 @@ func GreaterThanOrEqual(left interface{}, right interface{}) *Expression {
 	}
 }
 
+// LessThan accepts two things and returns an Element representing a less than
+// expression that can be passed to a Join or Where clause.
 func LessThan(left interface{}, right interface{}) *Expression {
 	els := toElements(left, right)
 	return &Expression{
@@ -199,6 +208,9 @@ func LessThan(left interface{}, right interface{}) *Expression {
 	}
 }
 
+// LessThanOrEqual accepts two things and returns an Element representing a
+// less than or equality expression that can be passed to a Join or Where
+// clause.
 func LessThanOrEqual(left interface{}, right interface{}) *Expression {
 	els := toElements(left, right)
 	return &Expression{

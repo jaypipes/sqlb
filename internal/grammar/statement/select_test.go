@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/jaypipes/sqlb"
+	"github.com/jaypipes/sqlb/api"
 	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar/clause"
 	"github.com/jaypipes/sqlb/internal/grammar/element"
@@ -45,7 +46,7 @@ func TestSelectStatement(t *testing.T) {
 		{
 			name: "A literal value",
 			s: statement.NewSelect(
-				[]builder.Projection{element.NewValue(nil, 1)},
+				[]api.Projection{element.NewValue(nil, 1)},
 				nil, nil, nil, nil, nil, nil, nil,
 			),
 			qs:    "SELECT ?",
@@ -54,7 +55,7 @@ func TestSelectStatement(t *testing.T) {
 		{
 			name: "A literal value aliased",
 			s: statement.NewSelect(
-				[]builder.Projection{element.NewValue(nil, 1).As("foo")},
+				[]api.Projection{element.NewValue(nil, 1).As("foo")},
 				nil, nil, nil, nil, nil, nil, nil,
 			),
 			qs:    "SELECT ? AS foo",
@@ -63,7 +64,7 @@ func TestSelectStatement(t *testing.T) {
 		{
 			name: "Two literal values",
 			s: statement.NewSelect(
-				[]builder.Projection{
+				[]api.Projection{
 					element.NewValue(nil, 1),
 					element.NewValue(nil, 2),
 				},
@@ -75,8 +76,8 @@ func TestSelectStatement(t *testing.T) {
 		{
 			name: "Table and column",
 			s: statement.NewSelect(
-				[]builder.Projection{colUserName},
-				[]builder.Selection{users},
+				[]api.Projection{colUserName},
+				[]api.Selection{users},
 				nil, nil, nil, nil, nil, nil,
 			),
 			qs: "SELECT users.name FROM users",
@@ -84,10 +85,10 @@ func TestSelectStatement(t *testing.T) {
 		{
 			name: "aliased Table and Column",
 			s: statement.NewSelect(
-				[]builder.Projection{
+				[]api.Projection{
 					users.As("u").C("name"),
 				},
-				[]builder.Selection{users.As("u")},
+				[]api.Selection{users.As("u")},
 				nil, nil, nil, nil, nil, nil,
 			),
 			qs: "SELECT u.name FROM users AS u",
@@ -95,8 +96,8 @@ func TestSelectStatement(t *testing.T) {
 		{
 			name: "Table and multiple Column",
 			s: statement.NewSelect(
-				[]builder.Projection{colUserId, colUserName},
-				[]builder.Selection{users},
+				[]api.Projection{colUserId, colUserName},
+				[]api.Selection{users},
 				nil, nil, nil, nil, nil, nil,
 			),
 			qs: "SELECT users.id, users.name FROM users",
@@ -104,8 +105,8 @@ func TestSelectStatement(t *testing.T) {
 		{
 			name: "Simple WHERE",
 			s: statement.NewSelect(
-				[]builder.Projection{colUserName},
-				[]builder.Selection{users},
+				[]api.Projection{colUserName},
+				[]api.Selection{users},
 				nil,
 				clause.NewWhere(
 					expression.Equal(colUserName, "foo"),
@@ -118,8 +119,8 @@ func TestSelectStatement(t *testing.T) {
 		{
 			name: "Simple LIMIT",
 			s: statement.NewSelect(
-				[]builder.Projection{colUserName},
-				[]builder.Selection{users},
+				[]api.Projection{colUserName},
+				[]api.Selection{users},
 				nil, nil, nil, nil, nil,
 				clause.NewLimit(10, nil),
 			),
@@ -129,8 +130,8 @@ func TestSelectStatement(t *testing.T) {
 		{
 			name: "Simple ORDER BY",
 			s: statement.NewSelect(
-				[]builder.Projection{colUserName},
-				[]builder.Selection{users},
+				[]api.Projection{colUserName},
+				[]api.Selection{users},
 				nil, nil, nil, nil,
 				clause.NewOrderBy(colUserName.Desc()),
 				nil,
@@ -140,8 +141,8 @@ func TestSelectStatement(t *testing.T) {
 		{
 			name: "Simple GROUP BY",
 			s: statement.NewSelect(
-				[]builder.Projection{colUserName},
-				[]builder.Selection{users},
+				[]api.Projection{colUserName},
+				[]api.Selection{users},
 				nil, nil,
 				clause.NewGroupBy(colUserName),
 				nil, nil, nil,
@@ -151,8 +152,8 @@ func TestSelectStatement(t *testing.T) {
 		{
 			name: "GROUP BY, ORDER BY and LIMIT",
 			s: statement.NewSelect(
-				[]builder.Projection{colUserName},
-				[]builder.Selection{users},
+				[]api.Projection{colUserName},
+				[]api.Selection{users},
 				nil, nil,
 				clause.NewGroupBy(colUserName),
 				nil,
@@ -165,8 +166,8 @@ func TestSelectStatement(t *testing.T) {
 		{
 			name: "Single JOIN",
 			s: statement.NewSelect(
-				[]builder.Projection{colArticleId, colUserName.As("author")},
-				[]builder.Selection{articles},
+				[]api.Projection{colArticleId, colUserName.As("author")},
+				[]api.Selection{articles},
 				[]*clause.Join{
 					clause.InnerJoin(
 						articles,
@@ -181,8 +182,8 @@ func TestSelectStatement(t *testing.T) {
 		{
 			name: "Multiple JOINs",
 			s: statement.NewSelect(
-				[]builder.Projection{colArticleId, colUserName.As("author"), colArticleStateName.As("state")},
-				[]builder.Selection{articles},
+				[]api.Projection{colArticleId, colUserName.As("author"), colArticleStateName.As("state")},
+				[]api.Selection{articles},
 				[]*clause.Join{
 					clause.InnerJoin(
 						articles,
@@ -202,8 +203,8 @@ func TestSelectStatement(t *testing.T) {
 		{
 			name: "COUNT(*) on a table",
 			s: statement.NewSelect(
-				[]builder.Projection{function.Count(users)},
-				[]builder.Selection{users},
+				[]api.Projection{function.Count(users)},
+				[]api.Selection{users},
 				nil, nil, nil, nil, nil, nil,
 			),
 			qs: "SELECT COUNT(*) FROM users",
@@ -216,14 +217,10 @@ func TestSelectStatement(t *testing.T) {
 		argc := test.s.ArgCount()
 		assert.Equal(expArgc, argc)
 
-		expLen := len(test.qs)
-		size := test.s.Size(b)
-		size += b.InterpolationLength(argc)
-		assert.Equal(expLen, size)
-
-		curArg := 0
-		test.s.Scan(b, test.qargs, &curArg)
-
-		assert.Equal(test.qs, b.String())
+		qs, args := b.StringArgs(test.s)
+		assert.Equal(test.qs, qs)
+		if len(test.qargs) > 0 {
+			assert.Equal(test.qargs, args)
+		}
 	}
 }

@@ -7,7 +7,10 @@
 package statement
 
 import (
-	builder "github.com/jaypipes/sqlb/internal/builder"
+	"strings"
+
+	"github.com/jaypipes/sqlb/api"
+	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar"
 	"github.com/jaypipes/sqlb/internal/grammar/clause"
 	"github.com/jaypipes/sqlb/internal/grammar/expression"
@@ -30,27 +33,12 @@ func (s *Update) ArgCount() int {
 	return argc
 }
 
-func (st *Update) Size(b *builder.Builder) int {
-	size := len(grammar.Symbols[grammar.SYM_UPDATE]) + len(st.table.Name) + len(grammar.Symbols[grammar.SYM_SET])
-	ncols := len(st.columns)
-	for _, c := range st.columns {
-		// We don't add the table identifier or use an alias when outputting
-		// the column names in the <columns> element of the INSERT statement
-		size += len(c.Name)
-	}
-	// NOTE(jaypipes): We do not include the length of interpolation markers,
-	// since that differs based on the SQL dialect
-	size += len(grammar.Symbols[grammar.SYM_EQUAL]) * ncols
-	// Two comma-delimited lists of same number of elements (columns and
-	// values)
-	size += 2 * (len(grammar.Symbols[grammar.SYM_COMMA_WS]) * (ncols - 1)) // the commas...
-	if st.where != nil {
-		size += st.where.Size(b)
-	}
-	return size
-}
-
-func (st *Update) Scan(b *builder.Builder, args []interface{}, curArg *int) {
+func (st *Update) String(
+	opts api.Options,
+	qargs []interface{},
+	curarg *int,
+) string {
+	b := &strings.Builder{}
 	b.Write(grammar.Symbols[grammar.SYM_UPDATE])
 	// We don't add any table alias when outputting the table identifier
 	b.WriteString(st.table.Name)
@@ -63,17 +51,18 @@ func (st *Update) Scan(b *builder.Builder, args []interface{}, curArg *int) {
 		// statement
 		b.WriteString(c.Name)
 		b.Write(grammar.Symbols[grammar.SYM_EQUAL])
-		b.AddInterpolationMarker(*curArg)
-		args[*curArg] = st.values[x]
-		*curArg++
+		b.WriteString(builder.InterpolationMarker(opts, *curarg))
+		qargs[*curarg] = st.values[x]
+		*curarg++
 		if x != (ncols - 1) {
 			b.Write(grammar.Symbols[grammar.SYM_COMMA_WS])
 		}
 	}
 
 	if st.where != nil {
-		st.where.Scan(b, args, curArg)
+		b.WriteString(st.where.String(opts, qargs, curarg))
 	}
+	return b.String()
 }
 
 func (st *Update) AddWhere(e *expression.Expression) *Update {

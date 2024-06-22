@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/jaypipes/sqlb"
+	"github.com/jaypipes/sqlb/api"
 	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar/clause"
 	"github.com/jaypipes/sqlb/internal/grammar/expression"
@@ -33,30 +34,30 @@ func TestFrom(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		s     *clause.From
+		c     *clause.From
 		qs    string
 		qargs []interface{}
 	}{
 		{
 			name: "Table",
-			s: clause.NewFrom(
-				[]builder.Selection{users},
+			c: clause.NewFrom(
+				[]api.Selection{users},
 				[]*clause.Join{},
 			),
 			qs: "FROM users",
 		},
 		{
 			name: "aliased Table",
-			s: clause.NewFrom(
-				[]builder.Selection{users.As("u")},
+			c: clause.NewFrom(
+				[]api.Selection{users.As("u")},
 				[]*clause.Join{},
 			),
 			qs: "FROM users AS u",
 		},
 		{
 			name: "Single JOIN",
-			s: clause.NewFrom(
-				[]builder.Selection{articles},
+			c: clause.NewFrom(
+				[]api.Selection{articles},
 				[]*clause.Join{
 					clause.InnerJoin(
 						articles,
@@ -69,8 +70,8 @@ func TestFrom(t *testing.T) {
 		},
 		{
 			name: "Multiple JOINs",
-			s: clause.NewFrom(
-				[]builder.Selection{articles},
+			c: clause.NewFrom(
+				[]api.Selection{articles},
 				[]*clause.Join{
 					clause.InnerJoin(
 						articles,
@@ -91,17 +92,11 @@ func TestFrom(t *testing.T) {
 		b := builder.New()
 
 		expArgc := len(test.qargs)
-		argc := test.s.ArgCount()
+		argc := test.c.ArgCount()
 		assert.Equal(expArgc, argc)
 
-		expLen := len(test.qs)
-		size := test.s.Size(b)
-		size += b.InterpolationLength(argc)
-		assert.Equal(expLen, size)
+		qs, _ := b.StringArgs(test.c)
 
-		curArg := 0
-		test.s.Scan(b, test.qargs, &curArg)
-
-		assert.Equal(test.qs, b.String())
+		assert.Equal(test.qs, qs)
 	}
 }

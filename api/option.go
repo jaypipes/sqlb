@@ -6,29 +6,60 @@
 
 package api
 
-type Option struct {
-	Dialect *Dialect
-	Format  *FormatOptions
+type Options struct {
+	dialect *Dialect
+	format  *FormatOptions
 }
 
-// OptionModifier modifies a Option
-type OptionModifier func(o *Option)
+// HasDialect returns true if the Options' Dialect has been set
+func (o *Options) HasDialect() bool {
+	return o != nil && o.dialect != nil
+}
+
+// Dialect returns the Options' Dialect or the default Dialect if not set
+func (o *Options) Dialect() Dialect {
+	if o == nil || o.dialect == nil {
+		return DefaultDialect
+	}
+	return *o.dialect
+}
+
+// FormatPrefixWith returns the Options' FormatPrefixWith or the default if not
+// set
+func (o *Options) FormatPrefixWith() string {
+	if o == nil || o.format == nil {
+		return DefaultFormatOptions.PrefixWith
+	}
+	return (*o.format).PrefixWith
+}
+
+// FormatSeparateClauseWith returns the Options' FormatSeparateClauseWith or
+// the default if not set
+func (o *Options) FormatSeparateClauseWith() string {
+	if o == nil || o.format == nil {
+		return DefaultFormatOptions.SeparateClauseWith
+	}
+	return (*o.format).SeparateClauseWith
+}
+
+// Option modifies an Options
+type Option func(o *Options)
 
 // MergeOptions joins any OptionModifiers into one
-func MergeOptions(mods []OptionModifier) *Option {
-	o := &Option{}
+func MergeOptions(mods []Option) Options {
+	opts := Options{}
 	for _, mod := range mods {
-		mod(o)
+		mod(&opts)
 	}
-	return o
+	return opts
 }
 
 // WithDialect informs sqlb of the Dialect
 func WithDialect(
 	dialect Dialect,
-) OptionModifier {
-	return func(o *Option) {
-		o.Dialect = &dialect
+) Option {
+	return func(o *Options) {
+		o.dialect = &dialect
 	}
 }
 
@@ -36,12 +67,12 @@ func WithDialect(
 // separator between clauses
 func WithFormatSeparateClauseWith(
 	with string,
-) OptionModifier {
-	return func(o *Option) {
-		if o.Format == nil {
-			o.Format = &FormatOptions{}
+) Option {
+	return func(o *Options) {
+		if o.format == nil {
+			o.format = &FormatOptions{}
 		}
-		o.Format.SeparateClauseWith = with
+		o.format.SeparateClauseWith = with
 	}
 }
 
@@ -49,11 +80,11 @@ func WithFormatSeparateClauseWith(
 // the resulting SQL string
 func WithFormatPrefixWith(
 	with string,
-) OptionModifier {
-	return func(o *Option) {
-		if o.Format == nil {
-			o.Format = &FormatOptions{}
+) Option {
+	return func(o *Options) {
+		if o.format == nil {
+			o.format = &FormatOptions{}
 		}
-		o.Format.PrefixWith = with
+		o.format.PrefixWith = with
 	}
 }

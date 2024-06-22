@@ -7,7 +7,9 @@
 package clause
 
 import (
-	"github.com/jaypipes/sqlb/internal/builder"
+	"strings"
+
+	"github.com/jaypipes/sqlb/api"
 	"github.com/jaypipes/sqlb/internal/grammar"
 	"github.com/jaypipes/sqlb/internal/grammar/expression"
 )
@@ -32,31 +34,23 @@ func (c *Having) ArgCount() int {
 	return argc
 }
 
-func (c *Having) Size(b *builder.Builder) int {
-	size := 0
-	nconditions := len(c.conditions)
-	if nconditions > 0 {
-		size += len(b.Format.SeparateClauseWith)
-		size += len(grammar.Symbols[grammar.SYM_HAVING])
-		size += len(grammar.Symbols[grammar.SYM_AND]) * (nconditions - 1)
-		for _, condition := range c.conditions {
-			size += condition.Size(b)
-		}
-	}
-	return size
-}
-
-func (c *Having) Scan(b *builder.Builder, args []interface{}, curArg *int) {
+func (c *Having) String(
+	opts api.Options,
+	qargs []interface{},
+	curarg *int,
+) string {
+	b := &strings.Builder{}
 	if len(c.conditions) > 0 {
-		b.WriteString(b.Format.SeparateClauseWith)
+		b.WriteString(opts.FormatSeparateClauseWith())
 		b.Write(grammar.Symbols[grammar.SYM_HAVING])
 		for x, condition := range c.conditions {
 			if x > 0 {
 				b.Write(grammar.Symbols[grammar.SYM_AND])
 			}
-			condition.Scan(b, args, curArg)
+			b.WriteString(condition.String(opts, qargs, curarg))
 		}
 	}
+	return b.String()
 }
 
 // NewHaving returns a new Having populated with zero or more

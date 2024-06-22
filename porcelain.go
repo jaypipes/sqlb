@@ -60,7 +60,7 @@ func T(m *api.Meta, name string) *identifier.Table {
 func Query(
 	db *sql.DB,
 	target interface{},
-	opts ...api.OptionModifier,
+	opts ...api.Option,
 ) (*sql.Rows, error) {
 	return QueryContext(context.TODO(), db, target, opts...)
 }
@@ -73,17 +73,17 @@ func QueryContext(
 	ctx context.Context,
 	db *sql.DB,
 	target interface{},
-	opts ...api.OptionModifier,
+	opts ...api.Option,
 ) (*sql.Rows, error) {
 	b := builder.New(opts...)
-	var el builder.Element
+	var el api.Element
 	switch target := target.(type) {
-	case builder.Element:
+	case api.Element:
 		el = target
 	case *query.SelectQuery:
 		el = target.Element()
 	default:
-		panic("expected either builder.Element or *query.SelectQuery")
+		panic("expected either api.Element or *query.SelectQuery")
 	}
 
 	qs, qargs := b.StringArgs(el)
@@ -108,7 +108,7 @@ func Select(
 func Insert(
 	t *identifier.Table,
 	values map[string]interface{},
-) (builder.Element, error) {
+) (api.Element, error) {
 	if t == nil {
 		return nil, api.TableRequired
 	}
@@ -138,7 +138,7 @@ func Insert(
 // table
 func Delete(
 	t *identifier.Table,
-) (builder.Element, error) {
+) (api.Element, error) {
 	if t == nil {
 		return nil, api.TableRequired
 	}
@@ -151,7 +151,7 @@ func Delete(
 func Update(
 	t *identifier.Table,
 	values map[string]interface{},
-) (builder.Element, error) {
+) (api.Element, error) {
 	if t == nil {
 		return nil, api.TableRequired
 	}
