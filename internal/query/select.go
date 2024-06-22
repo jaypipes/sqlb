@@ -82,23 +82,23 @@ func (q *SelectQuery) As(alias string) *SelectQuery {
 // provided
 func (q *SelectQuery) C(name string) api.Projection {
 	for _, p := range q.sel.Projections() {
-		switch p.(type) {
+		switch p := p.(type) {
 		case *clause.DerivedColumn:
-			dc := p.(*clause.DerivedColumn)
+			dc := p
 			if dc.Alias != "" && dc.Alias == name {
 				return dc
 			} else if dc.C().Name == name {
 				return dc
 			}
 		case *identifier.Column:
-			c := p.(*identifier.Column)
+			c := p
 			if c.Alias != "" && c.Alias == name {
 				return c
 			} else if c.Name == name {
 				return c
 			}
 		case *function.Function:
-			f := p.(*function.Function)
+			f := p
 			if f.Alias != "" && f.Alias == name {
 				return f
 			}
@@ -112,12 +112,12 @@ func (q *SelectQuery) Join(
 	on *expression.Expression,
 ) *SelectQuery {
 	var rightSel api.Selection
-	switch right.(type) {
+	switch right := right.(type) {
 	case *SelectQuery:
 		// Joining to a derived table
-		rightSel = right.(*SelectQuery).sel.Selections()[0]
+		rightSel = right.sel.Selections()[0]
 	case api.Selection:
-		rightSel = right.(api.Selection)
+		rightSel = right
 	}
 	return q.doJoin(api.JoinInner, rightSel, on)
 }
@@ -134,12 +134,12 @@ func (q *SelectQuery) OuterJoin(
 	on *expression.Expression,
 ) *SelectQuery {
 	var rightSel api.Selection
-	switch right.(type) {
+	switch right := right.(type) {
 	case *SelectQuery:
 		// Joining to a derived table
-		rightSel = right.(*SelectQuery).sel.Selections()[0]
+		rightSel = right.sel.Selections()[0]
 	case api.Selection:
-		rightSel = right.(api.Selection)
+		rightSel = right
 	}
 	return q.doJoin(api.JoinOuter, rightSel, on)
 }
@@ -162,9 +162,9 @@ func (q *SelectQuery) doJoin(
 	var left api.Selection
 	if on != nil {
 		for _, el := range on.Elements() {
-			switch el.(type) {
+			switch el := el.(type) {
 			case api.Projection:
-				p := el.(api.Projection)
+				p := el
 				exprSel := p.From()
 				if exprSel == right {
 					continue
@@ -193,7 +193,7 @@ func (q *SelectQuery) doJoin(
 					break
 				}
 			case *expression.Expression:
-				expr := el.(*expression.Expression)
+				expr := el
 				for _, referrent := range expr.Referrents() {
 					if referrent == right {
 						continue
@@ -225,11 +225,12 @@ func (q *SelectQuery) doJoin(
 				}
 			}
 		}
-	} else {
-		// TODO(jaypipes): Handle CROSS JOIN by joining the supplied right
-		// against a DerivedTable constructed from the existing SelectQuery.sel
-		// SelectStatement
 	}
+
+	// TODO(jaypipes): Handle CROSS JOIN by joining the supplied right
+	// against a DerivedTable constructed from the existing SelectQuery.sel
+	// SelectStatement
+
 	if left == nil {
 		panic(api.InvalidJoinUnknownTarget)
 	}
@@ -255,15 +256,15 @@ func Select(
 	// the returned SelectStatement's projections list or query the underlying
 	// table metadata to generate a list of all columns in that table.
 	for _, item := range items {
-		switch item.(type) {
+		switch item := item.(type) {
 		case *SelectQuery:
 			// Project all columns from the subquery to the outer
 			// SelectStatement
-			isq := item.(*SelectQuery)
+			isq := item
 			innerSelClause := isq.sel
 			if len(innerSelClause.Selections()) == 1 {
 				innerSel := innerSelClause.Selections()[0]
-				switch innerSel.(type) {
+				switch innerSel := innerSel.(type) {
 				case *clause.DerivedTable:
 					// If the inner select clause contains a single
 					// selection and that selection is a DerivedTable,
@@ -278,7 +279,7 @@ func Select(
 					// derived table's projections out into the outer
 					// SelectStatement.
 					selectionMap[innerSel] = true
-					dt := innerSel.(*clause.DerivedTable)
+					dt := innerSel
 					for _, p := range dt.DerivedColumns() {
 						sel.AddProjection(p)
 					}
@@ -299,20 +300,20 @@ func Select(
 				}
 			}
 		case *identifier.Column:
-			v := item.(*identifier.Column)
+			v := item
 			if v == nil {
 				panic("specified a non-existent column")
 			}
 			sel.AddProjection(v)
 			selectionMap[v.From()] = true
 		case *identifier.Table:
-			v := item.(*identifier.Table)
+			v := item
 			for _, c := range v.Projections() {
 				sel.AddProjection(c)
 			}
 			selectionMap[v] = true
 		case *function.Function:
-			v := item.(*function.Function)
+			v := item
 			sel.AddProjection(v)
 			selectionMap[v.From()] = true
 		default:

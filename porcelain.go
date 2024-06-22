@@ -78,10 +78,10 @@ func QueryContext(
 	b := builder.New(opts...)
 	var el api.Element
 	switch target := target.(type) {
-	case api.Element:
-		el = target
 	case *query.SelectQuery:
 		el = target.Element()
+	case api.Element:
+		el = target
 	default:
 		panic("expected either api.Element or *query.SelectQuery")
 	}

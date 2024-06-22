@@ -41,9 +41,9 @@ type DerivedTable struct {
 func (dt *DerivedTable) DerivedColumns() []api.Projection {
 	projs := []api.Projection{}
 	for _, p := range dt.from.Projections() {
-		switch p.(type) {
+		switch p := p.(type) {
 		case *identifier.Column:
-			projs = append(projs, &DerivedColumn{dt: dt, c: p.(*identifier.Column)})
+			projs = append(projs, &DerivedColumn{dt: dt, c: p})
 		}
 	}
 	return projs

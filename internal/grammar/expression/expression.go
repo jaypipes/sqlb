@@ -29,10 +29,9 @@ func (e *Expression) Elements() []api.Element {
 func (e *Expression) Referrents() []api.Selection {
 	res := make([]api.Selection, 0)
 	for _, el := range e.elements {
-		switch el.(type) {
+		switch el := el.(type) {
 		case api.Projection:
-			p := el.(api.Projection)
-			res = append(res, p.From())
+			res = append(res, el.From())
 		}
 	}
 	return res
@@ -59,9 +58,9 @@ func (e *Expression) String(
 			// We need to disable alias output for elements that are
 			// projections. We don't want to output, for example,
 			// "ON users.id AS user_id = articles.author"
-			switch el.(type) {
+			switch el := el.(type) {
 			case api.Projection:
-				reset := el.(api.Projection).DisableAliasScan()
+				reset := el.DisableAliasScan()
 				defer reset()
 			}
 			elidx++
@@ -79,9 +78,9 @@ func (e *Expression) String(
 func toElements(vars ...interface{}) []api.Element {
 	els := make([]api.Element, len(vars))
 	for x, v := range vars {
-		switch v.(type) {
+		switch v := v.(type) {
 		case api.Element:
-			els[x] = v.(api.Element)
+			els[x] = v
 		default:
 			els[x] = element.NewValue(nil, v)
 		}

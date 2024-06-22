@@ -63,9 +63,9 @@ func (f *Function) String(
 			// We need to disable alias output for elements that are
 			// projections. We don't want to output, for example,
 			// "ON users.id AS user_id = articles.author"
-			switch el.(type) {
+			switch el := el.(type) {
 			case api.Projection:
-				reset := el.(api.Projection).DisableAliasScan()
+				reset := el.DisableAliasScan()
 				defer reset()
 			}
 			elidx++
