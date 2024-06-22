@@ -4,12 +4,14 @@
 // See the COPYING file in the root project directory for full text.
 //
 
-package types
+package api
 
-type JoinType int
+type Dialect int
 
 const (
-	JoinInner JoinType = iota
-	JoinOuter
-	JoinCross
+	DialectUnknown = iota
+	DialectMySQL
+	DialectPostgreSQL
+	DialectTSQL
+	DialectSQLite
 )

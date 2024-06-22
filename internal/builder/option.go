@@ -7,12 +7,12 @@
 package builder
 
 import (
-	"github.com/jaypipes/sqlb/types"
+	"github.com/jaypipes/sqlb/api"
 )
 
 type BuilderOption struct {
-	Dialect *types.Dialect
-	Format  *types.FormatOptions
+	Dialect *api.Dialect
+	Format  *api.FormatOptions
 }
 
 // BuilderOptionModifier modifies a BuilderOption
@@ -29,7 +29,7 @@ func mergeOpts(mods []BuilderOptionModifier) *BuilderOption {
 
 // WithDialect informs the builder of the Dialect
 func WithDialect(
-	dialect types.Dialect,
+	dialect api.Dialect,
 ) BuilderOptionModifier {
 	return func(o *BuilderOption) {
 		o.Dialect = &dialect
@@ -43,7 +43,7 @@ func WithFormatSeparateClauseWith(
 ) BuilderOptionModifier {
 	return func(o *BuilderOption) {
 		if o.Format == nil {
-			o.Format = &types.FormatOptions{}
+			o.Format = &api.FormatOptions{}
 		}
 		o.Format.SeparateClauseWith = with
 	}
@@ -56,7 +56,7 @@ func WithFormatPrefixWith(
 ) BuilderOptionModifier {
 	return func(o *BuilderOption) {
 		if o.Format == nil {
-			o.Format = &types.FormatOptions{}
+			o.Format = &api.FormatOptions{}
 		}
 		o.Format.PrefixWith = with
 	}

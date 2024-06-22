@@ -4,19 +4,17 @@
 // See the COPYING file in the root project directory for full text.
 //
 
-package meta
+package api
 
 import (
 	"database/sql"
-
-	"github.com/jaypipes/sqlb/types"
 )
 
 // Meta holds metadata about the tables, columns and views comprising a
 // database.
 type Meta struct {
 	DB      *sql.DB
-	Dialect types.Dialect
+	Dialect Dialect
 	Name    string
 	Tables  map[string]*Table
 }
@@ -35,7 +33,7 @@ func (s *Meta) T(name string) *Table {
 	return nil
 }
 
-// Tblae returns a pointer to a Table with a name or alias matching the
+// Table returns a pointer to a Table with a name or alias matching the
 // supplied string, or nil if no such table is known
 func (m *Meta) Table(name string) *Table {
 	return m.T(name)

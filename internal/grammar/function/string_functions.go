@@ -7,10 +7,10 @@
 package function
 
 import (
+	"github.com/jaypipes/sqlb/api"
 	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar"
 	"github.com/jaypipes/sqlb/internal/grammar/sortcolumn"
-	"github.com/jaypipes/sqlb/types"
 )
 
 // TRIM/BTRIM/LTRIM/RTRIM SQL function support
@@ -284,7 +284,7 @@ func TrimFunctionScanSubject(
 func (f *TrimFunction) Size(b *builder.Builder) int {
 	size := 0
 	switch b.Dialect {
-	case types.DialectPostgreSQL:
+	case api.DialectPostgreSQL:
 		size = TrimFunctionSizePostgreSQL(f)
 	default:
 		size = TrimFunctionSizeMySQL(f)
@@ -307,7 +307,7 @@ func (f *TrimFunction) Size(b *builder.Builder) int {
 
 func (f *TrimFunction) Scan(b *builder.Builder, args []interface{}, curArg *int) {
 	switch b.Dialect {
-	case types.DialectPostgreSQL:
+	case api.DialectPostgreSQL:
 		TrimFunctionScanPostgreSQL(f, b, args, curArg)
 	default:
 		TrimFunctionScanMySQL(f, b, args, curArg)

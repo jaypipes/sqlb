@@ -10,25 +10,25 @@ import (
 	"database/sql"
 	"reflect"
 
-	"github.com/jaypipes/sqlb/types"
+	"github.com/jaypipes/sqlb/api"
 )
 
-var driverNameToDialect = map[string]types.Dialect{
-	"*mssql.MssqlDriver": types.DialectTSQL,
-	"*pq.Driver":         types.DialectPostgreSQL,
-	"*stdlib.Driver":     types.DialectPostgreSQL,
+var driverNameToDialect = map[string]api.Dialect{
+	"*mssql.MssqlDriver": api.DialectTSQL,
+	"*pq.Driver":         api.DialectPostgreSQL,
+	"*stdlib.Driver":     api.DialectPostgreSQL,
 }
 
 // Dialect returns the SQL Dialect after examining the supplied database
 // connection
 func Dialect(
 	db *sql.DB,
-) types.Dialect {
+) api.Dialect {
 	drv := db.Driver()
 	dv := reflect.ValueOf(drv)
 	d, found := driverNameToDialect[dv.Type().String()]
 	if !found {
-		return types.DialectUnknown
+		return api.DialectUnknown
 	}
 	return d
 }

@@ -9,21 +9,21 @@ package identifier
 import (
 	"sort"
 
+	"github.com/jaypipes/sqlb/api"
 	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar"
-	"github.com/jaypipes/sqlb/meta"
 )
 
 // Table identifies a Table in a SQL statement
 type Table struct {
-	st      *meta.Table
+	st      *api.Table
 	Alias   string
 	Name    string
 	columns []*Column
 }
 
 // Meta returns a pointer to the underlying Meta
-func (t *Table) Meta() *meta.Meta {
+func (t *Table) Meta() *api.Meta {
 	return t.st.Meta
 }
 
@@ -87,7 +87,7 @@ func (t *Table) As(alias string) *Table {
 // TableFromMeta returns a Table of a given name from a
 // supplied Meta
 func TableFromMeta(
-	m *meta.Meta,
+	m *api.Meta,
 	name string,
 ) *Table {
 	st := m.T(name)

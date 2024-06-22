@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/jaypipes/sqlb/api"
 	"github.com/jaypipes/sqlb/internal/grammar"
-	"github.com/jaypipes/sqlb/types"
 )
 
 type ElementSizes struct {
@@ -27,8 +27,8 @@ type ElementSizes struct {
 // that sqlb writes to the output buffer
 type Builder struct {
 	*strings.Builder
-	Dialect types.Dialect
-	Format  types.FormatOptions
+	Dialect api.Dialect
+	Format  api.FormatOptions
 }
 
 // Scan takes two slices and a pointer to an int. The first slice is a slice of
@@ -75,7 +75,7 @@ func (b *Builder) StringArgs(el Element) (string, []interface{}) {
 // AddInterpolationMarker adds an interpolation marker of the specified
 // dialect and position into the built SQL string
 func (b *Builder) AddInterpolationMarker(position int) {
-	if b.Dialect == types.DialectPostgreSQL {
+	if b.Dialect == api.DialectPostgreSQL {
 		b.Write(grammar.Symbols[grammar.SYM_DOLLAR])
 		b.WriteString(strconv.Itoa(position + 1))
 	} else {
@@ -90,7 +90,7 @@ func (b *Builder) AddInterpolationMarker(position int) {
 // uses a numbered $N schema with N starting at 1, SQL Server uses a :N scheme,
 // etc.
 func (b *Builder) InterpolationLength(argc int) int {
-	if b.Dialect == types.DialectPostgreSQL {
+	if b.Dialect == api.DialectPostgreSQL {
 		// $ character for each interpolated parameter plus ones digit of
 		// number
 		size := 2 * argc

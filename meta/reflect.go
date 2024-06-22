@@ -9,7 +9,7 @@ package meta
 import (
 	"database/sql"
 
-	"github.com/jaypipes/sqlb/types"
+	"github.com/jaypipes/sqlb/api"
 )
 
 const (
@@ -36,18 +36,18 @@ ORDER BY t.TABLE_NAME
 func Reflect(
 	db *sql.DB,
 	mods ...MetaOptionModifier,
-) (*Meta, error) {
+) (*api.Meta, error) {
 	var err error
 	opts := mergeOpts(mods)
-	if opts.Dialect == types.DialectUnknown {
+	if opts.Dialect == api.DialectUnknown {
 		opts.Dialect = Dialect(db)
 	}
 	dbName := DatabaseName(db, WithDialect(opts.Dialect))
-	m := &Meta{
+	m := &api.Meta{
 		DB:      db,
 		Dialect: opts.Dialect,
 		Name:    dbName,
-		Tables:  map[string]*Table{},
+		Tables:  map[string]*api.Table{},
 	}
 	if err = fillTables(db, m); err != nil {
 		return nil, err
@@ -62,13 +62,13 @@ func Reflect(
 // the INFORMATION_SCHEMA in the associated database.
 func fillTables(
 	db *sql.DB,
-	m *Meta,
+	m *api.Meta,
 ) error {
 	var qs string
 	switch m.Dialect {
-	case types.DialectMySQL:
+	case api.DialectMySQL:
 		qs = selTablesMySQL
-	case types.DialectPostgreSQL:
+	case api.DialectPostgreSQL:
 		qs = selTablesPostgreSQL
 	}
 	// Grab information about all tables in the schema
@@ -90,11 +90,11 @@ func fillTables(
 // populates the supplied `Meta`'s map of Table's columns
 func fillTableColumns(
 	db *sql.DB,
-	m *Meta,
+	m *api.Meta,
 ) error {
 	var qs string
 	switch m.Dialect {
-	case types.DialectMySQL:
+	case api.DialectMySQL:
 		qs = `
 SELECT c.TABLE_NAME, c.COLUMN_NAME
 FROM INFORMATION_SCHEMA.COLUMNS AS c
@@ -105,7 +105,7 @@ WHERE c.TABLE_SCHEMA = ?
 AND t.TABLE_TYPE = 'BASE TABLE'
 ORDER BY c.TABLE_NAME, c.COLUMN_NAME
 `
-	case types.DialectPostgreSQL:
+	case api.DialectPostgreSQL:
 		qs = `
 SELECT c.TABLE_NAME, c.COLUMN_NAME
 FROM INFORMATION_SCHEMA.COLUMNS AS c
@@ -122,7 +122,7 @@ ORDER BY c.TABLE_NAME, c.COLUMN_NAME
 	if err != nil {
 		return err
 	}
-	var t *Table
+	var t *api.Table
 	for rows.Next() {
 		var tname string
 		var cname string

@@ -7,11 +7,11 @@
 package identifier
 
 import (
+	"github.com/jaypipes/sqlb/api"
 	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar"
 	"github.com/jaypipes/sqlb/internal/grammar/function"
 	"github.com/jaypipes/sqlb/internal/grammar/sortcolumn"
-	"github.com/jaypipes/sqlb/meta"
 )
 
 type Column struct {
@@ -21,7 +21,7 @@ type Column struct {
 }
 
 // Meta returns a pointer to the underlying Meta
-func (c *Column) Meta() *meta.Meta {
+func (c *Column) Meta() *api.Meta {
 	return c.tbl.Meta()
 }
 

@@ -9,7 +9,7 @@ package meta
 import (
 	"database/sql"
 
-	"github.com/jaypipes/sqlb/types"
+	"github.com/jaypipes/sqlb/api"
 )
 
 const (
@@ -23,14 +23,14 @@ func DatabaseName(
 	mods ...MetaOptionModifier,
 ) string {
 	opts := mergeOpts(mods)
-	if opts.Dialect == types.DialectUnknown {
+	if opts.Dialect == api.DialectUnknown {
 		opts.Dialect = Dialect(db)
 	}
 	var qs string
 	switch opts.Dialect {
-	case types.DialectMySQL:
+	case api.DialectMySQL:
 		qs = selDBNameMySQL
-	case types.DialectPostgreSQL:
+	case api.DialectPostgreSQL:
 		qs = selDBNamePostgreSQL
 	}
 	var dbName string

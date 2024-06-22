@@ -7,7 +7,7 @@ package query
 import (
 	"fmt"
 
-	"github.com/jaypipes/sqlb/errors"
+	"github.com/jaypipes/sqlb/api"
 	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar/clause"
 	"github.com/jaypipes/sqlb/internal/grammar/element"
@@ -15,7 +15,6 @@ import (
 	"github.com/jaypipes/sqlb/internal/grammar/function"
 	"github.com/jaypipes/sqlb/internal/grammar/identifier"
 	"github.com/jaypipes/sqlb/internal/grammar/statement"
-	"github.com/jaypipes/sqlb/types"
 )
 
 type SelectQuery struct {
@@ -117,7 +116,7 @@ func (q *SelectQuery) Join(
 	case builder.Selection:
 		rightSel = right.(builder.Selection)
 	}
-	return q.doJoin(types.JoinInner, rightSel, on)
+	return q.doJoin(api.JoinInner, rightSel, on)
 }
 
 func (q *SelectQuery) InnerJoin(
@@ -139,7 +138,7 @@ func (q *SelectQuery) OuterJoin(
 	case builder.Selection:
 		rightSel = right.(builder.Selection)
 	}
-	return q.doJoin(types.JoinOuter, rightSel, on)
+	return q.doJoin(api.JoinOuter, rightSel, on)
 }
 
 // Join to a supplied selection with the supplied ON expression. If the SelectQuery
@@ -147,12 +146,12 @@ func (q *SelectQuery) OuterJoin(
 // not reference any selection that is found in the SelectQuery's SelectStatement, then
 // SelectQuery.e will be set to an error.
 func (q *SelectQuery) doJoin(
-	jt types.JoinType,
+	jt api.JoinType,
 	right builder.Selection,
 	on *expression.Expression,
 ) *SelectQuery {
 	if q.sel == nil || len(q.sel.Selections()) == 0 {
-		panic(errors.InvalidJoinNoSelect)
+		panic(api.InvalidJoinNoSelect)
 	}
 
 	// Let's first determine which selection is targeted as the LEFT part of
@@ -229,7 +228,7 @@ func (q *SelectQuery) doJoin(
 		// SelectStatement
 	}
 	if left == nil {
-		panic(errors.InvalidJoinUnknownTarget)
+		panic(api.InvalidJoinUnknownTarget)
 	}
 	jc := clause.NewJoin(jt, left, right, on)
 	q.sel.AddJoin(jc)

@@ -10,14 +10,13 @@ import (
 	"testing"
 
 	"github.com/jaypipes/sqlb"
-	"github.com/jaypipes/sqlb/errors"
+	"github.com/jaypipes/sqlb/api"
 	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar/expression"
 	"github.com/jaypipes/sqlb/internal/grammar/function"
 	"github.com/jaypipes/sqlb/internal/grammar/identifier"
 	"github.com/jaypipes/sqlb/internal/testutil"
 	"github.com/jaypipes/sqlb/query"
-	"github.com/jaypipes/sqlb/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -39,19 +38,19 @@ func TestInsert(t *testing.T) {
 			name:   "Table missing",
 			t:      nil,
 			values: map[string]interface{}{"unknown": 1},
-			qe:     errors.TableRequired,
+			qe:     api.TableRequired,
 		},
 		{
 			name:   "Values missing",
 			t:      users,
 			values: nil,
-			qe:     errors.NoValues,
+			qe:     api.NoValues,
 		},
 		{
 			name:   "Unknown column",
 			t:      users,
 			values: map[string]interface{}{"unknown": 1},
-			qe:     errors.UnknownColumn,
+			qe:     api.UnknownColumn,
 		},
 		{
 			name:   "Simple INSERT",
@@ -97,7 +96,7 @@ func TestDelete(t *testing.T) {
 	}{
 		{
 			name: "No target table",
-			qe:   errors.TableRequired,
+			qe:   api.TableRequired,
 		},
 		{
 			name: "DELETE all rows",
@@ -149,19 +148,19 @@ func TestUpdate(t *testing.T) {
 			name:   "Values missing",
 			t:      users,
 			values: nil,
-			qe:     errors.NoValues,
+			qe:     api.NoValues,
 		},
 		{
 			name:   "Target table missing",
 			t:      nil,
 			values: map[string]interface{}{"name": "foo"},
-			qe:     errors.TableRequired,
+			qe:     api.TableRequired,
 		},
 		{
 			name:   "Unknown column",
 			t:      users,
 			values: map[string]interface{}{"unknown": 1},
-			qe:     errors.UnknownColumn,
+			qe:     api.UnknownColumn,
 		},
 		{
 			name:   "UPDATE no WHERE",
@@ -638,7 +637,7 @@ func TestFormat(t *testing.T) {
 		{
 			name: "newline clause separator ",
 			b: builder.New(
-				builder.WithDialect(types.DialectMySQL),
+				builder.WithDialect(api.DialectMySQL),
 				builder.WithFormatSeparateClauseWith("\n"),
 			),
 			query: q,
@@ -654,7 +653,7 @@ LIMIT ?`,
 		{
 			name: "newline clause separator with prefix newline",
 			b: builder.New(
-				builder.WithDialect(types.DialectMySQL),
+				builder.WithDialect(api.DialectMySQL),
 				builder.WithFormatSeparateClauseWith("\n"),
 				builder.WithFormatPrefixWith("\n"),
 			),

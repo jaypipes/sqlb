@@ -10,7 +10,7 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/jaypipes/sqlb/errors"
+	"github.com/jaypipes/sqlb/api"
 	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar/identifier"
 	"github.com/jaypipes/sqlb/internal/grammar/statement"
@@ -23,8 +23,18 @@ import (
 // pointer to a Meta struct with the discovered information.
 var Reflect = meta.Reflect
 
+// Meta holds metadata about the tables, columns and views comprising a
+// database.
+type Meta api.Meta
+
+// Table describes metadata about a table in a database.
+type Table api.Table
+
+// Column describes a column in a Table
+type Column api.Column
+
 // T returns a TableIdentifier of a given name from a supplied Meta
-func T(m *meta.Meta, name string) *identifier.Table {
+func T(m *api.Meta, name string) *identifier.Table {
 	return identifier.TableFromMeta(m, name)
 }
 
@@ -71,10 +81,10 @@ func Insert(
 	values map[string]interface{},
 ) (builder.Element, error) {
 	if t == nil {
-		return nil, errors.TableRequired
+		return nil, api.TableRequired
 	}
 	if len(values) == 0 {
-		return nil, errors.NoValues
+		return nil, api.NoValues
 	}
 
 	// Make sure all keys in the map point to actual columns in the target
@@ -85,7 +95,7 @@ func Insert(
 	for k, v := range values {
 		c := t.C(k)
 		if c == nil {
-			return nil, errors.UnknownColumn
+			return nil, api.UnknownColumn
 		}
 		cols[x] = c
 		vals[x] = v
@@ -101,7 +111,7 @@ func Delete(
 	t *identifier.Table,
 ) (builder.Element, error) {
 	if t == nil {
-		return nil, errors.TableRequired
+		return nil, api.TableRequired
 	}
 
 	return statement.NewDelete(t, nil), nil
@@ -114,10 +124,10 @@ func Update(
 	values map[string]interface{},
 ) (builder.Element, error) {
 	if t == nil {
-		return nil, errors.TableRequired
+		return nil, api.TableRequired
 	}
 	if len(values) == 0 {
-		return nil, errors.NoValues
+		return nil, api.NoValues
 	}
 
 	// Make sure all keys in the map point to actual columns in the target
@@ -128,7 +138,7 @@ func Update(
 	for k, v := range values {
 		c := t.C(k)
 		if c == nil {
-			return nil, errors.UnknownColumn
+			return nil, api.UnknownColumn
 		}
 		cols[x] = c
 		vals[x] = v

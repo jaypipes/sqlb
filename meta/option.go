@@ -7,11 +7,11 @@
 package meta
 
 import (
-	"github.com/jaypipes/sqlb/types"
+	"github.com/jaypipes/sqlb/api"
 )
 
 type MetaOption struct {
-	Dialect types.Dialect
+	Dialect api.Dialect
 }
 
 // MetaOptionModifier modifies a MetaOption
@@ -29,7 +29,7 @@ func mergeOpts(mods []MetaOptionModifier) *MetaOption {
 // WithDialect informs the supplied function of the Dialect. If not passed, the
 // `sql.DB` handle is queried for the dialect.
 func WithDialect(
-	dialect types.Dialect,
+	dialect api.Dialect,
 ) MetaOptionModifier {
 	return func(o *MetaOption) {
 		o.Dialect = dialect

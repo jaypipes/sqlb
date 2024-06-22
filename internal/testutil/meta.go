@@ -10,14 +10,13 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/jaypipes/sqlb/meta"
-	"github.com/jaypipes/sqlb/types"
+	"github.com/jaypipes/sqlb/api"
 )
 
 // Meta returns the Meta we use in testing
-func Meta() *meta.Meta {
-	m := &meta.Meta{
-		Dialect: types.DialectMySQL,
+func Meta() *api.Meta {
+	m := &api.Meta{
+		Dialect: api.DialectMySQL,
 		Name:    "test",
 	}
 	users := m.AddTable("users")
@@ -54,10 +53,10 @@ func Meta() *meta.Meta {
 
 // ResetDB resets the testing database by dropping the database tables and
 // recreating them.
-func ResetDB(dialect types.Dialect, db *sql.DB) {
+func ResetDB(dialect api.Dialect, db *sql.DB) {
 	var stmts []string
 	switch dialect {
-	case types.DialectMySQL:
+	case api.DialectMySQL:
 		stmts = []string{
 			"DROP TABLE IF EXISTS articles",
 			"DROP TABLE IF EXISTS users",
@@ -84,7 +83,7 @@ func ResetDB(dialect types.Dialect, db *sql.DB) {
         );
         `,
 		}
-	case types.DialectPostgreSQL:
+	case api.DialectPostgreSQL:
 		stmts = []string{
 			"BEGIN",
 			"DROP TABLE IF EXISTS articles",

@@ -228,7 +228,12 @@ import (
     "github.com/jaypipes/sqlb"
 )
 
-var meta *sqlb.Meta
+
+var (
+    meta *sqlb.Meta
+    articles *sqlb.Table
+    users *sqlb.Table
+)
 
 func main() {
     if db, err := sql.Open("mysql", DSN); err != nil {
@@ -237,12 +242,18 @@ func main() {
     if meta, err := sqlb.Reflect(db); err != nil {
         log.Fatal(err)
     }
+    articles := meta.Table("articles")
+    users := meta.Table("users")
 }
 ```
 
 The `sqlb.Meta` struct is now populated with information about the database,
 including metadata about tables, columns, indexes, and relations. You use
 `sqlb.Meta` when constructing `sqlb` Query Expressions.
+
+We've set two package-scoped variables called `articles` and `users` that refer
+to the "articles" and "users" database tables, respectively. We will refer to
+these variables in our `getArticles()` function.
 
 Let's transform our original `getArticles()` function -- before we added
 support for a configurable number of articles and filtering by author -- to use
@@ -251,9 +262,6 @@ support for a configurable number of articles and filtering by author -- to use
 ```go
 
 func getArticles() []*Article {
-    articles := meta.Table("articles")
-    users := meta.Table("users")
-
     q := sqlb.Select(articles.C("title"), articles.C("content"),
                      articles.C("created_by"), users.C("name"))
     q.Join(users, sqlb.Equal(articles.C("author"), users.C("id")))

@@ -10,10 +10,10 @@ import (
 	"testing"
 
 	"github.com/jaypipes/sqlb"
+	"github.com/jaypipes/sqlb/api"
 	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar/function"
 	"github.com/jaypipes/sqlb/internal/testutil"
-	"github.com/jaypipes/sqlb/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -27,57 +27,57 @@ func TestTrimFunctions(t *testing.T) {
 	tests := []struct {
 		name  string
 		el    builder.Element
-		qs    map[types.Dialect]string
+		qs    map[api.Dialect]string
 		qargs []interface{}
 	}{
 		{
 			name: "TRIM(column) or BTRIM(column)",
 			el:   function.Trim(colUserName),
-			qs: map[types.Dialect]string{
-				types.DialectMySQL:      "TRIM(users.name)",
-				types.DialectPostgreSQL: "BTRIM(users.name)",
+			qs: map[api.Dialect]string{
+				api.DialectMySQL:      "TRIM(users.name)",
+				api.DialectPostgreSQL: "BTRIM(users.name)",
 			},
 		},
 		{
 			name: "LTRIM(column) or TRIM(LEADING FROM column)",
 			el:   function.LTrim(colUserName),
-			qs: map[types.Dialect]string{
-				types.DialectMySQL:      "LTRIM(users.name)",
-				types.DialectPostgreSQL: "TRIM(LEADING FROM users.name)",
+			qs: map[api.Dialect]string{
+				api.DialectMySQL:      "LTRIM(users.name)",
+				api.DialectPostgreSQL: "TRIM(LEADING FROM users.name)",
 			},
 		},
 		{
 			name: "RTRIM(column) or TRIM(TRAILING FROM column)",
 			el:   function.RTrim(colUserName),
-			qs: map[types.Dialect]string{
-				types.DialectMySQL:      "RTRIM(users.name)",
-				types.DialectPostgreSQL: "TRIM(TRAILING FROM users.name)",
+			qs: map[api.Dialect]string{
+				api.DialectMySQL:      "RTRIM(users.name)",
+				api.DialectPostgreSQL: "TRIM(TRAILING FROM users.name)",
 			},
 		},
 		{
 			name: "TRIM(remstr FROM column) OR BTRIM(column, chars)",
 			el:   function.TrimChars(colUserName, "xyz"),
-			qs: map[types.Dialect]string{
-				types.DialectMySQL:      "TRIM(? FROM users.name)",
-				types.DialectPostgreSQL: "BTRIM(users.name, $1)",
+			qs: map[api.Dialect]string{
+				api.DialectMySQL:      "TRIM(? FROM users.name)",
+				api.DialectPostgreSQL: "BTRIM(users.name, $1)",
 			},
 			qargs: []interface{}{"xyz"},
 		},
 		{
 			name: "TRIM(LEADING remstr FROM column)",
 			el:   function.LTrimChars(colUserName, "xyz"),
-			qs: map[types.Dialect]string{
-				types.DialectMySQL:      "TRIM(LEADING ? FROM users.name)",
-				types.DialectPostgreSQL: "TRIM(LEADING $1 FROM users.name)",
+			qs: map[api.Dialect]string{
+				api.DialectMySQL:      "TRIM(LEADING ? FROM users.name)",
+				api.DialectPostgreSQL: "TRIM(LEADING $1 FROM users.name)",
 			},
 			qargs: []interface{}{"xyz"},
 		},
 		{
 			name: "TRIM(TRAILING remstr FROM column)",
 			el:   function.RTrimChars(colUserName, "xyz"),
-			qs: map[types.Dialect]string{
-				types.DialectMySQL:      "TRIM(TRAILING ? FROM users.name)",
-				types.DialectPostgreSQL: "TRIM(TRAILING $1 FROM users.name)",
+			qs: map[api.Dialect]string{
+				api.DialectMySQL:      "TRIM(TRAILING ? FROM users.name)",
+				api.DialectPostgreSQL: "TRIM(TRAILING $1 FROM users.name)",
 			},
 			qargs: []interface{}{"xyz"},
 		},
