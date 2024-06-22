@@ -21,6 +21,10 @@ type SelectQuery struct {
 	sel *statement.Select
 }
 
+func (q *SelectQuery) Element() builder.Element {
+	return q.sel
+}
+
 func (q *SelectQuery) Scan(b *builder.Builder, qargs []interface{}, idx *int) {
 	q.sel.Scan(b, qargs, idx)
 }

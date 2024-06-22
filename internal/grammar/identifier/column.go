@@ -7,7 +7,6 @@
 package identifier
 
 import (
-	"github.com/jaypipes/sqlb/api"
 	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar"
 	"github.com/jaypipes/sqlb/internal/grammar/function"
@@ -18,11 +17,6 @@ type Column struct {
 	tbl   *Table
 	Alias string
 	Name  string
-}
-
-// Meta returns a pointer to the underlying Meta
-func (c *Column) Meta() *api.Meta {
-	return c.tbl.Meta()
 }
 
 func (c *Column) From() builder.Selection {

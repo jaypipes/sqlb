@@ -15,8 +15,8 @@ import (
 	"github.com/jaypipes/sqlb/internal/grammar/expression"
 	"github.com/jaypipes/sqlb/internal/grammar/function"
 	"github.com/jaypipes/sqlb/internal/grammar/identifier"
+	"github.com/jaypipes/sqlb/internal/query"
 	"github.com/jaypipes/sqlb/internal/testutil"
-	"github.com/jaypipes/sqlb/query"
 	"github.com/stretchr/testify/assert"
 )
 

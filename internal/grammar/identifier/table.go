@@ -16,15 +16,9 @@ import (
 
 // Table identifies a Table in a SQL statement
 type Table struct {
-	st      *api.Table
 	Alias   string
 	Name    string
 	columns []*Column
-}
-
-// Meta returns a pointer to the underlying Meta
-func (t *Table) Meta() *api.Meta {
-	return t.st.Meta
 }
 
 // C returns a pointer to a Column with a name or alias matching the supplied
@@ -68,7 +62,6 @@ func (t *Table) Scan(b *builder.Builder, args []interface{}, curArg *int) {
 
 func (t *Table) As(alias string) *Table {
 	tbl := &Table{
-		st:    t.st,
 		Alias: alias,
 		Name:  t.Name,
 	}
@@ -87,21 +80,19 @@ func (t *Table) As(alias string) *Table {
 // TableFromMeta returns a Table of a given name from a
 // supplied Meta
 func TableFromMeta(
-	m *api.Meta,
+	t *api.Table,
 	name string,
 ) *Table {
-	st := m.T(name)
-	if st == nil {
+	if t == nil {
 		return nil
 	}
 	ti := &Table{
-		st:   st,
 		Name: name,
 	}
-	cols := make([]*Column, len(st.Columns))
-	colNames := make([]string, len(st.Columns))
+	cols := make([]*Column, len(t.Columns))
+	colNames := make([]string, len(t.Columns))
 	x := 0
-	for cname := range st.Columns {
+	for cname := range t.Columns {
 		colNames[x] = cname
 		x++
 	}

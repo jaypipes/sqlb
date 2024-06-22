@@ -14,8 +14,8 @@ import (
 	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar/identifier"
 	"github.com/jaypipes/sqlb/internal/grammar/statement"
+	"github.com/jaypipes/sqlb/internal/query"
 	"github.com/jaypipes/sqlb/meta"
-	"github.com/jaypipes/sqlb/query"
 )
 
 // Dialect is the SQL variant of the underlying RDBMS
@@ -49,29 +49,44 @@ type Column api.Column
 
 // T returns a TableIdentifier of a given name from a supplied Meta
 func T(m *api.Meta, name string) *identifier.Table {
-	return identifier.TableFromMeta(m, name)
+	t := m.Table(name)
+	return identifier.TableFromMeta(t, name)
 }
 
-// Query accepts a `database/sql` `DB` handle and a `pkg/builder.Element` and
-// calls the `databases/sql.DB.Query` method on the SQL string produced by the
-// `Element`.
+// Query accepts a `database/sql` `DB` handle and a queryable object (returned
+// from Select(), Insert(), Update(), or Delete()) and calls the
+// `databases/sql.DB.Query` method on the SQL string produced by that queryable
+// object.
 func Query(
 	db *sql.DB,
-	el builder.Element,
+	target interface{},
+	opts ...api.OptionModifier,
 ) (*sql.Rows, error) {
-	return QueryContext(context.TODO(), db, el)
+	return QueryContext(context.TODO(), db, target, opts...)
 }
 
-// QueryContext accepts a `database/sql` `DB` handle and a `pkg/builder.Element`
-// and calls the `database/sql.DB.QueryContext` method on the SQL string
-// produced by the `Element`.
+// QueryContext accepts a `database/sql` `DB` handle and a queryable object
+// (returned from Select(), Insert(), Update(), or Delete()) and calls the
+// `databases/sql.DB.QueryContext` method on the SQL string produced by that
+// queryable object.
 func QueryContext(
 	ctx context.Context,
 	db *sql.DB,
-	el builder.Element,
+	target interface{},
+	opts ...api.OptionModifier,
 ) (*sql.Rows, error) {
-	s := builder.New()
-	qs, qargs := s.StringArgs(el)
+	b := builder.New(opts...)
+	var el builder.Element
+	switch target := target.(type) {
+	case builder.Element:
+		el = target
+	case *query.SelectQuery:
+		el = target.Element()
+	default:
+		panic("expected either builder.Element or *query.SelectQuery")
+	}
+
+	qs, qargs := b.StringArgs(el)
 	return db.QueryContext(ctx, qs, qargs...)
 }
 

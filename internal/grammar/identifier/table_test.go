@@ -19,7 +19,8 @@ func TestTable(t *testing.T) {
 	assert := assert.New(t)
 
 	m := testutil.Meta()
-	users := identifier.TableFromMeta(m, "users")
+	ut := m.Table("users")
+	users := identifier.TableFromMeta(ut, "users")
 
 	exp := "users"
 	expLen := len(exp)
@@ -37,7 +38,8 @@ func TestTableAlias(t *testing.T) {
 	assert := assert.New(t)
 
 	m := testutil.Meta()
-	u := identifier.TableFromMeta(m, "users").As("u")
+	ut := m.Table("users")
+	u := identifier.TableFromMeta(ut, "users").As("u")
 
 	exp := "users AS u"
 	expLen := len(exp)
@@ -55,7 +57,8 @@ func TestTableColumns(t *testing.T) {
 	assert := assert.New(t)
 
 	m := testutil.Meta()
-	users := identifier.TableFromMeta(m, "users").As("u")
+	ut := m.Table("users")
+	users := identifier.TableFromMeta(ut, "users").As("u")
 
 	assert.Equal(2, len(users.Projections()))
 }
@@ -64,7 +67,8 @@ func TestTableC(t *testing.T) {
 	assert := assert.New(t)
 
 	m := testutil.Meta()
-	users := identifier.TableFromMeta(m, "users")
+	ut := m.Table("users")
+	users := identifier.TableFromMeta(ut, "users")
 
 	c := users.C("name")
 
