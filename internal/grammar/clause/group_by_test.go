@@ -50,16 +50,12 @@ func TestGroupBy(t *testing.T) {
 	for _, test := range tests {
 		b := builder.New()
 
-		expLen := len(test.qs)
-		s := test.c.Size(b)
-		assert.Equal(expLen, s)
-
 		expArgc := len(test.qargs)
-		assert.Equal(expArgc, test.c.ArgCount())
+		argc := test.c.ArgCount()
+		assert.Equal(expArgc, argc)
 
-		curArg := 0
-		test.c.Scan(b, test.qargs, &curArg)
+		qs, _ := b.StringArgs(test.c)
 
-		assert.Equal(test.qs, b.String())
+		assert.Equal(test.qs, qs)
 	}
 }

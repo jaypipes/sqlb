@@ -4,12 +4,9 @@
 // See the COPYING file in the root project directory for full text.
 //
 
-package types
+package api
 
-type JoinType int
-
-const (
-	JOIN_INNER JoinType = iota
-	JOIN_OUTER
-	JOIN_CROSS
-)
+type FormatOptions struct {
+	SeparateClauseWith string
+	PrefixWith         string
+}

@@ -9,7 +9,7 @@ package meta
 import (
 	"database/sql"
 
-	"github.com/jaypipes/sqlb/types"
+	"github.com/jaypipes/sqlb/api"
 )
 
 const (
@@ -20,17 +20,20 @@ const (
 // DatabaseName returns the database schema name given a sql.DB handle
 func DatabaseName(
 	db *sql.DB,
-	mods ...MetaOptionModifier,
+	mods ...api.Option,
 ) string {
-	opts := mergeOpts(mods)
-	if opts.Dialect == types.DialectUnknown {
-		opts.Dialect = Dialect(db)
+	opts := api.MergeOptions(mods)
+	var d api.Dialect
+	if !opts.HasDialect() {
+		d = Dialect(db)
+	} else {
+		d = opts.Dialect()
 	}
 	var qs string
-	switch opts.Dialect {
-	case types.DialectMySQL:
+	switch d {
+	case api.DialectMySQL:
 		qs = selDBNameMySQL
-	case types.DialectPostgreSQL:
+	case api.DialectPostgreSQL:
 		qs = selDBNamePostgreSQL
 	}
 	var dbName string

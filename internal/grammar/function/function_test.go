@@ -10,11 +10,11 @@ import (
 	"testing"
 
 	"github.com/jaypipes/sqlb"
+	"github.com/jaypipes/sqlb/api"
 	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar"
 	"github.com/jaypipes/sqlb/internal/grammar/function"
 	"github.com/jaypipes/sqlb/internal/testutil"
-	"github.com/jaypipes/sqlb/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -27,172 +27,172 @@ func TestFunctions(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		c     builder.Projection
-		qs    map[types.Dialect]string
+		c     api.Projection
+		qs    map[api.Dialect]string
 		qargs []interface{}
 	}{
 		{
 			name: "MAX(column)",
 			c:    function.Max(colUserName),
-			qs: map[types.Dialect]string{
-				types.DialectMySQL:      "MAX(users.name)",
-				types.DialectPostgreSQL: "MAX(users.name)",
+			qs: map[api.Dialect]string{
+				api.DialectMySQL:      "MAX(users.name)",
+				api.DialectPostgreSQL: "MAX(users.name)",
 			},
 		},
 		{
 			name: "aliased function",
 			c:    function.Max(colUserName).As("max_name"),
-			qs: map[types.Dialect]string{
-				types.DialectMySQL:      "MAX(users.name) AS max_name",
-				types.DialectPostgreSQL: "MAX(users.name) AS max_name",
+			qs: map[api.Dialect]string{
+				api.DialectMySQL:      "MAX(users.name) AS max_name",
+				api.DialectPostgreSQL: "MAX(users.name) AS max_name",
 			},
 		},
 		{
 			name: "MIN(column)",
 			c:    function.Min(colUserName),
-			qs: map[types.Dialect]string{
-				types.DialectMySQL:      "MIN(users.name)",
-				types.DialectPostgreSQL: "MIN(users.name)",
+			qs: map[api.Dialect]string{
+				api.DialectMySQL:      "MIN(users.name)",
+				api.DialectPostgreSQL: "MIN(users.name)",
 			},
 		},
 		{
 			name: "SUM(column)",
 			c:    function.Sum(colUserName),
-			qs: map[types.Dialect]string{
-				types.DialectMySQL:      "SUM(users.name)",
-				types.DialectPostgreSQL: "SUM(users.name)",
+			qs: map[api.Dialect]string{
+				api.DialectMySQL:      "SUM(users.name)",
+				api.DialectPostgreSQL: "SUM(users.name)",
 			},
 		},
 		{
 			name: "AVG(column)",
 			c:    function.Avg(colUserName),
-			qs: map[types.Dialect]string{
-				types.DialectMySQL:      "AVG(users.name)",
-				types.DialectPostgreSQL: "AVG(users.name)",
+			qs: map[api.Dialect]string{
+				api.DialectMySQL:      "AVG(users.name)",
+				api.DialectPostgreSQL: "AVG(users.name)",
 			},
 		},
 		{
 			name: "COUNT(*)",
 			c:    function.Count(users),
-			qs: map[types.Dialect]string{
-				types.DialectMySQL:      "COUNT(*)",
-				types.DialectPostgreSQL: "COUNT(*)",
+			qs: map[api.Dialect]string{
+				api.DialectMySQL:      "COUNT(*)",
+				api.DialectPostgreSQL: "COUNT(*)",
 			},
 		},
 		{
 			name: "COUNT(DISTINCT column)",
 			c:    function.CountDistinct(colUserName),
-			qs: map[types.Dialect]string{
-				types.DialectMySQL:      "COUNT(DISTINCT users.name)",
-				types.DialectPostgreSQL: "COUNT(DISTINCT users.name)",
+			qs: map[api.Dialect]string{
+				api.DialectMySQL:      "COUNT(DISTINCT users.name)",
+				api.DialectPostgreSQL: "COUNT(DISTINCT users.name)",
 			},
 		},
 		{
 			name: "Ensure AS alias not in COUNT(DISTINCT column)",
 			c:    function.CountDistinct(colUserName.As("user_name")),
-			qs: map[types.Dialect]string{
-				types.DialectMySQL:      "COUNT(DISTINCT users.name)",
-				types.DialectPostgreSQL: "COUNT(DISTINCT users.name)",
+			qs: map[api.Dialect]string{
+				api.DialectMySQL:      "COUNT(DISTINCT users.name)",
+				api.DialectPostgreSQL: "COUNT(DISTINCT users.name)",
 			},
 		},
 		{
 			name: "CAST(column AS type)",
 			c:    function.Cast(colUserName, grammar.SQL_TYPE_TEXT),
-			qs: map[types.Dialect]string{
-				types.DialectMySQL:      "CAST(users.name AS TEXT)",
-				types.DialectPostgreSQL: "CAST(users.name AS TEXT)",
+			qs: map[api.Dialect]string{
+				api.DialectMySQL:      "CAST(users.name AS TEXT)",
+				api.DialectPostgreSQL: "CAST(users.name AS TEXT)",
 			},
 		},
 		{
 			name: "CHAR_LENGTH(column)",
 			c:    function.CharLength(colUserName),
-			qs: map[types.Dialect]string{
-				types.DialectMySQL:      "CHAR_LENGTH(users.name)",
-				types.DialectPostgreSQL: "CHAR_LENGTH(users.name)",
+			qs: map[api.Dialect]string{
+				api.DialectMySQL:      "CHAR_LENGTH(users.name)",
+				api.DialectPostgreSQL: "CHAR_LENGTH(users.name)",
 			},
 		},
 		{
 			name: "BIT_LENGTH(column)",
 			c:    function.BitLength(colUserName),
-			qs: map[types.Dialect]string{
-				types.DialectMySQL:      "BIT_LENGTH(users.name)",
-				types.DialectPostgreSQL: "BIT_LENGTH(users.name)",
+			qs: map[api.Dialect]string{
+				api.DialectMySQL:      "BIT_LENGTH(users.name)",
+				api.DialectPostgreSQL: "BIT_LENGTH(users.name)",
 			},
 		},
 		{
 			name: "ASCII(column)",
 			c:    function.Ascii(colUserName),
-			qs: map[types.Dialect]string{
-				types.DialectMySQL:      "ASCII(users.name)",
-				types.DialectPostgreSQL: "ASCII(users.name)",
+			qs: map[api.Dialect]string{
+				api.DialectMySQL:      "ASCII(users.name)",
+				api.DialectPostgreSQL: "ASCII(users.name)",
 			},
 		},
 		{
 			name: "REVERSE(column)",
 			c:    function.Reverse(colUserName),
-			qs: map[types.Dialect]string{
-				types.DialectMySQL:      "REVERSE(users.name)",
-				types.DialectPostgreSQL: "REVERSE(users.name)",
+			qs: map[api.Dialect]string{
+				api.DialectMySQL:      "REVERSE(users.name)",
+				api.DialectPostgreSQL: "REVERSE(users.name)",
 			},
 		},
 		{
 			name: "CONCAT(column, column)",
 			c:    function.Concat(colUserName, colUserName),
-			qs: map[types.Dialect]string{
-				types.DialectMySQL:      "CONCAT(users.name, users.name)",
-				types.DialectPostgreSQL: "CONCAT(users.name, users.name)",
+			qs: map[api.Dialect]string{
+				api.DialectMySQL:      "CONCAT(users.name, users.name)",
+				api.DialectPostgreSQL: "CONCAT(users.name, users.name)",
 			},
 		},
 		{
 			name: "CONCAT_WS(string, column, column)",
 			c:    function.ConcatWs("-", colUserName, colUserName),
-			qs: map[types.Dialect]string{
-				types.DialectMySQL: "CONCAT_WS(?, users.name, users.name)",
+			qs: map[api.Dialect]string{
+				api.DialectMySQL: "CONCAT_WS(?, users.name, users.name)",
 				// Should be:
-				// types.DialectPostgreSQL: "CONCAT_WS($1, users.name, users.name)",
+				// api.DialectPostgreSQL: "CONCAT_WS($1, users.name, users.name)",
 			},
 			qargs: []interface{}{"-"},
 		},
 		{
 			name: "NOW()",
 			c:    function.Now(),
-			qs: map[types.Dialect]string{
-				types.DialectMySQL:      "NOW()",
-				types.DialectPostgreSQL: "NOW()",
+			qs: map[api.Dialect]string{
+				api.DialectMySQL:      "NOW()",
+				api.DialectPostgreSQL: "NOW()",
 			},
 		},
 		{
 			name: "CURRENT_TIMESTAMP()",
 			c:    function.CurrentTimestamp(),
-			qs: map[types.Dialect]string{
-				types.DialectMySQL:      "CURRENT_TIMESTAMP()",
-				types.DialectPostgreSQL: "CURRENT_TIMESTAMP()",
+			qs: map[api.Dialect]string{
+				api.DialectMySQL:      "CURRENT_TIMESTAMP()",
+				api.DialectPostgreSQL: "CURRENT_TIMESTAMP()",
 			},
 		},
 		{
 			name: "CURRENT_TIME()",
 			c:    function.CurrentTime(),
-			qs: map[types.Dialect]string{
-				types.DialectMySQL:      "CURRENT_TIME()",
-				types.DialectPostgreSQL: "CURRENT_TIME()",
+			qs: map[api.Dialect]string{
+				api.DialectMySQL:      "CURRENT_TIME()",
+				api.DialectPostgreSQL: "CURRENT_TIME()",
 			},
 		},
 		{
 			name: "CURRENT_DATE()",
 			c:    function.CurrentDate(),
-			qs: map[types.Dialect]string{
-				types.DialectMySQL:      "CURRENT_DATE()",
-				types.DialectPostgreSQL: "CURRENT_DATE()",
+			qs: map[api.Dialect]string{
+				api.DialectMySQL:      "CURRENT_DATE()",
+				api.DialectPostgreSQL: "CURRENT_DATE()",
 			},
 		},
 		{
 			name: "EXTRACT(unit FROM column)",
 			c:    function.Extract(colUserName, grammar.UNIT_MINUTE_SECOND),
-			qs: map[types.Dialect]string{
-				types.DialectMySQL: "EXTRACT(MINUTE_SECOND FROM users.name)",
+			qs: map[api.Dialect]string{
+				api.DialectMySQL: "EXTRACT(MINUTE_SECOND FROM users.name)",
 				// Should be:
-				// types.DialectPostgreSQL: "EXTRACT(MINUTE_SECOND FROM TIMESTAMP users.name)",
-				types.DialectPostgreSQL: "EXTRACT(MINUTE_SECOND FROM users.name)",
+				// api.DialectPostgreSQL: "EXTRACT(MINUTE_SECOND FROM TIMESTAMP users.name)",
+				api.DialectPostgreSQL: "EXTRACT(MINUTE_SECOND FROM users.name)",
 			},
 		},
 	}
@@ -203,16 +203,14 @@ func TestFunctions(t *testing.T) {
 
 		// Test each SQL dialect output
 		for dialect, qs := range test.qs {
-			b := builder.New(builder.WithDialect(dialect))
-			expLen := len(qs)
-			size := test.c.Size(b)
-			size += b.InterpolationLength(argc)
-			assert.Equal(expLen, size)
+			b := builder.New(api.WithDialect(dialect))
 
-			curArg := 0
-			test.c.Scan(b, test.qargs, &curArg)
+			gotqs, gotargs := b.StringArgs(test.c)
 
-			assert.Equal(qs, b.String())
+			assert.Equal(qs, gotqs)
+			if len(test.qargs) > 0 {
+				assert.Equal(test.qargs, gotargs)
+			}
 		}
 	}
 }

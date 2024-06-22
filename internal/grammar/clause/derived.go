@@ -7,7 +7,9 @@
 package clause
 
 import (
-	"github.com/jaypipes/sqlb/internal/builder"
+	"strings"
+
+	"github.com/jaypipes/sqlb/api"
 	"github.com/jaypipes/sqlb/internal/grammar"
 	"github.com/jaypipes/sqlb/internal/grammar/identifier"
 	"github.com/jaypipes/sqlb/internal/grammar/sortcolumn"
@@ -31,23 +33,23 @@ import (
 // of the derived table as the selection alias (u instead of users).
 type DerivedTable struct {
 	Alias string
-	from  builder.Selection
+	from  api.Selection
 }
 
 // DerivedColumns returns a collection of DerivedColumn projections that have
 // been constructed to refer to this derived table and not have any outer alias
-func (dt *DerivedTable) DerivedColumns() []builder.Projection {
-	projs := []builder.Projection{}
+func (dt *DerivedTable) DerivedColumns() []api.Projection {
+	projs := []api.Projection{}
 	for _, p := range dt.from.Projections() {
-		switch p.(type) {
+		switch p := p.(type) {
 		case *identifier.Column:
-			projs = append(projs, &DerivedColumn{dt: dt, c: p.(*identifier.Column)})
+			projs = append(projs, &DerivedColumn{dt: dt, c: p})
 		}
 	}
 	return projs
 }
 
-func (dt *DerivedTable) Projections() []builder.Projection {
+func (dt *DerivedTable) Projections() []api.Projection {
 	return dt.from.Projections()
 }
 
@@ -55,26 +57,25 @@ func (dt *DerivedTable) ArgCount() int {
 	return dt.from.ArgCount()
 }
 
-func (dt *DerivedTable) Size(b *builder.Builder) int {
-	size := dt.from.Size(b)
-	size += (len(grammar.Symbols[grammar.SYM_LPAREN]) + len(grammar.Symbols[grammar.SYM_RPAREN]) +
-		len(grammar.Symbols[grammar.SYM_AS]) + len(dt.Alias))
-	return size
-}
-
-func (dt *DerivedTable) Scan(b *builder.Builder, args []interface{}, curArg *int) {
+func (dt *DerivedTable) String(
+	opts api.Options,
+	qargs []interface{},
+	curarg *int,
+) string {
+	b := &strings.Builder{}
 	b.Write(grammar.Symbols[grammar.SYM_LPAREN])
-	dt.from.Scan(b, args, curArg)
+	b.WriteString(dt.from.String(opts, qargs, curarg))
 	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
 	b.Write(grammar.Symbols[grammar.SYM_AS])
 	b.WriteString(dt.Alias)
+	return b.String()
 }
 
 // NewDerivedTable returns a new DerivedTable struct representing a SELECT in
 // the FROM clause.
 func NewDerivedTable(
 	alias string,
-	sel builder.Selection,
+	sel api.Selection,
 ) *DerivedTable {
 	return &DerivedTable{
 		Alias: alias,
@@ -146,7 +147,7 @@ func (dc *DerivedColumn) C() *identifier.Column {
 	return dc.c
 }
 
-func (dc *DerivedColumn) From() builder.Selection {
+func (dc *DerivedColumn) From() api.Selection {
 	return dc.dt
 }
 
@@ -160,21 +161,12 @@ func (dc *DerivedColumn) ArgCount() int {
 	return 0
 }
 
-func (dc *DerivedColumn) Size(b *builder.Builder) int {
-	size := len(dc.dt.Alias)
-	size += len(grammar.Symbols[grammar.SYM_PERIOD])
-	if dc.c.Alias != "" {
-		size += len(dc.c.Alias)
-	} else {
-		size += len(dc.c.Name)
-	}
-	if dc.Alias != "" {
-		size += len(grammar.Symbols[grammar.SYM_AS]) + len(dc.Alias)
-	}
-	return size
-}
-
-func (dc *DerivedColumn) Scan(b *builder.Builder, args []interface{}, curArg *int) {
+func (dc *DerivedColumn) String(
+	opts api.Options,
+	qargs []interface{},
+	curarg *int,
+) string {
+	b := &strings.Builder{}
 	b.WriteString(dc.dt.Alias)
 	b.Write(grammar.Symbols[grammar.SYM_PERIOD])
 	if dc.c.Alias != "" {
@@ -186,9 +178,10 @@ func (dc *DerivedColumn) Scan(b *builder.Builder, args []interface{}, curArg *in
 		b.Write(grammar.Symbols[grammar.SYM_AS])
 		b.WriteString(dc.Alias)
 	}
+	return b.String()
 }
 
-func (dc *DerivedColumn) As(alias string) builder.Projection {
+func (dc *DerivedColumn) As(alias string) api.Projection {
 	return &DerivedColumn{
 		Alias: alias,
 		c:     dc.c,
@@ -196,10 +189,10 @@ func (dc *DerivedColumn) As(alias string) builder.Projection {
 	}
 }
 
-func (dc *DerivedColumn) Desc() builder.Sortable {
+func (dc *DerivedColumn) Desc() api.Orderable {
 	return sortcolumn.NewDesc(dc)
 }
 
-func (dc *DerivedColumn) Asc() builder.Sortable {
+func (dc *DerivedColumn) Asc() api.Orderable {
 	return sortcolumn.NewAsc(dc)
 }

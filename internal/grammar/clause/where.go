@@ -7,7 +7,9 @@
 package clause
 
 import (
-	"github.com/jaypipes/sqlb/internal/builder"
+	"strings"
+
+	"github.com/jaypipes/sqlb/api"
 	"github.com/jaypipes/sqlb/internal/grammar"
 	"github.com/jaypipes/sqlb/internal/grammar/expression"
 )
@@ -29,31 +31,23 @@ func (w *Where) ArgCount() int {
 	return argc
 }
 
-func (w *Where) Size(b *builder.Builder) int {
-	size := 0
-	nfilters := len(w.filters)
-	if nfilters > 0 {
-		size += len(b.Format.SeparateClauseWith)
-		size += len(grammar.Symbols[grammar.SYM_WHERE])
-		size += len(grammar.Symbols[grammar.SYM_AND]) * (nfilters - 1)
-		for _, filter := range w.filters {
-			size += filter.Size(b)
-		}
-	}
-	return size
-}
-
-func (w *Where) Scan(b *builder.Builder, args []interface{}, curArg *int) {
+func (w *Where) String(
+	opts api.Options,
+	qargs []interface{},
+	curarg *int,
+) string {
+	b := &strings.Builder{}
 	if len(w.filters) > 0 {
-		b.WriteString(b.Format.SeparateClauseWith)
+		b.WriteString(opts.FormatSeparateClauseWith())
 		b.Write(grammar.Symbols[grammar.SYM_WHERE])
 		for x, filter := range w.filters {
 			if x > 0 {
 				b.Write(grammar.Symbols[grammar.SYM_AND])
 			}
-			filter.Scan(b, args, curArg)
+			b.WriteString(filter.String(opts, qargs, curarg))
 		}
 	}
+	return b.String()
 }
 
 // NewWhere returns a Where populated with zero or more expressions

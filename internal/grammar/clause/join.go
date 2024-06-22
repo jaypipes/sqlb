@@ -7,24 +7,25 @@
 package clause
 
 import (
-	"github.com/jaypipes/sqlb/internal/builder"
+	"strings"
+
+	"github.com/jaypipes/sqlb/api"
 	"github.com/jaypipes/sqlb/internal/grammar"
 	"github.com/jaypipes/sqlb/internal/grammar/expression"
-	"github.com/jaypipes/sqlb/types"
 )
 
 type Join struct {
-	joinType types.JoinType
-	left     builder.Selection
-	right    builder.Selection
+	joinType api.JoinType
+	left     api.Selection
+	right    api.Selection
 	on       *expression.Expression
 }
 
-func (j *Join) Left() builder.Selection {
+func (j *Join) Left() api.Selection {
 	return j.left
 }
 
-func (j *Join) Right() builder.Selection {
+func (j *Join) Right() api.Selection {
 	return j.right
 }
 
@@ -36,80 +37,67 @@ func (j *Join) ArgCount() int {
 	return ac + j.left.ArgCount() + j.right.ArgCount()
 }
 
-func (j *Join) Size(b *builder.Builder) int {
-	size := 0
-	size += len(b.Format.SeparateClauseWith)
+func (j *Join) String(
+	opts api.Options,
+	qargs []interface{},
+	curarg *int,
+) string {
+	b := &strings.Builder{}
+	b.WriteString(opts.FormatSeparateClauseWith())
 	switch j.joinType {
-	case types.JOIN_INNER:
-		size += len(grammar.Symbols[grammar.SYM_JOIN])
-	case types.JOIN_OUTER:
-		size += len(grammar.Symbols[grammar.SYM_LEFT_JOIN])
-	case types.JOIN_CROSS:
-		size += len(grammar.Symbols[grammar.SYM_CROSS_JOIN])
-		// CROSS JOIN has no ON condition so just short-circuit here
-		return size + j.right.Size(b)
-	}
-	size += j.right.Size(b)
-	size += len(grammar.Symbols[grammar.SYM_ON])
-	size += j.on.Size(b)
-	return size
-}
-
-func (j *Join) Scan(b *builder.Builder, args []interface{}, curArg *int) {
-	b.WriteString(b.Format.SeparateClauseWith)
-	switch j.joinType {
-	case types.JOIN_INNER:
+	case api.JoinInner:
 		b.Write(grammar.Symbols[grammar.SYM_JOIN])
-	case types.JOIN_OUTER:
+	case api.JoinOuter:
 		b.Write(grammar.Symbols[grammar.SYM_LEFT_JOIN])
-	case types.JOIN_CROSS:
+	case api.JoinCross:
 		b.Write(grammar.Symbols[grammar.SYM_CROSS_JOIN])
 	}
-	j.right.Scan(b, args, curArg)
+	b.WriteString(j.right.String(opts, qargs, curarg))
 	if j.on != nil {
 		b.Write(grammar.Symbols[grammar.SYM_ON])
-		j.on.Scan(b, args, curArg)
+		b.WriteString(j.on.String(opts, qargs, curarg))
 	}
+	return b.String()
 }
 
-func InnerJoin(left builder.Selection, right builder.Selection, on *expression.Expression) *Join {
+func InnerJoin(left api.Selection, right api.Selection, on *expression.Expression) *Join {
 	return &Join{
-		joinType: types.JOIN_INNER,
+		joinType: api.JoinInner,
 		left:     left,
 		right:    right,
 		on:       on,
 	}
 }
 
-func OuterJoin(left builder.Selection, right builder.Selection, on *expression.Expression) *Join {
+func OuterJoin(left api.Selection, right api.Selection, on *expression.Expression) *Join {
 	return &Join{
-		joinType: types.JOIN_OUTER,
+		joinType: api.JoinOuter,
 		left:     left,
 		right:    right,
 		on:       on,
 	}
 }
 
-func CrossJoin(left builder.Selection, right builder.Selection) *Join {
+func CrossJoin(left api.Selection, right api.Selection) *Join {
 	return &Join{
-		joinType: types.JOIN_CROSS,
+		joinType: api.JoinCross,
 		left:     left,
 		right:    right,
 	}
 }
 
 func NewJoin(
-	jt types.JoinType,
-	left builder.Selection,
-	right builder.Selection,
+	jt api.JoinType,
+	left api.Selection,
+	right api.Selection,
 	on *expression.Expression,
 ) *Join {
 	switch jt {
-	case types.JOIN_INNER:
+	case api.JoinInner:
 		return InnerJoin(left, right, on)
-	case types.JOIN_OUTER:
+	case api.JoinOuter:
 		return OuterJoin(left, right, on)
-	case types.JOIN_CROSS:
+	case api.JoinCross:
 		return CrossJoin(left, right)
 	}
 	return nil

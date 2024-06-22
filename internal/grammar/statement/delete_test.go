@@ -55,14 +55,10 @@ func TestDeleteStatement(t *testing.T) {
 		argc := test.s.ArgCount()
 		assert.Equal(expArgc, argc)
 
-		expLen := len(test.qs)
-		size := test.s.Size(b)
-		size += b.InterpolationLength(argc)
-		assert.Equal(expLen, size)
-
-		curArg := 0
-		test.s.Scan(b, test.qargs, &curArg)
-
-		assert.Equal(test.qs, b.String())
+		qs, args := b.StringArgs(test.s)
+		assert.Equal(test.qs, qs)
+		if len(test.qargs) > 0 {
+			assert.Equal(test.qargs, args)
+		}
 	}
 }

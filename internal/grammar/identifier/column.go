@@ -7,11 +7,12 @@
 package identifier
 
 import (
-	"github.com/jaypipes/sqlb/internal/builder"
+	"strings"
+
+	"github.com/jaypipes/sqlb/api"
 	"github.com/jaypipes/sqlb/internal/grammar"
 	"github.com/jaypipes/sqlb/internal/grammar/function"
 	"github.com/jaypipes/sqlb/internal/grammar/sortcolumn"
-	"github.com/jaypipes/sqlb/meta"
 )
 
 type Column struct {
@@ -20,12 +21,7 @@ type Column struct {
 	Name  string
 }
 
-// Meta returns a pointer to the underlying Meta
-func (c *Column) Meta() *meta.Meta {
-	return c.tbl.Meta()
-}
-
-func (c *Column) From() builder.Selection {
+func (c *Column) From() api.Selection {
 	return c.tbl
 }
 
@@ -39,22 +35,12 @@ func (c *Column) ArgCount() int {
 	return 0
 }
 
-func (c *Column) Size(b *builder.Builder) int {
-	size := 0
-	if c.tbl.Alias != "" {
-		size += len(c.tbl.Alias)
-	} else {
-		size += len(c.tbl.Name)
-	}
-	size += len(grammar.Symbols[grammar.SYM_PERIOD])
-	size += len(c.Name)
-	if c.Alias != "" {
-		size += len(grammar.Symbols[grammar.SYM_AS]) + len(c.Alias)
-	}
-	return size
-}
-
-func (c *Column) Scan(b *builder.Builder, args []interface{}, curArg *int) {
+func (c *Column) String(
+	opts api.Options,
+	qargs []interface{},
+	curarg *int,
+) string {
+	b := &strings.Builder{}
 	if c.tbl.Alias != "" {
 		b.WriteString(c.tbl.Alias)
 	} else {
@@ -66,9 +52,10 @@ func (c *Column) Scan(b *builder.Builder, args []interface{}, curArg *int) {
 		b.Write(grammar.Symbols[grammar.SYM_AS])
 		b.WriteString(c.Alias)
 	}
+	return b.String()
 }
 
-func (c *Column) As(alias string) builder.Projection {
+func (c *Column) As(alias string) api.Projection {
 	return &Column{
 		Alias: alias,
 		Name:  c.Name,
@@ -76,72 +63,72 @@ func (c *Column) As(alias string) builder.Projection {
 	}
 }
 
-func (c *Column) Desc() builder.Sortable {
+func (c *Column) Desc() api.Orderable {
 	return sortcolumn.NewDesc(c)
 }
 
-func (c *Column) Asc() builder.Sortable {
+func (c *Column) Asc() api.Orderable {
 	return sortcolumn.NewAsc(c)
 }
 
-func (c *Column) Reverse() builder.Projection {
+func (c *Column) Reverse() api.Projection {
 	return function.Reverse(c)
 }
 
-func (c *Column) Ascii() builder.Projection {
+func (c *Column) Ascii() api.Projection {
 	return function.Ascii(c)
 }
 
-func (c *Column) Max() builder.Projection {
+func (c *Column) Max() api.Projection {
 	return function.Max(c)
 }
 
-func (c *Column) Min() builder.Projection {
+func (c *Column) Min() api.Projection {
 	return function.Min(c)
 }
 
-func (c *Column) Sum() builder.Projection {
+func (c *Column) Sum() api.Projection {
 	return function.Sum(c)
 }
 
-func (c *Column) Avg() builder.Projection {
+func (c *Column) Avg() api.Projection {
 	return function.Avg(c)
 }
 
-func (c *Column) CharLength() builder.Projection {
+func (c *Column) CharLength() api.Projection {
 	return function.CharLength(c)
 }
 
-func (c *Column) BitLength() builder.Projection {
+func (c *Column) BitLength() api.Projection {
 	return function.BitLength(c)
 }
 
-func (c *Column) Trim() builder.Projection {
+func (c *Column) Trim() api.Projection {
 	f := function.Trim(c)
 	return f
 }
 
-func (c *Column) LTrim() builder.Projection {
+func (c *Column) LTrim() api.Projection {
 	f := function.LTrim(c)
 	return f
 }
 
-func (c *Column) RTrim() builder.Projection {
+func (c *Column) RTrim() api.Projection {
 	f := function.RTrim(c)
 	return f
 }
 
-func (c *Column) TrimChars(chars string) builder.Projection {
+func (c *Column) TrimChars(chars string) api.Projection {
 	f := function.TrimChars(c, chars)
 	return f
 }
 
-func (c *Column) LTrimChars(chars string) builder.Projection {
+func (c *Column) LTrimChars(chars string) api.Projection {
 	f := function.LTrimChars(c, chars)
 	return f
 }
 
-func (c *Column) RTrimChars(chars string) builder.Projection {
+func (c *Column) RTrimChars(chars string) api.Projection {
 	f := function.RTrimChars(c, chars)
 	return f
 }

@@ -19,21 +19,15 @@ func TestValue(t *testing.T) {
 
 	v := element.NewValue(nil, "foo")
 
-	b := builder.New()
-	s := v.Size(b)
-	// Due to dialect handling, we can't include interpolation markers in the
-	// size calculation, so size() always returns 0 for non-aliased values.
-	assert.Equal(0, s)
-
 	argc := v.ArgCount()
 	assert.Equal(1, argc)
 
-	args := make([]interface{}, 1)
-	curArg := 0
-	v.Scan(b, args, &curArg)
-
 	exp := "?"
 
-	assert.Equal(exp, b.String())
+	b := builder.New()
+
+	qs, args := b.StringArgs(v)
+
+	assert.Equal(exp, qs)
 	assert.Equal("foo", args[0])
 }

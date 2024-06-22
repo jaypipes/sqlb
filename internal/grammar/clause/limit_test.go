@@ -27,16 +27,8 @@ func TestLimitClause(t *testing.T) {
 
 	b := builder.New()
 
-	size := lc.Size(b)
-	size += b.InterpolationLength(argc)
-	expLen := len(exp)
-	assert.Equal(expLen, size)
-
-	args := make([]interface{}, expArgCount)
-	curArg := 0
-	lc.Scan(b, args, &curArg)
-
-	assert.Equal(exp, b.String())
+	qs, args := b.StringArgs(lc)
+	assert.Equal(exp, qs)
 	assert.Equal(20, args[0])
 }
 
@@ -54,16 +46,8 @@ func TestLimitClauseWithOffset(t *testing.T) {
 
 	b := builder.New()
 
-	size := lc.Size(b)
-	size += b.InterpolationLength(argc)
-	expLen := len(exp)
-	assert.Equal(expLen, size)
-
-	args := make([]interface{}, expArgCount)
-	curArg := 0
-	lc.Scan(b, args, &curArg)
-
-	assert.Equal(exp, b.String())
+	qs, args := b.StringArgs(lc)
+	assert.Equal(exp, qs)
 	assert.Equal(20, args[0])
 	assert.Equal(10, args[1])
 }

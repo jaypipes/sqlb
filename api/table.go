@@ -4,7 +4,7 @@
 // See the COPYING file in the root project directory for full text.
 //
 
-package meta
+package api
 
 // Table describes metadata about a table in a database.
 type Table struct {

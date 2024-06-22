@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/jaypipes/sqlb"
+	"github.com/jaypipes/sqlb/api"
 	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar/expression"
 	"github.com/jaypipes/sqlb/internal/testutil"
@@ -17,7 +18,7 @@ import (
 )
 
 type expressionTest struct {
-	c     *expression.Expression
+	el    api.Element
 	qs    string
 	qargs []interface{}
 }
@@ -35,42 +36,42 @@ func TestExpressions(t *testing.T) {
 	tests := []expressionTest{
 		// equal value
 		{
-			c:     expression.Equal(colUserName, "foo"),
+			el:    expression.Equal(colUserName, "foo"),
 			qs:    "users.name = ?",
 			qargs: []interface{}{"foo"},
 		},
 		// reverse args equal
 		{
-			c:     expression.Equal("foo", colUserName),
+			el:    expression.Equal("foo", colUserName),
 			qs:    "? = users.name",
 			qargs: []interface{}{"foo"},
 		},
 		// equal columns
 		{
-			c:  expression.Equal(colUserId, colArticleAuthor),
+			el: expression.Equal(colUserId, colArticleAuthor),
 			qs: "users.id = articles.author",
 		},
 		// not equal value
 		{
-			c:     expression.NotEqual(colUserName, "foo"),
+			el:    expression.NotEqual(colUserName, "foo"),
 			qs:    "users.name != ?",
 			qargs: []interface{}{"foo"},
 		},
 		// in single value
 		{
-			c:     expression.In(colUserName, "foo"),
+			el:    expression.In(colUserName, "foo"),
 			qs:    "users.name IN (?)",
 			qargs: []interface{}{"foo"},
 		},
 		// in multi value
 		{
-			c:     expression.In(colUserName, "foo", "bar", 1),
+			el:    expression.In(colUserName, "foo", "bar", 1),
 			qs:    "users.name IN (?, ?, ?)",
 			qargs: []interface{}{"foo", "bar", 1},
 		},
 		// AND expression
 		{
-			c: expression.And(
+			el: expression.And(
 				expression.NotEqual(colUserName, "foo"),
 				expression.NotEqual(colUserName, "bar"),
 			),
@@ -79,7 +80,7 @@ func TestExpressions(t *testing.T) {
 		},
 		// OR expression
 		{
-			c: expression.Or(
+			el: expression.Or(
 				expression.Equal(colUserName, "foo"),
 				expression.Equal(colUserName, "bar"),
 			),
@@ -88,60 +89,57 @@ func TestExpressions(t *testing.T) {
 		},
 		// BETWEEN column and two values
 		{
-			c:     expression.Between(colUserName, "foo", "bar"),
+			el:    expression.Between(colUserName, "foo", "bar"),
 			qs:    "users.name BETWEEN ? AND ?",
 			qargs: []interface{}{"foo", "bar"},
 		},
 		// column IS NULL
 		{
-			c:  expression.IsNull(colUserName),
+			el: expression.IsNull(colUserName),
 			qs: "users.name IS NULL",
 		},
 		// column IS NOT NULL
 		{
-			c:  expression.IsNotNull(colUserName),
+			el: expression.IsNotNull(colUserName),
 			qs: "users.name IS NOT NULL",
 		},
 		// col > value
 		{
-			c:     expression.GreaterThan(colUserName, "foo"),
+			el:    expression.GreaterThan(colUserName, "foo"),
 			qs:    "users.name > ?",
 			qargs: []interface{}{"foo"},
 		},
 		// col >= value
 		{
-			c:     expression.GreaterThanOrEqual(colUserName, "foo"),
+			el:    expression.GreaterThanOrEqual(colUserName, "foo"),
 			qs:    "users.name >= ?",
 			qargs: []interface{}{"foo"},
 		},
 		// col < value
 		{
-			c:     expression.LessThan(colUserName, "foo"),
+			el:    expression.LessThan(colUserName, "foo"),
 			qs:    "users.name < ?",
 			qargs: []interface{}{"foo"},
 		},
 		// col <= value
 		{
-			c:     expression.LessThanOrEqual(colUserName, "foo"),
+			el:    expression.LessThanOrEqual(colUserName, "foo"),
 			qs:    "users.name <= ?",
 			qargs: []interface{}{"foo"},
 		},
 	}
 	for _, test := range tests {
 		expArgc := len(test.qargs)
-		argc := test.c.ArgCount()
+		argc := test.el.ArgCount()
 		assert.Equal(expArgc, argc)
 
 		b := builder.New()
 
-		expLen := len(test.qs)
-		size := test.c.Size(b)
-		size += b.InterpolationLength(argc)
-		assert.Equal(expLen, size)
+		qs, args := b.StringArgs(test.el)
 
-		curArg := 0
-		test.c.Scan(b, test.qargs, &curArg)
-
-		assert.Equal(test.qs, b.String())
+		assert.Equal(test.qs, qs)
+		if len(test.qargs) > 0 {
+			assert.Equal(test.qargs, args)
+		}
 	}
 }

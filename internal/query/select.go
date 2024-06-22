@@ -7,31 +7,33 @@ package query
 import (
 	"fmt"
 
-	"github.com/jaypipes/sqlb/errors"
-	"github.com/jaypipes/sqlb/internal/builder"
+	"github.com/jaypipes/sqlb/api"
 	"github.com/jaypipes/sqlb/internal/grammar/clause"
 	"github.com/jaypipes/sqlb/internal/grammar/element"
 	"github.com/jaypipes/sqlb/internal/grammar/expression"
 	"github.com/jaypipes/sqlb/internal/grammar/function"
 	"github.com/jaypipes/sqlb/internal/grammar/identifier"
 	"github.com/jaypipes/sqlb/internal/grammar/statement"
-	"github.com/jaypipes/sqlb/types"
 )
 
 type SelectQuery struct {
 	sel *statement.Select
 }
 
-func (q *SelectQuery) Scan(b *builder.Builder, qargs []interface{}, idx *int) {
-	q.sel.Scan(b, qargs, idx)
+func (q *SelectQuery) Element() api.Element {
+	return q.sel
+}
+
+func (q *SelectQuery) String(
+	opts api.Options,
+	qargs []interface{},
+	curarg *int,
+) string {
+	return q.sel.String(opts, qargs, curarg)
 }
 
 func (q *SelectQuery) ArgCount() int {
 	return q.sel.ArgCount()
-}
-
-func (q *SelectQuery) Size(b *builder.Builder) int {
-	return q.sel.Size(b)
 }
 
 func (q *SelectQuery) Where(e *expression.Expression) *SelectQuery {
@@ -39,7 +41,7 @@ func (q *SelectQuery) Where(e *expression.Expression) *SelectQuery {
 	return q
 }
 
-func (q *SelectQuery) GroupBy(cols ...builder.Projection) *SelectQuery {
+func (q *SelectQuery) GroupBy(cols ...api.Projection) *SelectQuery {
 	q.sel.AddGroupBy(cols...)
 	return q
 }
@@ -49,7 +51,7 @@ func (q *SelectQuery) Having(e *expression.Expression) *SelectQuery {
 	return q
 }
 
-func (q *SelectQuery) OrderBy(scols ...builder.Sortable) *SelectQuery {
+func (q *SelectQuery) OrderBy(scols ...api.Orderable) *SelectQuery {
 	q.sel.AddOrderBy(scols...)
 	return q
 }
@@ -70,7 +72,7 @@ func (q *SelectQuery) As(alias string) *SelectQuery {
 	dt := clause.NewDerivedTable(alias, q.sel)
 	derivedSel := statement.NewSelect(
 		dt.DerivedColumns(),
-		[]builder.Selection{dt},
+		[]api.Selection{dt},
 		nil, nil, nil, nil, nil, nil,
 	)
 	return &SelectQuery{sel: derivedSel}
@@ -78,25 +80,25 @@ func (q *SelectQuery) As(alias string) *SelectQuery {
 
 // Returns the projection of the underlying SelectStatement that matches the name
 // provided
-func (q *SelectQuery) C(name string) builder.Projection {
+func (q *SelectQuery) C(name string) api.Projection {
 	for _, p := range q.sel.Projections() {
-		switch p.(type) {
+		switch p := p.(type) {
 		case *clause.DerivedColumn:
-			dc := p.(*clause.DerivedColumn)
+			dc := p
 			if dc.Alias != "" && dc.Alias == name {
 				return dc
 			} else if dc.C().Name == name {
 				return dc
 			}
 		case *identifier.Column:
-			c := p.(*identifier.Column)
+			c := p
 			if c.Alias != "" && c.Alias == name {
 				return c
 			} else if c.Name == name {
 				return c
 			}
 		case *function.Function:
-			f := p.(*function.Function)
+			f := p
 			if f.Alias != "" && f.Alias == name {
 				return f
 			}
@@ -109,30 +111,37 @@ func (q *SelectQuery) Join(
 	right interface{},
 	on *expression.Expression,
 ) *SelectQuery {
-	var rightSel builder.Selection
-	switch right.(type) {
+	var rightSel api.Selection
+	switch right := right.(type) {
 	case *SelectQuery:
 		// Joining to a derived table
-		rightSel = right.(*SelectQuery).sel.Selections()[0]
-	case builder.Selection:
-		rightSel = right.(builder.Selection)
+		rightSel = right.sel.Selections()[0]
+	case api.Selection:
+		rightSel = right
 	}
-	return q.doJoin(types.JOIN_INNER, rightSel, on)
+	return q.doJoin(api.JoinInner, rightSel, on)
+}
+
+func (q *SelectQuery) InnerJoin(
+	right interface{},
+	on *expression.Expression,
+) *SelectQuery {
+	return q.Join(right, on)
 }
 
 func (q *SelectQuery) OuterJoin(
 	right interface{},
 	on *expression.Expression,
 ) *SelectQuery {
-	var rightSel builder.Selection
-	switch right.(type) {
+	var rightSel api.Selection
+	switch right := right.(type) {
 	case *SelectQuery:
 		// Joining to a derived table
-		rightSel = right.(*SelectQuery).sel.Selections()[0]
-	case builder.Selection:
-		rightSel = right.(builder.Selection)
+		rightSel = right.sel.Selections()[0]
+	case api.Selection:
+		rightSel = right
 	}
-	return q.doJoin(types.JOIN_OUTER, rightSel, on)
+	return q.doJoin(api.JoinOuter, rightSel, on)
 }
 
 // Join to a supplied selection with the supplied ON expression. If the SelectQuery
@@ -140,22 +149,22 @@ func (q *SelectQuery) OuterJoin(
 // not reference any selection that is found in the SelectQuery's SelectStatement, then
 // SelectQuery.e will be set to an error.
 func (q *SelectQuery) doJoin(
-	jt types.JoinType,
-	right builder.Selection,
+	jt api.JoinType,
+	right api.Selection,
 	on *expression.Expression,
 ) *SelectQuery {
 	if q.sel == nil || len(q.sel.Selections()) == 0 {
-		panic(errors.InvalidJoinNoSelect)
+		panic(api.InvalidJoinNoSelect)
 	}
 
 	// Let's first determine which selection is targeted as the LEFT part of
 	// the join.
-	var left builder.Selection
+	var left api.Selection
 	if on != nil {
 		for _, el := range on.Elements() {
-			switch el.(type) {
-			case builder.Projection:
-				p := el.(builder.Projection)
+			switch el := el.(type) {
+			case api.Projection:
+				p := el
 				exprSel := p.From()
 				if exprSel == right {
 					continue
@@ -184,7 +193,7 @@ func (q *SelectQuery) doJoin(
 					break
 				}
 			case *expression.Expression:
-				expr := el.(*expression.Expression)
+				expr := el
 				for _, referrent := range expr.Referrents() {
 					if referrent == right {
 						continue
@@ -216,13 +225,14 @@ func (q *SelectQuery) doJoin(
 				}
 			}
 		}
-	} else {
-		// TODO(jaypipes): Handle CROSS JOIN by joining the supplied right
-		// against a DerivedTable constructed from the existing SelectQuery.sel
-		// SelectStatement
 	}
+
+	// TODO(jaypipes): Handle CROSS JOIN by joining the supplied right
+	// against a DerivedTable constructed from the existing SelectQuery.sel
+	// SelectStatement
+
 	if left == nil {
-		panic(errors.InvalidJoinUnknownTarget)
+		panic(api.InvalidJoinUnknownTarget)
 	}
 	jc := clause.NewJoin(jt, left, right, on)
 	q.sel.AddJoin(jc)
@@ -236,25 +246,25 @@ func (q *SelectQuery) doJoin(
 func Select(
 	items ...interface{},
 ) *SelectQuery {
-	sel := statement.NewSelect(make([]builder.Projection, 0), nil, nil, nil, nil, nil, nil, nil)
+	sel := statement.NewSelect(make([]api.Projection, 0), nil, nil, nil, nil, nil, nil, nil)
 
 	nDerived := 0
-	selectionMap := make(map[builder.Selection]bool, 0)
+	selectionMap := make(map[api.Selection]bool, 0)
 
 	// For each scannable item we've received in the call, check what concrete
 	// type they are and, depending on which type they are, either add them to
 	// the returned SelectStatement's projections list or query the underlying
 	// table metadata to generate a list of all columns in that table.
 	for _, item := range items {
-		switch item.(type) {
+		switch item := item.(type) {
 		case *SelectQuery:
 			// Project all columns from the subquery to the outer
 			// SelectStatement
-			isq := item.(*SelectQuery)
+			isq := item
 			innerSelClause := isq.sel
 			if len(innerSelClause.Selections()) == 1 {
 				innerSel := innerSelClause.Selections()[0]
-				switch innerSel.(type) {
+				switch innerSel := innerSel.(type) {
 				case *clause.DerivedTable:
 					// If the inner select clause contains a single
 					// selection and that selection is a DerivedTable,
@@ -269,7 +279,7 @@ func Select(
 					// derived table's projections out into the outer
 					// SelectStatement.
 					selectionMap[innerSel] = true
-					dt := innerSel.(*clause.DerivedTable)
+					dt := innerSel
 					for _, p := range dt.DerivedColumns() {
 						sel.AddProjection(p)
 					}
@@ -290,20 +300,20 @@ func Select(
 				}
 			}
 		case *identifier.Column:
-			v := item.(*identifier.Column)
+			v := item
 			if v == nil {
 				panic("specified a non-existent column")
 			}
 			sel.AddProjection(v)
 			selectionMap[v.From()] = true
 		case *identifier.Table:
-			v := item.(*identifier.Table)
+			v := item
 			for _, c := range v.Projections() {
 				sel.AddProjection(c)
 			}
 			selectionMap[v] = true
 		case *function.Function:
-			v := item.(*function.Function)
+			v := item
 			sel.AddProjection(v)
 			selectionMap[v.From()] = true
 		default:
@@ -314,7 +324,7 @@ func Select(
 			sel.AddProjection(p)
 		}
 	}
-	selections := make([]builder.Selection, len(selectionMap))
+	selections := make([]api.Selection, len(selectionMap))
 	x := 0
 	for sel := range selectionMap {
 		selections[x] = sel

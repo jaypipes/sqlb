@@ -7,6 +7,9 @@
 package element
 
 import (
+	"strings"
+
+	"github.com/jaypipes/sqlb/api"
 	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar"
 	"github.com/jaypipes/sqlb/internal/grammar/sortcolumn"
@@ -17,16 +20,16 @@ import (
 // structs but instead helper functions like sqlb.Equal() will construct a
 // value and bind it to the containing element.
 type Value struct {
-	sel   builder.Selection
+	sel   api.Selection
 	alias string
 	val   interface{}
 }
 
-func (v *Value) From() builder.Selection {
+func (v *Value) From() api.Selection {
 	return v.sel
 }
 
-func (v *Value) As(alias string) builder.Projection {
+func (v *Value) As(alias string) api.Projection {
 	return &Value{
 		alias: alias,
 		val:   v.val,
@@ -43,38 +46,32 @@ func (v *Value) ArgCount() int {
 	return 1
 }
 
-func (v *Value) Size(b *builder.Builder) int {
-	// Due to dialect handling, we do not include the length of interpolation
-	// markers for query parameters. This is calculated separately by the
-	// top-level scanning struct before malloc'ing the buffer to inject the SQL
-	// string into.
-	size := 0
-	if v.alias != "" {
-		size += len(grammar.Symbols[grammar.SYM_AS]) + len(v.alias)
-	}
-	return size
-}
-
-func (v *Value) Scan(b *builder.Builder, args []interface{}, curArg *int) {
-	args[*curArg] = v.val
-	b.AddInterpolationMarker(*curArg)
-	*curArg++
+func (v *Value) String(
+	opts api.Options,
+	qargs []interface{},
+	curarg *int,
+) string {
+	b := &strings.Builder{}
+	qargs[*curarg] = v.val
+	b.WriteString(builder.InterpolationMarker(opts, *curarg))
+	*curarg++
 	if v.alias != "" {
 		b.Write(grammar.Symbols[grammar.SYM_AS])
 		b.WriteString(v.alias)
 	}
+	return b.String()
 }
 
-func (v *Value) Desc() builder.Sortable {
+func (v *Value) Desc() api.Orderable {
 	return sortcolumn.NewDesc(v)
 }
 
-func (v *Value) Asc() builder.Sortable {
+func (v *Value) Asc() api.Orderable {
 	return sortcolumn.NewAsc(v)
 }
 
 // NewValue returns an AST node representing a Value
-func NewValue(sel builder.Selection, val interface{}) *Value {
+func NewValue(sel api.Selection, val interface{}) *Value {
 	return &Value{
 		sel: sel,
 		val: val,

@@ -25,13 +25,10 @@ func TestC(t *testing.T) {
 	b := builder.New()
 
 	exp := "users.name"
-	expLen := len(exp)
-	s := c.Size(b)
-	assert.Equal(expLen, s)
 
-	c.Scan(b, nil, nil)
+	qs, _ := b.StringArgs(c)
 
-	assert.Equal(exp, b.String())
+	assert.Equal(exp, qs)
 }
 
 func TestColumnWithTableAlias(t *testing.T) {
@@ -44,13 +41,10 @@ func TestColumnWithTableAlias(t *testing.T) {
 	b := builder.New()
 
 	exp := "u.name"
-	expLen := len(exp)
-	s := c.Size(b)
-	assert.Equal(expLen, s)
 
-	c.Scan(b, nil, nil)
+	qs, _ := b.StringArgs(c)
 
-	assert.Equal(exp, b.String())
+	assert.Equal(exp, qs)
 }
 
 func TestColumnAlias(t *testing.T) {
@@ -63,11 +57,8 @@ func TestColumnAlias(t *testing.T) {
 	b := builder.New()
 
 	exp := "users.name AS user_name"
-	expLen := len(exp)
-	s := c.Size(b)
-	assert.Equal(expLen, s)
 
-	c.Scan(b, nil, nil)
+	qs, _ := b.StringArgs(c)
 
-	assert.Equal(exp, b.String())
+	assert.Equal(exp, qs)
 }

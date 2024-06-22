@@ -7,7 +7,9 @@
 package function
 
 import (
-	"github.com/jaypipes/sqlb/internal/builder"
+	"strings"
+
+	"github.com/jaypipes/sqlb/api"
 	"github.com/jaypipes/sqlb/internal/grammar"
 	"github.com/jaypipes/sqlb/internal/grammar/element"
 	"github.com/jaypipes/sqlb/internal/grammar/sortcolumn"
@@ -15,13 +17,13 @@ import (
 
 // Function is a SQL function that accepts zero or more parameters
 type Function struct {
-	sel      builder.Selection
+	sel      api.Selection
 	Alias    string
 	ScanInfo grammar.ScanInfo
-	elements []builder.Element
+	elements []api.Element
 }
 
-func (f *Function) From() builder.Selection {
+func (f *Function) From() api.Selection {
 	return f.sel
 }
 
@@ -31,7 +33,7 @@ func (f *Function) DisableAliasScan() func() {
 	return func() { f.Alias = origAlias }
 }
 
-func (f *Function) As(alias string) builder.Projection {
+func (f *Function) As(alias string) api.Projection {
 	return &Function{
 		sel:      f.sel,
 		Alias:    alias,
@@ -48,34 +50,12 @@ func (e *Function) ArgCount() int {
 	return ac
 }
 
-func (f *Function) Size(b *builder.Builder) int {
-	size := 0
-	elidx := 0
-	for _, sym := range f.ScanInfo {
-		switch sym {
-		case grammar.SYM_ELEMENT:
-			el := f.elements[elidx]
-			// We need to disable alias output for elements that are
-			// projections. We don't want to output, for example,
-			// "ON users.id AS user_id = articles.author"
-			switch el.(type) {
-			case builder.Projection:
-				reset := el.(builder.Projection).DisableAliasScan()
-				defer reset()
-			}
-			elidx++
-			size += el.Size(b)
-		default:
-			size += len(grammar.Symbols[sym])
-		}
-	}
-	if f.Alias != "" {
-		size += len(grammar.Symbols[grammar.SYM_AS]) + len(f.Alias)
-	}
-	return size
-}
-
-func (f *Function) Scan(b *builder.Builder, args []interface{}, curArg *int) {
+func (f *Function) String(
+	opts api.Options,
+	qargs []interface{},
+	curarg *int,
+) string {
+	b := &strings.Builder{}
 	elidx := 0
 	for _, sym := range f.ScanInfo {
 		if sym == grammar.SYM_ELEMENT {
@@ -83,13 +63,13 @@ func (f *Function) Scan(b *builder.Builder, args []interface{}, curArg *int) {
 			// We need to disable alias output for elements that are
 			// projections. We don't want to output, for example,
 			// "ON users.id AS user_id = articles.author"
-			switch el.(type) {
-			case builder.Projection:
-				reset := el.(builder.Projection).DisableAliasScan()
+			switch el := el.(type) {
+			case api.Projection:
+				reset := el.DisableAliasScan()
 				defer reset()
 			}
 			elidx++
-			el.Scan(b, args, curArg)
+			b.WriteString(el.String(opts, qargs, curarg))
 		} else {
 			b.Write(grammar.Symbols[sym])
 		}
@@ -98,64 +78,65 @@ func (f *Function) Scan(b *builder.Builder, args []interface{}, curArg *int) {
 		b.Write(grammar.Symbols[grammar.SYM_AS])
 		b.WriteString(f.Alias)
 	}
+	return b.String()
 }
 
-func (f *Function) Desc() builder.Sortable {
+func (f *Function) Desc() api.Orderable {
 	return sortcolumn.NewDesc(f)
 }
 
-func (f *Function) Asc() builder.Sortable {
+func (f *Function) Asc() api.Orderable {
 	return sortcolumn.NewAsc(f)
 }
 
-func Max(p builder.Projection) builder.Projection {
+func Max(p api.Projection) api.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_MAX),
-		elements: []builder.Element{p.(builder.Element)},
+		elements: []api.Element{p.(api.Element)},
 		sel:      p.From(),
 	}
 }
 
-func Min(p builder.Projection) builder.Projection {
+func Min(p api.Projection) api.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_MIN),
-		elements: []builder.Element{p.(builder.Element)},
+		elements: []api.Element{p.(api.Element)},
 		sel:      p.From(),
 	}
 }
 
-func Sum(p builder.Projection) builder.Projection {
+func Sum(p api.Projection) api.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_SUM),
-		elements: []builder.Element{p.(builder.Element)},
+		elements: []api.Element{p.(api.Element)},
 		sel:      p.From(),
 	}
 }
 
-func Avg(p builder.Projection) builder.Projection {
+func Avg(p api.Projection) api.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_AVG),
-		elements: []builder.Element{p.(builder.Element)},
+		elements: []api.Element{p.(api.Element)},
 		sel:      p.From(),
 	}
 }
 
-func Count(sel builder.Selection) builder.Projection {
+func Count(sel api.Selection) api.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_COUNT_STAR),
 		sel:      sel,
 	}
 }
 
-func CountDistinct(p builder.Projection) builder.Projection {
+func CountDistinct(p api.Projection) api.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_COUNT_DISTINCT),
-		elements: []builder.Element{p.(builder.Element)},
+		elements: []api.Element{p.(api.Element)},
 		sel:      p.From(),
 	}
 }
 
-func Cast(p builder.Projection, stype grammar.SQLType) builder.Projection {
+func Cast(p api.Projection, stype grammar.SQLType) api.Projection {
 	si := make([]grammar.Symbol, len(grammar.FunctionScanTable(grammar.FUNC_CAST)))
 	copy(si, grammar.FunctionScanTable(grammar.FUNC_CAST))
 	// Replace the placeholder with the SQL type's appropriate []byte
@@ -163,95 +144,95 @@ func Cast(p builder.Projection, stype grammar.SQLType) builder.Projection {
 	si[3] = grammar.SQLTypeToSymbol(stype)
 	return &Function{
 		ScanInfo: si,
-		elements: []builder.Element{p.(builder.Element)},
+		elements: []api.Element{p.(api.Element)},
 	}
 }
 
-func CharLength(p builder.Projection) builder.Projection {
+func CharLength(p api.Projection) api.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_CHAR_LENGTH),
-		elements: []builder.Element{p.(builder.Element)},
+		elements: []api.Element{p.(api.Element)},
 		sel:      p.From(),
 	}
 }
 
-func BitLength(p builder.Projection) builder.Projection {
+func BitLength(p api.Projection) api.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_BIT_LENGTH),
-		elements: []builder.Element{p.(builder.Element)},
+		elements: []api.Element{p.(api.Element)},
 		sel:      p.From(),
 	}
 }
 
-func Ascii(p builder.Projection) builder.Projection {
+func Ascii(p api.Projection) api.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_ASCII),
-		elements: []builder.Element{p.(builder.Element)},
+		elements: []api.Element{p.(api.Element)},
 		sel:      p.From(),
 	}
 }
 
-func Reverse(p builder.Projection) builder.Projection {
+func Reverse(p api.Projection) api.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_REVERSE),
-		elements: []builder.Element{p.(builder.Element)},
+		elements: []api.Element{p.(api.Element)},
 		sel:      p.From(),
 	}
 }
 
-func Concat(projs ...builder.Projection) builder.Projection {
-	els := make([]builder.Element, len(projs))
+func Concat(projs ...api.Projection) api.Projection {
+	els := make([]api.Element, len(projs))
 	for x, p := range projs {
-		els[x] = p.(builder.Element)
+		els[x] = p.(api.Element)
 	}
 	subjects := element.NewList(els...)
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_CONCAT),
-		elements: []builder.Element{subjects},
+		elements: []api.Element{subjects},
 		// TODO(jaypipes): Clearly we need to support >1 selection...
 		sel: projs[0].From(),
 	}
 }
 
-func ConcatWs(sep string, projs ...builder.Projection) builder.Projection {
-	els := make([]builder.Element, len(projs))
+func ConcatWs(sep string, projs ...api.Projection) api.Projection {
+	els := make([]api.Element, len(projs))
 	for x, p := range projs {
-		els[x] = p.(builder.Element)
+		els[x] = p.(api.Element)
 	}
 	subjects := element.NewList(els...)
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_CONCAT_WS),
-		elements: []builder.Element{element.NewValue(nil, sep), subjects},
+		elements: []api.Element{element.NewValue(nil, sep), subjects},
 		// TODO(jaypipes): Clearly we need to support >1 selection...
 		sel: projs[0].From(),
 	}
 }
 
-func Now() builder.Projection {
+func Now() api.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_NOW),
 	}
 }
 
-func CurrentTimestamp() builder.Projection {
+func CurrentTimestamp() api.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_CURRENT_TIMESTAMP),
 	}
 }
 
-func CurrentTime() builder.Projection {
+func CurrentTime() api.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_CURRENT_TIME),
 	}
 }
 
-func CurrentDate() builder.Projection {
+func CurrentDate() api.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_CURRENT_DATE),
 	}
 }
 
-func Extract(p builder.Projection, unit grammar.IntervalUnit) builder.Projection {
+func Extract(p api.Projection, unit grammar.IntervalUnit) api.Projection {
 	si := make([]grammar.Symbol, len(grammar.FunctionScanTable(grammar.FUNC_EXTRACT)))
 	copy(si, grammar.FunctionScanTable(grammar.FUNC_EXTRACT))
 	// Replace the placeholder with the interval unit's appropriate []byte
@@ -259,6 +240,6 @@ func Extract(p builder.Projection, unit grammar.IntervalUnit) builder.Projection
 	si[1] = grammar.IntervalUnitToSymbol(unit)
 	return &Function{
 		ScanInfo: si,
-		elements: []builder.Element{p.(builder.Element)},
+		elements: []api.Element{p.(api.Element)},
 	}
 }

@@ -4,9 +4,11 @@
 // See the COPYING file in the root project directory for full text.
 //
 
-package types
+package api
 
-type FormatOptions struct {
-	SeparateClauseWith string
-	PrefixWith         string
+// Column describes a column in a Table
+type Column struct {
+	Alias string
+	Name  string
+	Table *Table
 }

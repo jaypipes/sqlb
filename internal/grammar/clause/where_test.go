@@ -112,14 +112,8 @@ func TestWhere(t *testing.T) {
 		argc := test.c.ArgCount()
 		assert.Equal(expArgc, argc)
 
-		expLen := len(test.qs)
-		size := test.c.Size(b)
-		size += b.InterpolationLength(argc)
-		assert.Equal(expLen, size)
+		qs, _ := b.StringArgs(test.c)
 
-		curArg := 0
-		test.c.Scan(b, test.qargs, &curArg)
-
-		assert.Equal(test.qs, b.String())
+		assert.Equal(test.qs, qs)
 	}
 }

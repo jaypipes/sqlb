@@ -4,7 +4,7 @@
 // See the COPYING file in the root project directory for full text.
 //
 
-package errors
+package api
 
 import (
 	"errors"
@@ -16,4 +16,7 @@ var (
 	NoTargetTable            = errors.New("No target table supplied.")
 	NoValues                 = errors.New("No values supplied.")
 	UnknownColumn            = errors.New("Received an unknown column.")
+	// TableRequired is returned when calling a sqlb function that requires a
+	// types.Table
+	TableRequired = errors.New("required *sqlb.Table argument is nil")
 )

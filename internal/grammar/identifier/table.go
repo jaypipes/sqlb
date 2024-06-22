@@ -8,23 +8,17 @@ package identifier
 
 import (
 	"sort"
+	"strings"
 
-	"github.com/jaypipes/sqlb/internal/builder"
+	"github.com/jaypipes/sqlb/api"
 	"github.com/jaypipes/sqlb/internal/grammar"
-	"github.com/jaypipes/sqlb/meta"
 )
 
 // Table identifies a Table in a SQL statement
 type Table struct {
-	st      *meta.Table
 	Alias   string
 	Name    string
 	columns []*Column
-}
-
-// Meta returns a pointer to the underlying Meta
-func (t *Table) Meta() *meta.Meta {
-	return t.st.Meta
 }
 
 // C returns a pointer to a Column with a name or alias matching the supplied
@@ -38,8 +32,8 @@ func (t *Table) C(name string) *Column {
 	return nil
 }
 
-func (t *Table) Projections() []builder.Projection {
-	res := make([]builder.Projection, len(t.columns))
+func (t *Table) Projections() []api.Projection {
+	res := make([]api.Projection, len(t.columns))
 	for x, c := range t.columns {
 		res[x] = c
 	}
@@ -50,25 +44,22 @@ func (t *Table) ArgCount() int {
 	return 0
 }
 
-func (t *Table) Size(b *builder.Builder) int {
-	size := len(t.Name)
-	if t.Alias != "" {
-		size += len(grammar.Symbols[grammar.SYM_AS]) + len(t.Alias)
-	}
-	return size
-}
-
-func (t *Table) Scan(b *builder.Builder, args []interface{}, curArg *int) {
+func (t *Table) String(
+	opts api.Options,
+	qargs []interface{},
+	curarg *int,
+) string {
+	b := &strings.Builder{}
 	b.WriteString(t.Name)
 	if t.Alias != "" {
 		b.Write(grammar.Symbols[grammar.SYM_AS])
 		b.WriteString(t.Alias)
 	}
+	return b.String()
 }
 
 func (t *Table) As(alias string) *Table {
 	tbl := &Table{
-		st:    t.st,
 		Alias: alias,
 		Name:  t.Name,
 	}
@@ -87,21 +78,19 @@ func (t *Table) As(alias string) *Table {
 // TableFromMeta returns a Table of a given name from a
 // supplied Meta
 func TableFromMeta(
-	m *meta.Meta,
+	t *api.Table,
 	name string,
 ) *Table {
-	st := m.T(name)
-	if st == nil {
+	if t == nil {
 		return nil
 	}
 	ti := &Table{
-		st:   st,
 		Name: name,
 	}
-	cols := make([]*Column, len(st.Columns))
-	colNames := make([]string, len(st.Columns))
+	cols := make([]*Column, len(t.Columns))
+	colNames := make([]string, len(t.Columns))
 	x := 0
-	for cname := range st.Columns {
+	for cname := range t.Columns {
 		colNames[x] = cname
 		x++
 	}
