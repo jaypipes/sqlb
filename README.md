@@ -104,25 +104,29 @@ JOIN users
 ORDER BY articles.created_on DESC
 LIMIT 10
 `
-    articles := make([]*Article, 0)
+    res := make([]*Article, 0)
     rows, err := db.Query(qs)
     if err != nil {
         log.Fatal(err)
     }
     defer rows.Close()
     for rows.Next() {
-        article := &Article{}
-        err := rows.Scan(&article.Title, &article.Content,
-                         &article.PublishedOn, &article.AuthorName)
+        a := &Article{}
+        err := rows.Scan(
+            &a.Title,
+            &a.Content,
+            &a.PublishedOn,
+            &a.AuthorName,
+        )
         if err != nil {
             log.Fatal(err)
         }
-        articles = append(articles, article)
+        res = append(res, a)
     }
     if err := rows.Err(); err != nil {
         log.Fatal(err)
     }
-    return articles
+    return res
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -173,31 +177,35 @@ JOIN users
  ON articles.created_by = users.id
 `
     if byAuthor != "" {
-        qs = qs + "WHERE users.name = ? "
+        qs += "WHERE users.name = ? "
         qargs = append(qargs, byAuthor)
     }
-    qs = qs + `ORDER BY articles.created_on DESC
+    qs += `ORDER BY articles.created_on DESC
 LIMIT ?`
     qargs = append(qargs, numArticles)
-    articles := make([]*Article, 0)
+    res := make([]*Article, 0)
     rows, err := db.Query(qs, qargs...)
     if err != nil {
         log.Fatal(err)
     }
     defer rows.Close()
     for rows.Next() {
-        article := &Article{}
-        err := rows.Scan(&article.Title, &article.Content,
-                         &article.PublishedOn, &article.AuthorName)
+        a := &Article{}
+        err := rows.Scan(
+            &a.Title,
+            &a.Content,
+            &a.PublishedOn,
+            &a.AuthorName,
+        )
         if err != nil {
             log.Fatal(err)
         }
-        articles = append(articles, article)
+        res = append(res, a)
     }
     if err := rows.Err(); err != nil {
         log.Fatal(err)
     }
-    return articles
+    return res
 }
 ```
 
@@ -242,8 +250,8 @@ func main() {
     if meta, err := sqlb.Reflect(db); err != nil {
         log.Fatal(err)
     }
-    articles := meta.Table("articles")
-    users := meta.Table("users")
+    articles = meta.Table("articles")
+    users = meta.Table("users")
 }
 ```
 
@@ -268,25 +276,29 @@ func getArticles() []*Article {
     q.OrderBy(articles.C("created_by").Desc())
     q.Limit(10)
 
-    articles := make([]*Article, 0)
+    res := make([]*Article, 0)
     rows, err := sqlb.Query(db, q)
     if err != nil {
         log.Fatal(err)
     }
     defer rows.Close()
     for rows.Next() {
-        article := &Article{}
-        err := rows.Scan(&article.Title, &article.Content,
-                         &article.PublishedOn, &article.AuthorName)
+        a := &Article{}
+        err := rows.Scan(
+            &a.Title,
+            &a.Content,
+            &a.PublishedOn,
+            &a.AuthorName,
+        )
         if err != nil {
             log.Fatal(err)
         }
-        articles = append(articles, article)
+        res = append(res, a)
     }
     if err := rows.Err(); err != nil {
         log.Fatal(err)
     }
-    return articles
+    return res
 }
 ```
 
@@ -298,9 +310,6 @@ and optionally filter for a specific author's articles.
 
 ```go
 func getArticles(numArticles int, byAuthor string) []*Articles {
-    articles := meta.Table("articles")
-    users := meta.Table("users")
-
     q := sqlb.Select(articles.C("title"), articles.C("content"),
                      articles.C("created_by"), users.C("name"))
     q.Join(users, sqlb.Equal(articles.C("author"), users.C("id")))
@@ -310,25 +319,28 @@ func getArticles(numArticles int, byAuthor string) []*Articles {
     q.OrderBy(articles.C("created_by").Desc())
     q.Limit(numArticles)
 
-    articles := make([]*Article, 0)
+    res := make([]*Article, 0)
     rows, err := sqlb.Query(db, q)
     if err != nil {
         log.Fatal(err)
     }
-    defer rows.Close()
     for rows.Next() {
-        article := &Article{}
-        err := rows.Scan(&article.Title, &article.Content,
-                         &article.PublishedOn, &article.AuthorName)
+        a := &Article{}
+        err := rows.Scan(
+            &a.Title,
+            &a.Content,
+            &a.PublishedOn,
+            &a.AuthorName,
+        )
         if err != nil {
             log.Fatal(err)
         }
-        articles = append(articles, article)
+        res = append(res, a)
     }
     if err := rows.Err(); err != nil {
         log.Fatal(err)
     }
-    return articles
+    return res
 }
 ```
 
