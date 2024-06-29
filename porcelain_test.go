@@ -12,7 +12,6 @@ import (
 	"github.com/jaypipes/sqlb"
 	"github.com/jaypipes/sqlb/api"
 	"github.com/jaypipes/sqlb/internal/builder"
-	"github.com/jaypipes/sqlb/internal/grammar/expression"
 	"github.com/jaypipes/sqlb/internal/grammar/function"
 	"github.com/jaypipes/sqlb/internal/grammar/identifier"
 	"github.com/jaypipes/sqlb/internal/query"
@@ -110,7 +109,7 @@ func TestDelete(t *testing.T) {
 		//},
 		//{
 		//	name:  "DELETE simple WHERE",
-		//	q:     query.Delete(users).Where(expression.Equal(colUserName, "foo")),
+		//	q:     query.Delete(users).Where(sqlb.Equal(colUserName, "foo")),
 		//	qs:    "DELETE FROM users WHERE users.name = ?",
 		//	qargs: []interface{}{"foo"},
 		//},
@@ -178,7 +177,7 @@ func TestUpdate(t *testing.T) {
 		//{
 		//	name: "UPDATE simple WHERE",
 		//	q: query.Update(users, map[string]interface{}{"name": "bar"}).Where(
-		//		expression.Equal(colUserName, "foo"),
+		//		sqlb.Equal(colUserName, "foo"),
 		//	),
 		//	qs:    "UPDATE users SET name = ? WHERE users.name = ?",
 		//	qargs: []interface{}{"bar", "foo"},
@@ -239,17 +238,17 @@ func TestSelect(t *testing.T) {
 		},
 		{
 			name:  "Simple WHERE",
-			q:     func() { sq = sqlb.Select(users).Where(expression.Equal(colUserName, "foo")) },
+			q:     func() { sq = sqlb.Select(users).Where(sqlb.Equal(colUserName, "foo")) },
 			qs:    "SELECT users.id, users.name FROM users WHERE users.name = ?",
 			qargs: []interface{}{"foo"},
 		},
 		{
-			name: "WHERE with an OR expression",
+			name: "WHERE with an OR sqlb",
 			q: func() {
 				sq = sqlb.Select(users).Where(
-					expression.Or(
-						expression.Equal(colUserName, "foo"),
-						expression.Equal(colUserName, "bar"),
+					sqlb.Or(
+						sqlb.Equal(colUserName, "foo"),
+						sqlb.Equal(colUserName, "bar"),
 					),
 				)
 			},
@@ -266,7 +265,7 @@ func TestSelect(t *testing.T) {
 		{
 			name: "Simple HAVING",
 			q: func() {
-				sq = sqlb.Select(users).Having(expression.Equal(colUserName, "foo"))
+				sq = sqlb.Select(users).Having(sqlb.Equal(colUserName, "foo"))
 			},
 			qs:    "SELECT users.id, users.name FROM users HAVING users.name = ?",
 			qargs: []interface{}{"foo"},
@@ -311,28 +310,28 @@ func TestSelect(t *testing.T) {
 		{
 			name: "Bad JOIN. Can't Join() against no selection",
 			q: func() {
-				sq = sqlb.Select().Join(users, expression.Equal(colArticleAuthor, colUserId))
+				sq = sqlb.Select().Join(users, sqlb.Equal(colArticleAuthor, colUserId))
 			},
 			expPanic: true,
 		},
 		{
 			name: "Bad JOIN. Can't Join() against a selection that isn't in the containing SELECT",
 			q: func() {
-				sq = sqlb.Select(articleStates).Join(users, expression.Equal(colArticleAuthor, colUserId))
+				sq = sqlb.Select(articleStates).Join(users, sqlb.Equal(colArticleAuthor, colUserId))
 			},
 			expPanic: true,
 		},
 		{
 			name: "Simple INNER JOIN",
 			q: func() {
-				sq = sqlb.Select(colArticleId, colUserName.As("author")).Join(users, expression.Equal(colArticleAuthor, colUserId))
+				sq = sqlb.Select(colArticleId, colUserName.As("author")).Join(users, sqlb.Equal(colArticleAuthor, colUserId))
 			},
 			qs: "SELECT articles.id, users.name AS author FROM articles JOIN users ON articles.author = users.id",
 		},
 		{
 			name: "Simple LEFT JOIN",
 			q: func() {
-				sq = sqlb.Select(colArticleId, colUserName.As("author")).OuterJoin(users, expression.Equal(colArticleAuthor, colUserId))
+				sq = sqlb.Select(colArticleId, colUserName.As("author")).OuterJoin(users, sqlb.Equal(colArticleAuthor, colUserId))
 			},
 			qs: "SELECT articles.id, users.name AS author FROM articles LEFT JOIN users ON articles.author = users.id",
 		},
@@ -343,7 +342,7 @@ func TestSelect(t *testing.T) {
 					colArticleId,
 					colUserName.As("author"),
 					colArticleStateName.As("state"),
-				).Join(users, expression.Equal(colArticleAuthor, colUserId)).Join(articleStates, expression.Equal(colArticleState, colArticleStateId))
+				).Join(users, sqlb.Equal(colArticleAuthor, colUserId)).Join(articleStates, sqlb.Equal(colArticleState, colArticleStateId))
 			},
 			qs: "SELECT articles.id, users.name AS author, article_states.name AS state FROM articles JOIN users ON articles.author = users.id JOIN article_states ON articles.state = article_states.id",
 		},
@@ -354,9 +353,9 @@ func TestSelect(t *testing.T) {
 					colArticleId, colUserName.As("author"),
 				).OuterJoin(
 					users,
-					expression.Equal(colArticleAuthor, colUserId),
+					sqlb.Equal(colArticleAuthor, colUserId),
 				).Where(
-					expression.IsNull(colArticleAuthor),
+					sqlb.IsNull(colArticleAuthor),
 				)
 			},
 			qs: "SELECT articles.id, users.name AS author FROM articles LEFT JOIN users ON articles.author = users.id WHERE articles.author IS NULL",
@@ -367,7 +366,7 @@ func TestSelect(t *testing.T) {
 				sq = sqlb.Select(
 					colUserId,
 					colUserName,
-				).OuterJoin(subq, expression.Equal(colUserId, subq.C("id")))
+				).OuterJoin(subq, sqlb.Equal(colUserId, subq.C("id")))
 			},
 			qs: "SELECT users.id, users.name FROM users LEFT JOIN (SELECT users.id FROM users) AS users_derived ON users.id = users_derived.id",
 		},
@@ -377,7 +376,7 @@ func TestSelect(t *testing.T) {
 				sq = sqlb.Select(
 					colUserId,
 					colUserName,
-				).Join(subq, expression.Equal(colUserId, subq.C("id")))
+				).Join(subq, sqlb.Equal(colUserId, subq.C("id")))
 			},
 			qs: "SELECT users.id, users.name FROM users JOIN (SELECT users.id FROM users) AS users_derived ON users.id = users_derived.id",
 		},
@@ -388,7 +387,7 @@ func TestSelect(t *testing.T) {
 					colArticleId,
 					colUserName.As("author"),
 					colUserProfileContent.As("author_profile"),
-				).Join(users, expression.Equal(colArticleAuthor, colUserId)).Join(userProfiles, expression.Equal(colUserId, colUserProfileUser))
+				).Join(users, sqlb.Equal(colArticleAuthor, colUserId)).Join(userProfiles, sqlb.Equal(colUserId, colUserProfileUser))
 			},
 			qs: "SELECT articles.id, users.name AS author, user_profiles.content AS author_profile FROM articles JOIN users ON articles.author = users.id JOIN user_profiles ON users.id = user_profiles.user",
 		},
@@ -398,7 +397,7 @@ func TestSelect(t *testing.T) {
 				sq = sqlb.Select(
 					colUserId,
 					colUserName,
-				).OuterJoin(subq, expression.Equal(colUserId, subq.C("id"))).Where(expression.Equal(subq.C("id"), 1))
+				).OuterJoin(subq, sqlb.Equal(colUserId, subq.C("id"))).Where(sqlb.Equal(subq.C("id"), 1))
 			},
 			qs:    "SELECT users.id, users.name FROM users LEFT JOIN (SELECT users.id FROM users) AS users_derived ON users.id = users_derived.id WHERE users_derived.id = ?",
 			qargs: []interface{}{1},
@@ -437,12 +436,12 @@ func TestNestedSetQueries(t *testing.T) {
 	o2nestedleft := o2.C("nested_set_left")
 	o2nestedright := o2.C("nested_set_right")
 
-	joinCond := expression.And(
-		expression.Equal(o1rootid, o2rootid),
-		expression.Between(o1nestedleft, o2nestedleft, o2nestedright),
+	joinCond := sqlb.And(
+		sqlb.Equal(o1rootid, o2rootid),
+		sqlb.Between(o1nestedleft, o2nestedleft, o2nestedright),
 	)
 	q := sqlb.Select(o1id).Join(o2, joinCond)
-	q.Where(expression.Equal(o2id, 2))
+	q.Where(sqlb.Equal(o2id, 2))
 
 	b := builder.New()
 	qs, qargs := b.StringArgs(q)
@@ -476,13 +475,13 @@ func TestNestedSetWithAdditionalJoin(t *testing.T) {
 	ouUserId := ou.C("user_id")
 	ouOrgId := ou.C("organization_id")
 
-	nestedJoinCond := expression.And(
-		expression.Equal(o1rootid, o2rootid),
-		expression.Between(o1nestedleft, o2nestedleft, o2nestedright),
+	nestedJoinCond := sqlb.And(
+		sqlb.Equal(o1rootid, o2rootid),
+		sqlb.Between(o1nestedleft, o2nestedleft, o2nestedright),
 	)
-	ouJoin := expression.And(
-		expression.Equal(o2id, ouOrgId),
-		expression.Equal(ouUserId, 1),
+	ouJoin := sqlb.And(
+		sqlb.Equal(o2id, ouOrgId),
+		sqlb.Equal(ouUserId, 1),
 	)
 	q := sqlb.Select(o1id).Join(o2, nestedJoinCond).Join(ou, ouJoin)
 
@@ -540,13 +539,13 @@ func TestJoinDerivedWithMultipleSelections(t *testing.T) {
 	ouUserId := ou.C("user_id")
 	ouOrgId := ou.C("organization_id")
 
-	nestedJoinCond := expression.And(
-		expression.Equal(o1rootid, o2rootid),
-		expression.Between(o1nestedleft, o2nestedleft, o2nestedright),
+	nestedJoinCond := sqlb.And(
+		sqlb.Equal(o1rootid, o2rootid),
+		sqlb.Between(o1nestedleft, o2nestedleft, o2nestedright),
 	)
-	ouJoin := expression.And(
-		expression.Equal(o2id, ouOrgId),
-		expression.Equal(ouUserId, 1),
+	ouJoin := sqlb.And(
+		sqlb.Equal(o2id, ouOrgId),
+		sqlb.Equal(ouUserId, 1),
 	)
 	subq := sqlb.Select(o1id).Join(o2, nestedJoinCond).Join(ou, ouJoin).As("derived")
 	subqOrgId := subq.C("id")
@@ -565,11 +564,11 @@ func TestJoinDerivedWithMultipleSelections(t *testing.T) {
 		orgs.C("uuid"),
 	).OuterJoin(
 		subq,
-		expression.Equal(
+		sqlb.Equal(
 			orgs.C("id"),
 			subqOrgId,
 		),
-	).Where(expression.IsNotNull(subqOrgId))
+	).Where(sqlb.IsNotNull(subqOrgId))
 
 	qs, qargs = b.StringArgs(q)
 
@@ -596,7 +595,7 @@ func TestModifyingSelectQueryUpdatesBuffer(t *testing.T) {
 	b = builder.New()
 
 	// Modify the underlying SELECT and verify string and args changed
-	q.Where(expression.Equal(users.C("id"), 1))
+	q.Where(sqlb.Equal(users.C("id"), 1))
 	qs, qargs = b.StringArgs(q)
 	assert.Equal("SELECT users.id, users.name FROM users WHERE users.id = ?", qs)
 	assert.Equal([]interface{}{1}, qargs)
@@ -614,8 +613,8 @@ func TestFormat(t *testing.T) {
 	colArticleAuthor := articles.C("author")
 
 	q := sqlb.Select(colArticleId, colUserName.As("author"))
-	q.Join(articles, expression.Equal(colUserId, colArticleAuthor))
-	q.Where(expression.Equal(colUserName, "foo"))
+	q.Join(articles, sqlb.Equal(colUserId, colArticleAuthor))
+	q.Where(sqlb.Equal(colUserName, "foo"))
 	q.GroupBy(colUserName)
 	q.OrderBy(colUserName.Desc())
 	q.Limit(10)

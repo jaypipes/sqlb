@@ -12,6 +12,7 @@ import (
 
 	"github.com/jaypipes/sqlb/api"
 	"github.com/jaypipes/sqlb/internal/builder"
+	"github.com/jaypipes/sqlb/internal/grammar/expression"
 	"github.com/jaypipes/sqlb/internal/grammar/identifier"
 	"github.com/jaypipes/sqlb/internal/grammar/statement"
 	"github.com/jaypipes/sqlb/internal/query"
@@ -46,6 +47,57 @@ type Table api.Table
 
 // Column describes a column in a Table
 type Column api.Column
+
+// Equal accepts two things and returns an Element representing an equality
+// expression that can be passed to a Join or Where clause.
+var Equal = expression.Equal
+
+// NotEqual accepts two things and returns an Element representing an
+// inequality expression that can be passed to a Join or Where clause.
+var NotEqual = expression.NotEqual
+
+// And accepts two things and returns an Element representing an AND expression
+// that can be passed to a Join or Where clause.
+var And = expression.And
+
+// Or accepts two things and returns an Element representing an OR expression
+// that can be passed to a Join or Where clause.
+var Or = expression.Or
+
+// In accepts two things and returns an Element representing an IN expression
+// that can be passed to a Join or Where clause.
+var In = expression.In
+
+// Between accepts an element and a start and end things and returns an Element
+// representing a BETWEEN expression that can be passed to a Join or Where
+// clause.
+var Between = expression.Between
+
+// IsNull accepts an element and returns an Element representing an IS NULL
+// expression that can be passed to a Join or Where clause.
+var IsNull = expression.IsNull
+
+// IsNotNull accepts an element and returns an Element representing an IS NOT
+// NULL expression that can be passed to a Join or Where clause.
+var IsNotNull = expression.IsNotNull
+
+// GreaterThan accepts two things and returns an Element representing a greater
+// than expression that can be passed to a Join or Where clause.
+var GreaterThan = expression.GreaterThan
+
+// GreaterThanOrEqual accepts two things and returns an Element representing a
+// greater than or equality expression that can be passed to a Join or Where
+// clause.
+var GreaterThanOrEqual = expression.GreaterThanOrEqual
+
+// LessThan accepts two things and returns an Element representing a less than
+// expression that can be passed to a Join or Where clause.
+var LessThan = expression.LessThan
+
+// LessThanOrEqual accepts two things and returns an Element representing a
+// less than or equality expression that can be passed to a Join or Where
+// clause.
+var LessThanOrEqual = expression.LessThanOrEqual
 
 // T returns a TableIdentifier of a given name from a supplied Meta
 func T(m *api.Meta, name string) *identifier.Table {
