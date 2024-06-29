@@ -20,7 +20,7 @@ jobs:
         go: [ '1.19', '1.20', '1.21']
     steps:
      - name: harden runner
-       uses: step-security/harden-runner@55d479fb1c5bcad5a4f9099a5d9f37c8857b2845 # v2.4.1
+       uses: step-security/harden-runner@17d0e2bd7d51742c71671bd19fa12bdc9d40a3d6 # v2.8.1
        with:
          egress-policy: block
          disable-sudo: true
@@ -33,9 +33,9 @@ jobs:
            objects.githubusercontent.com:443
            proxy.golang.org:443
      - name: checkout code
-       uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+       uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
      - name: setup go
-       uses: actions/setup-go@fac708d6674e30b6ba41289acaab6d4b75aa0753 # v4.0.1
+       uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
        with:
          go-version: ${{ matrix.go }}
      - name: run tests
@@ -48,7 +48,7 @@ jobs:
         go: [ '1.18', '1.19']
     steps:
      - name: harden runner
-       uses: step-security/harden-runner@55d479fb1c5bcad5a4f9099a5d9f37c8857b2845 # v2.4.1
+       uses: step-security/harden-runner@17d0e2bd7d51742c71671bd19fa12bdc9d40a3d6 # v2.8.1
        with:
          egress-policy: block
          disable-sudo: true
@@ -61,9 +61,9 @@ jobs:
            objects.githubusercontent.com:443
            proxy.golang.org:443
      - name: checkout code
-       uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+       uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
      - name: setup go
-       uses: actions/setup-go@fac708d6674e30b6ba41289acaab6d4b75aa0753 # v4.0.1
+       uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
        with:
          go-version: ${{ matrix.go }}
      - name: run tests
@@ -76,7 +76,7 @@ jobs:
         go: [ '1.21' ]
     steps:
      - name: harden runner
-       uses: step-security/harden-runner@55d479fb1c5bcad5a4f9099a5d9f37c8857b2845 # v2.4.1
+       uses: step-security/harden-runner@17d0e2bd7d51742c71671bd19fa12bdc9d40a3d6 # v2.8.1
        with:
          egress-policy: block
          disable-sudo: true
@@ -89,9 +89,9 @@ jobs:
            objects.githubusercontent.com:443
            proxy.golang.org:443
      - name: checkout code
-       uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+       uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
      - name: setup go
-       uses: actions/setup-go@fac708d6674e30b6ba41289acaab6d4b75aa0753 # v4.0.1
+       uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
        with:
          go-version: ${{ matrix.go }}
      - name: run tests
@@ -104,7 +104,7 @@ jobs:
         go: [ '1.21' ]
     steps:
      - name: harden runner
-       uses: step-security/harden-runner@55d479fb1c5bcad5a4f9099a5d9f37c8857b2845 # v2.4.1
+       uses: step-security/harden-runner@17d0e2bd7d51742c71671bd19fa12bdc9d40a3d6 # v2.8.1
        with:
          egress-policy: block
          disable-sudo: true
@@ -117,9 +117,9 @@ jobs:
            objects.githubusercontent.com:443
            proxy.golang.org:443
      - name: checkout code
-       uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+       uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
      - name: setup go
-       uses: actions/setup-go@fac708d6674e30b6ba41289acaab6d4b75aa0753 # v4.0.1
+       uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
        with:
          go-version: ${{ matrix.go }}
      - name: run tests
