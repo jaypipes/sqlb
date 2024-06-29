@@ -12,7 +12,6 @@ import (
 	"github.com/jaypipes/sqlb"
 	"github.com/jaypipes/sqlb/api"
 	"github.com/jaypipes/sqlb/internal/builder"
-	"github.com/jaypipes/sqlb/internal/grammar/function"
 	"github.com/jaypipes/sqlb/internal/grammar/identifier"
 	"github.com/jaypipes/sqlb/internal/query"
 	"github.com/jaypipes/sqlb/internal/testutil"
@@ -233,7 +232,7 @@ func TestSelect(t *testing.T) {
 		},
 		{
 			name: "Simple SELECT COUNT(*) FROM",
-			q:    func() { sq = sqlb.Select(function.Count(users)) },
+			q:    func() { sq = sqlb.Select(sqlb.Count(users)) },
 			qs:   "SELECT COUNT(*) FROM users",
 		},
 		{

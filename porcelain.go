@@ -13,6 +13,7 @@ import (
 	"github.com/jaypipes/sqlb/api"
 	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/grammar/expression"
+	"github.com/jaypipes/sqlb/internal/grammar/function"
 	"github.com/jaypipes/sqlb/internal/grammar/identifier"
 	"github.com/jaypipes/sqlb/internal/grammar/statement"
 	"github.com/jaypipes/sqlb/internal/query"
@@ -98,6 +99,61 @@ var LessThan = expression.LessThan
 // less than or equality expression that can be passed to a Join or Where
 // clause.
 var LessThanOrEqual = expression.LessThanOrEqual
+
+// Max returns a Projection that contains the MAX() SQL function
+var Max = function.Max
+
+// Min returns a Projection that contains the MIN() SQL function
+var Min = function.Min
+
+// Sum returns a Projection that contains the SUM() SQL function
+var Sum = function.Sum
+
+// Avg returns a Projection that contains the AVG() SQL function
+var Avg = function.Avg
+
+// Count returns a Projection that contains the COUNT() SQL function
+var Count = function.Count
+
+// CountDistint returns a Projection that contains the COUNT(x DISTINCT) SQL
+// function
+var CountDistinct = function.CountDistinct
+
+// Cast returns a Projection that contains the CAST() SQL function
+var Cast = function.Cast
+
+// CharLength returns a Projection that contains the CHAR_LENGTH() SQL function
+var CharLength = function.CharLength
+
+// BitLength returns a Projection that contains the BIT_LENGTH() SQL function
+var BitLength = function.BitLength
+
+// Ascii returns a Projection that contains the ASCII() SQL function
+var Ascii = function.Ascii
+
+// Reverse returns a Projection that contains the REVERSE() SQL function
+var Reverse = function.Reverse
+
+// Concat returns a Projection that contains the CONCAT() SQL function
+var Concat = function.Concat
+
+// ConcatWs returns a Projection that contains the CONCAT_WS() SQL function
+var ConcatWs = function.ConcatWs
+
+// Now returns a Projection that contains the NOW() SQL function
+var Now = function.Now
+
+// CurrentTimestamp returns a Projection that contains the CURRENT_TIMESTAMP() SQL function
+var CurrentTimestamp = function.CurrentTimestamp
+
+// CurrentTime returns a Projection that contains the CURRENT_TIME() SQL function
+var CurrentTime = function.CurrentTime
+
+// CurrentDate returns a Projection that contains the CURRENT_DATE() SQL function
+var CurrentDate = function.CurrentDate
+
+// Extract returns a Projection that contains the EXTRACT() SQL function
+var Extract = function.Extract
 
 // T returns a TableIdentifier of a given name from a supplied Meta
 func T(m *api.Meta, name string) *identifier.Table {

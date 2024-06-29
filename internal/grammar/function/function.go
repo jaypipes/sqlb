@@ -89,6 +89,7 @@ func (f *Function) Asc() api.Orderable {
 	return sortcolumn.NewAsc(f)
 }
 
+// Max returns a Projection that contains the MAX() SQL function
 func Max(p api.Projection) api.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_MAX),
@@ -97,6 +98,7 @@ func Max(p api.Projection) api.Projection {
 	}
 }
 
+// Min returns a Projection that contains the MIN() SQL function
 func Min(p api.Projection) api.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_MIN),
@@ -105,6 +107,7 @@ func Min(p api.Projection) api.Projection {
 	}
 }
 
+// Sum returns a Projection that contains the SUM() SQL function
 func Sum(p api.Projection) api.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_SUM),
@@ -113,6 +116,7 @@ func Sum(p api.Projection) api.Projection {
 	}
 }
 
+// Avg returns a Projection that contains the AVG() SQL function
 func Avg(p api.Projection) api.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_AVG),
@@ -121,6 +125,7 @@ func Avg(p api.Projection) api.Projection {
 	}
 }
 
+// Count returns a Projection that contains the COUNT() SQL function
 func Count(sel api.Selection) api.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_COUNT_STAR),
@@ -128,6 +133,8 @@ func Count(sel api.Selection) api.Projection {
 	}
 }
 
+// CountDistint returns a Projection that contains the COUNT(x DISTINCT) SQL
+// function
 func CountDistinct(p api.Projection) api.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_COUNT_DISTINCT),
@@ -136,6 +143,7 @@ func CountDistinct(p api.Projection) api.Projection {
 	}
 }
 
+// Cast returns a Projection that contains the CAST() SQL function
 func Cast(p api.Projection, stype grammar.SQLType) api.Projection {
 	si := make([]grammar.Symbol, len(grammar.FunctionScanTable(grammar.FUNC_CAST)))
 	copy(si, grammar.FunctionScanTable(grammar.FUNC_CAST))
@@ -148,6 +156,7 @@ func Cast(p api.Projection, stype grammar.SQLType) api.Projection {
 	}
 }
 
+// CharLength returns a Projection that contains the CHAR_LENGTH() SQL function
 func CharLength(p api.Projection) api.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_CHAR_LENGTH),
@@ -156,6 +165,7 @@ func CharLength(p api.Projection) api.Projection {
 	}
 }
 
+// BitLength returns a Projection that contains the BIT_LENGTH() SQL function
 func BitLength(p api.Projection) api.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_BIT_LENGTH),
@@ -164,6 +174,7 @@ func BitLength(p api.Projection) api.Projection {
 	}
 }
 
+// Ascii returns a Projection that contains the ASCII() SQL function
 func Ascii(p api.Projection) api.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_ASCII),
@@ -172,6 +183,7 @@ func Ascii(p api.Projection) api.Projection {
 	}
 }
 
+// Reverse returns a Projection that contains the REVERSE() SQL function
 func Reverse(p api.Projection) api.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_REVERSE),
@@ -180,6 +192,7 @@ func Reverse(p api.Projection) api.Projection {
 	}
 }
 
+// Concat returns a Projection that contains the CONCAT() SQL function
 func Concat(projs ...api.Projection) api.Projection {
 	els := make([]api.Element, len(projs))
 	for x, p := range projs {
@@ -194,6 +207,7 @@ func Concat(projs ...api.Projection) api.Projection {
 	}
 }
 
+// ConcatWs returns a Projection that contains the CONCAT_WS() SQL function
 func ConcatWs(sep string, projs ...api.Projection) api.Projection {
 	els := make([]api.Element, len(projs))
 	for x, p := range projs {
@@ -208,30 +222,35 @@ func ConcatWs(sep string, projs ...api.Projection) api.Projection {
 	}
 }
 
+// Now returns a Projection that contains the NOW() SQL function
 func Now() api.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_NOW),
 	}
 }
 
+// CurrentTimestamp returns a Projection that contains the CURRENT_TIMESTAMP() SQL function
 func CurrentTimestamp() api.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_CURRENT_TIMESTAMP),
 	}
 }
 
+// CurrentTime returns a Projection that contains the CURRENT_TIME() SQL function
 func CurrentTime() api.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_CURRENT_TIME),
 	}
 }
 
+// CurrentDate returns a Projection that contains the CURRENT_DATE() SQL function
 func CurrentDate() api.Projection {
 	return &Function{
 		ScanInfo: grammar.FunctionScanTable(grammar.FUNC_CURRENT_DATE),
 	}
 }
 
+// Extract returns a Projection that contains the EXTRACT() SQL function
 func Extract(p api.Projection, unit grammar.IntervalUnit) api.Projection {
 	si := make([]grammar.Symbol, len(grammar.FunctionScanTable(grammar.FUNC_EXTRACT)))
 	copy(si, grammar.FunctionScanTable(grammar.FUNC_EXTRACT))
