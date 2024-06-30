@@ -214,32 +214,16 @@ func Select(
 // Insert returns a Queryable that produces an INSERT SQL statement for a given
 // table and map of column name to value for that column to insert,
 func Insert(
-	t *identifier.Table,
+	t *api.Table,
 	values map[string]interface{},
-) (api.Element, error) {
-	if t == nil {
-		return nil, api.TableRequired
-	}
+) (interface{}, error) {
 	if len(values) == 0 {
 		return nil, api.NoValues
 	}
-
-	// Make sure all keys in the map point to actual columns in the target
-	// table.
-	cols := make([]*identifier.Column, len(values))
-	vals := make([]interface{}, len(values))
-	x := 0
-	for k, v := range values {
-		c := t.C(k)
-		if c == nil {
-			return nil, api.UnknownColumn
-		}
-		cols[x] = c
-		vals[x] = v
-		x++
+	if t == nil {
+		return nil, api.TableRequired
 	}
-
-	return statement.NewInsert(t, cols, vals), nil
+	return t.Insert(values)
 }
 
 // Delete returns a Queryable that produces a DELETE SQL statement for a given

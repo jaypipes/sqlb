@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/jaypipes/sqlb/api"
+	upg "github.com/jaypipes/sqlb/grammar"
 	"github.com/jaypipes/sqlb/internal/grammar"
 )
 
@@ -23,11 +24,47 @@ type Builder struct {
 
 // StringArgs returns the built query string and a slice of interface{}
 // representing the values of the query args used in the query string, if any.
-func (b *Builder) StringArgs(el api.Element) (string, []interface{}) {
-	argc := el.ArgCount()
-	qargs := make([]interface{}, argc)
-	curarg := 0
-	return b.String(el, qargs, &curarg), qargs
+func (b *Builder) StringArgs(target interface{}) (string, []interface{}) {
+	switch el := target.(type) {
+	case api.Element:
+		argc := el.ArgCount()
+		qargs := make([]interface{}, argc)
+		curarg := 0
+		return b.String(el, qargs, &curarg), qargs
+	case *upg.InsertStatement:
+		sb := &strings.Builder{}
+		argc := len(el.Values)
+		qargs := make([]interface{}, argc)
+		curarg := 0
+		sb.Write(grammar.Symbols[grammar.SYM_INSERT])
+		// We don't add any table alias when outputting the table identifier
+		sb.WriteString(el.TableName)
+		sb.WriteRune(' ')
+		sb.Write(grammar.Symbols[grammar.SYM_LPAREN])
+
+		ncols := len(el.Columns)
+		for x, c := range el.Columns {
+			// We don't add the table identifier or use an alias when outputting
+			// the column names in the <columns> element of the INSERT statement
+			sb.WriteString(c)
+			if x != (ncols - 1) {
+				sb.Write(grammar.Symbols[grammar.SYM_COMMA_WS])
+			}
+		}
+		sb.Write(grammar.Symbols[grammar.SYM_VALUES])
+		for x, v := range el.Values {
+			sb.WriteString(InterpolationMarker(b.opts, curarg))
+			qargs[curarg] = v
+			curarg++
+			if x != (ncols - 1) {
+				sb.Write(grammar.Symbols[grammar.SYM_COMMA_WS])
+			}
+		}
+		sb.Write(grammar.Symbols[grammar.SYM_RPAREN])
+		return sb.String(), qargs
+	default:
+		return "", []interface{}{}
+	}
 }
 
 // InterpolationMarker returns a string with an interpolation marker of the

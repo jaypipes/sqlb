@@ -6,7 +6,11 @@
 
 package api
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/jaypipes/sqlb/grammar"
+)
 
 // Table describes metadata about a table in a database.
 type Table struct {
@@ -41,4 +45,34 @@ func (t *Table) C(name string) *Column {
 // supplied string, or nil if no such column is known
 func (t *Table) Column(name string) *Column {
 	return t.C(name)
+}
+
+// Insert returns a `grammar.InsertStatement` that will produce an INSERT SQL
+// statement when passed to Query or QueryContext.
+//
+// The supplied map of values is keyed by the column name that the value will
+// be inserted into.
+func (t *Table) Insert(
+	values map[string]interface{},
+) (*grammar.InsertStatement, error) {
+	if len(values) == 0 {
+		return nil, NoValues
+	}
+	cols := make([]string, len(values))
+	vals := make([]interface{}, len(values))
+	x := 0
+	for k, v := range values {
+		c := t.C(k)
+		if c == nil {
+			return nil, UnknownColumn
+		}
+		cols[x] = k
+		vals[x] = v
+		x++
+	}
+	return &grammar.InsertStatement{
+		TableName: t.Name,
+		Columns:   cols,
+		Values:    vals,
+	}, nil
 }
