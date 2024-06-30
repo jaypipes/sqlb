@@ -19,7 +19,7 @@ import (
 func TestListSingle(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testutil.Meta()
+	m := testutil.M()
 	users := sqlb.T(m, "users")
 	colUserName := users.C("name")
 
@@ -37,7 +37,7 @@ func TestListSingle(t *testing.T) {
 func TestListMulti(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testutil.Meta()
+	m := testutil.M()
 	users := sqlb.T(m, "users")
 	colUserId := users.C("id")
 	colUserName := users.C("name")

@@ -21,7 +21,7 @@ import (
 func TestInsert(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testutil.Meta()
+	m := testutil.M()
 	users := sqlb.T(m, "users")
 
 	tests := []struct {
@@ -81,7 +81,7 @@ func TestInsert(t *testing.T) {
 func TestDelete(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testutil.Meta()
+	m := testutil.M()
 	users := sqlb.T(m, "users")
 	//colUserName := users.C("name")
 
@@ -130,7 +130,7 @@ func TestDelete(t *testing.T) {
 func TestUpdate(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testutil.Meta()
+	m := testutil.M()
 	users := sqlb.T(m, "users")
 	//colUserName := users.C("name")
 
@@ -199,7 +199,7 @@ func TestUpdate(t *testing.T) {
 func TestSelect(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testutil.Meta()
+	m := testutil.M()
 	users := sqlb.T(m, "users")
 	articles := sqlb.T(m, "articles")
 	articleStates := sqlb.T(m, "article_states")
@@ -421,7 +421,7 @@ func TestNestedSetQueries(t *testing.T) {
 	// ref: https://github.com/jaypipes/sqlb/issues/49
 	assert := assert.New(t)
 
-	m := testutil.Meta()
+	m := testutil.M()
 	orgs := sqlb.T(m, "organizations")
 
 	o1 := orgs.As("o1")
@@ -456,7 +456,7 @@ func TestNestedSetWithAdditionalJoin(t *testing.T) {
 	// ref: https://github.com/jaypipes/sqlb/issues/60
 	assert := assert.New(t)
 
-	m := testutil.Meta()
+	m := testutil.M()
 	orgs := sqlb.T(m, "organizations")
 	orgUsers := sqlb.T(m, "organization_users")
 
@@ -520,7 +520,7 @@ func TestJoinDerivedWithMultipleSelections(t *testing.T) {
 	//   o.visibility = 1
 	//   OR (o.visibility = 0 AND private_orgs.id IS NOT NULL)
 
-	m := testutil.Meta()
+	m := testutil.M()
 	orgs := sqlb.T(m, "organizations")
 	orgUsers := sqlb.T(m, "organization_users")
 
@@ -582,7 +582,7 @@ func TestModifyingSelectQueryUpdatesBuffer(t *testing.T) {
 	assert := assert.New(t)
 
 	b := builder.New()
-	m := testutil.Meta()
+	m := testutil.M()
 	users := sqlb.T(m, "users")
 
 	q := sqlb.Select(users)
@@ -603,7 +603,7 @@ func TestModifyingSelectQueryUpdatesBuffer(t *testing.T) {
 func TestFormat(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testutil.Meta()
+	m := testutil.M()
 	users := sqlb.T(m, "users")
 	articles := sqlb.T(m, "articles")
 	colUserName := users.C("name")

@@ -18,7 +18,7 @@ import (
 func TestC(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testutil.Meta()
+	m := testutil.M()
 	users := sqlb.T(m, "users")
 	c := users.C("name")
 
@@ -34,7 +34,7 @@ func TestC(t *testing.T) {
 func TestColumnWithTableAlias(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testutil.Meta()
+	m := testutil.M()
 	users := sqlb.T(m, "users").As("u")
 	c := users.C("name")
 
@@ -50,7 +50,7 @@ func TestColumnWithTableAlias(t *testing.T) {
 func TestColumnAlias(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testutil.Meta()
+	m := testutil.M()
 	users := sqlb.T(m, "users")
 	c := users.C("name").As("user_name")
 

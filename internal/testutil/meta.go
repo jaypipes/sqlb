@@ -9,46 +9,162 @@ package testutil
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/jaypipes/sqlb/api"
 )
 
-// Meta returns the Meta we use in testing
-func Meta() *api.Meta {
-	m := &api.Meta{
+var (
+	m                 *api.Meta
+	users             *api.Table
+	articles          *api.Table
+	articleStates     *api.Table
+	userProfiles      *api.Table
+	organizations     *api.Table
+	organizationUsers *api.Table
+)
+
+func init() {
+	m = &api.Meta{
 		Dialect: api.DialectMySQL,
 		Name:    "test",
 	}
-	users := m.AddTable("users")
-	users.AddColumn("id")
-	users.AddColumn("name")
 
-	articles := m.AddTable("articles")
-	articles.AddColumn("id")
-	articles.AddColumn("author")
-	articles.AddColumn("state")
+	users = &api.Table{
+		Meta: m,
+		Name: "users",
+		Columns: map[string]*api.Column{
+			"id": &api.Column{
+				Table: users,
+				Name:  "id",
+			},
+			"name": &api.Column{
+				Table: users,
+				Name:  "name",
+			},
+		},
+	}
 
-	articleStates := m.AddTable("article_states")
-	articleStates.AddColumn("id")
-	articleStates.AddColumn("name")
+	articles = &api.Table{
+		Name: "articles",
+		Columns: map[string]*api.Column{
+			"id": &api.Column{
+				Table: articles,
+				Name:  "id",
+			},
+			"author": &api.Column{
+				Table: articles,
+				Name:  "author",
+			},
+			"state": &api.Column{
+				Table: articles,
+				Name:  "state",
+			},
+		},
+	}
 
-	userProfiles := m.AddTable("user_profiles")
-	userProfiles.AddColumn("id")
-	userProfiles.AddColumn("content")
-	userProfiles.AddColumn("user")
+	articleStates = &api.Table{
+		Name: "article_states",
+		Columns: map[string]*api.Column{
+			"id": &api.Column{
+				Table: articleStates,
+				Name:  "id",
+			},
+			"name": &api.Column{
+				Table: articleStates,
+				Name:  "name",
+			},
+		},
+	}
 
-	orgs := m.AddTable("organizations")
-	orgs.AddColumn("id")
-	orgs.AddColumn("uuid")
-	orgs.AddColumn("root_organization_id")
-	orgs.AddColumn("nested_set_left")
-	orgs.AddColumn("nested_set_right")
+	userProfiles = &api.Table{
+		Meta: m,
+		Name: "user_profiles",
+		Columns: map[string]*api.Column{
+			"id": &api.Column{
+				Table: userProfiles,
+				Name:  "id",
+			},
+			"content": &api.Column{
+				Table: userProfiles,
+				Name:  "content",
+			},
+			"user": &api.Column{
+				Table: userProfiles,
+				Name:  "user",
+			},
+		},
+	}
 
-	orgUsers := m.AddTable("organization_users")
-	orgUsers.AddColumn("organization_id")
-	orgUsers.AddColumn("user_id")
+	organizations = &api.Table{
+		Meta: m,
+		Name: "organizations",
+		Columns: map[string]*api.Column{
+			"id": &api.Column{
+				Table: organizations,
+				Name:  "id",
+			},
+			"uuid": &api.Column{
+				Table: organizations,
+				Name:  "uuid",
+			},
+			"root_organization_id": &api.Column{
+				Table: organizations,
+				Name:  "root_organization_id",
+			},
+			"nested_set_left": &api.Column{
+				Table: organizations,
+				Name:  "nested_set_left",
+			},
+			"nested_set_right": &api.Column{
+				Table: organizations,
+				Name:  "nested_set_right",
+			},
+		},
+	}
 
+	organizationUsers = &api.Table{
+		Meta: m,
+		Name: "organization_users",
+		Columns: map[string]*api.Column{
+			"organization_id": &api.Column{
+				Table: organizationUsers,
+				Name:  "organization_id",
+			},
+			"user_id": &api.Column{
+				Table: organizationUsers,
+				Name:  "user_id",
+			},
+		},
+	}
+
+	m.Tables = map[string]*api.Table{
+		"users":              users,
+		"articles":           articles,
+		"articleStates":      articleStates,
+		"userProfiles":       userProfiles,
+		"organizations":      organizations,
+		"organization_users": organizationUsers,
+	}
+}
+
+// M returns the Meta we use in testing
+func M() *api.Meta {
 	return m
+}
+
+// T returns the Table from the testing Meta with the supplied name
+func T(name string) *api.Table {
+	return m.T(name)
+}
+
+// C returns the Column from the testing Meta with the supplied table.column
+// dotted notation
+func C(name string) *api.Column {
+	names := strings.Split(name, ".")
+	tname := names[0]
+	cname := names[1]
+	return m.T(tname).C(cname)
 }
 
 // ResetDB resets the testing database by dropping the database tables and

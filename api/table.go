@@ -42,14 +42,3 @@ func (t *Table) C(name string) *Column {
 func (t *Table) Column(name string) *Column {
 	return t.C(name)
 }
-
-// AddColumn returns a new Column that is used to describe metadata about a
-// named column.
-func (t *Table) AddColumn(name string) *Column {
-	c := &Column{
-		Table: t,
-		Name:  name,
-	}
-	t.Columns[name] = c
-	return c
-}

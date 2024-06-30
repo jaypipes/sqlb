@@ -20,7 +20,7 @@ import (
 func TestInsertStatement(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testutil.Meta()
+	m := testutil.M()
 	users := sqlb.T(m, "users")
 	colUserName := users.C("name")
 	colUserId := users.C("id")

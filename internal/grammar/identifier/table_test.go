@@ -18,7 +18,7 @@ import (
 func TestTable(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testutil.Meta()
+	m := testutil.M()
 	ut := m.Table("users")
 	users := identifier.TableFromMeta(ut, "users")
 
@@ -34,7 +34,7 @@ func TestTable(t *testing.T) {
 func TestTableAlias(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testutil.Meta()
+	m := testutil.M()
 	ut := m.Table("users")
 	u := identifier.TableFromMeta(ut, "users").As("u")
 
@@ -50,7 +50,7 @@ func TestTableAlias(t *testing.T) {
 func TestTableColumns(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testutil.Meta()
+	m := testutil.M()
 	ut := m.Table("users")
 	users := identifier.TableFromMeta(ut, "users").As("u")
 
@@ -60,7 +60,7 @@ func TestTableColumns(t *testing.T) {
 func TestTableC(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testutil.Meta()
+	m := testutil.M()
 	ut := m.Table("users")
 	users := identifier.TableFromMeta(ut, "users")
 

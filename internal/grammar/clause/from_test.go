@@ -22,7 +22,7 @@ import (
 func TestFrom(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testutil.Meta()
+	m := testutil.M()
 	users := sqlb.T(m, "users")
 	articles := sqlb.T(m, "articles")
 	articleStates := sqlb.T(m, "article_states")

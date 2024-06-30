@@ -25,7 +25,7 @@ import (
 func TestSelectStatement(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testutil.Meta()
+	m := testutil.M()
 	users := sqlb.T(m, "users")
 	articles := sqlb.T(m, "articles")
 	article_states := sqlb.T(m, "article_states")

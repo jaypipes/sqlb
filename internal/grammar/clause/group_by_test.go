@@ -25,7 +25,7 @@ type GroupByTest struct {
 func TestGroupBy(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testutil.Meta()
+	m := testutil.M()
 	users := sqlb.T(m, "users")
 	colUserId := users.C("id")
 	colUserName := users.C("name")

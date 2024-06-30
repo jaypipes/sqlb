@@ -84,7 +84,12 @@ func fillTables(
 		if err = rows.Scan(&tName); err != nil {
 			return err
 		}
-		m.AddTable(tName)
+		t := &api.Table{
+			Meta:    m,
+			Name:    tName,
+			Columns: map[string]*api.Column{},
+		}
+		m.Tables[tName] = t
 	}
 	return nil
 }
@@ -134,7 +139,11 @@ ORDER BY c.TABLE_NAME, c.COLUMN_NAME
 			return err
 		}
 		t = m.T(tname)
-		t.AddColumn(cname)
+		c := &api.Column{
+			Table: t,
+			Name:  cname,
+		}
+		t.Columns[cname] = c
 	}
 	return nil
 }

@@ -43,18 +43,3 @@ func (s *Meta) T(name string) *Table {
 func (m *Meta) Table(name string) *Table {
 	return m.T(name)
 }
-
-// AddTable returns a new Table that is used to describe metadata about a named
-// table.
-func (s *Meta) AddTable(name string) *Table {
-	t := &Table{
-		Meta:    s,
-		Name:    name,
-		Columns: map[string]*Column{},
-	}
-	if s.Tables == nil {
-		s.Tables = map[string]*Table{}
-	}
-	s.Tables[name] = t
-	return t
-}

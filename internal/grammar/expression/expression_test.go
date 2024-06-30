@@ -26,7 +26,7 @@ type expressionTest struct {
 func TestExpressions(t *testing.T) {
 	assert := assert.New(t)
 
-	m := testutil.Meta()
+	m := testutil.M()
 	users := sqlb.T(m, "users")
 	articles := sqlb.T(m, "articles")
 	colUserId := users.C("id")
