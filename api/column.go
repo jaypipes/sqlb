@@ -8,7 +8,8 @@ package api
 
 // Column describes a column in a Table
 type Column struct {
-	Alias string
-	Name  string
+	// Name is the name of the Column in the Table
+	Name string
+	// Table is a pointer to the Table housing this Column
 	Table *Table
 }

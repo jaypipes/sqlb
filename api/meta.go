@@ -8,6 +8,7 @@ package api
 
 import (
 	"database/sql"
+	"strings"
 )
 
 // Meta holds metadata about the tables, columns and views comprising a
@@ -19,14 +20,18 @@ type Meta struct {
 	Tables  map[string]*Table
 }
 
-// T returns a pointer to a Table with a name or alias matching the supplied
-// string, or nil if no such table is known
+// T returns a pointer to a Table with a name matching the supplied string, or
+// nil if no such table is known
+//
+// The name matching is done using case-insensitive matching, since this is how
+// the SQL standard works for identifiers and symbols (even though Microsoft
+// SQL Server uses case-sensitive identifier names).
 func (s *Meta) T(name string) *Table {
 	if t, ok := s.Tables[name]; ok {
 		return t
 	}
 	for _, t := range s.Tables {
-		if t.Alias == name {
+		if strings.EqualFold(t.Name, name) {
 			return t
 		}
 	}
