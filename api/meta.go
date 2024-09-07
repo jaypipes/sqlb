@@ -26,12 +26,12 @@ type Meta struct {
 // The name matching is done using case-insensitive matching, since this is how
 // the SQL standard works for identifiers and symbols (even though Microsoft
 // SQL Server uses case-sensitive identifier names).
-func (s *Meta) T(name string) *Table {
-	if t, ok := s.Tables[name]; ok {
+func (m *Meta) T(name string) *Table {
+	if t, ok := m.Tables[name]; ok {
 		return t
 	}
-	for _, t := range s.Tables {
-		if strings.EqualFold(t.Name, name) {
+	for _, t := range m.Tables {
+		if strings.EqualFold(t.name, name) {
 			return t
 		}
 	}
@@ -42,19 +42,4 @@ func (s *Meta) T(name string) *Table {
 // supplied string, or nil if no such table is known
 func (m *Meta) Table(name string) *Table {
 	return m.T(name)
-}
-
-// AddTable returns a new Table that is used to describe metadata about a named
-// table.
-func (s *Meta) AddTable(name string) *Table {
-	t := &Table{
-		Meta:    s,
-		Name:    name,
-		Columns: map[string]*Column{},
-	}
-	if s.Tables == nil {
-		s.Tables = map[string]*Table{}
-	}
-	s.Tables[name] = t
-	return t
 }

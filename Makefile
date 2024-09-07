@@ -2,7 +2,7 @@ VERSION ?= $(shell git describe --tags --always --dirty)
 
 .PHONY: test
 test:
-	go test -v ./...
+	go test -v -cover ./...
 
 .PHONY: lint
 lint:

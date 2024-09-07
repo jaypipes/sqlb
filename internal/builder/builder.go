@@ -11,23 +11,74 @@ import (
 	"strings"
 
 	"github.com/jaypipes/sqlb/api"
-	"github.com/jaypipes/sqlb/internal/grammar"
+	"github.com/jaypipes/sqlb/grammar"
 )
 
 // Builder holds information about the formatting and dialect of the output SQL
 // that sqlb writes to the output buffer
 type Builder struct {
-	sb   *strings.Builder
+	strings.Builder
 	opts api.Options
 }
 
 // StringArgs returns the built query string and a slice of interface{}
 // representing the values of the query args used in the query string, if any.
-func (b *Builder) StringArgs(el api.Element) (string, []interface{}) {
-	argc := el.ArgCount()
-	qargs := make([]interface{}, argc)
-	curarg := 0
-	return b.String(el, qargs, &curarg), qargs
+func (b *Builder) StringArgs(target interface{}) (string, []interface{}) {
+	b.WriteString(b.opts.FormatPrefixWith())
+	switch el := target.(type) {
+	case *api.UpdateStatement:
+		argc := 0
+		uss := el.Query()
+		ArgCount(uss, &argc)
+		qargs := make([]interface{}, argc)
+		curarg := 0
+		b.doUpdateStatementSearched(uss, qargs, &curarg)
+		return b.Builder.String(), qargs
+	case *grammar.UpdateStatementSearched:
+		argc := 0
+		ArgCount(el, &argc)
+		qargs := make([]interface{}, argc)
+		curarg := 0
+		b.doUpdateStatementSearched(el, qargs, &curarg)
+		return b.Builder.String(), qargs
+	case *api.DeleteStatement:
+		argc := 0
+		dss := el.Query()
+		ArgCount(dss, &argc)
+		qargs := make([]interface{}, argc)
+		curarg := 0
+		b.doDeleteStatementSearched(dss, qargs, &curarg)
+		return b.Builder.String(), qargs
+	case *grammar.DeleteStatementSearched:
+		argc := 0
+		ArgCount(el, &argc)
+		qargs := make([]interface{}, argc)
+		curarg := 0
+		b.doDeleteStatementSearched(el, qargs, &curarg)
+		return b.Builder.String(), qargs
+	case *grammar.InsertStatement:
+		argc := len(el.Values)
+		qargs := make([]interface{}, argc)
+		curarg := 0
+		b.doInsertStatement(el, qargs, &curarg)
+		return b.Builder.String(), qargs
+	case *grammar.QuerySpecification:
+		argc := 0
+		ArgCount(el, &argc)
+		qargs := make([]interface{}, argc)
+		curarg := 0
+		b.doQuerySpecification(el, qargs, &curarg)
+		return b.Builder.String(), qargs
+	case *grammar.CursorSpecification:
+		argc := 0
+		ArgCount(el, &argc)
+		qargs := make([]interface{}, argc)
+		curarg := 0
+		b.doCursorSpecification(el, qargs, &curarg)
+		return b.Builder.String(), qargs
+	default:
+		return "", []interface{}{}
+	}
 }
 
 // InterpolationMarker returns a string with an interpolation marker of the
@@ -43,19 +94,12 @@ func InterpolationMarker(opts api.Options, position int) string {
 	return b.String()
 }
 
-func (b *Builder) String(el api.Element, qargs []interface{}, curarg *int) string {
-	b.sb.WriteString(b.opts.FormatPrefixWith())
-	b.sb.WriteString(el.String(b.opts, qargs, curarg))
-	return b.sb.String()
-}
-
 // New returns a builder for the supplied dialect
 func New(
 	mods ...api.Option,
 ) *Builder {
 	opts := api.MergeOptions(mods)
 	return &Builder{
-		sb:   &strings.Builder{},
 		opts: opts,
 	}
 }
