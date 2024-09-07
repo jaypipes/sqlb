@@ -17,7 +17,5 @@ func (b *Builder) doUnsignedValueSpecification(
 ) {
 	if el.UnsignedLiteral != nil {
 		b.doUnsignedLiteral(el.UnsignedLiteral, qargs, curarg)
-	} else if el.GeneralValueSpecification != nil {
-
 	}
 }

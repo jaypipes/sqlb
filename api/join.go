@@ -191,24 +191,26 @@ func (s *Selection) doJoin(
 			s.qs.TableExpression.FromClause.TableReferences = trefs
 			rightTR = right
 		}
-	} else if right.Joined != nil {
-		/*
-			j := right.Joined
-			if j.Qualified != nil {
-				trefs := []grammar.TableReference{
-					j.Qualified.Left,
-					j.Qualified.Right,
-				}
-				rightTR = TableReferenceByName(search)
-			} else if j.Natural != nil {
-
-			} else if j.Union != nil {
-
-			} else if j.Cross != nil {
-
-			}
-		*/
 	}
+	/*
+		// TODO(jaypipes)
+		else if right.Joined != nil {
+				j := right.Joined
+				if j.Qualified != nil {
+					trefs := []grammar.TableReference{
+						j.Qualified.Left,
+						j.Qualified.Right,
+					}
+					rightTR = TableReferenceByName(search)
+				} else if j.Natural != nil {
+
+				} else if j.Union != nil {
+
+				} else if j.Cross != nil {
+
+				}
+		}
+	*/
 	rightname := ""
 	if rightTR.Primary != nil {
 		rp := rightTR.Primary

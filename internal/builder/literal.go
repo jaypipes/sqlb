@@ -10,18 +10,6 @@ import (
 	"github.com/jaypipes/sqlb/grammar"
 )
 
-func (b *Builder) doLiteral(
-	el *grammar.Literal,
-	qargs []interface{},
-	curarg *int,
-) {
-	if el.SignedNumericLiteral != nil {
-		b.doScalar(el.SignedNumericLiteral.Value, qargs, curarg)
-	} else {
-		b.doScalar(el.GeneralLiteral.Value, qargs, curarg)
-	}
-}
-
 func (b *Builder) doUnsignedLiteral(
 	el *grammar.UnsignedLiteral,
 	qargs []interface{},

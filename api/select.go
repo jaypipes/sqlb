@@ -455,7 +455,7 @@ func (s *Selection) Count() *Selection {
 		},
 	}
 	s.qs.SelectList.Sublists = []grammar.SelectSublist{
-		grammar.SelectSublist{
+		{
 			DerivedColumn: &dc,
 		},
 	}

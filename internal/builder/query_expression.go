@@ -40,8 +40,6 @@ func (b *Builder) doNonJoinQueryTerm(
 ) {
 	if el.Primary != nil {
 		b.doNonJoinQueryPrimary(el.Primary, qargs, curarg)
-	} else if el.Intersect != nil {
-		//b.doIntersectQuery(el.Intersect, qargs, curarg)
 	}
 }
 

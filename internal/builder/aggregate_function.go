@@ -19,10 +19,6 @@ func (b *Builder) doAggregateFunction(
 		b.Write(grammar.Symbols[grammar.SYM_COUNT_STAR])
 	} else if el.GeneralSetFunction != nil {
 		b.doGeneralSetFunction(el.GeneralSetFunction, qargs, curarg)
-	} else if el.BinarySetFunction != nil {
-
-	} else if el.OrderedSetFunction != nil {
-
 	}
 }
 
