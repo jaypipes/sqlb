@@ -9,9 +9,10 @@ package grammar
 type JoinType int
 
 const (
-	JoinInner JoinType = iota
-	JoinOuter
-	JoinCross
+	JoinTypeInner JoinType = iota
+	JoinTypeLeftOuter
+	JoinTypeRightOuter
+	JoinTypeFullOuter
 )
 
 // <joined table>    ::=
@@ -42,8 +43,31 @@ const (
 
 // JoinedTable represents a table derived from a Cartesian product, inner or outer join, or union join.
 type JoinedTable struct {
+	Cross     *CrossJoin
+	Qualified *QualifiedJoin
+	Natural   *NaturalJoin
+	Union     *UnionJoin
+}
+
+type QualifiedJoin struct {
 	Type  JoinType
-	Left  *TableReference
-	right *TableReference
-	On    *BooleanValueExpression
+	Left  TableReference
+	Right TableReference
+	On    BooleanValueExpression
+}
+
+type NaturalJoin struct {
+	Type  JoinType
+	Left  TableReference
+	Right TablePrimary
+}
+
+type CrossJoin struct {
+	Left  TableReference
+	Right TablePrimary
+}
+
+type UnionJoin struct {
+	Left  TableReference
+	Right TablePrimary
 }

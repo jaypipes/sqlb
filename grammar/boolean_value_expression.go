@@ -31,5 +31,32 @@ package grammar
 // BooleanValueExpression represents a boolean comparison expression in the SQL
 // statement, e.g. "a = b"
 type BooleanValueExpression struct {
-	Terms []interface{}
+	Unary   *BooleanTerm
+	OrLeft  *BooleanValueExpression
+	OrRight *BooleanTerm
+}
+
+type BooleanTerm struct {
+	Unary    *BooleanFactor
+	AndLeft  *BooleanTerm
+	AndRight *BooleanFactor
+}
+
+type BooleanFactor struct {
+	Test BooleanTest
+	Not  bool
+}
+
+type BooleanTest struct {
+	Primary BooleanPrimary
+}
+
+type BooleanPrimary struct {
+	Predicate        *Predicate
+	BooleanPredicand *BooleanPredicand
+}
+
+type BooleanPredicand struct {
+	ParenthesizedBooleanValueExpression    *BooleanValueExpression
+	NonParenthesizedValueExpressionPrimary *NonParenthesizedValueExpressionPrimary
 }

@@ -20,31 +20,34 @@ package grammar
 // <sample percentage>    ::=   <numeric value expression>
 //
 // <repeat argument>    ::=   <numeric value expression>
-//
-// <table primary>    ::=
-//          <table or query name> [ [ AS ] <correlation name> [ <left paren> <derived column list> <right paren> ] ]
-//      |     <derived table> [ AS ] <correlation name> [ <left paren> <derived column list> <right paren> ]
-//      |     <lateral derived table> [ AS ] <correlation name> [ <left paren> <derived column list> <right paren> ]
-//      |     <collection derived table> [ AS ] <correlation name> [ <left paren> <derived column list> <right paren> ]
-//      |     <table function derived table> [ AS ] <correlation name> [ <left paren> <derived column list> <right paren> ]
-//      |     <only spec> [ [ AS ] <correlation name> [ <left paren> <derived column list> <right paren> ] ]
-//      |     <left paren> <joined table> <right paren>
-//
-// <only spec>    ::=   ONLY <left paren> <table or query name> <right paren>
-//
-// <lateral derived table>    ::=   LATERAL <table subquery>
-//
-// <collection derived table>    ::=   UNNEST <left paren> <collection value expression> <right paren> [ WITH ORDINALITY ]
-//
-// <table function derived table>    ::=   TABLE <left paren> <collection value expression> <right paren>
-//
-// <derived table>    ::=   <table subquery>
-//
-// <table or query name>    ::=   <table name> | <query name>
-//
-// <derived column list>    ::=   <column name list>
-//
-// <column name list>    ::=   <column name> [ { <comma> <column name> }... ]
 
 // TableReference represents the <table reference> SQL grammar element
-type TableReference struct{}
+type TableReference struct {
+	Primary *TablePrimary
+	Joined  *JoinedTable
+}
+
+// TableReferenceFromAny evaluates the supplied
+// interface argument and returns a *TableReference if
+// the supplied argument can be converted into a
+// TableReference, or nil if the conversion cannot be
+// done.
+func TableReferenceFromAny(
+	subject interface{},
+) *TableReference {
+	switch v := subject.(type) {
+	case *TableReference:
+		return v
+	case TableReference:
+		return &v
+	case *TablePrimary:
+		return &TableReference{Primary: v}
+	case TablePrimary:
+		return &TableReference{Primary: &v}
+	case *JoinedTable:
+		return &TableReference{Joined: v}
+	case JoinedTable:
+		return &TableReference{Joined: &v}
+	}
+	return nil
+}

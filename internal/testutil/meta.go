@@ -30,113 +30,46 @@ func init() {
 		Name:    "test",
 	}
 
-	users = &api.Table{
-		Meta: m,
-		Name: "users",
-		Columns: map[string]*api.Column{
-			"id": &api.Column{
-				Table: users,
-				Name:  "id",
-			},
-			"name": &api.Column{
-				Table: users,
-				Name:  "name",
-			},
-		},
-	}
+	users = api.NewTable(
+		m, "users",
+		"id",
+		"name",
+	)
 
-	articles = &api.Table{
-		Name: "articles",
-		Columns: map[string]*api.Column{
-			"id": &api.Column{
-				Table: articles,
-				Name:  "id",
-			},
-			"author": &api.Column{
-				Table: articles,
-				Name:  "author",
-			},
-			"state": &api.Column{
-				Table: articles,
-				Name:  "state",
-			},
-		},
-	}
+	articles = api.NewTable(
+		m, "articles",
+		"id",
+		"author",
+		"state",
+	)
 
-	articleStates = &api.Table{
-		Name: "article_states",
-		Columns: map[string]*api.Column{
-			"id": &api.Column{
-				Table: articleStates,
-				Name:  "id",
-			},
-			"name": &api.Column{
-				Table: articleStates,
-				Name:  "name",
-			},
-		},
-	}
+	articleStates = api.NewTable(
+		m, "article_states",
+		"id",
+		"name",
+	)
 
-	userProfiles = &api.Table{
-		Meta: m,
-		Name: "user_profiles",
-		Columns: map[string]*api.Column{
-			"id": &api.Column{
-				Table: userProfiles,
-				Name:  "id",
-			},
-			"content": &api.Column{
-				Table: userProfiles,
-				Name:  "content",
-			},
-			"user": &api.Column{
-				Table: userProfiles,
-				Name:  "user",
-			},
-		},
-	}
+	userProfiles = api.NewTable(
+		m, "user_profiles",
+		"id",
+		"content",
+		"user",
+	)
 
-	organizations = &api.Table{
-		Meta: m,
-		Name: "organizations",
-		Columns: map[string]*api.Column{
-			"id": &api.Column{
-				Table: organizations,
-				Name:  "id",
-			},
-			"uuid": &api.Column{
-				Table: organizations,
-				Name:  "uuid",
-			},
-			"root_organization_id": &api.Column{
-				Table: organizations,
-				Name:  "root_organization_id",
-			},
-			"nested_set_left": &api.Column{
-				Table: organizations,
-				Name:  "nested_set_left",
-			},
-			"nested_set_right": &api.Column{
-				Table: organizations,
-				Name:  "nested_set_right",
-			},
-		},
-	}
+	organizations = api.NewTable(
+		m, "organizations",
+		"id",
+		"uuid",
+		"root_organization_id",
+		"nested_set_left",
+		"nested_set_right",
+	)
 
-	organizationUsers = &api.Table{
-		Meta: m,
-		Name: "organization_users",
-		Columns: map[string]*api.Column{
-			"organization_id": &api.Column{
-				Table: organizationUsers,
-				Name:  "organization_id",
-			},
-			"user_id": &api.Column{
-				Table: organizationUsers,
-				Name:  "user_id",
-			},
-		},
-	}
+	organizationUsers = api.NewTable(
+		m, "organization_users",
+		"organization_id",
+		"user_id",
+	)
 
 	m.Tables = map[string]*api.Table{
 		"users":              users,

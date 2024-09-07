@@ -16,8 +16,8 @@ package grammar
 // TableExpression represents a table expression in the SQL
 // statement, e.g. "FROM t WHERE a = b"
 type TableExpression struct {
-	From    From
-	Where   *Where
-	GroupBy *GroupBy
-	Having  *Having
+	FromClause    FromClause
+	WhereClause   *WhereClause
+	GroupByClause *GroupByClause
+	HavingClause  *HavingClause
 }
