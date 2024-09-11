@@ -64,13 +64,13 @@ package grammar
 // <current collation specification>    ::=   CURRENT_COLLATION <left paren> <string value expression> <right paren>
 
 type ValueSpecification struct {
-	Literal                    *Literal
-	UnsignedValueSpecification *UnsignedValueSpecification
+	Literal       *Literal
+	UnsignedValue *UnsignedValueSpecification
 }
 
 type UnsignedValueSpecification struct {
-	UnsignedLiteral           *UnsignedLiteral
-	GeneralValueSpecification *GeneralValueSpecification
+	UnsignedLiteral *UnsignedLiteral
+	GeneralValue    *GeneralValueSpecification
 }
 
 type GeneralValueSpecification struct {

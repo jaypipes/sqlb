@@ -15,10 +15,10 @@ func (b *Builder) doStringValueExpression(
 	qargs []interface{},
 	curarg *int,
 ) {
-	if el.CharacterValueExpression != nil {
-		b.doCharacterValueExpression(el.CharacterValueExpression, qargs, curarg)
-	} else if el.BlobValueExpression != nil {
-		b.doBlobValueExpression(el.BlobValueExpression, qargs, curarg)
+	if el.Character != nil {
+		b.doCharacterValueExpression(el.Character, qargs, curarg)
+	} else if el.Blob != nil {
+		b.doBlobValueExpression(el.Blob, qargs, curarg)
 	}
 }
 
@@ -27,8 +27,8 @@ func (b *Builder) doCharacterValueExpression(
 	qargs []interface{},
 	curarg *int,
 ) {
-	if el.CharacterFactor != nil {
-		b.doCharacterFactor(el.CharacterFactor, qargs, curarg)
+	if el.Factor != nil {
+		b.doCharacterFactor(el.Factor, qargs, curarg)
 	}
 }
 
@@ -37,8 +37,8 @@ func (b *Builder) doBlobValueExpression(
 	qargs []interface{},
 	curarg *int,
 ) {
-	if el.BlobFactor != nil {
-		b.doBlobFactor(el.BlobFactor, qargs, curarg)
+	if el.Factor != nil {
+		b.doBlobFactor(el.Factor, qargs, curarg)
 	}
 }
 
@@ -59,10 +59,10 @@ func (b *Builder) doCharacterPrimary(
 	qargs []interface{},
 	curarg *int,
 ) {
-	if el.ValueExpressionPrimary != nil {
-		b.doValueExpressionPrimary(el.ValueExpressionPrimary, qargs, curarg)
-	} else if el.StringValueFunction != nil {
-		b.doStringValueFunction(el.StringValueFunction, qargs, curarg)
+	if el.Primary != nil {
+		b.doValueExpressionPrimary(el.Primary, qargs, curarg)
+	} else if el.Function != nil {
+		b.doStringValueFunction(el.Function, qargs, curarg)
 	}
 }
 
@@ -79,9 +79,9 @@ func (b *Builder) doBlobPrimary(
 	qargs []interface{},
 	curarg *int,
 ) {
-	if el.ValueExpressionPrimary != nil {
-		b.doValueExpressionPrimary(el.ValueExpressionPrimary, qargs, curarg)
-	} else if el.StringValueFunction != nil {
-		b.doStringValueFunction(el.StringValueFunction, qargs, curarg)
+	if el.Primary != nil {
+		b.doValueExpressionPrimary(el.Primary, qargs, curarg)
+	} else if el.Function != nil {
+		b.doStringValueFunction(el.Function, qargs, curarg)
 	}
 }

@@ -7,6 +7,7 @@
 package api
 
 import (
+	"fmt"
 	"slices"
 	"strings"
 
@@ -211,4 +212,38 @@ func (t *Table) Update(
 			Values:    vals,
 		},
 	}, nil
+}
+
+// Count returns an AggregateFunction representing a COUNT(*) or a
+// COUNT(<column>) on the table. The function accepts zero or one arguments. If
+// no arguments are passed, the result is an AggregateFunction that produces a
+// COUNT(*) against the table. If one argument is supplied, it should be either
+// a string name of a column in the table, a Column in the table or something
+// that can be coerced into a RowValueExpression.
+func (t *Table) Count(args ...interface{}) *AggregateFunction {
+	if len(args) > 1 {
+		panic("Count expects either zero or one argument")
+	}
+	if len(args) == 0 {
+		return &AggregateFunction{
+			AggregateFunction: &grammar.AggregateFunction{
+				CountStar: &struct{}{},
+			},
+			Referred: t,
+		}
+	}
+	arg := args[0]
+	switch arg := arg.(type) {
+	case string:
+		c := t.C(arg)
+		if c == nil {
+			msg := fmt.Sprintf(
+				"attempted Count() on unknown column %s",
+				arg,
+			)
+			panic(msg)
+		}
+		return doGeneralSetFunction(grammar.ComputationalOperationCount, c)
+	}
+	return doGeneralSetFunction(grammar.ComputationalOperationCount, arg)
 }

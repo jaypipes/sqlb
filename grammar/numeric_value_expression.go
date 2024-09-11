@@ -22,4 +22,62 @@ package grammar
 //          <value expression primary>
 //      |     <numeric value function>
 
-type NumericValueExpression struct{}
+type Sign int
+
+const (
+	SignPlus Sign = iota
+	SignMinus
+)
+
+var SignSymbol = map[Sign]string{
+	SignPlus:  "+",
+	SignMinus: "-",
+}
+
+type NumericOperation int
+
+const (
+	NumericOperationAdd NumericOperation = iota
+	NumericOperationSubtract
+	NumericOperationMultiply
+	NumericOperationDivide
+)
+
+var NumericOperationSymbol = map[NumericOperation]string{
+	NumericOperationAdd:      " + ",
+	NumericOperationSubtract: " - ",
+	NumericOperationMultiply: " * ",
+	NumericOperationDivide:   " / ",
+}
+
+type NumericValueExpression struct {
+	Unary       *Term
+	AddSubtract *AddSubtractExpression
+}
+
+type AddSubtractExpression struct {
+	Left     NumericValueExpression
+	Right    Term
+	Subtract bool
+}
+
+type Term struct {
+	Unary          *Factor
+	MultiplyDivide *MultiplyDivideExpression
+}
+
+type MultiplyDivideExpression struct {
+	Left   Term
+	Right  Factor
+	Divide bool
+}
+
+type Factor struct {
+	Sign    Sign
+	Primary NumericPrimary
+}
+
+type NumericPrimary struct {
+	Primary  *ValueExpressionPrimary
+	Function *NumericValueFunction
+}

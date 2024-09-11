@@ -25,6 +25,153 @@ func ArgCount(target interface{}, count *int) {
 		if !el.Asterisk {
 			ArgCount(el.DerivedColumn, count)
 		}
+	case *grammar.ValueExpression:
+		if el.Common != nil {
+			ArgCount(el.Common, count)
+		} else if el.Boolean != nil {
+			ArgCount(el.Boolean, count)
+		} else if el.Row != nil {
+			ArgCount(el.Row.Primary, count)
+		}
+	case *grammar.ValueExpressionPrimary:
+		if el.Primary != nil {
+			ArgCount(el.Primary, count)
+		} else if el.Parenthesized != nil {
+			ArgCount(el.Parenthesized, count)
+		}
+	case *grammar.Factor:
+		ArgCount(&el.Primary, count)
+	case *grammar.NumericPrimary:
+		if el.Primary != nil {
+			ArgCount(el.Primary, count)
+		} else if el.Function != nil {
+			ArgCount(el.Function, count)
+		}
+	case *grammar.Term:
+		if el.Unary != nil {
+			ArgCount(el.Unary, count)
+		} else if el.MultiplyDivide != nil {
+			ArgCount(&el.MultiplyDivide.Left, count)
+			ArgCount(&el.MultiplyDivide.Right, count)
+		}
+	case *grammar.NumericValueExpression:
+		if el.Unary != nil {
+			ArgCount(el.Unary, count)
+		} else if el.AddSubtract != nil {
+			ArgCount(&el.AddSubtract.Left, count)
+			ArgCount(&el.AddSubtract.Right, count)
+		}
+	case *grammar.BooleanValueExpression:
+		if el.Unary != nil {
+			ArgCount(el.Unary, count)
+		}
+		if el.OrLeft != nil {
+			ArgCount(el.OrLeft, count)
+		}
+		if el.OrRight != nil {
+			ArgCount(el.OrRight, count)
+		}
+	case *grammar.BooleanTerm:
+		if el.Unary != nil {
+			ArgCount(el.Unary, count)
+		}
+		if el.AndLeft != nil {
+			ArgCount(el.AndLeft, count)
+		}
+		if el.AndRight != nil {
+			ArgCount(el.AndRight, count)
+		}
+	case grammar.BooleanTerm:
+		if el.Unary != nil {
+			ArgCount(el.Unary, count)
+		}
+		if el.AndLeft != nil {
+			ArgCount(el.AndLeft, count)
+		}
+		if el.AndRight != nil {
+			ArgCount(el.AndRight, count)
+		}
+	case *grammar.BooleanFactor:
+		ArgCount(el.Test, count)
+	case grammar.BooleanFactor:
+		ArgCount(el.Test, count)
+	case *grammar.BooleanTest:
+		ArgCount(el.Primary, count)
+	case grammar.BooleanTest:
+		ArgCount(el.Primary, count)
+	case grammar.BooleanPrimary:
+		if el.Predicate != nil {
+			ArgCount(el.Predicate, count)
+		} else if el.BooleanPredicand != nil {
+			ArgCount(el.BooleanPredicand, count)
+		}
+	case *grammar.BooleanPrimary:
+		if el.Predicate != nil {
+			ArgCount(el.Predicate, count)
+		} else if el.BooleanPredicand != nil {
+			ArgCount(el.BooleanPredicand, count)
+		}
+	case *grammar.CommonValueExpression:
+		if el.Numeric != nil {
+			ArgCount(el.Numeric, count)
+		} else if el.String != nil {
+			ArgCount(el.String, count)
+		} else if el.Datetime != nil {
+			ArgCount(el.Datetime, count)
+		} else if el.Interval != nil {
+			ArgCount(el.Interval, count)
+		}
+	case *grammar.NonParenthesizedValueExpressionPrimary:
+		if el.UnsignedValue != nil {
+			ArgCount(el.UnsignedValue, count)
+		} else if el.ColumnReference != nil {
+			ArgCount(el.ColumnReference, count)
+		} else if el.SetFunction != nil {
+			ArgCount(el.SetFunction, count)
+		}
+	case *grammar.UnsignedValueSpecification:
+		if el.UnsignedLiteral != nil {
+			ArgCount(el.UnsignedLiteral, count)
+		} else if el.GeneralValue != nil {
+			ArgCount(el.GeneralValue, count)
+		}
+	case *grammar.ValueSpecification:
+		if el.Literal != nil {
+			ArgCount(el.Literal, count)
+		} else if el.UnsignedValue != nil {
+			ArgCount(el.UnsignedValue, count)
+		}
+	case *grammar.StringValueExpression:
+		if el.Character != nil {
+			ArgCount(el.Character, count)
+		} else if el.Blob != nil {
+			ArgCount(el.Blob, count)
+		}
+	case *grammar.CharacterValueExpression:
+		if el.Factor != nil {
+			ArgCount(&el.Factor.Primary, count)
+		}
+	case *grammar.CharacterPrimary:
+		if el.Primary != nil {
+			ArgCount(el.Primary, count)
+		} else if el.Function != nil {
+			ArgCount(el.Function, count)
+		}
+	case *grammar.StringValueFunction:
+		if el.Character != nil {
+			ArgCount(el.Character, count)
+		} else if el.Blob != nil {
+			ArgCount(el.Blob, count)
+		}
+	case *grammar.CharacterValueFunction:
+		if el.Substring != nil {
+			ss := el.Substring
+			ArgCount(&ss.Subject, count)
+			ArgCount(&ss.From, count)
+			if ss.For != nil {
+				ArgCount(ss.For, count)
+			}
+		}
 	case *grammar.QueryExpression:
 		ArgCount(&el.Body, count)
 	case grammar.QueryExpression:
@@ -113,44 +260,6 @@ func ArgCount(target interface{}, count *int) {
 		} else if el.BooleanPredicand != nil {
 			ArgCount(el.BooleanPredicand, count)
 		}
-	case *grammar.ValueExpression:
-		if el.CommonValueExpression != nil {
-			ArgCount(el.CommonValueExpression, count)
-		} else if el.BooleanValueExpression != nil {
-			ArgCount(el.BooleanValueExpression, count)
-		} else if el.RowValueExpression != nil {
-			ArgCount(el.RowValueExpression.NonParenthesizedValueExpressionPrimary, count)
-		}
-	case *grammar.CommonValueExpression:
-		if el.NumericValueExpression != nil {
-			ArgCount(el.NumericValueExpression, count)
-		} else if el.StringValueExpression != nil {
-			ArgCount(el.StringValueExpression, count)
-		} else if el.DatetimeValueExpression != nil {
-			ArgCount(el.DatetimeValueExpression, count)
-		} else if el.IntervalValueExpression != nil {
-			ArgCount(el.IntervalValueExpression, count)
-		}
-	case *grammar.NonParenthesizedValueExpressionPrimary:
-		if el.UnsignedValueSpecification != nil {
-			ArgCount(el.UnsignedValueSpecification, count)
-		} else if el.ColumnReference != nil {
-			ArgCount(el.ColumnReference, count)
-		} else if el.SetFunctionSpecification != nil {
-			ArgCount(el.SetFunctionSpecification, count)
-		}
-	case *grammar.UnsignedValueSpecification:
-		if el.UnsignedLiteral != nil {
-			ArgCount(el.UnsignedLiteral, count)
-		} else if el.GeneralValueSpecification != nil {
-			ArgCount(el.GeneralValueSpecification, count)
-		}
-	case *grammar.ValueSpecification:
-		if el.Literal != nil {
-			ArgCount(el.Literal, count)
-		} else if el.UnsignedValueSpecification != nil {
-			ArgCount(el.UnsignedValueSpecification, count)
-		}
 	case *grammar.CursorSpecification:
 		ArgCount(&el.QueryExpression, count)
 		if el.OrderByClause != nil {
@@ -187,56 +296,6 @@ func ArgCount(target interface{}, count *int) {
 		ArgCount(&el.SearchCondition, count)
 	case *grammar.HavingClause:
 		ArgCount(&el.SearchCondition, count)
-	case *grammar.BooleanValueExpression:
-		if el.Unary != nil {
-			ArgCount(el.Unary, count)
-		}
-		if el.OrLeft != nil {
-			ArgCount(el.OrLeft, count)
-		}
-		if el.OrRight != nil {
-			ArgCount(el.OrRight, count)
-		}
-	case *grammar.BooleanTerm:
-		if el.Unary != nil {
-			ArgCount(el.Unary, count)
-		}
-		if el.AndLeft != nil {
-			ArgCount(el.AndLeft, count)
-		}
-		if el.AndRight != nil {
-			ArgCount(el.AndRight, count)
-		}
-	case grammar.BooleanTerm:
-		if el.Unary != nil {
-			ArgCount(el.Unary, count)
-		}
-		if el.AndLeft != nil {
-			ArgCount(el.AndLeft, count)
-		}
-		if el.AndRight != nil {
-			ArgCount(el.AndRight, count)
-		}
-	case *grammar.BooleanFactor:
-		ArgCount(el.Test, count)
-	case grammar.BooleanFactor:
-		ArgCount(el.Test, count)
-	case *grammar.BooleanTest:
-		ArgCount(el.Primary, count)
-	case grammar.BooleanTest:
-		ArgCount(el.Primary, count)
-	case grammar.BooleanPrimary:
-		if el.Predicate != nil {
-			ArgCount(el.Predicate, count)
-		} else if el.BooleanPredicand != nil {
-			ArgCount(el.BooleanPredicand, count)
-		}
-	case *grammar.BooleanPrimary:
-		if el.Predicate != nil {
-			ArgCount(el.Predicate, count)
-		} else if el.BooleanPredicand != nil {
-			ArgCount(el.BooleanPredicand, count)
-		}
 	case *grammar.Predicate:
 		if el.Comparison != nil {
 			ArgCount(el.Comparison, count)

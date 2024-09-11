@@ -47,21 +47,21 @@ package grammar
 // <row value special case>    ::=   <nonparenthesized value expression primary>
 
 type ValueExpression struct {
-	CommonValueExpression  *CommonValueExpression
-	BooleanValueExpression *BooleanValueExpression
-	RowValueExpression     *RowValueExpression
+	Common  *CommonValueExpression
+	Boolean *BooleanValueExpression
+	Row     *RowValueExpression
 }
 
 type CommonValueExpression struct {
-	NumericValueExpression  *NumericValueExpression
-	StringValueExpression   *StringValueExpression
-	DatetimeValueExpression *DatetimeValueExpression
-	IntervalValueExpression *IntervalValueExpression
+	Numeric  *NumericValueExpression
+	String   *StringValueExpression
+	Datetime *DatetimeValueExpression
+	Interval *IntervalValueExpression
 	//UserDefinedTypeValueExpression *UserDefinedTypeValueExpression
 	//ReferenceValueExpression       *ReferenceValueExpression
 	//CollectionValueExpression      *CollectionValueExpression
 }
 
 type RowValueExpression struct {
-	NonParenthesizedValueExpressionPrimary *NonParenthesizedValueExpressionPrimary
+	Primary *NonParenthesizedValueExpressionPrimary
 }

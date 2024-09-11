@@ -15,7 +15,7 @@ func (b *Builder) doSetFunctionSpecification(
 	qargs []interface{},
 	curarg *int,
 ) {
-	if el.AggregateFunction != nil {
-		b.doAggregateFunction(el.AggregateFunction, qargs, curarg)
+	if el.Aggregate != nil {
+		b.doAggregateFunction(el.Aggregate, qargs, curarg)
 	}
 }

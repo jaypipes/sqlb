@@ -34,14 +34,14 @@ package grammar
 //      |     <next value expression>
 
 type ValueExpressionPrimary struct {
-	ParenthesizedValueExpression           *ValueExpression
-	NonParenthesizedValueExpressionPrimary *NonParenthesizedValueExpressionPrimary
+	Parenthesized *ValueExpression
+	Primary       *NonParenthesizedValueExpressionPrimary
 }
 
 type NonParenthesizedValueExpressionPrimary struct {
-	UnsignedValueSpecification *UnsignedValueSpecification
-	ColumnReference            *ColumnReference
-	SetFunctionSpecification   *SetFunctionSpecification
+	UnsignedValue   *UnsignedValueSpecification
+	ColumnReference *ColumnReference
+	SetFunction     *SetFunctionSpecification
 	//WindowFunction *WindowFunction
 	ScalarSubquery *Subquery
 	//CaseExpression *CaseExpression

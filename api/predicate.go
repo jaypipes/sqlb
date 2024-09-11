@@ -298,7 +298,7 @@ func In(
 			panic(msg)
 		}
 		rves = append(rves, grammar.RowValueExpression{
-			NonParenthesizedValueExpressionPrimary: npvep,
+			Primary: npvep,
 		})
 	}
 	return &grammar.InPredicate{
@@ -359,7 +359,7 @@ func ReferredFromPredicate(
 		for _, rve := range p.In.Values {
 			found = append(
 				found,
-				ReferredFromNonParenthesizedValueExpressionPrimary(rve.NonParenthesizedValueExpressionPrimary)...,
+				ReferredFromNonParenthesizedValueExpressionPrimary(rve.Primary)...,
 			)
 		}
 		return found

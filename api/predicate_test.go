@@ -82,7 +82,7 @@ func TestPredicateEqual(t *testing.T) {
 				},
 				B: grammar.RowValuePredicand{
 					NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
-						UnsignedValueSpecification: &grammar.UnsignedValueSpecification{
+						UnsignedValue: &grammar.UnsignedValueSpecification{
 							UnsignedLiteral: &grammar.UnsignedLiteral{
 								UnsignedNumericLiteral: &grammar.UnsignedNumericLiteral{
 									Value: 42,
@@ -122,7 +122,7 @@ func TestPredicateEqual(t *testing.T) {
 				},
 				B: grammar.RowValuePredicand{
 					NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
-						UnsignedValueSpecification: &grammar.UnsignedValueSpecification{
+						UnsignedValue: &grammar.UnsignedValueSpecification{
 							UnsignedLiteral: &grammar.UnsignedLiteral{
 								UnsignedNumericLiteral: &grammar.UnsignedNumericLiteral{
 									Value: 42,
@@ -153,7 +153,7 @@ func TestPredicateEqual(t *testing.T) {
 				},
 				B: grammar.RowValuePredicand{
 					NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
-						UnsignedValueSpecification: &grammar.UnsignedValueSpecification{
+						UnsignedValue: &grammar.UnsignedValueSpecification{
 							UnsignedLiteral: &grammar.UnsignedLiteral{
 								GeneralLiteral: &grammar.GeneralLiteral{
 									Value: "foo",
@@ -249,7 +249,7 @@ func TestPredicateBetween(t *testing.T) {
 				},
 				Start: grammar.RowValuePredicand{
 					NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
-						UnsignedValueSpecification: &grammar.UnsignedValueSpecification{
+						UnsignedValue: &grammar.UnsignedValueSpecification{
 							UnsignedLiteral: &grammar.UnsignedLiteral{
 								UnsignedNumericLiteral: &grammar.UnsignedNumericLiteral{
 									Value: 1,
@@ -260,7 +260,7 @@ func TestPredicateBetween(t *testing.T) {
 				},
 				End: grammar.RowValuePredicand{
 					NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
-						UnsignedValueSpecification: &grammar.UnsignedValueSpecification{
+						UnsignedValue: &grammar.UnsignedValueSpecification{
 							UnsignedLiteral: &grammar.UnsignedLiteral{
 								UnsignedNumericLiteral: &grammar.UnsignedNumericLiteral{
 									Value: 42,
@@ -303,7 +303,7 @@ func TestPredicateBetween(t *testing.T) {
 				},
 				End: grammar.RowValuePredicand{
 					NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
-						UnsignedValueSpecification: &grammar.UnsignedValueSpecification{
+						UnsignedValue: &grammar.UnsignedValueSpecification{
 							UnsignedLiteral: &grammar.UnsignedLiteral{
 								UnsignedNumericLiteral: &grammar.UnsignedNumericLiteral{
 									Value: 42,
@@ -334,7 +334,7 @@ func TestPredicateBetween(t *testing.T) {
 				},
 				Start: grammar.RowValuePredicand{
 					NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
-						UnsignedValueSpecification: &grammar.UnsignedValueSpecification{
+						UnsignedValue: &grammar.UnsignedValueSpecification{
 							UnsignedLiteral: &grammar.UnsignedLiteral{
 								UnsignedNumericLiteral: &grammar.UnsignedNumericLiteral{
 									Value: 42,

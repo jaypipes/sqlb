@@ -61,6 +61,7 @@ const (
 	SYM_DISTINCT
 	SYM_CAST
 	SYM_BTRIM
+	SYM_SUBSTRING
 	SYM_TRIM
 	SYM_LTRIM
 	SYM_RTRIM
@@ -106,6 +107,8 @@ const (
 	SYM_UNIT_DAY_MINUTE
 	SYM_UNIT_DAY_HOUR
 	SYM_UNIT_YEAR_MONTH
+	SYM_USING
+	SYM_FOR
 	SYM_PLACEHOLDER = 9999999999
 )
 
@@ -162,6 +165,7 @@ var (
 		SYM_DISTINCT:                []byte("DISTINCT "),
 		SYM_CAST:                    []byte("CAST("),
 		SYM_BTRIM:                   []byte("BTRIM("),
+		SYM_SUBSTRING:               []byte("SUBSTRING("),
 		SYM_TRIM:                    []byte("TRIM("),
 		SYM_LTRIM:                   []byte("LTRIM("),
 		SYM_RTRIM:                   []byte("RTRIM("),
@@ -207,5 +211,7 @@ var (
 		SYM_UNIT_DAY_MINUTE:         []byte("DAY_MINUTE"),
 		SYM_UNIT_DAY_HOUR:           []byte("DAY_HOUR"),
 		SYM_UNIT_YEAR_MONTH:         []byte("YEAR_MONTH"),
+		SYM_USING:                   []byte("USING "),
+		SYM_FOR:                     []byte("FOR "),
 	}
 )

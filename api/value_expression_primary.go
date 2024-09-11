@@ -12,6 +12,27 @@ import (
 	"github.com/jaypipes/sqlb/grammar"
 )
 
+// ValueExpressionPrimaryFromAny evaluates the supplied interface argument and
+// returns a *ValueExpressionPrimary if the supplied argument can be converted
+// into a ValueExpressionPrimary, or nil if the conversion cannot be done.
+func ValueExpressionPrimaryFromAny(
+	subject interface{},
+) *grammar.ValueExpressionPrimary {
+	switch v := subject.(type) {
+	case *grammar.ValueExpressionPrimary:
+		return v
+	case grammar.ValueExpressionPrimary:
+		return &v
+	}
+	v := NonParenthesizedValueExpressionPrimaryFromAny(subject)
+	if v != nil {
+		return &grammar.ValueExpressionPrimary{
+			Primary: v,
+		}
+	}
+	return nil
+}
+
 // NonParenthesizedValueExpressionPrimaryFromAny evaluates the supplied
 // interface argument and returns a *NonParenthesizedValueExpressionPrimary if
 // the supplied argument can be converted into a
@@ -21,13 +42,17 @@ func NonParenthesizedValueExpressionPrimaryFromAny(
 	subject interface{},
 ) *grammar.NonParenthesizedValueExpressionPrimary {
 	switch v := subject.(type) {
+	case *grammar.NonParenthesizedValueExpressionPrimary:
+		return v
+	case grammar.NonParenthesizedValueExpressionPrimary:
+		return &v
 	case *grammar.UnsignedValueSpecification:
 		return &grammar.NonParenthesizedValueExpressionPrimary{
-			UnsignedValueSpecification: v,
+			UnsignedValue: v,
 		}
 	case grammar.UnsignedValueSpecification:
 		return &grammar.NonParenthesizedValueExpressionPrimary{
-			UnsignedValueSpecification: &v,
+			UnsignedValue: &v,
 		}
 	case *grammar.ColumnReference:
 		return &grammar.NonParenthesizedValueExpressionPrimary{
@@ -56,11 +81,11 @@ func NonParenthesizedValueExpressionPrimaryFromAny(
 		}
 	case *grammar.SetFunctionSpecification:
 		return &grammar.NonParenthesizedValueExpressionPrimary{
-			SetFunctionSpecification: v,
+			SetFunction: v,
 		}
 	case grammar.SetFunctionSpecification:
 		return &grammar.NonParenthesizedValueExpressionPrimary{
-			SetFunctionSpecification: &v,
+			SetFunction: &v,
 		}
 	case *grammar.Subquery:
 		return &grammar.NonParenthesizedValueExpressionPrimary{
@@ -141,7 +166,7 @@ func NonParenthesizedValueExpressionPrimaryFromAny(
 	v := UnsignedValueSpecificationFromAny(subject)
 	if v != nil {
 		return &grammar.NonParenthesizedValueExpressionPrimary{
-			UnsignedValueSpecification: v,
+			UnsignedValue: v,
 		}
 	}
 	return nil

@@ -25,13 +25,13 @@ package grammar
 // <blob concatenation>    ::=   <blob value expression> <concatenation operator> <blob factor>
 
 type StringValueExpression struct {
-	CharacterValueExpression *CharacterValueExpression
-	BlobValueExpression      *BlobValueExpression
+	Character *CharacterValueExpression
+	Blob      *BlobValueExpression
 }
 
 type CharacterValueExpression struct {
 	// Concatenation *Concatenation
-	CharacterFactor *CharacterFactor
+	Factor *CharacterFactor
 }
 
 type CharacterFactor struct {
@@ -40,13 +40,13 @@ type CharacterFactor struct {
 }
 
 type CharacterPrimary struct {
-	ValueExpressionPrimary *ValueExpressionPrimary
-	StringValueFunction    *StringValueFunction
+	Primary  *ValueExpressionPrimary
+	Function *StringValueFunction
 }
 
 type BlobValueExpression struct {
 	// BlobConcatenation
-	BlobFactor *BlobFactor
+	Factor *BlobFactor
 }
 
 type BlobFactor struct {
@@ -54,6 +54,6 @@ type BlobFactor struct {
 }
 
 type BlobPrimary struct {
-	ValueExpressionPrimary *ValueExpressionPrimary
-	StringValueFunction    *StringValueFunction
+	Primary  *ValueExpressionPrimary
+	Function *StringValueFunction
 }
