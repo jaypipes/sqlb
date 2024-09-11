@@ -42,8 +42,8 @@ func TestAggregateFunctionCount(t *testing.T) {
 					GeneralSetFunction: &grammar.GeneralSetFunction{
 						Operation: grammar.ComputationalOperationCount,
 						ValueExpression: grammar.ValueExpression{
-							RowValueExpression: &grammar.RowValueExpression{
-								NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+							Row: &grammar.RowValueExpression{
+								Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 									ColumnReference: &grammar.ColumnReference{
 										BasicIdentifierChain: &grammar.IdentifierChain{
 											Identifiers: []string{
@@ -104,8 +104,8 @@ func TestAggregateFunctionAvgMinMaxSum(t *testing.T) {
 					GeneralSetFunction: &grammar.GeneralSetFunction{
 						Operation: grammar.ComputationalOperationAvg,
 						ValueExpression: grammar.ValueExpression{
-							RowValueExpression: &grammar.RowValueExpression{
-								NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+							Row: &grammar.RowValueExpression{
+								Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 									ColumnReference: &grammar.ColumnReference{
 										BasicIdentifierChain: &grammar.IdentifierChain{
 											Identifiers: []string{
@@ -131,8 +131,8 @@ func TestAggregateFunctionAvgMinMaxSum(t *testing.T) {
 					GeneralSetFunction: &grammar.GeneralSetFunction{
 						Operation: grammar.ComputationalOperationMin,
 						ValueExpression: grammar.ValueExpression{
-							RowValueExpression: &grammar.RowValueExpression{
-								NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+							Row: &grammar.RowValueExpression{
+								Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 									ColumnReference: &grammar.ColumnReference{
 										BasicIdentifierChain: &grammar.IdentifierChain{
 											Identifiers: []string{
@@ -158,8 +158,8 @@ func TestAggregateFunctionAvgMinMaxSum(t *testing.T) {
 					GeneralSetFunction: &grammar.GeneralSetFunction{
 						Operation: grammar.ComputationalOperationMax,
 						ValueExpression: grammar.ValueExpression{
-							RowValueExpression: &grammar.RowValueExpression{
-								NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+							Row: &grammar.RowValueExpression{
+								Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 									ColumnReference: &grammar.ColumnReference{
 										BasicIdentifierChain: &grammar.IdentifierChain{
 											Identifiers: []string{
@@ -185,8 +185,8 @@ func TestAggregateFunctionAvgMinMaxSum(t *testing.T) {
 					GeneralSetFunction: &grammar.GeneralSetFunction{
 						Operation: grammar.ComputationalOperationSum,
 						ValueExpression: grammar.ValueExpression{
-							RowValueExpression: &grammar.RowValueExpression{
-								NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+							Row: &grammar.RowValueExpression{
+								Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 									ColumnReference: &grammar.ColumnReference{
 										BasicIdentifierChain: &grammar.IdentifierChain{
 											Identifiers: []string{
@@ -248,8 +248,8 @@ func TestAggregateFunctionDistinct(t *testing.T) {
 						Operation:  grammar.ComputationalOperationAvg,
 						Quantifier: grammar.SetQuantifierDistinct,
 						ValueExpression: grammar.ValueExpression{
-							RowValueExpression: &grammar.RowValueExpression{
-								NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+							Row: &grammar.RowValueExpression{
+								Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 									ColumnReference: &grammar.ColumnReference{
 										BasicIdentifierChain: &grammar.IdentifierChain{
 											Identifiers: []string{
@@ -311,9 +311,19 @@ func TestSelectAggregateFunction(t *testing.T) {
 		qargs []interface{}
 	}{
 		{
-			name: "count star",
+			name: "count star on Selection",
 			q:    api.Select(users).Count(),
 			qs:   "SELECT COUNT(*) FROM users",
+		},
+		{
+			name: "count star on Table",
+			q:    api.Select(users.Count()),
+			qs:   "SELECT COUNT(*) FROM users",
+		},
+		{
+			name: "count star api.Count",
+			q:    api.Select(users, api.Count()),
+			qs:   "SELECT users.id, users.name, COUNT(*) FROM users",
 		},
 		{
 			name: "count distinct column",

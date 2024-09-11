@@ -125,8 +125,8 @@ func Select(
 				}
 				dc := grammar.DerivedColumn{
 					ValueExpression: grammar.ValueExpression{
-						RowValueExpression: &grammar.RowValueExpression{
-							NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+						Row: &grammar.RowValueExpression{
+							Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 								ColumnReference: &grammar.ColumnReference{
 									BasicIdentifierChain: &grammar.IdentifierChain{
 										Identifiers: []string{derivedName, c.name},
@@ -168,8 +168,8 @@ func Select(
 			// TODO(jaypipes): Determine if this is a SCALAR subquery or not...
 			dc := grammar.DerivedColumn{
 				ValueExpression: grammar.ValueExpression{
-					RowValueExpression: &grammar.RowValueExpression{
-						NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+					Row: &grammar.RowValueExpression{
+						Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 							ScalarSubquery: item,
 						},
 					},
@@ -183,8 +183,8 @@ func Select(
 			tname := item.TableName()
 			dc := grammar.DerivedColumn{
 				ValueExpression: grammar.ValueExpression{
-					RowValueExpression: &grammar.RowValueExpression{
-						NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+					Row: &grammar.RowValueExpression{
+						Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 							ColumnReference: &grammar.ColumnReference{
 								BasicIdentifierChain: &grammar.IdentifierChain{
 									Identifiers: []string{tname, item.name},
@@ -247,8 +247,8 @@ func Select(
 			for _, c := range item.ColumnsSorted() {
 				dc := grammar.DerivedColumn{
 					ValueExpression: grammar.ValueExpression{
-						RowValueExpression: &grammar.RowValueExpression{
-							NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+						Row: &grammar.RowValueExpression{
+							Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 								ColumnReference: &grammar.ColumnReference{
 									BasicIdentifierChain: &grammar.IdentifierChain{
 										Identifiers: []string{tname, c.name},
@@ -282,8 +282,8 @@ func Select(
 			for _, c := range item.ColumnsSorted() {
 				dc := grammar.DerivedColumn{
 					ValueExpression: grammar.ValueExpression{
-						RowValueExpression: &grammar.RowValueExpression{
-							NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+						Row: &grammar.RowValueExpression{
+							Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 								ColumnReference: &grammar.ColumnReference{
 									BasicIdentifierChain: &grammar.IdentifierChain{
 										Identifiers: []string{tname, c.name},
@@ -331,10 +331,79 @@ func Select(
 			}
 			dc := grammar.DerivedColumn{
 				ValueExpression: grammar.ValueExpression{
-					RowValueExpression: &grammar.RowValueExpression{
-						NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
-							SetFunctionSpecification: &grammar.SetFunctionSpecification{
-								AggregateFunction: item.AggregateFunction,
+					Row: &grammar.RowValueExpression{
+						Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+							SetFunction: &grammar.SetFunctionSpecification{
+								Aggregate: item.AggregateFunction,
+							},
+						},
+					},
+				},
+			}
+			if item.alias != "" {
+				dc.As = &item.alias
+			}
+			sels = append(sels, grammar.SelectSublist{DerivedColumn: &dc})
+			//cols = append(cols, item)
+			if item.Referred != nil {
+				tname := ""
+				tp := &grammar.TablePrimary{}
+				t, ok := item.Referred.(*Table)
+				if ok {
+					tname = t.Name()
+					tp.TableName = &tname
+					if t.alias != "" {
+						tp.Correlation = &grammar.Correlation{
+							Name: t.Alias(),
+						}
+					}
+				} else {
+					// The column is from a derived table
+					dt := item.Referred.(*DerivedTable)
+					tname = dt.Name()
+					tp.DerivedTable = &grammar.DerivedTable{
+						Subquery: grammar.Subquery{
+							QueryExpression: grammar.QueryExpression{
+								Body: grammar.QueryExpressionBody{
+									NonJoinQueryExpression: &grammar.NonJoinQueryExpression{
+										NonJoinQueryTerm: &grammar.NonJoinQueryTerm{
+											Primary: &grammar.NonJoinQueryPrimary{
+												SimpleTable: &grammar.SimpleTable{
+													QuerySpecification: dt.Query(),
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					}
+					// Derived tables are always named/aliased
+					tp.Correlation = &grammar.Correlation{
+						Name: dt.Name(),
+					}
+				}
+				tr := grammar.TableReference{Primary: tp}
+				trefByName[tname] = tr
+			}
+		case *SubstringFunction:
+			if item == nil {
+				panic("specified a non-existent substring function")
+			}
+			dc := grammar.DerivedColumn{
+				ValueExpression: grammar.ValueExpression{
+					Common: &grammar.CommonValueExpression{
+						String: &grammar.StringValueExpression{
+							Character: &grammar.CharacterValueExpression{
+								Factor: &grammar.CharacterFactor{
+									Primary: grammar.CharacterPrimary{
+										Function: &grammar.StringValueFunction{
+											Character: &grammar.CharacterValueFunction{
+												Substring: item.SubstringFunction,
+											},
+										},
+									},
+								},
 							},
 						},
 					},
@@ -392,9 +461,9 @@ func Select(
 			// valid SQL.
 			dc := grammar.DerivedColumn{
 				ValueExpression: grammar.ValueExpression{
-					RowValueExpression: &grammar.RowValueExpression{
-						NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
-							UnsignedValueSpecification: &grammar.UnsignedValueSpecification{
+					Row: &grammar.RowValueExpression{
+						Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+							UnsignedValue: &grammar.UnsignedValueSpecification{
 								UnsignedLiteral: &grammar.UnsignedLiteral{
 									GeneralLiteral: &grammar.GeneralLiteral{
 										Value: item,
@@ -445,10 +514,10 @@ func (s *Selection) Count() *Selection {
 	}
 	dc := grammar.DerivedColumn{
 		ValueExpression: grammar.ValueExpression{
-			RowValueExpression: &grammar.RowValueExpression{
-				NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
-					SetFunctionSpecification: &grammar.SetFunctionSpecification{
-						AggregateFunction: Count().AggregateFunction,
+			Row: &grammar.RowValueExpression{
+				Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+					SetFunction: &grammar.SetFunctionSpecification{
+						Aggregate: Count().AggregateFunction,
 					},
 				},
 			},

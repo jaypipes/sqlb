@@ -21,15 +21,15 @@ func ValueSpecificationFromAny(
 		return &v
 	case grammar.UnsignedValueSpecification:
 		return &grammar.ValueSpecification{
-			UnsignedValueSpecification: &v,
+			UnsignedValue: &v,
 		}
 	case *grammar.UnsignedValueSpecification:
 		return &grammar.ValueSpecification{
-			UnsignedValueSpecification: v,
+			UnsignedValue: v,
 		}
 	case uint, uint8, uint16, uint64:
 		return &grammar.ValueSpecification{
-			UnsignedValueSpecification: &grammar.UnsignedValueSpecification{
+			UnsignedValue: &grammar.UnsignedValueSpecification{
 				UnsignedLiteral: &grammar.UnsignedLiteral{
 					UnsignedNumericLiteral: &grammar.UnsignedNumericLiteral{
 						Value: v,
@@ -47,7 +47,7 @@ func ValueSpecificationFromAny(
 		}
 	case string, rune, bool:
 		return &grammar.ValueSpecification{
-			UnsignedValueSpecification: &grammar.UnsignedValueSpecification{
+			UnsignedValue: &grammar.UnsignedValueSpecification{
 				UnsignedLiteral: &grammar.UnsignedLiteral{
 					GeneralLiteral: &grammar.GeneralLiteral{
 						Value: v,
@@ -72,12 +72,12 @@ func UnsignedValueSpecificationFromAny(
 	case grammar.UnsignedValueSpecification:
 		return &v
 	case grammar.ValueSpecification:
-		if v.UnsignedValueSpecification != nil {
-			return v.UnsignedValueSpecification
+		if v.UnsignedValue != nil {
+			return v.UnsignedValue
 		}
 	case *grammar.ValueSpecification:
-		if v.UnsignedValueSpecification != nil {
-			return v.UnsignedValueSpecification
+		if v.UnsignedValue != nil {
+			return v.UnsignedValue
 		}
 	case uint, uint8, uint16, uint64, int, int8, int16, int64:
 		return &grammar.UnsignedValueSpecification{

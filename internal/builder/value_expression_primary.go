@@ -15,12 +15,12 @@ func (b *Builder) doValueExpressionPrimary(
 	qargs []interface{},
 	curarg *int,
 ) {
-	if el.ParenthesizedValueExpression != nil {
+	if el.Parenthesized != nil {
 		b.Write(grammar.Symbols[grammar.SYM_LPAREN])
-		b.doValueExpression(el.ParenthesizedValueExpression, qargs, curarg)
+		b.doValueExpression(el.Parenthesized, qargs, curarg)
 		b.Write(grammar.Symbols[grammar.SYM_RPAREN])
-	} else if el.NonParenthesizedValueExpressionPrimary != nil {
-		b.doNonParenthesizedValueExpressionPrimary(el.NonParenthesizedValueExpressionPrimary, qargs, curarg)
+	} else if el.Primary != nil {
+		b.doNonParenthesizedValueExpressionPrimary(el.Primary, qargs, curarg)
 	}
 }
 
@@ -29,12 +29,12 @@ func (b *Builder) doNonParenthesizedValueExpressionPrimary(
 	qargs []interface{},
 	curarg *int,
 ) {
-	if el.UnsignedValueSpecification != nil {
-		b.doUnsignedValueSpecification(el.UnsignedValueSpecification, qargs, curarg)
+	if el.UnsignedValue != nil {
+		b.doUnsignedValueSpecification(el.UnsignedValue, qargs, curarg)
 	} else if el.ColumnReference != nil {
 		b.doColumnReference(el.ColumnReference, qargs, curarg)
-	} else if el.SetFunctionSpecification != nil {
-		b.doSetFunctionSpecification(el.SetFunctionSpecification, qargs, curarg)
+	} else if el.SetFunction != nil {
+		b.doSetFunctionSpecification(el.SetFunction, qargs, curarg)
 	} else if el.ScalarSubquery != nil {
 		b.doSubquery(el.ScalarSubquery, qargs, curarg)
 	}

@@ -11,6 +11,6 @@ package grammar
 // <grouping operation>    ::=   GROUPING <left paren> <column reference> [ { <comma> <column reference> }... ] <right paren>
 
 type SetFunctionSpecification struct {
-	AggregateFunction *AggregateFunction
+	Aggregate *AggregateFunction
 	//GroupingOperation *GroupingOperation
 }

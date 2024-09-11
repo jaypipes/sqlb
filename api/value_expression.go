@@ -13,84 +13,76 @@ import "github.com/jaypipes/sqlb/grammar"
 // ValueExpression, or nil if the conversion cannot be done.
 func ValueExpressionFromAny(subject interface{}) *grammar.ValueExpression {
 	switch v := subject.(type) {
+	case *grammar.ValueExpression:
+		return v
+	case grammar.ValueExpression:
+		return &v
 	case *grammar.CommonValueExpression:
-		return &grammar.ValueExpression{CommonValueExpression: v}
+		return &grammar.ValueExpression{Common: v}
 	case grammar.CommonValueExpression:
-		return &grammar.ValueExpression{CommonValueExpression: &v}
+		return &grammar.ValueExpression{Common: &v}
 	case *grammar.BooleanValueExpression:
-		return &grammar.ValueExpression{BooleanValueExpression: v}
+		return &grammar.ValueExpression{Boolean: v}
 	case grammar.BooleanValueExpression:
-		return &grammar.ValueExpression{BooleanValueExpression: &v}
+		return &grammar.ValueExpression{Boolean: &v}
 	case *grammar.RowValueExpression:
-		return &grammar.ValueExpression{RowValueExpression: v}
+		return &grammar.ValueExpression{Row: v}
 	case grammar.RowValueExpression:
-		return &grammar.ValueExpression{RowValueExpression: &v}
+		return &grammar.ValueExpression{Row: &v}
 	case *grammar.NumericValueExpression:
 		return &grammar.ValueExpression{
-			CommonValueExpression: &grammar.CommonValueExpression{
-				NumericValueExpression: v,
+			Common: &grammar.CommonValueExpression{
+				Numeric: v,
 			},
 		}
 	case grammar.NumericValueExpression:
 		return &grammar.ValueExpression{
-			CommonValueExpression: &grammar.CommonValueExpression{
-				NumericValueExpression: &v,
+			Common: &grammar.CommonValueExpression{
+				Numeric: &v,
 			},
 		}
 	case *grammar.StringValueExpression:
 		return &grammar.ValueExpression{
-			CommonValueExpression: &grammar.CommonValueExpression{
-				StringValueExpression: v,
+			Common: &grammar.CommonValueExpression{
+				String: v,
 			},
 		}
 	case grammar.StringValueExpression:
 		return &grammar.ValueExpression{
-			CommonValueExpression: &grammar.CommonValueExpression{
-				StringValueExpression: &v,
+			Common: &grammar.CommonValueExpression{
+				String: &v,
 			},
 		}
 	case *grammar.DatetimeValueExpression:
 		return &grammar.ValueExpression{
-			CommonValueExpression: &grammar.CommonValueExpression{
-				DatetimeValueExpression: v,
+			Common: &grammar.CommonValueExpression{
+				Datetime: v,
 			},
 		}
 	case grammar.DatetimeValueExpression:
 		return &grammar.ValueExpression{
-			CommonValueExpression: &grammar.CommonValueExpression{
-				DatetimeValueExpression: &v,
+			Common: &grammar.CommonValueExpression{
+				Datetime: &v,
 			},
 		}
 	case *grammar.IntervalValueExpression:
 		return &grammar.ValueExpression{
-			CommonValueExpression: &grammar.CommonValueExpression{
-				IntervalValueExpression: v,
+			Common: &grammar.CommonValueExpression{
+				Interval: v,
 			},
 		}
 	case grammar.IntervalValueExpression:
 		return &grammar.ValueExpression{
-			CommonValueExpression: &grammar.CommonValueExpression{
-				IntervalValueExpression: &v,
-			},
-		}
-	case *grammar.NonParenthesizedValueExpressionPrimary:
-		return &grammar.ValueExpression{
-			RowValueExpression: &grammar.RowValueExpression{
-				NonParenthesizedValueExpressionPrimary: v,
-			},
-		}
-	case grammar.NonParenthesizedValueExpressionPrimary:
-		return &grammar.ValueExpression{
-			RowValueExpression: &grammar.RowValueExpression{
-				NonParenthesizedValueExpressionPrimary: &v,
+			Common: &grammar.CommonValueExpression{
+				Interval: &v,
 			},
 		}
 	}
 	v := NonParenthesizedValueExpressionPrimaryFromAny(subject)
 	if v != nil {
 		return &grammar.ValueExpression{
-			RowValueExpression: &grammar.RowValueExpression{
-				NonParenthesizedValueExpressionPrimary: v,
+			Row: &grammar.RowValueExpression{
+				Primary: v,
 			},
 		}
 	}
@@ -103,14 +95,14 @@ func ValueExpressionFromAny(subject interface{}) *grammar.ValueExpression {
 func ReferredFromCommonValueExpression(
 	cve *grammar.CommonValueExpression,
 ) []string {
-	if cve.NumericValueExpression != nil {
-		return ReferredFromNumericValueExpression(cve.NumericValueExpression)
-	} else if cve.StringValueExpression != nil {
-		return ReferredFromStringValueExpression(cve.StringValueExpression)
-	} else if cve.DatetimeValueExpression != nil {
-		return ReferredFromDatetimeValueExpression(cve.DatetimeValueExpression)
-	} else if cve.IntervalValueExpression != nil {
-		return ReferredFromIntervalValueExpression(cve.IntervalValueExpression)
+	if cve.Numeric != nil {
+		return ReferredFromNumericValueExpression(cve.Numeric)
+	} else if cve.String != nil {
+		return ReferredFromStringValueExpression(cve.String)
+	} else if cve.Datetime != nil {
+		return ReferredFromDatetimeValueExpression(cve.Datetime)
+	} else if cve.Interval != nil {
+		return ReferredFromIntervalValueExpression(cve.Interval)
 	}
 	return []string{}
 }

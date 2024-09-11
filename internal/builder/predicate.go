@@ -61,7 +61,7 @@ func (b *Builder) doInPredicate(
 		if x > 0 {
 			b.Write(grammar.Symbols[grammar.SYM_COMMA_WS])
 		}
-		b.doNonParenthesizedValueExpressionPrimary(rve.NonParenthesizedValueExpressionPrimary, qargs, curarg)
+		b.doNonParenthesizedValueExpressionPrimary(rve.Primary, qargs, curarg)
 	}
 	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
 }

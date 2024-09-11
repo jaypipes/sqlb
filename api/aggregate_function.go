@@ -24,6 +24,12 @@ type AggregateFunction struct {
 	alias string
 }
 
+// As aliases the SQL function as the supplied column name
+func (f *AggregateFunction) As(alias string) *AggregateFunction {
+	f.alias = alias
+	return f
+}
+
 // Distinct modifies the AggregateFunction by changing the <set quantifier>
 // from ALL to DISTINCT. This does nothing unless the AggregateFunction is a
 // General Set Function, which is an aggregate function with any of the
@@ -98,7 +104,6 @@ func Count(args ...interface{}) *AggregateFunction {
 		}
 	}
 	return doGeneralSetFunction(grammar.ComputationalOperationCount, args[0])
-
 }
 
 // Avg returns a AggregateFunction that can be passed to a Select function to

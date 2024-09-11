@@ -15,12 +15,12 @@ func (b *Builder) doValueExpression(
 	qargs []interface{},
 	curarg *int,
 ) {
-	if el.CommonValueExpression != nil {
-		b.doCommonValueExpression(el.CommonValueExpression, qargs, curarg)
-	} else if el.BooleanValueExpression != nil {
-		b.doBooleanValueExpression(el.BooleanValueExpression, qargs, curarg)
-	} else if el.RowValueExpression != nil {
-		b.doNonParenthesizedValueExpressionPrimary(el.RowValueExpression.NonParenthesizedValueExpressionPrimary, qargs, curarg)
+	if el.Common != nil {
+		b.doCommonValueExpression(el.Common, qargs, curarg)
+	} else if el.Boolean != nil {
+		b.doBooleanValueExpression(el.Boolean, qargs, curarg)
+	} else if el.Row != nil {
+		b.doNonParenthesizedValueExpressionPrimary(el.Row.Primary, qargs, curarg)
 	}
 }
 
@@ -29,13 +29,13 @@ func (b *Builder) doCommonValueExpression(
 	qargs []interface{},
 	curarg *int,
 ) {
-	if el.NumericValueExpression != nil {
-		b.doNumericValueExpression(el.NumericValueExpression, qargs, curarg)
-	} else if el.StringValueExpression != nil {
-		b.doStringValueExpression(el.StringValueExpression, qargs, curarg)
-	} else if el.DatetimeValueExpression != nil {
-		b.doDatetimeValueExpression(el.DatetimeValueExpression, qargs, curarg)
-	} else if el.IntervalValueExpression != nil {
-		b.doIntervalValueExpression(el.IntervalValueExpression, qargs, curarg)
+	if el.Numeric != nil {
+		b.doNumericValueExpression(el.Numeric, qargs, curarg)
+	} else if el.String != nil {
+		b.doStringValueExpression(el.String, qargs, curarg)
+	} else if el.Datetime != nil {
+		b.doDatetimeValueExpression(el.Datetime, qargs, curarg)
+	} else if el.Interval != nil {
+		b.doIntervalValueExpression(el.Interval, qargs, curarg)
 	}
 }

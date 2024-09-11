@@ -13,10 +13,10 @@ func (b *Builder) doStringValueFunction(
 	qargs []interface{},
 	curarg *int,
 ) {
-	if el.CharacterValueFunction != nil {
-		b.doCharacterValueFunction(el.CharacterValueFunction, qargs, curarg)
-	} else if el.BlobValueFunction != nil {
-		b.doBlobValueFunction(el.BlobValueFunction, qargs, curarg)
+	if el.Character != nil {
+		b.doCharacterValueFunction(el.Character, qargs, curarg)
+	} else if el.Blob != nil {
+		b.doBlobValueFunction(el.Blob, qargs, curarg)
 	}
 }
 
@@ -25,6 +25,9 @@ func (b *Builder) doCharacterValueFunction(
 	qargs []interface{},
 	curarg *int,
 ) {
+	if el.Substring != nil {
+		b.doSubstringFunction(el.Substring, qargs, curarg)
+	}
 }
 
 func (b *Builder) doBlobValueFunction(
@@ -32,4 +35,27 @@ func (b *Builder) doBlobValueFunction(
 	qargs []interface{},
 	curarg *int,
 ) {
+}
+
+func (b *Builder) doSubstringFunction(
+	el *grammar.SubstringFunction,
+	qargs []interface{},
+	curarg *int,
+) {
+	b.Write(grammar.Symbols[grammar.SYM_SUBSTRING])
+	b.doCharacterValueExpression(&el.Subject, qargs, curarg)
+	b.WriteRune(' ')
+	b.Write(grammar.Symbols[grammar.SYM_FROM])
+	b.doNumericValueExpression(&el.From, qargs, curarg)
+	if el.For != nil {
+		b.WriteRune(' ')
+		b.Write(grammar.Symbols[grammar.SYM_FOR])
+		b.doNumericValueExpression(el.For, qargs, curarg)
+	}
+	if el.Using != grammar.CharacterLengthUnitsCharacters {
+		b.WriteRune(' ')
+		b.Write(grammar.Symbols[grammar.SYM_USING])
+		b.WriteString(grammar.CharacterLengthUnitsSymbol[el.Using])
+	}
+	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
 }

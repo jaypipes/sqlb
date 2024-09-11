@@ -76,23 +76,28 @@ package grammar
 // <string length>    ::=   <numeric value expression>
 
 type StringValueFunction struct {
-	CharacterValueFunction *CharacterValueFunction
-	BlobValueFunction      *BlobValueFunction
+	Character *CharacterValueFunction
+	Blob      *BlobValueFunction
 }
 
 type CharacterValueFunction struct {
-	Substring *SubstringFunction
-	//RegexSubstring *RegexSubstringFunction
-	Fold        *FoldFunction
-	Transcoding *TranscodingFunction
-	//Transliteration *TransliterationFunction
-	Trim *TrimFunction
-	//Overlay *OverlayFunction
-	//Normalize *NormalizeFunction
-	//SpecificType *SpecificTypeFunction
+	Substring       *SubstringFunction
+	RegexSubstring  *RegexSubstringFunction
+	Fold            *FoldFunction
+	Transcoding     *TranscodingFunction
+	Transliteration *TransliterationFunction
+	Trim            *TrimFunction
+	Overlay         *OverlayFunction
+	Normalize       *NormalizeFunction
+	SpecificType    *SpecificTypeFunction
 }
 
-type SubstringFunction struct{}
+type SubstringFunction struct {
+	Subject CharacterValueExpression
+	From    NumericValueExpression
+	For     *NumericValueExpression
+	Using   CharacterLengthUnits
+}
 
 type RegexSubstringFunction struct{}
 

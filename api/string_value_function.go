@@ -6,6 +6,94 @@
 
 package api
 
+import (
+	"fmt"
+
+	"github.com/jaypipes/sqlb/grammar"
+)
+
+// Substring returns a SubstringFunction that produces a SUBSTRING() SQL
+// function that can be passed to sqlb constructs and functions like Select()
+//
+// The first argument is the subject of the SUBSTRING function and must be
+// coercible to a character value expression. The second argument is the FROM
+// portion of the SUBSTRING function, which is the index in the subject from
+// which to return a substring. The second argument must be coercible to a
+// numeric value expression.
+func Substring(
+	subjectAny interface{},
+	fromAny interface{},
+) *SubstringFunction {
+	var ref interface{}
+	switch valAny := subjectAny.(type) {
+	case *Column:
+		ref = valAny.t
+	}
+	subject := CharacterValueExpressionFromAny(subjectAny)
+	if subject == nil {
+		msg := fmt.Sprintf(
+			"expected coerceable NumericValueExpression but got %+v(%T)",
+			subjectAny, subjectAny,
+		)
+		panic(msg)
+	}
+	from := NumericValueExpressionFromAny(fromAny)
+	if from == nil {
+		msg := fmt.Sprintf(
+			"expected coerceable NumericValueExpression but got %+v(%T)",
+			fromAny, fromAny,
+		)
+		panic(msg)
+	}
+	return &SubstringFunction{
+		SubstringFunction: &grammar.SubstringFunction{
+			Subject: *subject,
+			From:    *from,
+		},
+		Referred: ref,
+	}
+}
+
+// SubstringFunction wraps the SUBSTRING() SQL function grammar element
+type SubstringFunction struct {
+	*grammar.SubstringFunction
+	// referred is a the Table or DerivedTable that is referred from
+	// the aggregate function
+	Referred interface{}
+	// alias is the aggregate function as an aliased projection
+	// (e.g. COUNT(*) AS counter)
+	alias string
+}
+
+// As aliases the SQL function as the supplied column name
+func (f *SubstringFunction) As(alias string) *SubstringFunction {
+	f.alias = alias
+	return f
+}
+
+// Using modifies the SUBSTRING function with a character length units.
+func (f *SubstringFunction) Using(
+	using grammar.CharacterLengthUnits,
+) *SubstringFunction {
+	f.SubstringFunction.Using = using
+	return f
+}
+
+// For modifies the SUBSTRING function with a string length. The supplied
+// argument must be coercible into a Numeric Value Expression.
+func (f *SubstringFunction) For(valAny interface{}) *SubstringFunction {
+	v := NumericValueExpressionFromAny(valAny)
+	if v == nil {
+		msg := fmt.Sprintf(
+			"expected coerceable NumericValueExpression but got %+v(%T)",
+			valAny, valAny,
+		)
+		panic(msg)
+	}
+	f.SubstringFunction.For = v
+	return f
+}
+
 /*
 // Ascii returns a Projection that contains the ASCII() SQL function
 func Ascii(p api.Projection) api.Projection {

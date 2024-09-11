@@ -91,8 +91,8 @@ func (c *Column) Asc() grammar.SortSpecification {
 	}
 	return grammar.SortSpecification{
 		Key: grammar.ValueExpression{
-			RowValueExpression: &grammar.RowValueExpression{
-				NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+			Row: &grammar.RowValueExpression{
+				Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 					ColumnReference: cr,
 				},
 			},
@@ -117,8 +117,8 @@ func (c *Column) Desc() grammar.SortSpecification {
 	}
 	return grammar.SortSpecification{
 		Key: grammar.ValueExpression{
-			RowValueExpression: &grammar.RowValueExpression{
-				NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+			Row: &grammar.RowValueExpression{
+				Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 					ColumnReference: cr,
 				},
 			},
