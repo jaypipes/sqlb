@@ -19,14 +19,6 @@ package grammar
 //      |     <normalize function>
 //      |     <specific type method>
 //
-// <character substring function>    ::=
-//          SUBSTRING <left paren> <character value expression> FROM <start position>
-//          [ FOR <string length> ] [ USING <char length units> ] <right paren>
-//
-// <regular expression substring function>    ::=
-//          SUBSTRING <left paren> <character value expression>
-//          SIMILAR <character value expression> ESCAPE <escape character> <right paren>
-//
 // <fold>    ::=   { UPPER | LOWER } <left paren> <character value expression> <right paren>
 //
 // <transcoding>    ::=   CONVERT <left paren> <character value expression> USING <transcoding name> <right paren>
@@ -92,6 +84,10 @@ type CharacterValueFunction struct {
 	SpecificType    *SpecificTypeFunction
 }
 
+// <character substring function>    ::=
+//          SUBSTRING <left paren> <character value expression> FROM <start position>
+//          [ FOR <string length> ] [ USING <char length units> ] <right paren>
+
 type SubstringFunction struct {
 	Subject CharacterValueExpression
 	From    NumericValueExpression
@@ -99,7 +95,15 @@ type SubstringFunction struct {
 	Using   CharacterLengthUnits
 }
 
-type RegexSubstringFunction struct{}
+// <regular expression substring function>    ::=
+//          SUBSTRING <left paren> <character value expression>
+//          SIMILAR <character value expression> ESCAPE <escape character> <right paren>
+
+type RegexSubstringFunction struct {
+	Subject CharacterValueExpression
+	Similar CharacterValueExpression
+	Escape  CharacterValueExpression
+}
 
 type FoldFunction struct{}
 

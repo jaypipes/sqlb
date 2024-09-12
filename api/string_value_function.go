@@ -32,7 +32,7 @@ func Substring(
 	subject := CharacterValueExpressionFromAny(subjectAny)
 	if subject == nil {
 		msg := fmt.Sprintf(
-			"expected coerceable NumericValueExpression but got %+v(%T)",
+			"expected coerceable CharacterValueExpression but got %+v(%T)",
 			subjectAny, subjectAny,
 		)
 		panic(msg)
@@ -91,6 +91,83 @@ func (f *SubstringFunction) For(valAny interface{}) *SubstringFunction {
 		panic(msg)
 	}
 	f.SubstringFunction.For = v
+	return f
+}
+
+// RegexSubstring returns a RegexSubstringFunction that produces a SUBSTRING()
+// SQL function of the Regular Expression subtype that can be passed to sqlb
+// constructs and functions like Select()
+//
+// The first argument is the subject of the SUBSTRING function and must be
+// coercible to a character value expression. The second argument is the
+// SIMILAR portion of the SUBSTRING function, which is the regular expression
+// pattern to evaluate against the subject. The second argument must be
+// coercible to a character value expression. The third argument is the ESCAPE
+// portion of the SUBSTRING function, which is the characters that should be
+// used as an escape sequence for the regular expression. The third argument
+// must be coercible to a character value expression.
+func RegexSubstring(
+	subjectAny interface{},
+	similarAny interface{},
+	escapeAny interface{},
+) *RegexSubstringFunction {
+	var ref interface{}
+	switch valAny := subjectAny.(type) {
+	case *Column:
+		ref = valAny.t
+	}
+	subject := CharacterValueExpressionFromAny(subjectAny)
+	if subject == nil {
+		msg := fmt.Sprintf(
+			"expected coerceable CharacterValueExpression for "+
+				"subject argument but got %+v(%T)",
+			subjectAny, subjectAny,
+		)
+		panic(msg)
+	}
+	similar := CharacterValueExpressionFromAny(similarAny)
+	if similar == nil {
+		msg := fmt.Sprintf(
+			"expected coerceable CharacterValueExpression for "+
+				"similar argument but got %+v(%T)",
+			similarAny, similarAny,
+		)
+		panic(msg)
+	}
+	escape := CharacterValueExpressionFromAny(escapeAny)
+	if escape == nil {
+		msg := fmt.Sprintf(
+			"expected coerceable CharacterValueExpression for "+
+				"escape argument but got %+v(%T)",
+			escapeAny, escapeAny,
+		)
+		panic(msg)
+	}
+	return &RegexSubstringFunction{
+		RegexSubstringFunction: &grammar.RegexSubstringFunction{
+			Subject: *subject,
+			Similar: *similar,
+			Escape:  *escape,
+		},
+		Referred: ref,
+	}
+}
+
+// RegexSubstringFunction wraps the SUBSTRING() SQL function with a regular
+// expression matching variant grammar element
+type RegexSubstringFunction struct {
+	*grammar.RegexSubstringFunction
+	// referred is a the Table or DerivedTable that is referred from
+	// the aggregate function
+	Referred interface{}
+	// alias is the aggregate function as an aliased projection
+	// (e.g. COUNT(*) AS counter)
+	alias string
+}
+
+// As aliases the SQL function as the supplied column name
+func (f *RegexSubstringFunction) As(alias string) *RegexSubstringFunction {
+	f.alias = alias
 	return f
 }
 

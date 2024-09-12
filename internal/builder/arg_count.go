@@ -171,6 +171,11 @@ func ArgCount(target interface{}, count *int) {
 			if ss.For != nil {
 				ArgCount(ss.For, count)
 			}
+		} else if el.RegexSubstring != nil {
+			ss := el.RegexSubstring
+			ArgCount(&ss.Subject, count)
+			ArgCount(&ss.Similar, count)
+			ArgCount(&ss.Escape, count)
 		}
 	case *grammar.QueryExpression:
 		ArgCount(&el.Body, count)
