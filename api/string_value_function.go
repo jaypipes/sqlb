@@ -60,8 +60,8 @@ type SubstringFunction struct {
 	// referred is a the Table or DerivedTable that is referred from
 	// the aggregate function
 	Referred interface{}
-	// alias is the aggregate function as an aliased projection
-	// (e.g. COUNT(*) AS counter)
+	// alias is the function as an aliased projection (e.g. SUSTRING(col FROM
+	// pos) AS counter)
 	alias string
 }
 
@@ -160,13 +160,83 @@ type RegexSubstringFunction struct {
 	// referred is a the Table or DerivedTable that is referred from
 	// the aggregate function
 	Referred interface{}
-	// alias is the aggregate function as an aliased projection
-	// (e.g. COUNT(*) AS counter)
+	// alias is the function as an aliased projection (e.g. SUSTRING(col
+	// SIMILAR pattern ESCAPE char) AS counter)
 	alias string
 }
 
 // As aliases the SQL function as the supplied column name
 func (f *RegexSubstringFunction) As(alias string) *RegexSubstringFunction {
+	f.alias = alias
+	return f
+}
+
+// Upper returns a FoldFunction that produces an UPPER() SQL function that can
+// be passed to sqlb constructs and functions like Select()
+//
+// The only argument is the subject of the UPPER function and must be coercible
+// to a character value expression.
+func Upper(
+	subjectAny interface{},
+) *FoldFunction {
+	return Fold(subjectAny, grammar.FoldCaseUpper)
+}
+
+// Lower returns a FoldFunction that produces a LOWER() SQL function that can
+// be passed to sqlb constructs and functions like Select()
+//
+// The only argument is the subject of the LOWER function and must be coercible
+// to a character value expression.
+func Lower(
+	subjectAny interface{},
+) *FoldFunction {
+	return Fold(subjectAny, grammar.FoldCaseLower)
+}
+
+// Fold returns a FoldFunction that produces an UPPER() or LOWER() SQL function
+// that can be passed to sqlb constructs and functions like Select()
+//
+// The first argument is the subject of the UPPER or LOWER function and must be
+// coercible to a character value expression.
+func Fold(
+	subjectAny interface{},
+	foldCase grammar.FoldCase,
+) *FoldFunction {
+	var ref interface{}
+	switch valAny := subjectAny.(type) {
+	case *Column:
+		ref = valAny.t
+	}
+	subject := CharacterValueExpressionFromAny(subjectAny)
+	if subject == nil {
+		msg := fmt.Sprintf(
+			"expected coerceable CharacterValueExpression but got %+v(%T)",
+			subjectAny, subjectAny,
+		)
+		panic(msg)
+	}
+	return &FoldFunction{
+		FoldFunction: &grammar.FoldFunction{
+			Case:    foldCase,
+			Subject: *subject,
+		},
+		Referred: ref,
+	}
+}
+
+// FoldFunction wraps the UPPER() or LOWER() SQL function grammar element
+type FoldFunction struct {
+	*grammar.FoldFunction
+	// referred is a the Table or DerivedTable that is referred from
+	// the aggregate function
+	Referred interface{}
+	// alias is the function as an aliased projection (e.g. UPPER(col) AS
+	// counter)
+	alias string
+}
+
+// As aliases the SQL function as the supplied column name
+func (f *FoldFunction) As(alias string) *FoldFunction {
 	f.alias = alias
 	return f
 }

@@ -19,8 +19,6 @@ package grammar
 //      |     <normalize function>
 //      |     <specific type method>
 //
-// <fold>    ::=   { UPPER | LOWER } <left paren> <character value expression> <right paren>
-//
 // <transcoding>    ::=   CONVERT <left paren> <character value expression> USING <transcoding name> <right paren>
 //
 // <character transliteration>    ::=   TRANSLATE <left paren> <character value expression> USING <transliteration name> <right paren>
@@ -105,7 +103,24 @@ type RegexSubstringFunction struct {
 	Escape  CharacterValueExpression
 }
 
-type FoldFunction struct{}
+// <fold>    ::=   { UPPER | LOWER } <left paren> <character value expression> <right paren>
+
+type FoldCase int
+
+const (
+	FoldCaseUpper FoldCase = iota
+	FoldCaseLower
+)
+
+var FoldCaseSymbols = map[FoldCase]string{
+	FoldCaseUpper: "UPPER",
+	FoldCaseLower: "LOWER",
+}
+
+type FoldFunction struct {
+	Case    FoldCase
+	Subject CharacterValueExpression
+}
 
 type TranscodingFunction struct{}
 
