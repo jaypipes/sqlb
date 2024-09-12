@@ -344,45 +344,8 @@ func Select(
 				dc.As = &item.alias
 			}
 			sels = append(sels, grammar.SelectSublist{DerivedColumn: &dc})
-			//cols = append(cols, item)
 			if item.Referred != nil {
-				tname := ""
-				tp := &grammar.TablePrimary{}
-				t, ok := item.Referred.(*Table)
-				if ok {
-					tname = t.Name()
-					tp.TableName = &tname
-					if t.alias != "" {
-						tp.Correlation = &grammar.Correlation{
-							Name: t.Alias(),
-						}
-					}
-				} else {
-					// The column is from a derived table
-					dt := item.Referred.(*DerivedTable)
-					tname = dt.Name()
-					tp.DerivedTable = &grammar.DerivedTable{
-						Subquery: grammar.Subquery{
-							QueryExpression: grammar.QueryExpression{
-								Body: grammar.QueryExpressionBody{
-									NonJoinQueryExpression: &grammar.NonJoinQueryExpression{
-										NonJoinQueryTerm: &grammar.NonJoinQueryTerm{
-											Primary: &grammar.NonJoinQueryPrimary{
-												SimpleTable: &grammar.SimpleTable{
-													QuerySpecification: dt.Query(),
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					}
-					// Derived tables are always named/aliased
-					tp.Correlation = &grammar.Correlation{
-						Name: dt.Name(),
-					}
-				}
+				tname, tp := NameAndTablePrimaryFromReferred(item.Referred)
 				tr := grammar.TableReference{Primary: tp}
 				trefByName[tname] = tr
 			}
@@ -414,43 +377,7 @@ func Select(
 			}
 			sels = append(sels, grammar.SelectSublist{DerivedColumn: &dc})
 			if item.Referred != nil {
-				tname := ""
-				tp := &grammar.TablePrimary{}
-				t, ok := item.Referred.(*Table)
-				if ok {
-					tname = t.Name()
-					tp.TableName = &tname
-					if t.alias != "" {
-						tp.Correlation = &grammar.Correlation{
-							Name: t.Alias(),
-						}
-					}
-				} else {
-					// The column is from a derived table
-					dt := item.Referred.(*DerivedTable)
-					tname = dt.Name()
-					tp.DerivedTable = &grammar.DerivedTable{
-						Subquery: grammar.Subquery{
-							QueryExpression: grammar.QueryExpression{
-								Body: grammar.QueryExpressionBody{
-									NonJoinQueryExpression: &grammar.NonJoinQueryExpression{
-										NonJoinQueryTerm: &grammar.NonJoinQueryTerm{
-											Primary: &grammar.NonJoinQueryPrimary{
-												SimpleTable: &grammar.SimpleTable{
-													QuerySpecification: dt.Query(),
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					}
-					// Derived tables are always named/aliased
-					tp.Correlation = &grammar.Correlation{
-						Name: dt.Name(),
-					}
-				}
+				tname, tp := NameAndTablePrimaryFromReferred(item.Referred)
 				tr := grammar.TableReference{Primary: tp}
 				trefByName[tname] = tr
 			}
@@ -482,43 +409,7 @@ func Select(
 			}
 			sels = append(sels, grammar.SelectSublist{DerivedColumn: &dc})
 			if item.Referred != nil {
-				tname := ""
-				tp := &grammar.TablePrimary{}
-				t, ok := item.Referred.(*Table)
-				if ok {
-					tname = t.Name()
-					tp.TableName = &tname
-					if t.alias != "" {
-						tp.Correlation = &grammar.Correlation{
-							Name: t.Alias(),
-						}
-					}
-				} else {
-					// The column is from a derived table
-					dt := item.Referred.(*DerivedTable)
-					tname = dt.Name()
-					tp.DerivedTable = &grammar.DerivedTable{
-						Subquery: grammar.Subquery{
-							QueryExpression: grammar.QueryExpression{
-								Body: grammar.QueryExpressionBody{
-									NonJoinQueryExpression: &grammar.NonJoinQueryExpression{
-										NonJoinQueryTerm: &grammar.NonJoinQueryTerm{
-											Primary: &grammar.NonJoinQueryPrimary{
-												SimpleTable: &grammar.SimpleTable{
-													QuerySpecification: dt.Query(),
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					}
-					// Derived tables are always named/aliased
-					tp.Correlation = &grammar.Correlation{
-						Name: dt.Name(),
-					}
-				}
+				tname, tp := NameAndTablePrimaryFromReferred(item.Referred)
 				tr := grammar.TableReference{Primary: tp}
 				trefByName[tname] = tr
 			}
@@ -550,43 +441,7 @@ func Select(
 			}
 			sels = append(sels, grammar.SelectSublist{DerivedColumn: &dc})
 			if item.Referred != nil {
-				tname := ""
-				tp := &grammar.TablePrimary{}
-				t, ok := item.Referred.(*Table)
-				if ok {
-					tname = t.Name()
-					tp.TableName = &tname
-					if t.alias != "" {
-						tp.Correlation = &grammar.Correlation{
-							Name: t.Alias(),
-						}
-					}
-				} else {
-					// The column is from a derived table
-					dt := item.Referred.(*DerivedTable)
-					tname = dt.Name()
-					tp.DerivedTable = &grammar.DerivedTable{
-						Subquery: grammar.Subquery{
-							QueryExpression: grammar.QueryExpression{
-								Body: grammar.QueryExpressionBody{
-									NonJoinQueryExpression: &grammar.NonJoinQueryExpression{
-										NonJoinQueryTerm: &grammar.NonJoinQueryTerm{
-											Primary: &grammar.NonJoinQueryPrimary{
-												SimpleTable: &grammar.SimpleTable{
-													QuerySpecification: dt.Query(),
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					}
-					// Derived tables are always named/aliased
-					tp.Correlation = &grammar.Correlation{
-						Name: dt.Name(),
-					}
-				}
+				tname, tp := NameAndTablePrimaryFromReferred(item.Referred)
 				tr := grammar.TableReference{Primary: tp}
 				trefByName[tname] = tr
 			}
