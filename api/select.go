@@ -329,21 +329,10 @@ func Select(
 			if item == nil {
 				panic("specified a non-existent aggregate function")
 			}
-			dc := grammar.DerivedColumn{
-				ValueExpression: grammar.ValueExpression{
-					Row: &grammar.RowValueExpression{
-						Primary: &grammar.NonParenthesizedValueExpressionPrimary{
-							SetFunction: &grammar.SetFunctionSpecification{
-								Aggregate: item.AggregateFunction,
-							},
-						},
-					},
-				},
-			}
-			if item.alias != "" {
-				dc.As = &item.alias
-			}
-			sels = append(sels, grammar.SelectSublist{DerivedColumn: &dc})
+			dc := DerivedColumnFromAnyAndAlias(
+				item, item.alias,
+			)
+			sels = append(sels, grammar.SelectSublist{DerivedColumn: dc})
 			if item.Referred != nil {
 				tname, tp := NameAndTablePrimaryFromReferred(item.Referred)
 				tr := grammar.TableReference{Primary: tp}
@@ -353,29 +342,10 @@ func Select(
 			if item == nil {
 				panic("specified a non-existent substring function")
 			}
-			dc := grammar.DerivedColumn{
-				ValueExpression: grammar.ValueExpression{
-					Common: &grammar.CommonValueExpression{
-						String: &grammar.StringValueExpression{
-							Character: &grammar.CharacterValueExpression{
-								Factor: &grammar.CharacterFactor{
-									Primary: grammar.CharacterPrimary{
-										Function: &grammar.StringValueFunction{
-											Character: &grammar.CharacterValueFunction{
-												Substring: item.SubstringFunction,
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			}
-			if item.alias != "" {
-				dc.As = &item.alias
-			}
-			sels = append(sels, grammar.SelectSublist{DerivedColumn: &dc})
+			dc := DerivedColumnFromAnyAndAlias(
+				item, item.alias,
+			)
+			sels = append(sels, grammar.SelectSublist{DerivedColumn: dc})
 			if item.Referred != nil {
 				tname, tp := NameAndTablePrimaryFromReferred(item.Referred)
 				tr := grammar.TableReference{Primary: tp}
@@ -385,29 +355,10 @@ func Select(
 			if item == nil {
 				panic("specified a non-existent regex substring function")
 			}
-			dc := grammar.DerivedColumn{
-				ValueExpression: grammar.ValueExpression{
-					Common: &grammar.CommonValueExpression{
-						String: &grammar.StringValueExpression{
-							Character: &grammar.CharacterValueExpression{
-								Factor: &grammar.CharacterFactor{
-									Primary: grammar.CharacterPrimary{
-										Function: &grammar.StringValueFunction{
-											Character: &grammar.CharacterValueFunction{
-												RegexSubstring: item.RegexSubstringFunction,
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			}
-			if item.alias != "" {
-				dc.As = &item.alias
-			}
-			sels = append(sels, grammar.SelectSublist{DerivedColumn: &dc})
+			dc := DerivedColumnFromAnyAndAlias(
+				item, item.alias,
+			)
+			sels = append(sels, grammar.SelectSublist{DerivedColumn: dc})
 			if item.Referred != nil {
 				tname, tp := NameAndTablePrimaryFromReferred(item.Referred)
 				tr := grammar.TableReference{Primary: tp}
@@ -417,29 +368,10 @@ func Select(
 			if item == nil {
 				panic("specified a non-existent fold function")
 			}
-			dc := grammar.DerivedColumn{
-				ValueExpression: grammar.ValueExpression{
-					Common: &grammar.CommonValueExpression{
-						String: &grammar.StringValueExpression{
-							Character: &grammar.CharacterValueExpression{
-								Factor: &grammar.CharacterFactor{
-									Primary: grammar.CharacterPrimary{
-										Function: &grammar.StringValueFunction{
-											Character: &grammar.CharacterValueFunction{
-												Fold: item.FoldFunction,
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			}
-			if item.alias != "" {
-				dc.As = &item.alias
-			}
-			sels = append(sels, grammar.SelectSublist{DerivedColumn: &dc})
+			dc := DerivedColumnFromAnyAndAlias(
+				item, item.alias,
+			)
+			sels = append(sels, grammar.SelectSublist{DerivedColumn: dc})
 			if item.Referred != nil {
 				tname, tp := NameAndTablePrimaryFromReferred(item.Referred)
 				tr := grammar.TableReference{Primary: tp}
