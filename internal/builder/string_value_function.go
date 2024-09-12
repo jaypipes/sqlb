@@ -27,6 +27,8 @@ func (b *Builder) doCharacterValueFunction(
 ) {
 	if el.Substring != nil {
 		b.doSubstringFunction(el.Substring, qargs, curarg)
+	} else if el.RegexSubstring != nil {
+		b.doRegexSubstringFunction(el.RegexSubstring, qargs, curarg)
 	}
 }
 
@@ -57,5 +59,21 @@ func (b *Builder) doSubstringFunction(
 		b.Write(grammar.Symbols[grammar.SYM_USING])
 		b.WriteString(grammar.CharacterLengthUnitsSymbol[el.Using])
 	}
+	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+}
+
+func (b *Builder) doRegexSubstringFunction(
+	el *grammar.RegexSubstringFunction,
+	qargs []interface{},
+	curarg *int,
+) {
+	b.Write(grammar.Symbols[grammar.SYM_SUBSTRING])
+	b.doCharacterValueExpression(&el.Subject, qargs, curarg)
+	b.WriteRune(' ')
+	b.Write(grammar.Symbols[grammar.SYM_SIMILAR])
+	b.doCharacterValueExpression(&el.Similar, qargs, curarg)
+	b.WriteRune(' ')
+	b.Write(grammar.Symbols[grammar.SYM_ESCAPE])
+	b.doCharacterValueExpression(&el.Escape, qargs, curarg)
 	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
 }

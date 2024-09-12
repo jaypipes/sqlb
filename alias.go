@@ -100,26 +100,62 @@ var NoValues = api.NoValues
 var UnknownColumn = api.UnknownColumn
 var TableRequired = api.TableRequired
 
-/*
-// Max returns a Projection that contains the MAX() SQL function
-var Max = function.Max
+// Max returns a AggregateFunction that can be passed to a Select function to
+// create a MAX(<value expression>) SQL function.  The supplied argument should
+// be a ValueExpression or something that can be converted into a
+// ValueExpression.
+var Max = api.Max
 
-// Min returns a Projection that contains the MIN() SQL function
-var Min = function.Min
+// Min returns a AggregateFunction that can be passed to a Select function to
+// create a MIN(<value expression>) SQL function.  The supplied argument should
+// be a ValueExpression or something that can be converted into a
+// ValueExpression.
+var Min = api.Min
 
-// Sum returns a Projection that contains the SUM() SQL function
-var Sum = function.Sum
+// Sum returns a AggregateFunction that can be passed to a Select function to
+// create a SUM(<value expression>) SQL function.  The supplied argument should
+// be a ValueExpression or something that can be converted into a
+// ValueExpression.
+var Sum = api.Sum
 
-// Avg returns a Projection that contains the AVG() SQL function
-var Avg = function.Avg
+// Avg returns a AggregateFunction that can be passed to a Select function to
+// create a AVG(<value expression>) SQL function.  The supplied argument should
+// be a ValueExpression or something that can be converted into a
+// ValueExpression.
+var Avg = api.Avg
 
-// Count returns a Projection that contains the COUNT() SQL function
+// Count returns a AggregateFunction that can be passed to a Select function.
+// It accepts zero or one parameter. If no parameters are passed, the
+// AggregateFunction returned represents a COUNT(*) SQL function. If a
+// parameter is passed, it should be a ValueExpression or something that can be
+// converted into a ValueExpression.
 var Count = api.Count
 
-// CountDistint returns a Projection that contains the COUNT(x DISTINCT) SQL
-// function
-var CountDistinct = function.CountDistinct
+// Substring returns a SubstringFunction that produces a SUBSTRING() SQL
+// function that can be passed to sqlb constructs and functions like Select()
+//
+// The first argument is the subject of the SUBSTRING function and must be
+// coercible to a character value expression. The second argument is the FROM
+// portion of the SUBSTRING function, which is the index in the subject from
+// which to return a substring. The second argument must be coercible to a
+// numeric value expression.
+var Substring = api.Substring
 
+// RegexSubstring returns a RegexSubstringFunction that produces a SUBSTRING()
+// SQL function of the Regular Expression subtype that can be passed to sqlb
+// constructs and functions like Select()
+//
+// The first argument is the subject of the SUBSTRING function and must be
+// coercible to a character value expression. The second argument is the
+// SIMILAR portion of the SUBSTRING function, which is the regular expression
+// pattern to evaluate against the subject. The second argument must be
+// coercible to a character value expression. The third argument is the ESCAPE
+// portion of the SUBSTRING function, which is the characters that should be
+// used as an escape sequence for the regular expression. The third argument
+// must be coercible to a character value expression.
+var RegexSubstring = api.RegexSubstring
+
+/*
 // Cast returns a Projection that contains the CAST() SQL function
 var Cast = function.Cast
 

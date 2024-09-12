@@ -109,6 +109,8 @@ const (
 	SYM_UNIT_YEAR_MONTH
 	SYM_USING
 	SYM_FOR
+	SYM_SIMILAR
+	SYM_ESCAPE
 	SYM_PLACEHOLDER = 9999999999
 )
 
@@ -213,5 +215,7 @@ var (
 		SYM_UNIT_YEAR_MONTH:         []byte("YEAR_MONTH"),
 		SYM_USING:                   []byte("USING "),
 		SYM_FOR:                     []byte("FOR "),
+		SYM_SIMILAR:                 []byte("SIMILAR "),
+		SYM_ESCAPE:                  []byte("ESCAPE "),
 	}
 )

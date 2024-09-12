@@ -135,7 +135,7 @@ func TestStringValueFunctionSubstring(t *testing.T) {
 	assert.Panics(t, func() {
 		_ = api.Substring(struct{}{}, 1)
 	})
-	// First argument must be coercible into a NumericValueExpression
+	// Second argument must be coercible into a NumericValueExpression
 	assert.Panics(t, func() {
 		_ = api.Substring(colUserId, struct{}{})
 	})
@@ -167,6 +167,145 @@ func TestSelectSubstringFunction(t *testing.T) {
 			q:     api.Select(api.Substring(colUserId, 42).As("subber")),
 			qs:    "SELECT SUBSTRING(users.id FROM ?) AS subber FROM users",
 			qargs: []interface{}{42},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			b := builder.New()
+
+			qs, qargs := b.StringArgs(tt.q.Query())
+			assert.Equal(len(tt.qargs), len(qargs))
+			assert.Equal(tt.qs, qs)
+		})
+	}
+}
+
+func TestStringValueFunctionRegexSubstring(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+
+	tests := []struct {
+		name    string
+		subject interface{}
+		similar interface{}
+		escape  interface{}
+		exp     *api.RegexSubstringFunction
+	}{
+		{
+			name:    "column and two string literals",
+			subject: colUserId,
+			similar: "$[a-z]",
+			escape:  "/",
+			exp: &api.RegexSubstringFunction{
+				RegexSubstringFunction: &grammar.RegexSubstringFunction{
+					Subject: grammar.CharacterValueExpression{
+						Factor: &grammar.CharacterFactor{
+							Primary: grammar.CharacterPrimary{
+								Primary: &grammar.ValueExpressionPrimary{
+									Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+										ColumnReference: &grammar.ColumnReference{
+											BasicIdentifierChain: &grammar.IdentifierChain{
+												Identifiers: []string{
+													"users",
+													"id",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					Similar: grammar.CharacterValueExpression{
+						Factor: &grammar.CharacterFactor{
+							Primary: grammar.CharacterPrimary{
+								Primary: &grammar.ValueExpressionPrimary{
+									Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+										UnsignedValue: &grammar.UnsignedValueSpecification{
+											UnsignedLiteral: &grammar.UnsignedLiteral{
+												GeneralLiteral: &grammar.GeneralLiteral{
+													Value: "$[a-z]",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					Escape: grammar.CharacterValueExpression{
+						Factor: &grammar.CharacterFactor{
+							Primary: grammar.CharacterPrimary{
+								Primary: &grammar.ValueExpressionPrimary{
+									Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+										UnsignedValue: &grammar.UnsignedValueSpecification{
+											UnsignedLiteral: &grammar.UnsignedLiteral{
+												GeneralLiteral: &grammar.GeneralLiteral{
+													Value: "/",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				Referred: users,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+			got := api.RegexSubstring(tt.subject, tt.similar, tt.escape)
+			assert.Equal(tt.exp, got)
+		})
+	}
+
+	// First argument must be coercible into a CharacterValueExpression
+	assert.Panics(t, func() {
+		_ = api.RegexSubstring(struct{}{}, "2", "3")
+	})
+	// Second argument must be coercible into a CharacerValueExpression
+	assert.Panics(t, func() {
+		_ = api.RegexSubstring(colUserId, struct{}{}, "3")
+	})
+	// Third argument must be coercible into a CharacerValueExpression
+	assert.Panics(t, func() {
+		_ = api.RegexSubstring(colUserId, "2", struct{}{})
+	})
+	assert.Panics(t, func() {
+		// A Table is not coercible into a CharacterValueExpression
+		_ = api.RegexSubstring(users, "1", "2")
+	})
+}
+
+func TestSelectRegexSubstringFunction(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+
+	tests := []struct {
+		name  string
+		q     *api.Selection
+		qs    string
+		qargs []interface{}
+	}{
+		{
+			name:  "substring column with string literals",
+			q:     api.Select(api.RegexSubstring(colUserId, "$[a-z]", "/")),
+			qs:    "SELECT SUBSTRING(users.id SIMILAR ? ESCAPE ?) FROM users",
+			qargs: []interface{}{"$[a-z]", "/"},
+		},
+		{
+			name:  "substring column with string literals using alias",
+			q:     api.Select(api.RegexSubstring(colUserId, "$[a-z]", "/").As("subber")),
+			qs:    "SELECT SUBSTRING(users.id SIMILAR ? ESCAPE ?) AS subber FROM users",
+			qargs: []interface{}{"$[a-z]", "/"},
 		},
 	}
 	for _, tt := range tests {
