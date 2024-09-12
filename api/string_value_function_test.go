@@ -320,3 +320,126 @@ func TestSelectRegexSubstringFunction(t *testing.T) {
 		})
 	}
 }
+
+func TestStringValueFunctionFold(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+
+	tests := []struct {
+		name     string
+		subject  interface{}
+		foldCase grammar.FoldCase
+		exp      *api.FoldFunction
+	}{
+		{
+			name:     "UPPER column",
+			subject:  colUserId,
+			foldCase: grammar.FoldCaseUpper,
+			exp: &api.FoldFunction{
+				FoldFunction: &grammar.FoldFunction{
+					Case: grammar.FoldCaseUpper,
+					Subject: grammar.CharacterValueExpression{
+						Factor: &grammar.CharacterFactor{
+							Primary: grammar.CharacterPrimary{
+								Primary: &grammar.ValueExpressionPrimary{
+									Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+										ColumnReference: &grammar.ColumnReference{
+											BasicIdentifierChain: &grammar.IdentifierChain{
+												Identifiers: []string{
+													"users",
+													"id",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				Referred: users,
+			},
+		},
+		{
+			name:     "LOWER column",
+			subject:  colUserId,
+			foldCase: grammar.FoldCaseLower,
+			exp: &api.FoldFunction{
+				FoldFunction: &grammar.FoldFunction{
+					Case: grammar.FoldCaseLower,
+					Subject: grammar.CharacterValueExpression{
+						Factor: &grammar.CharacterFactor{
+							Primary: grammar.CharacterPrimary{
+								Primary: &grammar.ValueExpressionPrimary{
+									Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+										ColumnReference: &grammar.ColumnReference{
+											BasicIdentifierChain: &grammar.IdentifierChain{
+												Identifiers: []string{
+													"users",
+													"id",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				Referred: users,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+			got := api.Fold(tt.subject, tt.foldCase)
+			assert.Equal(tt.exp, got)
+		})
+	}
+
+	// First argument must be coercible into a CharacterValueExpression
+	assert.Panics(t, func() {
+		_ = api.Fold(struct{}{}, grammar.FoldCaseUpper)
+	})
+	assert.Panics(t, func() {
+		// A Table is not coercible into a CharacterValueExpression
+		_ = api.Fold(users, grammar.FoldCaseUpper)
+	})
+}
+
+func TestSelectFoldFunction(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+
+	tests := []struct {
+		name  string
+		q     *api.Selection
+		qs    string
+		qargs []interface{}
+	}{
+		{
+			name: "upper column",
+			q:    api.Select(api.Upper(colUserId)),
+			qs:   "SELECT UPPER(users.id) FROM users",
+		},
+		{
+			name: "lower column with alias",
+			q:    api.Select(api.Lower(colUserId).As("lowered")),
+			qs:   "SELECT LOWER(users.id) AS lowered FROM users",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			b := builder.New()
+
+			qs, qargs := b.StringArgs(tt.q.Query())
+			assert.Equal(len(tt.qargs), len(qargs))
+			assert.Equal(tt.qs, qs)
+		})
+	}
+}

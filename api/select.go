@@ -522,6 +522,74 @@ func Select(
 				tr := grammar.TableReference{Primary: tp}
 				trefByName[tname] = tr
 			}
+		case *FoldFunction:
+			if item == nil {
+				panic("specified a non-existent fold function")
+			}
+			dc := grammar.DerivedColumn{
+				ValueExpression: grammar.ValueExpression{
+					Common: &grammar.CommonValueExpression{
+						String: &grammar.StringValueExpression{
+							Character: &grammar.CharacterValueExpression{
+								Factor: &grammar.CharacterFactor{
+									Primary: grammar.CharacterPrimary{
+										Function: &grammar.StringValueFunction{
+											Character: &grammar.CharacterValueFunction{
+												Fold: item.FoldFunction,
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+			if item.alias != "" {
+				dc.As = &item.alias
+			}
+			sels = append(sels, grammar.SelectSublist{DerivedColumn: &dc})
+			if item.Referred != nil {
+				tname := ""
+				tp := &grammar.TablePrimary{}
+				t, ok := item.Referred.(*Table)
+				if ok {
+					tname = t.Name()
+					tp.TableName = &tname
+					if t.alias != "" {
+						tp.Correlation = &grammar.Correlation{
+							Name: t.Alias(),
+						}
+					}
+				} else {
+					// The column is from a derived table
+					dt := item.Referred.(*DerivedTable)
+					tname = dt.Name()
+					tp.DerivedTable = &grammar.DerivedTable{
+						Subquery: grammar.Subquery{
+							QueryExpression: grammar.QueryExpression{
+								Body: grammar.QueryExpressionBody{
+									NonJoinQueryExpression: &grammar.NonJoinQueryExpression{
+										NonJoinQueryTerm: &grammar.NonJoinQueryTerm{
+											Primary: &grammar.NonJoinQueryPrimary{
+												SimpleTable: &grammar.SimpleTable{
+													QuerySpecification: dt.Query(),
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					}
+					// Derived tables are always named/aliased
+					tp.Correlation = &grammar.Correlation{
+						Name: dt.Name(),
+					}
+				}
+				tr := grammar.TableReference{Primary: tp}
+				trefByName[tname] = tr
+			}
 		default:
 			// Everything else, make it a general literal value projection, so, for
 			// instance, a user can do SELECT 1, which is, technically

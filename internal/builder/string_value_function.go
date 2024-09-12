@@ -29,6 +29,8 @@ func (b *Builder) doCharacterValueFunction(
 		b.doSubstringFunction(el.Substring, qargs, curarg)
 	} else if el.RegexSubstring != nil {
 		b.doRegexSubstringFunction(el.RegexSubstring, qargs, curarg)
+	} else if el.Fold != nil {
+		b.doFoldFunction(el.Fold, qargs, curarg)
 	}
 }
 
@@ -75,5 +77,16 @@ func (b *Builder) doRegexSubstringFunction(
 	b.WriteRune(' ')
 	b.Write(grammar.Symbols[grammar.SYM_ESCAPE])
 	b.doCharacterValueExpression(&el.Escape, qargs, curarg)
+	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+}
+
+func (b *Builder) doFoldFunction(
+	el *grammar.FoldFunction,
+	qargs []interface{},
+	curarg *int,
+) {
+	b.WriteString(grammar.FoldCaseSymbols[el.Case])
+	b.Write(grammar.Symbols[grammar.SYM_LPAREN])
+	b.doCharacterValueExpression(&el.Subject, qargs, curarg)
 	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
 }

@@ -176,6 +176,8 @@ func ArgCount(target interface{}, count *int) {
 			ArgCount(&ss.Subject, count)
 			ArgCount(&ss.Similar, count)
 			ArgCount(&ss.Escape, count)
+		} else if el.Fold != nil {
+			ArgCount(&el.Fold.Subject, count)
 		}
 	case *grammar.QueryExpression:
 		ArgCount(&el.Body, count)

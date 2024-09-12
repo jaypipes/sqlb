@@ -155,6 +155,20 @@ var Substring = api.Substring
 // must be coercible to a character value expression.
 var RegexSubstring = api.RegexSubstring
 
+// Upper returns a FoldFunction that produces an UPPER() SQL function that can
+// be passed to sqlb constructs and functions like Select()
+//
+// The only argument is the subject of the UPPER function and must be coercible
+// to a character value expression.
+var Upper = api.Upper
+
+// Lower returns a FoldFunction that produces a LOWER() SQL function that can
+// be passed to sqlb constructs and functions like Select()
+//
+// The only argument is the subject of the LOWER function and must be coercible
+// to a character value expression.
+var Lower = api.Lower
+
 /*
 // Cast returns a Projection that contains the CAST() SQL function
 var Cast = function.Cast
