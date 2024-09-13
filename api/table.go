@@ -229,7 +229,7 @@ func (t *Table) Count(args ...interface{}) *AggregateFunction {
 			AggregateFunction: &grammar.AggregateFunction{
 				CountStar: &struct{}{},
 			},
-			Referred: t,
+			referred: []interface{}{t},
 		}
 	}
 	arg := args[0]

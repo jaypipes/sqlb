@@ -325,18 +325,19 @@ func Select(
 				tr := grammar.TableReference{Primary: tp}
 				trefByName[tname] = tr
 			}
-		case *AggregateFunction:
+		case Projectable:
 			if item == nil {
-				panic("specified a non-existent aggregate function")
+				panic("specified a non-existent projectable")
 			}
-			dc := DerivedColumnFromAnyAndAlias(
-				item, item.alias,
-			)
+			dc := item.DerivedColumn()
 			sels = append(sels, grammar.SelectSublist{DerivedColumn: dc})
-			if item.Referred != nil {
-				tname, tp := NameAndTablePrimaryFromReferred(item.Referred)
-				tr := grammar.TableReference{Primary: tp}
-				trefByName[tname] = tr
+			refs := item.RefersTo()
+			if len(refs) > 0 {
+				for _, ref := range refs {
+					tname, tp := NameAndTablePrimaryFromReferred(ref)
+					tr := grammar.TableReference{Primary: tp}
+					trefByName[tname] = tr
+				}
 			}
 		case *SubstringFunction:
 			if item == nil {
