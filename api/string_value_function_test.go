@@ -701,3 +701,217 @@ func TestSelectTransliterationFunction(t *testing.T) {
 		})
 	}
 }
+
+func TestStringValueFunctionTrim(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+
+	tests := []struct {
+		name    string
+		subject interface{}
+		chars   interface{}
+		spec    grammar.TrimSpecification
+		exp     *api.TrimFunction
+	}{
+		{
+			name:    "TRIM column with literal chars",
+			subject: colUserId,
+			chars:   "\n",
+			exp: &api.TrimFunction{
+				TrimFunction: &grammar.TrimFunction{
+					Subject: grammar.CharacterValueExpression{
+						Factor: &grammar.CharacterFactor{
+							Primary: grammar.CharacterPrimary{
+								Primary: &grammar.ValueExpressionPrimary{
+									Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+										ColumnReference: &grammar.ColumnReference{
+											BasicIdentifierChain: &grammar.IdentifierChain{
+												Identifiers: []string{
+													"users",
+													"id",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					Character: &grammar.CharacterValueExpression{
+						Factor: &grammar.CharacterFactor{
+							Primary: grammar.CharacterPrimary{
+								Primary: &grammar.ValueExpressionPrimary{
+									Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+										UnsignedValue: &grammar.UnsignedValueSpecification{
+											UnsignedLiteral: &grammar.UnsignedLiteral{
+												GeneralLiteral: &grammar.GeneralLiteral{
+													Value: "\n",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				Referred: users,
+			},
+		},
+		{
+			name:    "TRIM string literal no characters",
+			subject: "foo",
+			exp: &api.TrimFunction{
+				TrimFunction: &grammar.TrimFunction{
+					Subject: grammar.CharacterValueExpression{
+						Factor: &grammar.CharacterFactor{
+							Primary: grammar.CharacterPrimary{
+								Primary: &grammar.ValueExpressionPrimary{
+									Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+										UnsignedValue: &grammar.UnsignedValueSpecification{
+											UnsignedLiteral: &grammar.UnsignedLiteral{
+												GeneralLiteral: &grammar.GeneralLiteral{
+													Value: "foo",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name:    "TRIM string literal with literal chars trailing only",
+			subject: "foo",
+			chars:   "\n",
+			spec:    grammar.TrimSpecificationTrailing,
+			exp: &api.TrimFunction{
+				TrimFunction: &grammar.TrimFunction{
+					Specification: grammar.TrimSpecificationTrailing,
+					Subject: grammar.CharacterValueExpression{
+						Factor: &grammar.CharacterFactor{
+							Primary: grammar.CharacterPrimary{
+								Primary: &grammar.ValueExpressionPrimary{
+									Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+										UnsignedValue: &grammar.UnsignedValueSpecification{
+											UnsignedLiteral: &grammar.UnsignedLiteral{
+												GeneralLiteral: &grammar.GeneralLiteral{
+													Value: "foo",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					Character: &grammar.CharacterValueExpression{
+						Factor: &grammar.CharacterFactor{
+							Primary: grammar.CharacterPrimary{
+								Primary: &grammar.ValueExpressionPrimary{
+									Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+										UnsignedValue: &grammar.UnsignedValueSpecification{
+											UnsignedLiteral: &grammar.UnsignedLiteral{
+												GeneralLiteral: &grammar.GeneralLiteral{
+													Value: "\n",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+			var got *api.TrimFunction
+			if tt.chars != nil {
+				got = api.Trim(tt.subject, tt.chars, tt.spec)
+			} else {
+				got = api.TrimSpace(tt.subject)
+			}
+			assert.Equal(tt.exp, got)
+		})
+	}
+
+	// First argument must be coercible into a CharacterValueExpression
+	assert.Panics(t, func() {
+		_ = api.Convert(struct{}{}, "utf8")
+	})
+	assert.Panics(t, func() {
+		// A Table is not coercible into a CharacterValueExpression
+		_ = api.Convert(users, "utf8")
+	})
+}
+
+func TestSelectTrimFunction(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+
+	tests := []struct {
+		name  string
+		q     *api.Selection
+		qs    string
+		qargs []interface{}
+	}{
+		{
+			name: "trim space column",
+			q:    api.Select(api.TrimSpace(colUserId)),
+			qs:   "SELECT TRIM(users.id) FROM users",
+		},
+		{
+			name: "leading trim space column",
+			q:    api.Select(api.LTrimSpace(colUserId)),
+			qs:   "SELECT TRIM(LEADING users.id) FROM users",
+		},
+		{
+			name: "trailing trim space column",
+			q:    api.Select(api.RTrimSpace(colUserId)),
+			qs:   "SELECT TRIM(TRAILING users.id) FROM users",
+		},
+		{
+			name:  "trim column",
+			q:     api.Select(api.Trim(colUserId, "\n", grammar.TrimSpecificationBoth)),
+			qs:    "SELECT TRIM(? FROM users.id) FROM users",
+			qargs: []interface{}{"\n"},
+		},
+		{
+			name:  "leading trim column",
+			q:     api.Select(api.LTrim(colUserId, "\n")),
+			qs:    "SELECT TRIM(LEADING ? FROM users.id) FROM users",
+			qargs: []interface{}{"\n"},
+		},
+		{
+			name:  "trailing trim column",
+			q:     api.Select(api.RTrim(colUserId, "\n")),
+			qs:    "SELECT TRIM(TRAILING ? FROM users.id) FROM users",
+			qargs: []interface{}{"\n"},
+		},
+		{
+			name: "trim column with alias",
+			q:    api.Select(api.TrimSpace(colUserId).As("trimmed")),
+			qs:   "SELECT TRIM(users.id) AS trimmed FROM users",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			b := builder.New()
+
+			qs, qargs := b.StringArgs(tt.q.Query())
+			assert.Equal(len(tt.qargs), len(qargs))
+			assert.Equal(tt.qs, qs)
+		})
+	}
+}

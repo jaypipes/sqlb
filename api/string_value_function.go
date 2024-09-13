@@ -348,6 +348,144 @@ func (f *TransliterationFunction) As(alias string) *TransliterationFunction {
 	return f
 }
 
+// Trim returns a TrimFunction that produces a TRIM([LEADING|TRAILING] chars
+// FROM col) SQL function that can be passed to sqlb constructs and functions
+// like Select()
+//
+// The first argument is the subject of the TRIM function and must be coercible
+// to a character value expression. The second argument is the character(s) you
+// wish to trim from the subject. The second argument must be coercible to a
+// character value expression. The third argument specifies whether the
+// leading, trailing or both sides of the subject should be trimmed.
+func Trim(
+	subjectAny interface{},
+	charsAny interface{},
+	spec grammar.TrimSpecification,
+) *TrimFunction {
+	var ref interface{}
+	switch valAny := subjectAny.(type) {
+	case *Column:
+		ref = valAny.t
+	}
+	subject := CharacterValueExpressionFromAny(subjectAny)
+	if subject == nil {
+		msg := fmt.Sprintf(
+			"expected coerceable CharacterValueExpression for "+
+				"subject argument but got %+v(%T)",
+			subjectAny, subjectAny,
+		)
+		panic(msg)
+	}
+	chars := CharacterValueExpressionFromAny(charsAny)
+	if chars == nil {
+		msg := fmt.Sprintf(
+			"expected coerceable CharacterValueExpression for "+
+				"chars argument but got %+v(%T)",
+			charsAny, charsAny,
+		)
+		panic(msg)
+	}
+	return &TrimFunction{
+		TrimFunction: &grammar.TrimFunction{
+			Subject:       *subject,
+			Character:     chars,
+			Specification: spec,
+		},
+		Referred: ref,
+	}
+}
+
+// TrimSpace returns a TrimFunction that produces a TRIM(col) SQL
+// function that can be passed to sqlb constructs and functions like Select()
+func TrimSpace(
+	subjectAny interface{},
+) *TrimFunction {
+	return doTrimSpace(subjectAny, grammar.TrimSpecificationBoth)
+}
+
+// LTrimSpace returns a TrimFunction that produces a TRIM(LEADING col) SQL
+// function that can be passed to sqlb constructs and functions like Select()
+func LTrimSpace(
+	subjectAny interface{},
+) *TrimFunction {
+	return doTrimSpace(subjectAny, grammar.TrimSpecificationLeading)
+}
+
+// RTrimSpace returns a TrimFunction that produces a TRIM(TRAILING col) SQL
+// function that can be passed to sqlb constructs and functions like Select()
+func RTrimSpace(
+	subjectAny interface{},
+) *TrimFunction {
+	return doTrimSpace(subjectAny, grammar.TrimSpecificationTrailing)
+}
+
+func doTrimSpace(
+	subjectAny interface{},
+	spec grammar.TrimSpecification,
+) *TrimFunction {
+	var ref interface{}
+	switch valAny := subjectAny.(type) {
+	case *Column:
+		ref = valAny.t
+	}
+	subject := CharacterValueExpressionFromAny(subjectAny)
+	if subject == nil {
+		msg := fmt.Sprintf(
+			"expected coerceable CharacterValueExpression for "+
+				"subject argument but got %+v(%T)",
+			subjectAny, subjectAny,
+		)
+		panic(msg)
+	}
+	return &TrimFunction{
+		TrimFunction: &grammar.TrimFunction{
+			Specification: spec,
+			Subject:       *subject,
+		},
+		Referred: ref,
+	}
+}
+
+// LTrim returns a TrimFunction that produces a TRIM(LEADING char FROM col) SQL
+// function that can be passed to sqlb constructs and functions like Select()
+func LTrim(
+	subjectAny interface{},
+	charsAny interface{},
+) *TrimFunction {
+	return Trim(subjectAny, charsAny, grammar.TrimSpecificationLeading)
+}
+
+var TrimPrefix = LTrim
+
+// RTrim returns a TrimFunction that produces a TRIM(TRAILING char FROM col) SQL
+// function that can be passed to sqlb constructs and functions like Select()
+func RTrim(
+	subjectAny interface{},
+	charsAny interface{},
+) *TrimFunction {
+	return Trim(subjectAny, charsAny, grammar.TrimSpecificationTrailing)
+}
+
+var TrimSuffix = RTrim
+
+// TrimFunction wraps the TRIM() SQL function with a regular
+// expression matching variant grammar element
+type TrimFunction struct {
+	*grammar.TrimFunction
+	// referred is a the Table or DerivedTable that is referred from
+	// the aggregate function
+	Referred interface{}
+	// alias is the function as an aliased projection (e.g. SUSTRING(col
+	// SIMILAR pattern ESCAPE char) AS counter)
+	alias string
+}
+
+// As aliases the SQL function as the supplied column name
+func (f *TrimFunction) As(alias string) *TrimFunction {
+	f.alias = alias
+	return f
+}
+
 /*
 // Ascii returns a Projection that contains the ASCII() SQL function
 func Ascii(p api.Projection) api.Projection {

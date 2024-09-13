@@ -185,6 +185,38 @@ var Convert = api.Convert
 // portion of the TRANSLATE function.
 var Translate = api.Translate
 
+// Trim returns a TrimFunction that produces a TRIM() SQL function that can be
+// passed to sqlb constructs and functions like Select()
+//
+// The first argument is the subject of the TRIM function and must be coercible
+// to a character value expression. The second argument is the character(s) you
+// wish to trim from the subject. The second argument must be coercible to a
+// character value expression. The third argument specifies whether the
+// leading, trailing or both sides of the subject should be trimmed.
+var Trim = api.Trim
+
+// TrimSpace returns a TrimFunction that produces a TRIM(col) SQL
+// function that can be passed to sqlb constructs and functions like Select()
+var TrimSpace = api.TrimSpace
+
+// LTrimSpace returns a TrimFunction that produces a TRIM(LEADING col) SQL
+// function that can be passed to sqlb constructs and functions like Select()
+var LTrimSpace = api.LTrimSpace
+
+// RTrimSpace returns a TrimFunction that produces a TRIM(TRAILING col) SQL
+// function that can be passed to sqlb constructs and functions like Select()
+var RTrimSpace = api.RTrimSpace
+
+// LTrim returns a TrimFunction that produces a TRIM(LEADING char FROM col) SQL
+// function that can be passed to sqlb constructs and functions like Select()
+var LTrim = api.LTrim
+var TrimPrefix = api.TrimPrefix
+
+// RTrim returns a TrimFunction that produces a TRIM(TRAILING char FROM col) SQL
+// function that can be passed to sqlb constructs and functions like Select()
+var RTrim = api.RTrim
+var TrimSuffix = api.RTrim
+
 /*
 // Cast returns a Projection that contains the CAST() SQL function
 var Cast = function.Cast

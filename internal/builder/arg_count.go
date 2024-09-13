@@ -182,6 +182,11 @@ func ArgCount(target interface{}, count *int) {
 			ArgCount(&el.Transcoding.Subject, count)
 		} else if el.Transliteration != nil {
 			ArgCount(&el.Transliteration.Subject, count)
+		} else if el.Trim != nil {
+			ArgCount(&el.Trim.Subject, count)
+			if el.Trim.Character != nil {
+				ArgCount(el.Trim.Character, count)
+			}
 		}
 	case *grammar.QueryExpression:
 		ArgCount(&el.Body, count)
