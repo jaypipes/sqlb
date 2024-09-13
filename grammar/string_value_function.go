@@ -19,16 +19,6 @@ package grammar
 //      |     <normalize function>
 //      |     <specific type method>
 //
-// <trim function>    ::=   TRIM <left paren> <trim operands> <right paren>
-//
-// <trim operands>    ::=   [ [ <trim specification> ] [ <trim character> ] FROM ] <trim source>
-//
-// <trim source>    ::=   <character value expression>
-//
-// <trim specification>    ::=   LEADING | TRAILING | BOTH
-//
-// <trim character>    ::=   <character value expression>
-//
 // <character overlay function>    ::=
 //          OVERLAY <left paren> <character value expression> PLACING <character value expression>
 //          FROM <start position> [ FOR <string length> ] [ USING <char length units> ] <right paren>
@@ -132,7 +122,35 @@ type TransliterationFunction struct {
 	Using   SchemaQualifiedName
 }
 
-type TrimFunction struct{}
+// <trim function>    ::=   TRIM <left paren> <trim operands> <right paren>
+//
+// <trim operands>    ::=   [ [ <trim specification> ] [ <trim character> ] FROM ] <trim source>
+//
+// <trim source>    ::=   <character value expression>
+//
+// <trim specification>    ::=   LEADING | TRAILING | BOTH
+//
+// <trim character>    ::=   <character value expression>
+
+type TrimSpecification int
+
+const (
+	TrimSpecificationBoth TrimSpecification = iota
+	TrimSpecificationLeading
+	TrimSpecificationTrailing
+)
+
+var TrimSpecificationSymbols = map[TrimSpecification]string{
+	TrimSpecificationBoth:     "BOTH",
+	TrimSpecificationLeading:  "LEADING",
+	TrimSpecificationTrailing: "TRAILING",
+}
+
+type TrimFunction struct {
+	Specification TrimSpecification
+	Character     *CharacterValueExpression
+	Subject       CharacterValueExpression
+}
 
 type OverlayFunction struct{}
 

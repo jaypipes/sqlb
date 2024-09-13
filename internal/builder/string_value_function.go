@@ -35,6 +35,8 @@ func (b *Builder) doCharacterValueFunction(
 		b.doTranscodingFunction(el.Transcoding, qargs, curarg)
 	} else if el.Transliteration != nil {
 		b.doTransliterationFunction(el.Transliteration, qargs, curarg)
+	} else if el.Trim != nil {
+		b.doTrimFunction(el.Trim, qargs, curarg)
 	}
 }
 
@@ -118,5 +120,24 @@ func (b *Builder) doTransliterationFunction(
 	b.WriteRune(' ')
 	b.Write(grammar.Symbols[grammar.SYM_USING])
 	b.doSchemaQualifiedName(&el.Using, qargs, curarg)
+	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+}
+
+func (b *Builder) doTrimFunction(
+	el *grammar.TrimFunction,
+	qargs []interface{},
+	curarg *int,
+) {
+	b.Write(grammar.Symbols[grammar.SYM_TRIM])
+	if el.Specification != grammar.TrimSpecificationBoth {
+		b.WriteString(grammar.TrimSpecificationSymbols[el.Specification])
+		b.WriteRune(' ')
+	}
+	if el.Character != nil {
+		b.doCharacterValueExpression(el.Character, qargs, curarg)
+		b.WriteRune(' ')
+		b.Write(grammar.Symbols[grammar.SYM_FROM])
+	}
+	b.doCharacterValueExpression(&el.Subject, qargs, curarg)
 	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
 }
