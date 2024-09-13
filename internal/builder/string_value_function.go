@@ -33,6 +33,8 @@ func (b *Builder) doCharacterValueFunction(
 		b.doFoldFunction(el.Fold, qargs, curarg)
 	} else if el.Transcoding != nil {
 		b.doTranscodingFunction(el.Transcoding, qargs, curarg)
+	} else if el.Transliteration != nil {
+		b.doTransliterationFunction(el.Transliteration, qargs, curarg)
 	}
 }
 
@@ -99,6 +101,19 @@ func (b *Builder) doTranscodingFunction(
 	curarg *int,
 ) {
 	b.Write(grammar.Symbols[grammar.SYM_CONVERT])
+	b.doCharacterValueExpression(&el.Subject, qargs, curarg)
+	b.WriteRune(' ')
+	b.Write(grammar.Symbols[grammar.SYM_USING])
+	b.doSchemaQualifiedName(&el.Using, qargs, curarg)
+	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+}
+
+func (b *Builder) doTransliterationFunction(
+	el *grammar.TransliterationFunction,
+	qargs []interface{},
+	curarg *int,
+) {
+	b.Write(grammar.Symbols[grammar.SYM_TRANSLATE])
 	b.doCharacterValueExpression(&el.Subject, qargs, curarg)
 	b.WriteRune(' ')
 	b.Write(grammar.Symbols[grammar.SYM_USING])

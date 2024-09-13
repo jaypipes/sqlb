@@ -19,8 +19,6 @@ package grammar
 //      |     <normalize function>
 //      |     <specific type method>
 //
-// <character transliteration>    ::=   TRANSLATE <left paren> <character value expression> USING <transliteration name> <right paren>
-//
 // <trim function>    ::=   TRIM <left paren> <trim operands> <right paren>
 //
 // <trim operands>    ::=   [ [ <trim specification> ] [ <trim character> ] FROM ] <trim source>
@@ -127,7 +125,12 @@ type TranscodingFunction struct {
 	Using   SchemaQualifiedName
 }
 
-type TransliterationFunction struct{}
+// <character transliteration>    ::=   TRANSLATE <left paren> <character value expression> USING <transliteration name> <right paren>
+
+type TransliterationFunction struct {
+	Subject CharacterValueExpression
+	Using   SchemaQualifiedName
+}
 
 type TrimFunction struct{}
 

@@ -295,6 +295,59 @@ func (f *TranscodingFunction) As(alias string) *TranscodingFunction {
 	return f
 }
 
+// Translate returns a TransliterationFunction that produces a TRANSLATE() SQL
+// function that can be passed to sqlb constructs and functions like Select()
+//
+// The first argument is the subject of the TRANSLATE function and must be
+// coercible to a character value expression. The second argument is the USING
+// portion of the TRANSLATE function.
+func Translate(
+	subjectAny interface{},
+	using string,
+) *TransliterationFunction {
+	var ref interface{}
+	switch valAny := subjectAny.(type) {
+	case *Column:
+		ref = valAny.t
+	}
+	subject := CharacterValueExpressionFromAny(subjectAny)
+	if subject == nil {
+		msg := fmt.Sprintf(
+			"expected coerceable CharacterValueExpression but got %+v(%T)",
+			subjectAny, subjectAny,
+		)
+		panic(msg)
+	}
+	return &TransliterationFunction{
+		TransliterationFunction: &grammar.TransliterationFunction{
+			Subject: *subject,
+			Using: grammar.SchemaQualifiedName{
+				Identifiers: grammar.IdentifierChain{
+					Identifiers: strings.Split(using, "."),
+				},
+			},
+		},
+		Referred: ref,
+	}
+}
+
+// TransliterationFunction wraps the TRANSLATE() SQL function grammar element
+type TransliterationFunction struct {
+	*grammar.TransliterationFunction
+	// referred is a the Table or DerivedTable that is referred from
+	// the aggregate function
+	Referred interface{}
+	// alias is the function as an aliased projection (e.g. TRANSLATE(col USING
+	// charset) AS counter)
+	alias string
+}
+
+// As aliases the SQL function as the supplied column name
+func (f *TransliterationFunction) As(alias string) *TransliterationFunction {
+	f.alias = alias
+	return f
+}
+
 /*
 // Ascii returns a Projection that contains the ASCII() SQL function
 func Ascii(p api.Projection) api.Projection {

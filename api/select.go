@@ -390,6 +390,19 @@ func Select(
 				tr := grammar.TableReference{Primary: tp}
 				trefByName[tname] = tr
 			}
+		case *TransliterationFunction:
+			if item == nil {
+				panic("specified a non-existent tranliteration function")
+			}
+			dc := DerivedColumnFromAnyAndAlias(
+				item, item.alias,
+			)
+			sels = append(sels, grammar.SelectSublist{DerivedColumn: dc})
+			if item.Referred != nil {
+				tname, tp := NameAndTablePrimaryFromReferred(item.Referred)
+				tr := grammar.TableReference{Primary: tp}
+				trefByName[tname] = tr
+			}
 		default:
 			// Everything else, make it a general literal value projection, so, for
 			// instance, a user can do SELECT 1, which is, technically
