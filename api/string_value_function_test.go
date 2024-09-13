@@ -443,3 +443,261 @@ func TestSelectFoldFunction(t *testing.T) {
 		})
 	}
 }
+
+func TestStringValueFunctionTranscoding(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+
+	tests := []struct {
+		name            string
+		subject         interface{}
+		transcodingName string
+		exp             *api.TranscodingFunction
+	}{
+		{
+			name:            "CONVERT column",
+			subject:         colUserId,
+			transcodingName: "utf8",
+			exp: &api.TranscodingFunction{
+				TranscodingFunction: &grammar.TranscodingFunction{
+					Subject: grammar.CharacterValueExpression{
+						Factor: &grammar.CharacterFactor{
+							Primary: grammar.CharacterPrimary{
+								Primary: &grammar.ValueExpressionPrimary{
+									Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+										ColumnReference: &grammar.ColumnReference{
+											BasicIdentifierChain: &grammar.IdentifierChain{
+												Identifiers: []string{
+													"users",
+													"id",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					Using: grammar.SchemaQualifiedName{
+						Identifiers: grammar.IdentifierChain{
+							Identifiers: []string{"utf8"},
+						},
+					},
+				},
+				Referred: users,
+			},
+		},
+		{
+			name:            "CONVERT string literal",
+			subject:         "foo",
+			transcodingName: "utf8",
+			exp: &api.TranscodingFunction{
+				TranscodingFunction: &grammar.TranscodingFunction{
+					Subject: grammar.CharacterValueExpression{
+						Factor: &grammar.CharacterFactor{
+							Primary: grammar.CharacterPrimary{
+								Primary: &grammar.ValueExpressionPrimary{
+									Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+										UnsignedValue: &grammar.UnsignedValueSpecification{
+											UnsignedLiteral: &grammar.UnsignedLiteral{
+												GeneralLiteral: &grammar.GeneralLiteral{
+													Value: "foo",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					Using: grammar.SchemaQualifiedName{
+						Identifiers: grammar.IdentifierChain{
+							Identifiers: []string{"utf8"},
+						},
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+			got := api.Convert(tt.subject, tt.transcodingName)
+			assert.Equal(tt.exp, got)
+		})
+	}
+
+	// First argument must be coercible into a CharacterValueExpression
+	assert.Panics(t, func() {
+		_ = api.Convert(struct{}{}, "utf8")
+	})
+	assert.Panics(t, func() {
+		// A Table is not coercible into a CharacterValueExpression
+		_ = api.Convert(users, "utf8")
+	})
+}
+
+func TestSelectTranscodingFunction(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+
+	tests := []struct {
+		name  string
+		q     *api.Selection
+		qs    string
+		qargs []interface{}
+	}{
+		{
+			name: "convert column",
+			q:    api.Select(api.Convert(colUserId, "utf8")),
+			qs:   "SELECT CONVERT(users.id USING utf8) FROM users",
+		},
+		{
+			name: "convert column with alias",
+			q:    api.Select(api.Convert(colUserId, "utf8").As("converted")),
+			qs:   "SELECT CONVERT(users.id USING utf8) AS converted FROM users",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			b := builder.New()
+
+			qs, qargs := b.StringArgs(tt.q.Query())
+			assert.Equal(len(tt.qargs), len(qargs))
+			assert.Equal(tt.qs, qs)
+		})
+	}
+}
+
+func TestStringValueFunctionTransliteration(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+
+	tests := []struct {
+		name            string
+		subject         interface{}
+		transcodingName string
+		exp             *api.TransliterationFunction
+	}{
+		{
+			name:            "TRANSLATE column",
+			subject:         colUserId,
+			transcodingName: "utf8",
+			exp: &api.TransliterationFunction{
+				TransliterationFunction: &grammar.TransliterationFunction{
+					Subject: grammar.CharacterValueExpression{
+						Factor: &grammar.CharacterFactor{
+							Primary: grammar.CharacterPrimary{
+								Primary: &grammar.ValueExpressionPrimary{
+									Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+										ColumnReference: &grammar.ColumnReference{
+											BasicIdentifierChain: &grammar.IdentifierChain{
+												Identifiers: []string{
+													"users",
+													"id",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					Using: grammar.SchemaQualifiedName{
+						Identifiers: grammar.IdentifierChain{
+							Identifiers: []string{"utf8"},
+						},
+					},
+				},
+				Referred: users,
+			},
+		},
+		{
+			name:            "TRANSLATE string literal",
+			subject:         "foo",
+			transcodingName: "utf8",
+			exp: &api.TransliterationFunction{
+				TransliterationFunction: &grammar.TransliterationFunction{
+					Subject: grammar.CharacterValueExpression{
+						Factor: &grammar.CharacterFactor{
+							Primary: grammar.CharacterPrimary{
+								Primary: &grammar.ValueExpressionPrimary{
+									Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+										UnsignedValue: &grammar.UnsignedValueSpecification{
+											UnsignedLiteral: &grammar.UnsignedLiteral{
+												GeneralLiteral: &grammar.GeneralLiteral{
+													Value: "foo",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					Using: grammar.SchemaQualifiedName{
+						Identifiers: grammar.IdentifierChain{
+							Identifiers: []string{"utf8"},
+						},
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+			got := api.Translate(tt.subject, tt.transcodingName)
+			assert.Equal(tt.exp, got)
+		})
+	}
+
+	// First argument must be coercible into a CharacterValueExpression
+	assert.Panics(t, func() {
+		_ = api.Convert(struct{}{}, "utf8")
+	})
+	assert.Panics(t, func() {
+		// A Table is not coercible into a CharacterValueExpression
+		_ = api.Convert(users, "utf8")
+	})
+}
+
+func TestSelectTransliterationFunction(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+
+	tests := []struct {
+		name  string
+		q     *api.Selection
+		qs    string
+		qargs []interface{}
+	}{
+		{
+			name: "convert column",
+			q:    api.Select(api.Translate(colUserId, "utf8")),
+			qs:   "SELECT TRANSLATE(users.id USING utf8) FROM users",
+		},
+		{
+			name: "convert column with alias",
+			q:    api.Select(api.Translate(colUserId, "utf8").As("translated")),
+			qs:   "SELECT TRANSLATE(users.id USING utf8) AS translated FROM users",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			b := builder.New()
+
+			qs, qargs := b.StringArgs(tt.q.Query())
+			assert.Equal(len(tt.qargs), len(qargs))
+			assert.Equal(tt.qs, qs)
+		})
+	}
+}

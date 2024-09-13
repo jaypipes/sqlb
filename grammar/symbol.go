@@ -59,6 +59,8 @@ const (
 	SYM_AVG
 	SYM_COUNT_STAR
 	SYM_DISTINCT
+	SYM_CONVERT
+	SYM_TRANSLATE
 	SYM_CAST
 	SYM_BTRIM
 	SYM_SUBSTRING
@@ -166,6 +168,8 @@ var (
 		SYM_COUNT_STAR:              []byte("COUNT(*)"),
 		SYM_DISTINCT:                []byte("DISTINCT "),
 		SYM_CAST:                    []byte("CAST("),
+		SYM_CONVERT:                 []byte("CONVERT("),
+		SYM_TRANSLATE:               []byte("TRANSLATE("),
 		SYM_BTRIM:                   []byte("BTRIM("),
 		SYM_SUBSTRING:               []byte("SUBSTRING("),
 		SYM_TRIM:                    []byte("TRIM("),

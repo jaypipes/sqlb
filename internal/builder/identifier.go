@@ -19,3 +19,15 @@ func (b *Builder) doIdentifierChain(
 ) {
 	b.WriteString(strings.Join(el.Identifiers, "."))
 }
+
+func (b *Builder) doSchemaQualifiedName(
+	el *grammar.SchemaQualifiedName,
+	qargs []interface{},
+	curarg *int,
+) {
+	if el.SchemaName != nil {
+		b.WriteString(*el.SchemaName)
+		b.WriteRune('.')
+	}
+	b.doIdentifierChain(&el.Identifiers, qargs, curarg)
+}

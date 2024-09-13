@@ -329,60 +329,12 @@ func Select(
 			if item == nil {
 				panic("specified a non-existent aggregate function")
 			}
-			dc := grammar.DerivedColumn{
-				ValueExpression: grammar.ValueExpression{
-					Row: &grammar.RowValueExpression{
-						Primary: &grammar.NonParenthesizedValueExpressionPrimary{
-							SetFunction: &grammar.SetFunctionSpecification{
-								Aggregate: item.AggregateFunction,
-							},
-						},
-					},
-				},
-			}
-			if item.alias != "" {
-				dc.As = &item.alias
-			}
-			sels = append(sels, grammar.SelectSublist{DerivedColumn: &dc})
-			//cols = append(cols, item)
+			dc := DerivedColumnFromAnyAndAlias(
+				item, item.alias,
+			)
+			sels = append(sels, grammar.SelectSublist{DerivedColumn: dc})
 			if item.Referred != nil {
-				tname := ""
-				tp := &grammar.TablePrimary{}
-				t, ok := item.Referred.(*Table)
-				if ok {
-					tname = t.Name()
-					tp.TableName = &tname
-					if t.alias != "" {
-						tp.Correlation = &grammar.Correlation{
-							Name: t.Alias(),
-						}
-					}
-				} else {
-					// The column is from a derived table
-					dt := item.Referred.(*DerivedTable)
-					tname = dt.Name()
-					tp.DerivedTable = &grammar.DerivedTable{
-						Subquery: grammar.Subquery{
-							QueryExpression: grammar.QueryExpression{
-								Body: grammar.QueryExpressionBody{
-									NonJoinQueryExpression: &grammar.NonJoinQueryExpression{
-										NonJoinQueryTerm: &grammar.NonJoinQueryTerm{
-											Primary: &grammar.NonJoinQueryPrimary{
-												SimpleTable: &grammar.SimpleTable{
-													QuerySpecification: dt.Query(),
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					}
-					// Derived tables are always named/aliased
-					tp.Correlation = &grammar.Correlation{
-						Name: dt.Name(),
-					}
-				}
+				tname, tp := NameAndTablePrimaryFromReferred(item.Referred)
 				tr := grammar.TableReference{Primary: tp}
 				trefByName[tname] = tr
 			}
@@ -390,67 +342,12 @@ func Select(
 			if item == nil {
 				panic("specified a non-existent substring function")
 			}
-			dc := grammar.DerivedColumn{
-				ValueExpression: grammar.ValueExpression{
-					Common: &grammar.CommonValueExpression{
-						String: &grammar.StringValueExpression{
-							Character: &grammar.CharacterValueExpression{
-								Factor: &grammar.CharacterFactor{
-									Primary: grammar.CharacterPrimary{
-										Function: &grammar.StringValueFunction{
-											Character: &grammar.CharacterValueFunction{
-												Substring: item.SubstringFunction,
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			}
-			if item.alias != "" {
-				dc.As = &item.alias
-			}
-			sels = append(sels, grammar.SelectSublist{DerivedColumn: &dc})
+			dc := DerivedColumnFromAnyAndAlias(
+				item, item.alias,
+			)
+			sels = append(sels, grammar.SelectSublist{DerivedColumn: dc})
 			if item.Referred != nil {
-				tname := ""
-				tp := &grammar.TablePrimary{}
-				t, ok := item.Referred.(*Table)
-				if ok {
-					tname = t.Name()
-					tp.TableName = &tname
-					if t.alias != "" {
-						tp.Correlation = &grammar.Correlation{
-							Name: t.Alias(),
-						}
-					}
-				} else {
-					// The column is from a derived table
-					dt := item.Referred.(*DerivedTable)
-					tname = dt.Name()
-					tp.DerivedTable = &grammar.DerivedTable{
-						Subquery: grammar.Subquery{
-							QueryExpression: grammar.QueryExpression{
-								Body: grammar.QueryExpressionBody{
-									NonJoinQueryExpression: &grammar.NonJoinQueryExpression{
-										NonJoinQueryTerm: &grammar.NonJoinQueryTerm{
-											Primary: &grammar.NonJoinQueryPrimary{
-												SimpleTable: &grammar.SimpleTable{
-													QuerySpecification: dt.Query(),
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					}
-					// Derived tables are always named/aliased
-					tp.Correlation = &grammar.Correlation{
-						Name: dt.Name(),
-					}
-				}
+				tname, tp := NameAndTablePrimaryFromReferred(item.Referred)
 				tr := grammar.TableReference{Primary: tp}
 				trefByName[tname] = tr
 			}
@@ -458,67 +355,12 @@ func Select(
 			if item == nil {
 				panic("specified a non-existent regex substring function")
 			}
-			dc := grammar.DerivedColumn{
-				ValueExpression: grammar.ValueExpression{
-					Common: &grammar.CommonValueExpression{
-						String: &grammar.StringValueExpression{
-							Character: &grammar.CharacterValueExpression{
-								Factor: &grammar.CharacterFactor{
-									Primary: grammar.CharacterPrimary{
-										Function: &grammar.StringValueFunction{
-											Character: &grammar.CharacterValueFunction{
-												RegexSubstring: item.RegexSubstringFunction,
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			}
-			if item.alias != "" {
-				dc.As = &item.alias
-			}
-			sels = append(sels, grammar.SelectSublist{DerivedColumn: &dc})
+			dc := DerivedColumnFromAnyAndAlias(
+				item, item.alias,
+			)
+			sels = append(sels, grammar.SelectSublist{DerivedColumn: dc})
 			if item.Referred != nil {
-				tname := ""
-				tp := &grammar.TablePrimary{}
-				t, ok := item.Referred.(*Table)
-				if ok {
-					tname = t.Name()
-					tp.TableName = &tname
-					if t.alias != "" {
-						tp.Correlation = &grammar.Correlation{
-							Name: t.Alias(),
-						}
-					}
-				} else {
-					// The column is from a derived table
-					dt := item.Referred.(*DerivedTable)
-					tname = dt.Name()
-					tp.DerivedTable = &grammar.DerivedTable{
-						Subquery: grammar.Subquery{
-							QueryExpression: grammar.QueryExpression{
-								Body: grammar.QueryExpressionBody{
-									NonJoinQueryExpression: &grammar.NonJoinQueryExpression{
-										NonJoinQueryTerm: &grammar.NonJoinQueryTerm{
-											Primary: &grammar.NonJoinQueryPrimary{
-												SimpleTable: &grammar.SimpleTable{
-													QuerySpecification: dt.Query(),
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					}
-					// Derived tables are always named/aliased
-					tp.Correlation = &grammar.Correlation{
-						Name: dt.Name(),
-					}
-				}
+				tname, tp := NameAndTablePrimaryFromReferred(item.Referred)
 				tr := grammar.TableReference{Primary: tp}
 				trefByName[tname] = tr
 			}
@@ -526,67 +368,38 @@ func Select(
 			if item == nil {
 				panic("specified a non-existent fold function")
 			}
-			dc := grammar.DerivedColumn{
-				ValueExpression: grammar.ValueExpression{
-					Common: &grammar.CommonValueExpression{
-						String: &grammar.StringValueExpression{
-							Character: &grammar.CharacterValueExpression{
-								Factor: &grammar.CharacterFactor{
-									Primary: grammar.CharacterPrimary{
-										Function: &grammar.StringValueFunction{
-											Character: &grammar.CharacterValueFunction{
-												Fold: item.FoldFunction,
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			}
-			if item.alias != "" {
-				dc.As = &item.alias
-			}
-			sels = append(sels, grammar.SelectSublist{DerivedColumn: &dc})
+			dc := DerivedColumnFromAnyAndAlias(
+				item, item.alias,
+			)
+			sels = append(sels, grammar.SelectSublist{DerivedColumn: dc})
 			if item.Referred != nil {
-				tname := ""
-				tp := &grammar.TablePrimary{}
-				t, ok := item.Referred.(*Table)
-				if ok {
-					tname = t.Name()
-					tp.TableName = &tname
-					if t.alias != "" {
-						tp.Correlation = &grammar.Correlation{
-							Name: t.Alias(),
-						}
-					}
-				} else {
-					// The column is from a derived table
-					dt := item.Referred.(*DerivedTable)
-					tname = dt.Name()
-					tp.DerivedTable = &grammar.DerivedTable{
-						Subquery: grammar.Subquery{
-							QueryExpression: grammar.QueryExpression{
-								Body: grammar.QueryExpressionBody{
-									NonJoinQueryExpression: &grammar.NonJoinQueryExpression{
-										NonJoinQueryTerm: &grammar.NonJoinQueryTerm{
-											Primary: &grammar.NonJoinQueryPrimary{
-												SimpleTable: &grammar.SimpleTable{
-													QuerySpecification: dt.Query(),
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					}
-					// Derived tables are always named/aliased
-					tp.Correlation = &grammar.Correlation{
-						Name: dt.Name(),
-					}
-				}
+				tname, tp := NameAndTablePrimaryFromReferred(item.Referred)
+				tr := grammar.TableReference{Primary: tp}
+				trefByName[tname] = tr
+			}
+		case *TranscodingFunction:
+			if item == nil {
+				panic("specified a non-existent transcoding function")
+			}
+			dc := DerivedColumnFromAnyAndAlias(
+				item, item.alias,
+			)
+			sels = append(sels, grammar.SelectSublist{DerivedColumn: dc})
+			if item.Referred != nil {
+				tname, tp := NameAndTablePrimaryFromReferred(item.Referred)
+				tr := grammar.TableReference{Primary: tp}
+				trefByName[tname] = tr
+			}
+		case *TransliterationFunction:
+			if item == nil {
+				panic("specified a non-existent tranliteration function")
+			}
+			dc := DerivedColumnFromAnyAndAlias(
+				item, item.alias,
+			)
+			sels = append(sels, grammar.SelectSublist{DerivedColumn: dc})
+			if item.Referred != nil {
+				tname, tp := NameAndTablePrimaryFromReferred(item.Referred)
 				tr := grammar.TableReference{Primary: tp}
 				trefByName[tname] = tr
 			}
@@ -613,22 +426,27 @@ func Select(
 		}
 	}
 
+	if len(trefByName) == 0 {
+		panic(
+			"no entries in FROM clause. you must pass Select() at " +
+				"least one element that references a table or subquery",
+		)
+	}
+
 	trefs := make([]grammar.TableReference, 0, len(trefByName))
 	for _, tref := range trefByName {
 		trefs = append(trefs, tref)
-	}
-	from := grammar.FromClause{
-		TableReferences: trefs,
-	}
-	te := grammar.TableExpression{
-		FromClause: from,
 	}
 	return &Selection{
 		qs: &grammar.QuerySpecification{
 			SelectList: grammar.SelectList{
 				Sublists: sels,
 			},
-			TableExpression: te,
+			TableExpression: grammar.TableExpression{
+				FromClause: grammar.FromClause{
+					TableReferences: trefs,
+				},
+			},
 		},
 		cols: cols,
 	}

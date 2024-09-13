@@ -169,6 +169,22 @@ var Upper = api.Upper
 // to a character value expression.
 var Lower = api.Lower
 
+// Convert returns a TranscodingFunction that produces a CONVERT() SQL
+// function that can be passed to sqlb constructs and functions like Select()
+//
+// The first argument is the subject of the CONVERT function and must be
+// coercible to a character value expression. The second argument is the USING
+// portion of the CONVERT function.
+var Convert = api.Convert
+
+// Translate returns a TransliterationFunction that produces a TRANSLATE() SQL
+// function that can be passed to sqlb constructs and functions like Select()
+//
+// The first argument is the subject of the TRANSLATE function and must be
+// coercible to a character value expression. The second argument is the USING
+// portion of the TRANSLATE function.
+var Translate = api.Translate
+
 /*
 // Cast returns a Projection that contains the CAST() SQL function
 var Cast = function.Cast

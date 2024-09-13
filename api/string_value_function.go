@@ -8,6 +8,7 @@ package api
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/jaypipes/sqlb/grammar"
 )
@@ -237,6 +238,112 @@ type FoldFunction struct {
 
 // As aliases the SQL function as the supplied column name
 func (f *FoldFunction) As(alias string) *FoldFunction {
+	f.alias = alias
+	return f
+}
+
+// Convert returns a TranscodingFunction that produces a CONVERT() SQL
+// function that can be passed to sqlb constructs and functions like Select()
+//
+// The first argument is the subject of the CONVERT function and must be
+// coercible to a character value expression. The second argument is the USING
+// portion of the CONVERT function.
+func Convert(
+	subjectAny interface{},
+	using string,
+) *TranscodingFunction {
+	var ref interface{}
+	switch valAny := subjectAny.(type) {
+	case *Column:
+		ref = valAny.t
+	}
+	subject := CharacterValueExpressionFromAny(subjectAny)
+	if subject == nil {
+		msg := fmt.Sprintf(
+			"expected coerceable CharacterValueExpression but got %+v(%T)",
+			subjectAny, subjectAny,
+		)
+		panic(msg)
+	}
+	return &TranscodingFunction{
+		TranscodingFunction: &grammar.TranscodingFunction{
+			Subject: *subject,
+			Using: grammar.SchemaQualifiedName{
+				Identifiers: grammar.IdentifierChain{
+					Identifiers: strings.Split(using, "."),
+				},
+			},
+		},
+		Referred: ref,
+	}
+}
+
+// TranscodingFunction wraps the CONVERT() SQL function grammar element
+type TranscodingFunction struct {
+	*grammar.TranscodingFunction
+	// referred is a the Table or DerivedTable that is referred from
+	// the aggregate function
+	Referred interface{}
+	// alias is the function as an aliased projection (e.g. CONVERT(col USING
+	// charset) AS counter)
+	alias string
+}
+
+// As aliases the SQL function as the supplied column name
+func (f *TranscodingFunction) As(alias string) *TranscodingFunction {
+	f.alias = alias
+	return f
+}
+
+// Translate returns a TransliterationFunction that produces a TRANSLATE() SQL
+// function that can be passed to sqlb constructs and functions like Select()
+//
+// The first argument is the subject of the TRANSLATE function and must be
+// coercible to a character value expression. The second argument is the USING
+// portion of the TRANSLATE function.
+func Translate(
+	subjectAny interface{},
+	using string,
+) *TransliterationFunction {
+	var ref interface{}
+	switch valAny := subjectAny.(type) {
+	case *Column:
+		ref = valAny.t
+	}
+	subject := CharacterValueExpressionFromAny(subjectAny)
+	if subject == nil {
+		msg := fmt.Sprintf(
+			"expected coerceable CharacterValueExpression but got %+v(%T)",
+			subjectAny, subjectAny,
+		)
+		panic(msg)
+	}
+	return &TransliterationFunction{
+		TransliterationFunction: &grammar.TransliterationFunction{
+			Subject: *subject,
+			Using: grammar.SchemaQualifiedName{
+				Identifiers: grammar.IdentifierChain{
+					Identifiers: strings.Split(using, "."),
+				},
+			},
+		},
+		Referred: ref,
+	}
+}
+
+// TransliterationFunction wraps the TRANSLATE() SQL function grammar element
+type TransliterationFunction struct {
+	*grammar.TransliterationFunction
+	// referred is a the Table or DerivedTable that is referred from
+	// the aggregate function
+	Referred interface{}
+	// alias is the function as an aliased projection (e.g. TRANSLATE(col USING
+	// charset) AS counter)
+	alias string
+}
+
+// As aliases the SQL function as the supplied column name
+func (f *TransliterationFunction) As(alias string) *TransliterationFunction {
 	f.alias = alias
 	return f
 }
