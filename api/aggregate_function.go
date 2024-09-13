@@ -16,12 +16,38 @@ import (
 // across zero or more referenced tables/columns/value expressions.
 type AggregateFunction struct {
 	*grammar.AggregateFunction
-	// referred is a the Table or DerivedTable that is referred from
+	// referred is any Table or DerivedTable that is referred from
 	// the aggregate function
-	Referred interface{}
+	referred []interface{}
 	// alias is the aggregate function as an aliased projection
 	// (e.g. COUNT(*) AS counter)
 	alias string
+}
+
+// RefersTo returns a slice of tables or derived tables that are referenced
+// by the Projectable
+func (f *AggregateFunction) RefersTo() []interface{} {
+	return f.referred
+}
+
+// DerivedColumn returns the `*grammar.DerivedColumn` element representing
+// the Projectable
+func (f *AggregateFunction) DerivedColumn() *grammar.DerivedColumn {
+	dc := &grammar.DerivedColumn{
+		ValueExpression: grammar.ValueExpression{
+			Row: &grammar.RowValueExpression{
+				Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+					SetFunction: &grammar.SetFunctionSpecification{
+						Aggregate: f.AggregateFunction,
+					},
+				},
+			},
+		},
+	}
+	if f.alias != "" {
+		dc.As = &f.alias
+	}
+	return dc
 }
 
 // As aliases the SQL function as the supplied column name
@@ -45,10 +71,10 @@ func (f *AggregateFunction) Distinct() *AggregateFunction {
 }
 
 func doGeneralSetFunction(op grammar.ComputationalOperation, valAny interface{}) *AggregateFunction {
-	var ref interface{}
+	refs := []interface{}{}
 	switch valAny := valAny.(type) {
 	case *Column:
-		ref = valAny.t
+		refs = append(refs, valAny.t)
 	case *grammar.ValueExpression:
 		return &AggregateFunction{
 			AggregateFunction: &grammar.AggregateFunction{
@@ -83,7 +109,7 @@ func doGeneralSetFunction(op grammar.ComputationalOperation, valAny interface{})
 				ValueExpression: *v,
 			},
 		},
-		Referred: ref,
+		referred: refs,
 	}
 }
 

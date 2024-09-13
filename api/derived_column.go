@@ -22,6 +22,8 @@ func DerivedColumnFromAnyAndAlias(
 		dc = v
 	case grammar.DerivedColumn:
 		dc = &v
+	case Projectable:
+		dc = v.DerivedColumn()
 	case *grammar.AggregateFunction:
 		dc = &grammar.DerivedColumn{
 			ValueExpression: grammar.ValueExpression{
@@ -29,18 +31,6 @@ func DerivedColumnFromAnyAndAlias(
 					Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 						SetFunction: &grammar.SetFunctionSpecification{
 							Aggregate: v,
-						},
-					},
-				},
-			},
-		}
-	case *AggregateFunction:
-		dc = &grammar.DerivedColumn{
-			ValueExpression: grammar.ValueExpression{
-				Row: &grammar.RowValueExpression{
-					Primary: &grammar.NonParenthesizedValueExpressionPrimary{
-						SetFunction: &grammar.SetFunctionSpecification{
-							Aggregate: v.AggregateFunction,
 						},
 					},
 				},

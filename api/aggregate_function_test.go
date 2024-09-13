@@ -22,34 +22,31 @@ func TestAggregateFunctionCount(t *testing.T) {
 	colUserId := users.C("id")
 
 	tests := []struct {
-		name   string
-		target []interface{}
-		exp    *api.AggregateFunction
+		name        string
+		target      []interface{}
+		exp         *grammar.AggregateFunction
+		expRefersTo []interface{}
 	}{
 		{
 			name: "count star",
-			exp: &api.AggregateFunction{
-				AggregateFunction: &grammar.AggregateFunction{
-					CountStar: &struct{}{},
-				},
+			exp: &grammar.AggregateFunction{
+				CountStar: &struct{}{},
 			},
 		},
 		{
 			name:   "column",
 			target: []interface{}{colUserId},
-			exp: &api.AggregateFunction{
-				AggregateFunction: &grammar.AggregateFunction{
-					GeneralSetFunction: &grammar.GeneralSetFunction{
-						Operation: grammar.ComputationalOperationCount,
-						ValueExpression: grammar.ValueExpression{
-							Row: &grammar.RowValueExpression{
-								Primary: &grammar.NonParenthesizedValueExpressionPrimary{
-									ColumnReference: &grammar.ColumnReference{
-										BasicIdentifierChain: &grammar.IdentifierChain{
-											Identifiers: []string{
-												"users",
-												"id",
-											},
+			exp: &grammar.AggregateFunction{
+				GeneralSetFunction: &grammar.GeneralSetFunction{
+					Operation: grammar.ComputationalOperationCount,
+					ValueExpression: grammar.ValueExpression{
+						Row: &grammar.RowValueExpression{
+							Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+								ColumnReference: &grammar.ColumnReference{
+									BasicIdentifierChain: &grammar.IdentifierChain{
+										Identifiers: []string{
+											"users",
+											"id",
 										},
 									},
 								},
@@ -57,15 +54,16 @@ func TestAggregateFunctionCount(t *testing.T) {
 						},
 					},
 				},
-				Referred: users,
 			},
+			expRefersTo: []interface{}{users},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert := assert.New(t)
 			got := api.Count(tt.target...)
-			assert.Equal(tt.exp, got)
+			assert.Equal(tt.exp, got.AggregateFunction)
+			assert.Equal(tt.expRefersTo, got.RefersTo())
 		})
 	}
 
@@ -90,28 +88,27 @@ func TestAggregateFunctionAvgMinMaxSum(t *testing.T) {
 	colUserId := users.C("id")
 
 	tests := []struct {
-		name   string
-		target interface{}
-		f      func(interface{}) *api.AggregateFunction
-		exp    *api.AggregateFunction
+		name        string
+		target      interface{}
+		f           func(interface{}) *api.AggregateFunction
+		exp         *grammar.AggregateFunction
+		expRefersTo []interface{}
 	}{
 		{
 			name:   "avg column",
 			target: colUserId,
 			f:      api.Avg,
-			exp: &api.AggregateFunction{
-				AggregateFunction: &grammar.AggregateFunction{
-					GeneralSetFunction: &grammar.GeneralSetFunction{
-						Operation: grammar.ComputationalOperationAvg,
-						ValueExpression: grammar.ValueExpression{
-							Row: &grammar.RowValueExpression{
-								Primary: &grammar.NonParenthesizedValueExpressionPrimary{
-									ColumnReference: &grammar.ColumnReference{
-										BasicIdentifierChain: &grammar.IdentifierChain{
-											Identifiers: []string{
-												"users",
-												"id",
-											},
+			exp: &grammar.AggregateFunction{
+				GeneralSetFunction: &grammar.GeneralSetFunction{
+					Operation: grammar.ComputationalOperationAvg,
+					ValueExpression: grammar.ValueExpression{
+						Row: &grammar.RowValueExpression{
+							Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+								ColumnReference: &grammar.ColumnReference{
+									BasicIdentifierChain: &grammar.IdentifierChain{
+										Identifiers: []string{
+											"users",
+											"id",
 										},
 									},
 								},
@@ -119,26 +116,24 @@ func TestAggregateFunctionAvgMinMaxSum(t *testing.T) {
 						},
 					},
 				},
-				Referred: users,
 			},
+			expRefersTo: []interface{}{users},
 		},
 		{
 			name:   "min column",
 			target: colUserId,
 			f:      api.Min,
-			exp: &api.AggregateFunction{
-				AggregateFunction: &grammar.AggregateFunction{
-					GeneralSetFunction: &grammar.GeneralSetFunction{
-						Operation: grammar.ComputationalOperationMin,
-						ValueExpression: grammar.ValueExpression{
-							Row: &grammar.RowValueExpression{
-								Primary: &grammar.NonParenthesizedValueExpressionPrimary{
-									ColumnReference: &grammar.ColumnReference{
-										BasicIdentifierChain: &grammar.IdentifierChain{
-											Identifiers: []string{
-												"users",
-												"id",
-											},
+			exp: &grammar.AggregateFunction{
+				GeneralSetFunction: &grammar.GeneralSetFunction{
+					Operation: grammar.ComputationalOperationMin,
+					ValueExpression: grammar.ValueExpression{
+						Row: &grammar.RowValueExpression{
+							Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+								ColumnReference: &grammar.ColumnReference{
+									BasicIdentifierChain: &grammar.IdentifierChain{
+										Identifiers: []string{
+											"users",
+											"id",
 										},
 									},
 								},
@@ -146,26 +141,24 @@ func TestAggregateFunctionAvgMinMaxSum(t *testing.T) {
 						},
 					},
 				},
-				Referred: users,
 			},
+			expRefersTo: []interface{}{users},
 		},
 		{
 			name:   "max column",
 			target: colUserId,
 			f:      api.Max,
-			exp: &api.AggregateFunction{
-				AggregateFunction: &grammar.AggregateFunction{
-					GeneralSetFunction: &grammar.GeneralSetFunction{
-						Operation: grammar.ComputationalOperationMax,
-						ValueExpression: grammar.ValueExpression{
-							Row: &grammar.RowValueExpression{
-								Primary: &grammar.NonParenthesizedValueExpressionPrimary{
-									ColumnReference: &grammar.ColumnReference{
-										BasicIdentifierChain: &grammar.IdentifierChain{
-											Identifiers: []string{
-												"users",
-												"id",
-											},
+			exp: &grammar.AggregateFunction{
+				GeneralSetFunction: &grammar.GeneralSetFunction{
+					Operation: grammar.ComputationalOperationMax,
+					ValueExpression: grammar.ValueExpression{
+						Row: &grammar.RowValueExpression{
+							Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+								ColumnReference: &grammar.ColumnReference{
+									BasicIdentifierChain: &grammar.IdentifierChain{
+										Identifiers: []string{
+											"users",
+											"id",
 										},
 									},
 								},
@@ -173,26 +166,24 @@ func TestAggregateFunctionAvgMinMaxSum(t *testing.T) {
 						},
 					},
 				},
-				Referred: users,
 			},
+			expRefersTo: []interface{}{users},
 		},
 		{
 			name:   "sum column",
 			target: colUserId,
 			f:      api.Sum,
-			exp: &api.AggregateFunction{
-				AggregateFunction: &grammar.AggregateFunction{
-					GeneralSetFunction: &grammar.GeneralSetFunction{
-						Operation: grammar.ComputationalOperationSum,
-						ValueExpression: grammar.ValueExpression{
-							Row: &grammar.RowValueExpression{
-								Primary: &grammar.NonParenthesizedValueExpressionPrimary{
-									ColumnReference: &grammar.ColumnReference{
-										BasicIdentifierChain: &grammar.IdentifierChain{
-											Identifiers: []string{
-												"users",
-												"id",
-											},
+			exp: &grammar.AggregateFunction{
+				GeneralSetFunction: &grammar.GeneralSetFunction{
+					Operation: grammar.ComputationalOperationSum,
+					ValueExpression: grammar.ValueExpression{
+						Row: &grammar.RowValueExpression{
+							Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+								ColumnReference: &grammar.ColumnReference{
+									BasicIdentifierChain: &grammar.IdentifierChain{
+										Identifiers: []string{
+											"users",
+											"id",
 										},
 									},
 								},
@@ -200,15 +191,16 @@ func TestAggregateFunctionAvgMinMaxSum(t *testing.T) {
 						},
 					},
 				},
-				Referred: users,
 			},
+			expRefersTo: []interface{}{users},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert := assert.New(t)
 			got := tt.f(tt.target)
-			assert.Equal(tt.exp, got)
+			assert.Equal(tt.exp, got.AggregateFunction)
+			assert.Equal(tt.expRefersTo, got.RefersTo())
 		})
 	}
 
@@ -233,29 +225,28 @@ func TestAggregateFunctionDistinct(t *testing.T) {
 	colUserId := users.C("id")
 
 	tests := []struct {
-		name   string
-		target interface{}
-		f      func(interface{}) *api.AggregateFunction
-		exp    *api.AggregateFunction
+		name        string
+		target      interface{}
+		f           func(interface{}) *api.AggregateFunction
+		exp         *grammar.AggregateFunction
+		expRefersTo []interface{}
 	}{
 		{
 			name:   "avg distinct column",
 			target: colUserId,
 			f:      api.Avg,
-			exp: &api.AggregateFunction{
-				AggregateFunction: &grammar.AggregateFunction{
-					GeneralSetFunction: &grammar.GeneralSetFunction{
-						Operation:  grammar.ComputationalOperationAvg,
-						Quantifier: grammar.SetQuantifierDistinct,
-						ValueExpression: grammar.ValueExpression{
-							Row: &grammar.RowValueExpression{
-								Primary: &grammar.NonParenthesizedValueExpressionPrimary{
-									ColumnReference: &grammar.ColumnReference{
-										BasicIdentifierChain: &grammar.IdentifierChain{
-											Identifiers: []string{
-												"users",
-												"id",
-											},
+			exp: &grammar.AggregateFunction{
+				GeneralSetFunction: &grammar.GeneralSetFunction{
+					Operation:  grammar.ComputationalOperationAvg,
+					Quantifier: grammar.SetQuantifierDistinct,
+					ValueExpression: grammar.ValueExpression{
+						Row: &grammar.RowValueExpression{
+							Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+								ColumnReference: &grammar.ColumnReference{
+									BasicIdentifierChain: &grammar.IdentifierChain{
+										Identifiers: []string{
+											"users",
+											"id",
 										},
 									},
 								},
@@ -263,16 +254,14 @@ func TestAggregateFunctionDistinct(t *testing.T) {
 						},
 					},
 				},
-				Referred: users,
 			},
+			expRefersTo: []interface{}{users},
 		},
 		{
 			name: "count star is not affected with distinct",
 			f:    func(_ interface{}) *api.AggregateFunction { return api.Count() },
-			exp: &api.AggregateFunction{
-				AggregateFunction: &grammar.AggregateFunction{
-					CountStar: &struct{}{},
-				},
+			exp: &grammar.AggregateFunction{
+				CountStar: &struct{}{},
 			},
 		},
 	}
@@ -280,7 +269,8 @@ func TestAggregateFunctionDistinct(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			assert := assert.New(t)
 			got := tt.f(tt.target).Distinct()
-			assert.Equal(tt.exp, got)
+			assert.Equal(tt.exp, got.AggregateFunction)
+			assert.Equal(tt.expRefersTo, got.RefersTo())
 		})
 	}
 
