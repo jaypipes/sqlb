@@ -19,8 +19,6 @@ package grammar
 //      |     <normalize function>
 //      |     <specific type method>
 //
-// <transcoding>    ::=   CONVERT <left paren> <character value expression> USING <transcoding name> <right paren>
-//
 // <character transliteration>    ::=   TRANSLATE <left paren> <character value expression> USING <transliteration name> <right paren>
 //
 // <trim function>    ::=   TRIM <left paren> <trim operands> <right paren>
@@ -122,7 +120,12 @@ type FoldFunction struct {
 	Subject CharacterValueExpression
 }
 
-type TranscodingFunction struct{}
+// <transcoding>    ::=   CONVERT <left paren> <character value expression> USING <transcoding name> <right paren>
+
+type TranscodingFunction struct {
+	Subject CharacterValueExpression
+	Using   SchemaQualifiedName
+}
 
 type TransliterationFunction struct{}
 

@@ -122,3 +122,8 @@ type IdentifierChain struct {
 // <scope option>    ::=   GLOBAL | LOCAL
 //
 // <window name>    ::=   <identifier>
+
+type SchemaQualifiedName struct {
+	SchemaName  *string
+	Identifiers IdentifierChain
+}

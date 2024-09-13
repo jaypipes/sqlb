@@ -31,6 +31,8 @@ func (b *Builder) doCharacterValueFunction(
 		b.doRegexSubstringFunction(el.RegexSubstring, qargs, curarg)
 	} else if el.Fold != nil {
 		b.doFoldFunction(el.Fold, qargs, curarg)
+	} else if el.Transcoding != nil {
+		b.doTranscodingFunction(el.Transcoding, qargs, curarg)
 	}
 }
 
@@ -88,5 +90,18 @@ func (b *Builder) doFoldFunction(
 	b.WriteString(grammar.FoldCaseSymbols[el.Case])
 	b.Write(grammar.Symbols[grammar.SYM_LPAREN])
 	b.doCharacterValueExpression(&el.Subject, qargs, curarg)
+	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+}
+
+func (b *Builder) doTranscodingFunction(
+	el *grammar.TranscodingFunction,
+	qargs []interface{},
+	curarg *int,
+) {
+	b.Write(grammar.Symbols[grammar.SYM_CONVERT])
+	b.doCharacterValueExpression(&el.Subject, qargs, curarg)
+	b.WriteRune(' ')
+	b.Write(grammar.Symbols[grammar.SYM_USING])
+	b.doSchemaQualifiedName(&el.Using, qargs, curarg)
 	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
 }

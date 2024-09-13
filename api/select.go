@@ -377,6 +377,19 @@ func Select(
 				tr := grammar.TableReference{Primary: tp}
 				trefByName[tname] = tr
 			}
+		case *TranscodingFunction:
+			if item == nil {
+				panic("specified a non-existent transcoding function")
+			}
+			dc := DerivedColumnFromAnyAndAlias(
+				item, item.alias,
+			)
+			sels = append(sels, grammar.SelectSublist{DerivedColumn: dc})
+			if item.Referred != nil {
+				tname, tp := NameAndTablePrimaryFromReferred(item.Referred)
+				tr := grammar.TableReference{Primary: tp}
+				trefByName[tname] = tr
+			}
 		default:
 			// Everything else, make it a general literal value projection, so, for
 			// instance, a user can do SELECT 1, which is, technically
@@ -400,22 +413,27 @@ func Select(
 		}
 	}
 
+	if len(trefByName) == 0 {
+		panic(
+			"no entries in FROM clause. you must pass Select() at " +
+				"least one element that references a table or subquery",
+		)
+	}
+
 	trefs := make([]grammar.TableReference, 0, len(trefByName))
 	for _, tref := range trefByName {
 		trefs = append(trefs, tref)
-	}
-	from := grammar.FromClause{
-		TableReferences: trefs,
-	}
-	te := grammar.TableExpression{
-		FromClause: from,
 	}
 	return &Selection{
 		qs: &grammar.QuerySpecification{
 			SelectList: grammar.SelectList{
 				Sublists: sels,
 			},
-			TableExpression: te,
+			TableExpression: grammar.TableExpression{
+				FromClause: grammar.FromClause{
+					TableReferences: trefs,
+				},
+			},
 		},
 		cols: cols,
 	}

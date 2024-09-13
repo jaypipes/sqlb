@@ -166,6 +166,46 @@ func DerivedColumnFromAnyAndAlias(
 				},
 			},
 		}
+	case *TranscodingFunction:
+		dc = &grammar.DerivedColumn{
+			ValueExpression: grammar.ValueExpression{
+				Common: &grammar.CommonValueExpression{
+					String: &grammar.StringValueExpression{
+						Character: &grammar.CharacterValueExpression{
+							Factor: &grammar.CharacterFactor{
+								Primary: grammar.CharacterPrimary{
+									Function: &grammar.StringValueFunction{
+										Character: &grammar.CharacterValueFunction{
+											Transcoding: v.TranscodingFunction,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+	case *grammar.TranscodingFunction:
+		dc = &grammar.DerivedColumn{
+			ValueExpression: grammar.ValueExpression{
+				Common: &grammar.CommonValueExpression{
+					String: &grammar.StringValueExpression{
+						Character: &grammar.CharacterValueExpression{
+							Factor: &grammar.CharacterFactor{
+								Primary: grammar.CharacterPrimary{
+									Function: &grammar.StringValueFunction{
+										Character: &grammar.CharacterValueFunction{
+											Transcoding: v,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		}
 	}
 	if dc != nil {
 		if alias != "" {
