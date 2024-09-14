@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jaypipes/sqlb/api"
+	"github.com/jaypipes/sqlb/core/types"
 	"github.com/jaypipes/sqlb/grammar"
 )
 
@@ -18,7 +18,7 @@ import (
 // that sqlb writes to the output buffer
 type Builder struct {
 	strings.Builder
-	opts api.Options
+	opts types.Options
 }
 
 // StringArgs returns the built query string and a slice of interface{}
@@ -26,28 +26,12 @@ type Builder struct {
 func (b *Builder) StringArgs(target interface{}) (string, []interface{}) {
 	b.WriteString(b.opts.FormatPrefixWith())
 	switch el := target.(type) {
-	case *api.UpdateStatement:
-		argc := 0
-		uss := el.Query()
-		ArgCount(uss, &argc)
-		qargs := make([]interface{}, argc)
-		curarg := 0
-		b.doUpdateStatementSearched(uss, qargs, &curarg)
-		return b.Builder.String(), qargs
 	case *grammar.UpdateStatementSearched:
 		argc := 0
 		ArgCount(el, &argc)
 		qargs := make([]interface{}, argc)
 		curarg := 0
 		b.doUpdateStatementSearched(el, qargs, &curarg)
-		return b.Builder.String(), qargs
-	case *api.DeleteStatement:
-		argc := 0
-		dss := el.Query()
-		ArgCount(dss, &argc)
-		qargs := make([]interface{}, argc)
-		curarg := 0
-		b.doDeleteStatementSearched(dss, qargs, &curarg)
 		return b.Builder.String(), qargs
 	case *grammar.DeleteStatementSearched:
 		argc := 0
@@ -83,9 +67,9 @@ func (b *Builder) StringArgs(target interface{}) (string, []interface{}) {
 
 // InterpolationMarker returns a string with an interpolation marker of the
 // specified dialect and position
-func InterpolationMarker(opts api.Options, position int) string {
+func InterpolationMarker(opts types.Options, position int) string {
 	b := &strings.Builder{}
-	if opts.Dialect() == api.DialectPostgreSQL {
+	if opts.Dialect() == types.DialectPostgreSQL {
 		b.Write(grammar.Symbols[grammar.SYM_DOLLAR])
 		b.WriteString(strconv.Itoa(position + 1))
 	} else {
@@ -96,9 +80,9 @@ func InterpolationMarker(opts api.Options, position int) string {
 
 // New returns a builder for the supplied dialect
 func New(
-	mods ...api.Option,
+	mods ...types.Option,
 ) *Builder {
-	opts := api.MergeOptions(mods)
+	opts := types.MergeOptions(mods)
 	return &Builder{
 		opts: opts,
 	}
