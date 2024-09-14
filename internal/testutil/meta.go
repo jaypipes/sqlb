@@ -11,52 +11,53 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jaypipes/sqlb/api"
+	"github.com/jaypipes/sqlb/core/meta"
+	"github.com/jaypipes/sqlb/core/types"
 )
 
 var (
-	m                 *api.Meta
-	users             *api.Table
-	articles          *api.Table
-	articleStates     *api.Table
-	userProfiles      *api.Table
-	organizations     *api.Table
-	organizationUsers *api.Table
+	m                 *meta.Meta
+	users             *meta.Table
+	articles          *meta.Table
+	articleStates     *meta.Table
+	userProfiles      *meta.Table
+	organizations     *meta.Table
+	organizationUsers *meta.Table
 )
 
 func init() {
-	m = &api.Meta{
-		Dialect: api.DialectMySQL,
+	m = &meta.Meta{
+		Dialect: types.DialectMySQL,
 		Name:    "test",
 	}
 
-	users = api.NewTable(
+	users = meta.NewTable(
 		m, "users",
 		"id",
 		"name",
 	)
 
-	articles = api.NewTable(
+	articles = meta.NewTable(
 		m, "articles",
 		"id",
 		"author",
 		"state",
 	)
 
-	articleStates = api.NewTable(
+	articleStates = meta.NewTable(
 		m, "article_states",
 		"id",
 		"name",
 	)
 
-	userProfiles = api.NewTable(
+	userProfiles = meta.NewTable(
 		m, "user_profiles",
 		"id",
 		"content",
 		"user",
 	)
 
-	organizations = api.NewTable(
+	organizations = meta.NewTable(
 		m, "organizations",
 		"id",
 		"uuid",
@@ -65,13 +66,13 @@ func init() {
 		"nested_set_right",
 	)
 
-	organizationUsers = api.NewTable(
+	organizationUsers = meta.NewTable(
 		m, "organization_users",
 		"organization_id",
 		"user_id",
 	)
 
-	m.Tables = map[string]*api.Table{
+	m.Tables = map[string]*meta.Table{
 		"users":              users,
 		"articles":           articles,
 		"articleStates":      articleStates,
@@ -82,18 +83,18 @@ func init() {
 }
 
 // M returns the Meta we use in testing
-func M() *api.Meta {
+func M() *meta.Meta {
 	return m
 }
 
 // T returns the Table from the testing Meta with the supplied name
-func T(name string) *api.Table {
+func T(name string) *meta.Table {
 	return m.T(name)
 }
 
 // C returns the Column from the testing Meta with the supplied table.column
 // dotted notation
-func C(name string) *api.Column {
+func C(name string) types.Projection {
 	names := strings.Split(name, ".")
 	tname := names[0]
 	cname := names[1]
@@ -102,10 +103,10 @@ func C(name string) *api.Column {
 
 // ResetDB resets the testing database by dropping the database tables and
 // recreating them.
-func ResetDB(dialect api.Dialect, db *sql.DB) {
+func ResetDB(dialect types.Dialect, db *sql.DB) {
 	var stmts []string
 	switch dialect {
-	case api.DialectMySQL:
+	case types.DialectMySQL:
 		stmts = []string{
 			"DROP TABLE IF EXISTS articles",
 			"DROP TABLE IF EXISTS users",
@@ -132,7 +133,7 @@ func ResetDB(dialect api.Dialect, db *sql.DB) {
         );
         `,
 		}
-	case api.DialectPostgreSQL:
+	case types.DialectPostgreSQL:
 		stmts = []string{
 			"BEGIN",
 			"DROP TABLE IF EXISTS articles",
