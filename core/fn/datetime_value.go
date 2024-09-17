@@ -35,9 +35,7 @@ func (f *CurrentDateFunction) CommonValueExpression() *grammar.CommonValueExpres
 			Unary: &grammar.DatetimeTerm{
 				Factor: grammar.DatetimeFactor{
 					Primary: grammar.DatetimePrimary{
-						Function: &grammar.DatetimeValueFunction{
-							CurrentDate: true,
-						},
+						Function: f.DatetimeValueFunction,
 					},
 				},
 			},
@@ -61,6 +59,69 @@ func (f *CurrentDateFunction) DerivedColumn() *grammar.DerivedColumn {
 
 // As aliases the SQL function as the supplied column name
 func (f *CurrentDateFunction) As(alias string) types.Projection {
+	f.alias = alias
+	return f
+}
+
+// CurrentTime returns a CurrentTimeFunction that produces a CURRENT_TIME() SQL
+// function that can be passed to sqlb constructs and functions like Select()
+func CurrentTime() *CurrentTimeFunction {
+	return &CurrentTimeFunction{
+		DatetimeValueFunction: &grammar.DatetimeValueFunction{
+			CurrentTime: &grammar.CurrentTimeFunction{},
+		},
+	}
+}
+
+// CurrentTimeFunction wraps the CURRENT_TIME() SQL function grammar element
+type CurrentTimeFunction struct {
+	BaseFunction
+	*grammar.DatetimeValueFunction
+}
+
+// Precision sets the function's time or timestamp precision value
+func (f *CurrentTimeFunction) Precision(p uint) *CurrentTimeFunction {
+	if f.DatetimeValueFunction == nil {
+		f.DatetimeValueFunction = &grammar.DatetimeValueFunction{
+			CurrentTime: &grammar.CurrentTimeFunction{},
+		}
+	}
+	f.DatetimeValueFunction.CurrentTime.Precision = &p
+	return f
+}
+
+// CommonValueExpression returns the object as a
+// `*grammar.CommonValueExpression`
+func (f *CurrentTimeFunction) CommonValueExpression() *grammar.CommonValueExpression {
+	return &grammar.CommonValueExpression{
+		Datetime: &grammar.DatetimeValueExpression{
+			Unary: &grammar.DatetimeTerm{
+				Factor: grammar.DatetimeFactor{
+					Primary: grammar.DatetimePrimary{
+						Function: f.DatetimeValueFunction,
+					},
+				},
+			},
+		},
+	}
+}
+
+// DerivedColumn returns the `*grammar.DerivedColumn` element representing
+// the Projection
+func (f *CurrentTimeFunction) DerivedColumn() *grammar.DerivedColumn {
+	dc := &grammar.DerivedColumn{
+		ValueExpression: grammar.ValueExpression{
+			Common: f.CommonValueExpression(),
+		},
+	}
+	if f.alias != "" {
+		dc.As = &f.alias
+	}
+	return dc
+}
+
+// As aliases the SQL function as the supplied column name
+func (f *CurrentTimeFunction) As(alias string) types.Projection {
 	f.alias = alias
 	return f
 }

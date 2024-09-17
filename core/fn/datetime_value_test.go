@@ -75,3 +75,83 @@ func TestSelectCurrentDateFunction(t *testing.T) {
 		})
 	}
 }
+
+func TestDatetimeValueFunctionCurrentTime(t *testing.T) {
+	p10 := uint(10)
+	tests := []struct {
+		name      string
+		exp       *grammar.DatetimeValueFunction
+		precision *uint
+	}{
+		{
+			name: "no args",
+			exp: &grammar.DatetimeValueFunction{
+				CurrentTime: &grammar.CurrentTimeFunction{},
+			},
+		},
+		{
+			name: "with precision",
+			exp: &grammar.DatetimeValueFunction{
+				CurrentTime: &grammar.CurrentTimeFunction{
+					Precision: &p10,
+				},
+			},
+			precision: &p10,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+			got := fn.CurrentTime()
+			if tt.precision != nil {
+				got = got.Precision(*tt.precision)
+			}
+			assert.Equal(tt.exp, got.DatetimeValueFunction)
+		})
+	}
+}
+
+func TestSelectCurrentTimeFunction(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+	colCreatedOn := users.C("created_on")
+
+	tests := []struct {
+		name  string
+		q     *expr.Selection
+		qs    string
+		qargs []interface{}
+	}{
+		{
+			name: "CURRENT_TIME func no args",
+			q: expr.Select(colUserId).Where(
+				expr.Equal(colCreatedOn, fn.CurrentTime()),
+			),
+			qs: "SELECT users.id FROM users WHERE users.created_on = CURRENT_TIME()",
+		},
+		{
+			name: "CURRENT_TIME func precision arg",
+			q: expr.Select(colUserId).Where(
+				expr.Equal(colCreatedOn, fn.CurrentTime().Precision(10)),
+			),
+			qs: "SELECT users.id FROM users WHERE users.created_on = CURRENT_TIME(10)",
+		},
+		{
+			name: "CURRENT_TIME func using alias",
+			q:    expr.Select(colUserId, fn.CurrentTime().As("now")),
+			qs:   "SELECT users.id, CURRENT_TIME() AS now FROM users",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			b := builder.New()
+
+			qs, qargs := b.StringArgs(tt.q.Query())
+			assert.Equal(len(tt.qargs), len(qargs))
+			assert.Equal(tt.qs, qs)
+		})
+	}
+}
