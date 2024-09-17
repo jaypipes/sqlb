@@ -127,7 +127,7 @@ func (f *CurrentTimeFunction) As(alias string) types.Projection {
 }
 
 // CurrentTimestamp returns a CurrentTimestampFunction that produces a
-// CURRENT_TIME() SQL function that can be passed to sqlb constructs and
+// CURRENT_TIMESTAMP() SQL function that can be passed to sqlb constructs and
 // functions like Select()
 func CurrentTimestamp() *CurrentTimestampFunction {
 	return &CurrentTimestampFunction{
@@ -187,6 +187,134 @@ func (f *CurrentTimestampFunction) DerivedColumn() *grammar.DerivedColumn {
 
 // As aliases the SQL function as the supplied column name
 func (f *CurrentTimestampFunction) As(alias string) types.Projection {
+	f.alias = alias
+	return f
+}
+
+// LocalTime returns a LocalTimeFunction that produces a LOCALTIME() SQL
+// function that can be passed to sqlb constructs and functions like Select()
+func LocalTime() *LocalTimeFunction {
+	return &LocalTimeFunction{
+		DatetimeValueFunction: &grammar.DatetimeValueFunction{
+			LocalTime: &grammar.LocalTimeFunction{},
+		},
+	}
+}
+
+// LocalTimeFunction wraps the LOCALTIME() SQL function grammar element
+type LocalTimeFunction struct {
+	BaseFunction
+	*grammar.DatetimeValueFunction
+}
+
+// Precision sets the function's time or timestamp precision value
+func (f *LocalTimeFunction) Precision(p uint) *LocalTimeFunction {
+	if f.DatetimeValueFunction == nil {
+		f.DatetimeValueFunction = &grammar.DatetimeValueFunction{
+			LocalTime: &grammar.LocalTimeFunction{},
+		}
+	}
+	f.DatetimeValueFunction.LocalTime.Precision = &p
+	return f
+}
+
+// CommonValueExpression returns the object as a
+// `*grammar.CommonValueExpression`
+func (f *LocalTimeFunction) CommonValueExpression() *grammar.CommonValueExpression {
+	return &grammar.CommonValueExpression{
+		Datetime: &grammar.DatetimeValueExpression{
+			Unary: &grammar.DatetimeTerm{
+				Factor: grammar.DatetimeFactor{
+					Primary: grammar.DatetimePrimary{
+						Function: f.DatetimeValueFunction,
+					},
+				},
+			},
+		},
+	}
+}
+
+// DerivedColumn returns the `*grammar.DerivedColumn` element representing
+// the Projection
+func (f *LocalTimeFunction) DerivedColumn() *grammar.DerivedColumn {
+	dc := &grammar.DerivedColumn{
+		ValueExpression: grammar.ValueExpression{
+			Common: f.CommonValueExpression(),
+		},
+	}
+	if f.alias != "" {
+		dc.As = &f.alias
+	}
+	return dc
+}
+
+// As aliases the SQL function as the supplied column name
+func (f *LocalTimeFunction) As(alias string) types.Projection {
+	f.alias = alias
+	return f
+}
+
+// LocalTimestamp returns a LocalTimestampFunction that produces a
+// LOCALTIMESTAMP() SQL function that can be passed to sqlb constructs and
+// functions like Select()
+func LocalTimestamp() *LocalTimestampFunction {
+	return &LocalTimestampFunction{
+		DatetimeValueFunction: &grammar.DatetimeValueFunction{
+			LocalTimestamp: &grammar.LocalTimestampFunction{},
+		},
+	}
+}
+
+// LocalTimestampFunction wraps the LOCALTIMESTAMP() SQL function grammar
+// element
+type LocalTimestampFunction struct {
+	BaseFunction
+	*grammar.DatetimeValueFunction
+}
+
+// Precision sets the function's time or timestamp precision value
+func (f *LocalTimestampFunction) Precision(p uint) *LocalTimestampFunction {
+	if f.DatetimeValueFunction == nil {
+		f.DatetimeValueFunction = &grammar.DatetimeValueFunction{
+			LocalTimestamp: &grammar.LocalTimestampFunction{},
+		}
+	}
+	f.DatetimeValueFunction.LocalTimestamp.Precision = &p
+	return f
+}
+
+// CommonValueExpression returns the object as a
+// `*grammar.CommonValueExpression`
+func (f *LocalTimestampFunction) CommonValueExpression() *grammar.CommonValueExpression {
+	return &grammar.CommonValueExpression{
+		Datetime: &grammar.DatetimeValueExpression{
+			Unary: &grammar.DatetimeTerm{
+				Factor: grammar.DatetimeFactor{
+					Primary: grammar.DatetimePrimary{
+						Function: f.DatetimeValueFunction,
+					},
+				},
+			},
+		},
+	}
+}
+
+// DerivedColumn returns the `*grammar.DerivedColumn` element representing
+// the Projection
+func (f *LocalTimestampFunction) DerivedColumn() *grammar.DerivedColumn {
+	dc := &grammar.DerivedColumn{
+		ValueExpression: grammar.ValueExpression{
+			Common: f.CommonValueExpression(),
+		},
+	}
+	if f.alias != "" {
+		dc.As = &f.alias
+	}
+	return dc
+}
+
+// As aliases the SQL function as the supplied column name
+func (f *LocalTimestampFunction) As(alias string) types.Projection {
 	f.alias = alias
 	return f
 }

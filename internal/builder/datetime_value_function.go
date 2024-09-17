@@ -31,5 +31,17 @@ func (b *Builder) doDatetimeValueFunction(
 			b.WriteString(strconv.Itoa(int(*el.CurrentTimestamp.Precision)))
 		}
 		b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+	} else if el.LocalTime != nil {
+		b.Write(grammar.Symbols[grammar.SYM_LOCALTIME])
+		if el.LocalTime.Precision != nil {
+			b.WriteString(strconv.Itoa(int(*el.LocalTime.Precision)))
+		}
+		b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+	} else if el.LocalTimestamp != nil {
+		b.Write(grammar.Symbols[grammar.SYM_LOCALTIMESTAMP])
+		if el.LocalTimestamp.Precision != nil {
+			b.WriteString(strconv.Itoa(int(*el.LocalTimestamp.Precision)))
+		}
+		b.Write(grammar.Symbols[grammar.SYM_RPAREN])
 	}
 }

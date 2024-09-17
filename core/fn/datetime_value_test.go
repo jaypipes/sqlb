@@ -235,3 +235,163 @@ func TestSelectCurrentTimestampFunction(t *testing.T) {
 		})
 	}
 }
+
+func TestDatetimeValueFunctionLocalTime(t *testing.T) {
+	p10 := uint(10)
+	tests := []struct {
+		name      string
+		exp       *grammar.DatetimeValueFunction
+		precision *uint
+	}{
+		{
+			name: "no args",
+			exp: &grammar.DatetimeValueFunction{
+				LocalTime: &grammar.LocalTimeFunction{},
+			},
+		},
+		{
+			name: "with precision",
+			exp: &grammar.DatetimeValueFunction{
+				LocalTime: &grammar.LocalTimeFunction{
+					Precision: &p10,
+				},
+			},
+			precision: &p10,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+			got := fn.LocalTime()
+			if tt.precision != nil {
+				got = got.Precision(*tt.precision)
+			}
+			assert.Equal(tt.exp, got.DatetimeValueFunction)
+		})
+	}
+}
+
+func TestSelectLocalTimeFunction(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+	colCreatedOn := users.C("created_on")
+
+	tests := []struct {
+		name  string
+		q     *expr.Selection
+		qs    string
+		qargs []interface{}
+	}{
+		{
+			name: "LOCALTIME func no args",
+			q: expr.Select(colUserId).Where(
+				expr.Equal(colCreatedOn, fn.LocalTime()),
+			),
+			qs: "SELECT users.id FROM users WHERE users.created_on = LOCALTIME()",
+		},
+		{
+			name: "LOCALTIME func precision arg",
+			q: expr.Select(colUserId).Where(
+				expr.Equal(colCreatedOn, fn.LocalTime().Precision(10)),
+			),
+			qs: "SELECT users.id FROM users WHERE users.created_on = LOCALTIME(10)",
+		},
+		{
+			name: "LOCALTIME func using alias",
+			q:    expr.Select(colUserId, fn.LocalTime().As("now")),
+			qs:   "SELECT users.id, LOCALTIME() AS now FROM users",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			b := builder.New()
+
+			qs, qargs := b.StringArgs(tt.q.Query())
+			assert.Equal(len(tt.qargs), len(qargs))
+			assert.Equal(tt.qs, qs)
+		})
+	}
+}
+
+func TestDatetimeValueFunctionLocalTimestamp(t *testing.T) {
+	p10 := uint(10)
+	tests := []struct {
+		name      string
+		exp       *grammar.DatetimeValueFunction
+		precision *uint
+	}{
+		{
+			name: "no args",
+			exp: &grammar.DatetimeValueFunction{
+				LocalTimestamp: &grammar.LocalTimestampFunction{},
+			},
+		},
+		{
+			name: "with precision",
+			exp: &grammar.DatetimeValueFunction{
+				LocalTimestamp: &grammar.LocalTimestampFunction{
+					Precision: &p10,
+				},
+			},
+			precision: &p10,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+			got := fn.LocalTimestamp()
+			if tt.precision != nil {
+				got = got.Precision(*tt.precision)
+			}
+			assert.Equal(tt.exp, got.DatetimeValueFunction)
+		})
+	}
+}
+
+func TestSelectLocalTimestampFunction(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+	colCreatedOn := users.C("created_on")
+
+	tests := []struct {
+		name  string
+		q     *expr.Selection
+		qs    string
+		qargs []interface{}
+	}{
+		{
+			name: "LOCALTIMESTAMP func no args",
+			q: expr.Select(colUserId).Where(
+				expr.Equal(colCreatedOn, fn.LocalTimestamp()),
+			),
+			qs: "SELECT users.id FROM users WHERE users.created_on = LOCALTIMESTAMP()",
+		},
+		{
+			name: "LOCALTIMESTAMP func precision arg",
+			q: expr.Select(colUserId).Where(
+				expr.Equal(colCreatedOn, fn.LocalTimestamp().Precision(10)),
+			),
+			qs: "SELECT users.id FROM users WHERE users.created_on = LOCALTIMESTAMP(10)",
+		},
+		{
+			name: "LOCALTIMESTAMP func using alias",
+			q:    expr.Select(colUserId, fn.LocalTimestamp().As("now")),
+			qs:   "SELECT users.id, LOCALTIMESTAMP() AS now FROM users",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			b := builder.New()
+
+			qs, qargs := b.StringArgs(tt.q.Query())
+			assert.Equal(len(tt.qargs), len(qargs))
+			assert.Equal(tt.qs, qs)
+		})
+	}
+}
