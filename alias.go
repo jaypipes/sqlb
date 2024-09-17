@@ -219,6 +219,28 @@ var TrimPrefix = fn.TrimPrefix
 var RTrim = fn.RTrim
 var TrimSuffix = fn.RTrim
 
+// CurrentDate returns a CurrentDateFunction that produces a CURRENT_DATE() SQL
+// function that can be passed to sqlb constructs and functions like Select()
+var CurrentDate = fn.CurrentDate
+
+// CurrentTime returns a CurrentTimeFunction that produces a CURRENT_TIME() SQL
+// function that can be passed to sqlb constructs and functions like Select()
+var CurrentTime = fn.CurrentTime
+
+// CurrentTimestamp returns a CurrentTimestampFunction that produces a
+// CURRENT_TIMESTAMP() SQL function that can be passed to sqlb constructs and
+// functions like Select()
+var CurrentTimestamp = fn.CurrentTimestamp
+
+// LocalTime returns a LocalTimeFunction that produces a LOCALTIME() SQL
+// function that can be passed to sqlb constructs and functions like Select()
+var LocalTime = fn.LocalTime
+
+// LocalTimestamp returns a LocalTimestampFunction that produces a
+// LOCALTIMESTAMP() SQL function that can be passed to sqlb constructs and
+// functions like Select()
+var LocalTimestamp = fn.LocalTimestamp
+
 /*
 // Cast returns a Projection that contains the CAST() SQL function
 var Cast = function.Cast

@@ -79,6 +79,8 @@ const (
 	SYM_NOW
 	SYM_CURRENT_TIMESTAMP
 	SYM_CURRENT_TIME
+	SYM_LOCALTIMESTAMP
+	SYM_LOCALTIME
 	SYM_CURRENT_DATE
 	SYM_EXTRACT
 	SYM_COLLATE
@@ -185,8 +187,10 @@ var (
 		SYM_CONCAT:                  []byte("CONCAT("),
 		SYM_CONCAT_WS:               []byte("CONCAT_WS("),
 		SYM_NOW:                     []byte("NOW()"),
-		SYM_CURRENT_TIMESTAMP:       []byte("CURRENT_TIMESTAMP()"),
-		SYM_CURRENT_TIME:            []byte("CURRENT_TIME()"),
+		SYM_CURRENT_TIMESTAMP:       []byte("CURRENT_TIMESTAMP("),
+		SYM_CURRENT_TIME:            []byte("CURRENT_TIME("),
+		SYM_LOCALTIMESTAMP:          []byte("LOCALTIMESTAMP("),
+		SYM_LOCALTIME:               []byte("LOCALTIME("),
 		SYM_CURRENT_DATE:            []byte("CURRENT_DATE()"),
 		SYM_EXTRACT:                 []byte("EXTRACT("),
 		SYM_COLLATE:                 []byte("COLLATE "),

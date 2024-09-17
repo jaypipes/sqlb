@@ -28,7 +28,7 @@ type DatetimeValueFunction struct {
 	CurrentTime      *CurrentTimeFunction
 	LocalTime        *LocalTimeFunction
 	CurrentTimestamp *CurrentTimestampFunction
-	LocalTimstamp    *LocalTimestampFunction
+	LocalTimestamp   *LocalTimestampFunction
 }
 
 type CurrentTimeFunction struct {
