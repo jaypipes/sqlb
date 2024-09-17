@@ -70,7 +70,21 @@ package grammar
 //      |     <large object length token> [ <char length units> ]
 //
 // <char length units>    ::=   CHARACTERS | CODE_UNITS | OCTETS
-//
+
+type CharacterLengthUnits int
+
+const (
+	CharacterLengthUnitsCharacters CharacterLengthUnits = iota
+	CharacterLengthUnitsCodeUnits
+	CharacterLengthUnitsOctets
+)
+
+var CharacterLengthUnitsSymbol = map[CharacterLengthUnits]string{
+	CharacterLengthUnitsCharacters: "CHARACTERS",
+	CharacterLengthUnitsCodeUnits:  "CODE_UNITS",
+	CharacterLengthUnitsOctets:     "OCTETS",
+}
+
 // <precision>    ::=   <unsigned integer>
 //
 // <scale>    ::=   <unsigned integer>
@@ -109,17 +123,3 @@ package grammar
 // <array type>    ::=   <data type> ARRAY [ <left bracket or trigraph> <unsigned integer> <right bracket or trigraph> ]
 //
 // <multiset type>    ::=   <data type> MULTISET
-
-type CharacterLengthUnits int
-
-const (
-	CharacterLengthUnitsCharacters CharacterLengthUnits = iota
-	CharacterLengthUnitsCodeUnits
-	CharacterLengthUnitsOctets
-)
-
-var CharacterLengthUnitsSymbol = map[CharacterLengthUnits]string{
-	CharacterLengthUnitsCharacters: "CHARACTERS",
-	CharacterLengthUnitsCodeUnits:  "CODE_UNITS",
-	CharacterLengthUnitsOctets:     "OCTETS",
-}

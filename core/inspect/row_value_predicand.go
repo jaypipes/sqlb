@@ -20,12 +20,6 @@ func RowValuePredicandFromAny(subject interface{}) *grammar.RowValuePredicand {
 		return v
 	case grammar.RowValuePredicand:
 		return &v
-	case types.ColumnReferenceConverter:
-		return &grammar.RowValuePredicand{
-			NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
-				ColumnReference: v.ColumnReference(),
-			},
-		}
 	case *grammar.NonParenthesizedValueExpressionPrimary:
 		return &grammar.RowValuePredicand{
 			NonParenthesizedValueExpressionPrimary: v,
@@ -41,6 +35,10 @@ func RowValuePredicandFromAny(subject interface{}) *grammar.RowValuePredicand {
 	case grammar.CommonValueExpression:
 		return &grammar.RowValuePredicand{
 			CommonValueExpression: &v,
+		}
+	case types.CommonValueExpressionConverter:
+		return &grammar.RowValuePredicand{
+			CommonValueExpression: v.CommonValueExpression(),
 		}
 	case *grammar.BooleanPredicand:
 		return &grammar.RowValuePredicand{

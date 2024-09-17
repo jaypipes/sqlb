@@ -35,6 +35,7 @@ func init() {
 		m, "users",
 		"id",
 		"name",
+		"created_on",
 	)
 
 	articles = meta.NewTable(

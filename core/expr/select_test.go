@@ -19,6 +19,7 @@ func TestSelect(t *testing.T) {
 	m := testutil.M()
 	users := m.T("users")
 	colUserName := users.C("name")
+	colUserId := users.C("id")
 
 	tests := []struct {
 		name  string
@@ -29,17 +30,17 @@ func TestSelect(t *testing.T) {
 		{
 			name: "Simple FROM",
 			q:    expr.Select(users),
-			qs:   "SELECT users.id, users.name FROM users",
+			qs:   "SELECT users.created_on, users.id, users.name FROM users",
 		},
 		{
 			name:  "Simple WHERE",
-			q:     expr.Select(users).Where(expr.Equal(colUserName, "foo")),
+			q:     expr.Select(colUserId, colUserName).Where(expr.Equal(colUserName, "foo")),
 			qs:    "SELECT users.id, users.name FROM users WHERE users.name = ?",
 			qargs: []interface{}{"foo"},
 		},
 		{
 			name: "WHERE with an OR sqlb",
-			q: expr.Select(users).Where(
+			q: expr.Select(colUserId, colUserName).Where(
 				expr.Or(
 					expr.Equal(colUserName, "foo"),
 					expr.Equal(colUserName, "bar"),
@@ -50,40 +51,40 @@ func TestSelect(t *testing.T) {
 		},
 		{
 			name: "Simple GROUP BY",
-			q:    expr.Select(users).GroupBy(colUserName),
+			q:    expr.Select(colUserId, colUserName).GroupBy(colUserName),
 			qs:   "SELECT users.id, users.name FROM users GROUP BY users.name",
 		},
 		{
 			name:  "Simple HAVING",
-			q:     expr.Select(users).Having(expr.Equal(colUserName, "foo")),
+			q:     expr.Select(colUserId, colUserName).Having(expr.Equal(colUserName, "foo")),
 			qs:    "SELECT users.id, users.name FROM users HAVING users.name = ?",
 			qargs: []interface{}{"foo"},
 		},
 		{
 			name: "Simple ORDER BY",
-			q:    expr.Select(users).OrderBy(colUserName.Desc()),
+			q:    expr.Select(colUserId, colUserName).OrderBy(colUserName.Desc()),
 			qs:   "SELECT users.id, users.name FROM users ORDER BY users.name DESC",
 		},
 		{
 			name:  "Simple LIMIT",
-			q:     expr.Select(users).Limit(10),
+			q:     expr.Select(colUserId, colUserName).Limit(10),
 			qs:    "SELECT users.id, users.name FROM users LIMIT ?",
 			qargs: []interface{}{10},
 		},
 		{
 			name:  "Simple LIMIT with OFFSET",
-			q:     expr.Select(users).LimitWithOffset(10, 20),
+			q:     expr.Select(colUserId, colUserName).LimitWithOffset(10, 20),
 			qs:    "SELECT users.id, users.name FROM users LIMIT ? OFFSET ?",
 			qargs: []interface{}{10, 20},
 		},
 		{
 			name: "Simple named derived table",
-			q:    expr.Select(expr.Select(users).As("u")),
+			q:    expr.Select(expr.Select(colUserId, colUserName).As("u")),
 			qs:   "SELECT u.id, u.name FROM (SELECT users.id, users.name FROM users) AS u",
 		},
 		{
 			name: "Simple un-named derived table",
-			q:    expr.Select(expr.Select(users)),
+			q:    expr.Select(expr.Select(colUserId, colUserName)),
 			qs:   "SELECT derived0.id, derived0.name FROM (SELECT users.id, users.name FROM users) AS derived0",
 		},
 	}
@@ -106,8 +107,10 @@ func TestModifyingSelectQueryUpdatesBuffer(t *testing.T) {
 	b := builder.New()
 	m := testutil.M()
 	users := m.T("users")
+	colUserName := users.C("name")
+	colUserId := users.C("id")
 
-	q := expr.Select(users)
+	q := expr.Select(colUserId, colUserName)
 
 	qs, qargs := b.StringArgs(q.Query())
 	assert.Equal("SELECT users.id, users.name FROM users", qs)

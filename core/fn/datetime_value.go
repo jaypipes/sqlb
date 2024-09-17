@@ -6,6 +6,65 @@
 
 package fn
 
+import (
+	"github.com/jaypipes/sqlb/core/types"
+	"github.com/jaypipes/sqlb/grammar"
+)
+
+// CurrentDate returns a CurrentDateFunction that produces a CURRENT_DATE() SQL
+// function that can be passed to sqlb constructs and functions like Select()
+func CurrentDate() *CurrentDateFunction {
+	return &CurrentDateFunction{
+		DatetimeValueFunction: &grammar.DatetimeValueFunction{
+			CurrentDate: true,
+		},
+	}
+}
+
+// CurrentDateFunction wraps the	CURRENT_DATE() SQL function grammar element
+type CurrentDateFunction struct {
+	BaseFunction
+	*grammar.DatetimeValueFunction
+}
+
+// CommonValueExpression returns the object as a
+// `*grammar.CommonValueExpression`
+func (f *CurrentDateFunction) CommonValueExpression() *grammar.CommonValueExpression {
+	return &grammar.CommonValueExpression{
+		Datetime: &grammar.DatetimeValueExpression{
+			Unary: &grammar.DatetimeTerm{
+				Factor: grammar.DatetimeFactor{
+					Primary: grammar.DatetimePrimary{
+						Function: &grammar.DatetimeValueFunction{
+							CurrentDate: true,
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+// DerivedColumn returns the `*grammar.DerivedColumn` element representing
+// the Projection
+func (f *CurrentDateFunction) DerivedColumn() *grammar.DerivedColumn {
+	dc := &grammar.DerivedColumn{
+		ValueExpression: grammar.ValueExpression{
+			Common: f.CommonValueExpression(),
+		},
+	}
+	if f.alias != "" {
+		dc.As = &f.alias
+	}
+	return dc
+}
+
+// As aliases the SQL function as the supplied column name
+func (f *CurrentDateFunction) As(alias string) types.Projection {
+	f.alias = alias
+	return f
+}
+
 /*
 // Now returns a Projection that contains the NOW() SQL function
 func Now() api.Projection {

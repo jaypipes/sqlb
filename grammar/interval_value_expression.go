@@ -30,4 +30,15 @@ package grammar
 //
 // <interval term 2>    ::=   <interval term>
 
-type IntervalValueExpression struct{}
+type IntervalValueExpression struct {
+	Unary *IntervalTerm
+}
+
+type IntervalTerm struct {
+}
+
+type IntervalFactor struct {
+}
+
+type IntervalPrimary struct {
+}
