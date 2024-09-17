@@ -65,26 +65,32 @@ type SubstringFunction struct {
 	*grammar.SubstringFunction
 }
 
-// DerivedColumn returns the `*grammar.DerivedColumn` element representing
-// the Projection
-func (f *SubstringFunction) DerivedColumn() *grammar.DerivedColumn {
-	dc := &grammar.DerivedColumn{
-		ValueExpression: grammar.ValueExpression{
-			Common: &grammar.CommonValueExpression{
-				String: &grammar.StringValueExpression{
-					Character: &grammar.CharacterValueExpression{
-						Factor: &grammar.CharacterFactor{
-							Primary: grammar.CharacterPrimary{
-								Function: &grammar.StringValueFunction{
-									Character: &grammar.CharacterValueFunction{
-										Substring: f.SubstringFunction,
-									},
-								},
+// CommonValueExpression returns the object as a
+// `*grammar.CommonValueExpression`
+func (f *SubstringFunction) CommonValueExpression() *grammar.CommonValueExpression {
+	return &grammar.CommonValueExpression{
+		String: &grammar.StringValueExpression{
+			Character: &grammar.CharacterValueExpression{
+				Factor: &grammar.CharacterFactor{
+					Primary: grammar.CharacterPrimary{
+						Function: &grammar.StringValueFunction{
+							Character: &grammar.CharacterValueFunction{
+								Substring: f.SubstringFunction,
 							},
 						},
 					},
 				},
 			},
+		},
+	}
+}
+
+// DerivedColumn returns the `*grammar.DerivedColumn` element representing
+// the Projection
+func (f *SubstringFunction) DerivedColumn() *grammar.DerivedColumn {
+	dc := &grammar.DerivedColumn{
+		ValueExpression: grammar.ValueExpression{
+			Common: f.CommonValueExpression(),
 		},
 	}
 	if f.alias != "" {
@@ -190,26 +196,32 @@ type RegexSubstringFunction struct {
 	*grammar.RegexSubstringFunction
 }
 
-// DerivedColumn returns the `*grammar.DerivedColumn` element representing
-// the Projection
-func (f *RegexSubstringFunction) DerivedColumn() *grammar.DerivedColumn {
-	dc := &grammar.DerivedColumn{
-		ValueExpression: grammar.ValueExpression{
-			Common: &grammar.CommonValueExpression{
-				String: &grammar.StringValueExpression{
-					Character: &grammar.CharacterValueExpression{
-						Factor: &grammar.CharacterFactor{
-							Primary: grammar.CharacterPrimary{
-								Function: &grammar.StringValueFunction{
-									Character: &grammar.CharacterValueFunction{
-										RegexSubstring: f.RegexSubstringFunction,
-									},
-								},
+// CommonValueExpression returns the object as a
+// `*grammar.CommonValueExpression`
+func (f *RegexSubstringFunction) CommonValueExpression() *grammar.CommonValueExpression {
+	return &grammar.CommonValueExpression{
+		String: &grammar.StringValueExpression{
+			Character: &grammar.CharacterValueExpression{
+				Factor: &grammar.CharacterFactor{
+					Primary: grammar.CharacterPrimary{
+						Function: &grammar.StringValueFunction{
+							Character: &grammar.CharacterValueFunction{
+								RegexSubstring: f.RegexSubstringFunction,
 							},
 						},
 					},
 				},
 			},
+		},
+	}
+}
+
+// DerivedColumn returns the `*grammar.DerivedColumn` element representing
+// the Projection
+func (f *RegexSubstringFunction) DerivedColumn() *grammar.DerivedColumn {
+	dc := &grammar.DerivedColumn{
+		ValueExpression: grammar.ValueExpression{
+			Common: f.CommonValueExpression(),
 		},
 	}
 	if f.alias != "" {
@@ -285,26 +297,32 @@ type FoldFunction struct {
 	*grammar.FoldFunction
 }
 
-// DerivedColumn returns the `*grammar.DerivedColumn` element representing
-// the Projection
-func (f *FoldFunction) DerivedColumn() *grammar.DerivedColumn {
-	dc := &grammar.DerivedColumn{
-		ValueExpression: grammar.ValueExpression{
-			Common: &grammar.CommonValueExpression{
-				String: &grammar.StringValueExpression{
-					Character: &grammar.CharacterValueExpression{
-						Factor: &grammar.CharacterFactor{
-							Primary: grammar.CharacterPrimary{
-								Function: &grammar.StringValueFunction{
-									Character: &grammar.CharacterValueFunction{
-										Fold: f.FoldFunction,
-									},
-								},
+// CommonValueExpression returns the object as a
+// `*grammar.CommonValueExpression`
+func (f *FoldFunction) CommonValueExpression() *grammar.CommonValueExpression {
+	return &grammar.CommonValueExpression{
+		String: &grammar.StringValueExpression{
+			Character: &grammar.CharacterValueExpression{
+				Factor: &grammar.CharacterFactor{
+					Primary: grammar.CharacterPrimary{
+						Function: &grammar.StringValueFunction{
+							Character: &grammar.CharacterValueFunction{
+								Fold: f.FoldFunction,
 							},
 						},
 					},
 				},
 			},
+		},
+	}
+}
+
+// DerivedColumn returns the `*grammar.DerivedColumn` element representing
+// the Projection
+func (f *FoldFunction) DerivedColumn() *grammar.DerivedColumn {
+	dc := &grammar.DerivedColumn{
+		ValueExpression: grammar.ValueExpression{
+			Common: f.CommonValueExpression(),
 		},
 	}
 	if f.alias != "" {
@@ -363,26 +381,32 @@ type TranscodingFunction struct {
 	*grammar.TranscodingFunction
 }
 
-// DerivedColumn returns the `*grammar.DerivedColumn` element representing
-// the Projection
-func (f *TranscodingFunction) DerivedColumn() *grammar.DerivedColumn {
-	dc := &grammar.DerivedColumn{
-		ValueExpression: grammar.ValueExpression{
-			Common: &grammar.CommonValueExpression{
-				String: &grammar.StringValueExpression{
-					Character: &grammar.CharacterValueExpression{
-						Factor: &grammar.CharacterFactor{
-							Primary: grammar.CharacterPrimary{
-								Function: &grammar.StringValueFunction{
-									Character: &grammar.CharacterValueFunction{
-										Transcoding: f.TranscodingFunction,
-									},
-								},
+// CommonValueExpression returns the object as a
+// `*grammar.CommonValueExpression`
+func (f *TranscodingFunction) CommonValueExpression() *grammar.CommonValueExpression {
+	return &grammar.CommonValueExpression{
+		String: &grammar.StringValueExpression{
+			Character: &grammar.CharacterValueExpression{
+				Factor: &grammar.CharacterFactor{
+					Primary: grammar.CharacterPrimary{
+						Function: &grammar.StringValueFunction{
+							Character: &grammar.CharacterValueFunction{
+								Transcoding: f.TranscodingFunction,
 							},
 						},
 					},
 				},
 			},
+		},
+	}
+}
+
+// DerivedColumn returns the `*grammar.DerivedColumn` element representing
+// the Projection
+func (f *TranscodingFunction) DerivedColumn() *grammar.DerivedColumn {
+	dc := &grammar.DerivedColumn{
+		ValueExpression: grammar.ValueExpression{
+			Common: f.CommonValueExpression(),
 		},
 	}
 	if f.alias != "" {
@@ -441,26 +465,32 @@ type TransliterationFunction struct {
 	*grammar.TransliterationFunction
 }
 
-// DerivedColumn returns the `*grammar.DerivedColumn` element representing
-// the Projection
-func (f *TransliterationFunction) DerivedColumn() *grammar.DerivedColumn {
-	dc := &grammar.DerivedColumn{
-		ValueExpression: grammar.ValueExpression{
-			Common: &grammar.CommonValueExpression{
-				String: &grammar.StringValueExpression{
-					Character: &grammar.CharacterValueExpression{
-						Factor: &grammar.CharacterFactor{
-							Primary: grammar.CharacterPrimary{
-								Function: &grammar.StringValueFunction{
-									Character: &grammar.CharacterValueFunction{
-										Transliteration: f.TransliterationFunction,
-									},
-								},
+// CommonValueExpression returns the object as a
+// `*grammar.CommonValueExpression`
+func (f *TransliterationFunction) CommonValueExpression() *grammar.CommonValueExpression {
+	return &grammar.CommonValueExpression{
+		String: &grammar.StringValueExpression{
+			Character: &grammar.CharacterValueExpression{
+				Factor: &grammar.CharacterFactor{
+					Primary: grammar.CharacterPrimary{
+						Function: &grammar.StringValueFunction{
+							Character: &grammar.CharacterValueFunction{
+								Transliteration: f.TransliterationFunction,
 							},
 						},
 					},
 				},
 			},
+		},
+	}
+}
+
+// DerivedColumn returns the `*grammar.DerivedColumn` element representing
+// the Projection
+func (f *TransliterationFunction) DerivedColumn() *grammar.DerivedColumn {
+	dc := &grammar.DerivedColumn{
+		ValueExpression: grammar.ValueExpression{
+			Common: f.CommonValueExpression(),
 		},
 	}
 	if f.alias != "" {
@@ -606,26 +636,32 @@ type TrimFunction struct {
 	*grammar.TrimFunction
 }
 
-// DerivedColumn returns the `*grammar.DerivedColumn` element representing
-// the Projection
-func (f *TrimFunction) DerivedColumn() *grammar.DerivedColumn {
-	dc := &grammar.DerivedColumn{
-		ValueExpression: grammar.ValueExpression{
-			Common: &grammar.CommonValueExpression{
-				String: &grammar.StringValueExpression{
-					Character: &grammar.CharacterValueExpression{
-						Factor: &grammar.CharacterFactor{
-							Primary: grammar.CharacterPrimary{
-								Function: &grammar.StringValueFunction{
-									Character: &grammar.CharacterValueFunction{
-										Trim: f.TrimFunction,
-									},
-								},
+// CommonValueExpression returns the object as a
+// `*grammar.CommonValueExpression`
+func (f *TrimFunction) CommonValueExpression() *grammar.CommonValueExpression {
+	return &grammar.CommonValueExpression{
+		String: &grammar.StringValueExpression{
+			Character: &grammar.CharacterValueExpression{
+				Factor: &grammar.CharacterFactor{
+					Primary: grammar.CharacterPrimary{
+						Function: &grammar.StringValueFunction{
+							Character: &grammar.CharacterValueFunction{
+								Trim: f.TrimFunction,
 							},
 						},
 					},
 				},
 			},
+		},
+	}
+}
+
+// DerivedColumn returns the `*grammar.DerivedColumn` element representing
+// the Projection
+func (f *TrimFunction) DerivedColumn() *grammar.DerivedColumn {
+	dc := &grammar.DerivedColumn{
+		ValueExpression: grammar.ValueExpression{
+			Common: f.CommonValueExpression(),
 		},
 	}
 	if f.alias != "" {

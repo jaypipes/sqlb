@@ -61,6 +61,26 @@ func ArgCount(target interface{}, count *int) {
 			ArgCount(&el.AddSubtract.Left, count)
 			ArgCount(&el.AddSubtract.Right, count)
 		}
+	case *grammar.DatetimeValueExpression:
+		if el.Unary != nil {
+			ArgCount(el.Unary, count)
+		} else if el.AddInterval != nil {
+			ArgCount(&el.AddInterval.Left, count)
+			ArgCount(&el.AddInterval.Right, count)
+		} else if el.AddSubtract != nil {
+			ArgCount(&el.AddSubtract.Left, count)
+			ArgCount(&el.AddSubtract.Right, count)
+		}
+	case *grammar.DatetimeFactor:
+		ArgCount(&el.Primary, count)
+	case *grammar.DatetimePrimary:
+		if el.Primary != nil {
+			ArgCount(el.Primary, count)
+		} else if el.Function != nil {
+			ArgCount(el.Function, count)
+		}
+	case *grammar.DatetimeTerm:
+		ArgCount(&el.Factor, count)
 	case *grammar.BooleanValueExpression:
 		if el.Unary != nil {
 			ArgCount(el.Unary, count)

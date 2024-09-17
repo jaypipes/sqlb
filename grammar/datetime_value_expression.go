@@ -22,4 +22,38 @@ package grammar
 //
 // <time zone specifier>    ::=   LOCAL | TIME ZONE <interval primary>
 
-type DatetimeValueExpression struct{}
+type DatetimeValueExpression struct {
+	Unary       *DatetimeTerm
+	AddInterval *AddIntervalExpression
+	AddSubtract *AddSubtractDatetimeExpression
+}
+
+type AddIntervalExpression struct {
+	Left  IntervalValueExpression
+	Right DatetimeTerm
+}
+
+type AddSubtractDatetimeExpression struct {
+	Left     DatetimeValueExpression
+	Right    IntervalTerm
+	Subtract bool
+}
+
+type DatetimeTerm struct {
+	Factor DatetimeFactor
+}
+
+type DatetimeFactor struct {
+	Primary  DatetimePrimary
+	TimeZone *TimezoneSpecifier
+}
+
+type DatetimePrimary struct {
+	Primary  *ValueExpressionPrimary
+	Function *DatetimeValueFunction
+}
+
+type TimezoneSpecifier struct {
+	Local    bool
+	Timezone *IntervalPrimary
+}

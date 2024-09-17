@@ -296,7 +296,7 @@ func TestSelectAggregateFunction(t *testing.T) {
 		{
 			name: "count star expr.Count",
 			q:    expr.Select(users, fn.Count()),
-			qs:   "SELECT users.id, users.name, COUNT(*) FROM users",
+			qs:   "SELECT users.created_on, users.id, users.name, COUNT(*) FROM users",
 		},
 		{
 			name: "count distinct column",
