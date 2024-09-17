@@ -126,6 +126,71 @@ func (f *CurrentTimeFunction) As(alias string) types.Projection {
 	return f
 }
 
+// CurrentTimestamp returns a CurrentTimestampFunction that produces a
+// CURRENT_TIME() SQL function that can be passed to sqlb constructs and
+// functions like Select()
+func CurrentTimestamp() *CurrentTimestampFunction {
+	return &CurrentTimestampFunction{
+		DatetimeValueFunction: &grammar.DatetimeValueFunction{
+			CurrentTimestamp: &grammar.CurrentTimestampFunction{},
+		},
+	}
+}
+
+// CurrentTimestampFunction wraps the CURRENT_TIMESTAMP() SQL function grammar
+// element
+type CurrentTimestampFunction struct {
+	BaseFunction
+	*grammar.DatetimeValueFunction
+}
+
+// Precision sets the function's time or timestamp precision value
+func (f *CurrentTimestampFunction) Precision(p uint) *CurrentTimestampFunction {
+	if f.DatetimeValueFunction == nil {
+		f.DatetimeValueFunction = &grammar.DatetimeValueFunction{
+			CurrentTimestamp: &grammar.CurrentTimestampFunction{},
+		}
+	}
+	f.DatetimeValueFunction.CurrentTimestamp.Precision = &p
+	return f
+}
+
+// CommonValueExpression returns the object as a
+// `*grammar.CommonValueExpression`
+func (f *CurrentTimestampFunction) CommonValueExpression() *grammar.CommonValueExpression {
+	return &grammar.CommonValueExpression{
+		Datetime: &grammar.DatetimeValueExpression{
+			Unary: &grammar.DatetimeTerm{
+				Factor: grammar.DatetimeFactor{
+					Primary: grammar.DatetimePrimary{
+						Function: f.DatetimeValueFunction,
+					},
+				},
+			},
+		},
+	}
+}
+
+// DerivedColumn returns the `*grammar.DerivedColumn` element representing
+// the Projection
+func (f *CurrentTimestampFunction) DerivedColumn() *grammar.DerivedColumn {
+	dc := &grammar.DerivedColumn{
+		ValueExpression: grammar.ValueExpression{
+			Common: f.CommonValueExpression(),
+		},
+	}
+	if f.alias != "" {
+		dc.As = &f.alias
+	}
+	return dc
+}
+
+// As aliases the SQL function as the supplied column name
+func (f *CurrentTimestampFunction) As(alias string) types.Projection {
+	f.alias = alias
+	return f
+}
+
 /*
 // Now returns a Projection that contains the NOW() SQL function
 func Now() api.Projection {

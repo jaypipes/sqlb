@@ -25,5 +25,11 @@ func (b *Builder) doDatetimeValueFunction(
 			b.WriteString(strconv.Itoa(int(*el.CurrentTime.Precision)))
 		}
 		b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+	} else if el.CurrentTimestamp != nil {
+		b.Write(grammar.Symbols[grammar.SYM_CURRENT_TIMESTAMP])
+		if el.CurrentTimestamp.Precision != nil {
+			b.WriteString(strconv.Itoa(int(*el.CurrentTimestamp.Precision)))
+		}
+		b.Write(grammar.Symbols[grammar.SYM_RPAREN])
 	}
 }

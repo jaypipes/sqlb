@@ -185,7 +185,7 @@ var (
 		SYM_CONCAT:                  []byte("CONCAT("),
 		SYM_CONCAT_WS:               []byte("CONCAT_WS("),
 		SYM_NOW:                     []byte("NOW()"),
-		SYM_CURRENT_TIMESTAMP:       []byte("CURRENT_TIMESTAMP()"),
+		SYM_CURRENT_TIMESTAMP:       []byte("CURRENT_TIMESTAMP("),
 		SYM_CURRENT_TIME:            []byte("CURRENT_TIME("),
 		SYM_CURRENT_DATE:            []byte("CURRENT_DATE()"),
 		SYM_EXTRACT:                 []byte("EXTRACT("),

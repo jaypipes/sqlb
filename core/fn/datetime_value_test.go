@@ -155,3 +155,83 @@ func TestSelectCurrentTimeFunction(t *testing.T) {
 		})
 	}
 }
+
+func TestDatetimeValueFunctionCurrentTimestamp(t *testing.T) {
+	p10 := uint(10)
+	tests := []struct {
+		name      string
+		exp       *grammar.DatetimeValueFunction
+		precision *uint
+	}{
+		{
+			name: "no args",
+			exp: &grammar.DatetimeValueFunction{
+				CurrentTimestamp: &grammar.CurrentTimestampFunction{},
+			},
+		},
+		{
+			name: "with precision",
+			exp: &grammar.DatetimeValueFunction{
+				CurrentTimestamp: &grammar.CurrentTimestampFunction{
+					Precision: &p10,
+				},
+			},
+			precision: &p10,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+			got := fn.CurrentTimestamp()
+			if tt.precision != nil {
+				got = got.Precision(*tt.precision)
+			}
+			assert.Equal(tt.exp, got.DatetimeValueFunction)
+		})
+	}
+}
+
+func TestSelectCurrentTimestampFunction(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+	colCreatedOn := users.C("created_on")
+
+	tests := []struct {
+		name  string
+		q     *expr.Selection
+		qs    string
+		qargs []interface{}
+	}{
+		{
+			name: "CURRENT_TIMESTAMP func no args",
+			q: expr.Select(colUserId).Where(
+				expr.Equal(colCreatedOn, fn.CurrentTimestamp()),
+			),
+			qs: "SELECT users.id FROM users WHERE users.created_on = CURRENT_TIMESTAMP()",
+		},
+		{
+			name: "CURRENT_TIMESTAMP func precision arg",
+			q: expr.Select(colUserId).Where(
+				expr.Equal(colCreatedOn, fn.CurrentTimestamp().Precision(10)),
+			),
+			qs: "SELECT users.id FROM users WHERE users.created_on = CURRENT_TIMESTAMP(10)",
+		},
+		{
+			name: "CURRENT_TIMESTAMP func using alias",
+			q:    expr.Select(colUserId, fn.CurrentTimestamp().As("now")),
+			qs:   "SELECT users.id, CURRENT_TIMESTAMP() AS now FROM users",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			b := builder.New()
+
+			qs, qargs := b.StringArgs(tt.q.Query())
+			assert.Equal(len(tt.qargs), len(qargs))
+			assert.Equal(tt.qs, qs)
+		})
+	}
+}
