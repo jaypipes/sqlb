@@ -7,6 +7,8 @@
 package builder
 
 import (
+	"fmt"
+
 	"github.com/jaypipes/sqlb/grammar"
 )
 
@@ -46,6 +48,18 @@ func ArgCount(target interface{}, count *int) {
 			ArgCount(el.Primary, count)
 		} else if el.Function != nil {
 			ArgCount(el.Function, count)
+		}
+	case *grammar.NumericValueFunction:
+		if el.Position != nil {
+			ArgCount(el.Position, count)
+		} else if el.Length != nil {
+			ArgCount(el.Length, count)
+		}
+	case *grammar.LengthExpression:
+		if el.Character != nil {
+			ArgCount(&el.Character.Subject, count)
+		} else if el.Octet != nil {
+			ArgCount(&el.Octet.Subject, count)
 		}
 	case *grammar.Term:
 		if el.Unary != nil {
@@ -362,7 +376,7 @@ func ArgCount(target interface{}, count *int) {
 		// contained in a query argument.
 		*count++
 	default:
-		//fmt.Printf("ArgCount on %T: %v\n", el, el)
+		fmt.Printf("ArgCount on %T: %v\n", el, el)
 		// the default is no argument
 	}
 }
