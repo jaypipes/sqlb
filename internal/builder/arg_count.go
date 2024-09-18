@@ -7,8 +7,6 @@
 package builder
 
 import (
-	"fmt"
-
 	"github.com/jaypipes/sqlb/grammar"
 )
 
@@ -376,7 +374,7 @@ func ArgCount(target interface{}, count *int) {
 		// contained in a query argument.
 		*count++
 	default:
-		fmt.Printf("ArgCount on %T: %v\n", el, el)
+		//fmt.Printf("ArgCount on %T: %v\n", el, el)
 		// the default is no argument
 	}
 }

@@ -49,6 +49,39 @@ func CharacterLength(
 
 var CharLength = CharacterLength
 
+// OctetLength returns a LengthExpression that produces a OCTET_LENGTH() SQL
+// function that can be passed to sqlb constructs and functions like Select()
+//
+// The first argument is the subject of the OCTET_LENGTH function and must be
+// coercible to a string value expression.
+func OctetLength(
+	subjectAny interface{},
+) *LengthExpression {
+	var ref types.Relation
+	switch subjectAny := subjectAny.(type) {
+	case types.Projection:
+		ref = subjectAny.References()
+	}
+	subject := inspect.StringValueExpressionFromAny(subjectAny)
+	if subject == nil {
+		msg := fmt.Sprintf(
+			"expected coerceable StringValueExpression but got %+v(%T)",
+			subjectAny, subjectAny,
+		)
+		panic(msg)
+	}
+	return &LengthExpression{
+		BaseFunction: BaseFunction{
+			ref: ref,
+		},
+		LengthExpression: &grammar.LengthExpression{
+			Octet: &grammar.OctetLengthExpression{
+				Subject: *subject,
+			},
+		},
+	}
+}
+
 // LengthExpression wraps the CHAR_LENGTH() SQL function grammar element
 type LengthExpression struct {
 	BaseFunction
