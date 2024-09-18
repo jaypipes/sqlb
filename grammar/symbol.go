@@ -71,6 +71,7 @@ const (
 	SYM_TRAILING
 	SYM_BOTH
 	SYM_CHAR_LENGTH
+	SYM_OCTET_LENGTH
 	SYM_BIT_LENGTH
 	SYM_ASCII
 	SYM_REVERSE
@@ -181,6 +182,7 @@ var (
 		SYM_TRAILING:                []byte("TRAILING"),
 		SYM_BOTH:                    []byte("BOTH"),
 		SYM_CHAR_LENGTH:             []byte("CHAR_LENGTH("),
+		SYM_OCTET_LENGTH:            []byte("OCTET_LENGTH("),
 		SYM_BIT_LENGTH:              []byte("BIT_LENGTH("),
 		SYM_ASCII:                   []byte("ASCII("),
 		SYM_REVERSE:                 []byte("REVERSE("),

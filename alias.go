@@ -241,6 +241,14 @@ var LocalTime = fn.LocalTime
 // functions like Select()
 var LocalTimestamp = fn.LocalTimestamp
 
+// CharacterLength returns a LengthExpression that produces a CHAR_LENGTH() SQL
+// function that can be passed to sqlb constructs and functions like Select()
+//
+// The first argument is the subject of the CHAR_LENGTH function and must be
+// coercible to a string value expression.
+var CharacterLength = fn.CharacterLength
+var CharLength = fn.CharacterLength
+
 /*
 // Cast returns a Projection that contains the CAST() SQL function
 var Cast = function.Cast
