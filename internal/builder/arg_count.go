@@ -59,6 +59,14 @@ func ArgCount(target interface{}, count *int) {
 		} else if el.Octet != nil {
 			ArgCount(&el.Octet.Subject, count)
 		}
+	case *grammar.PositionExpression:
+		if el.String != nil {
+			ArgCount(&el.String.Subject, count)
+			ArgCount(&el.String.In, count)
+		} else if el.Blob != nil {
+			ArgCount(&el.Blob.Subject, count)
+			ArgCount(&el.Blob.In, count)
+		}
 	case *grammar.Term:
 		if el.Unary != nil {
 			ArgCount(el.Unary, count)
@@ -184,6 +192,16 @@ func ArgCount(target interface{}, count *int) {
 			ArgCount(&el.Factor.Primary, count)
 		}
 	case *grammar.CharacterPrimary:
+		if el.Primary != nil {
+			ArgCount(el.Primary, count)
+		} else if el.Function != nil {
+			ArgCount(el.Function, count)
+		}
+	case *grammar.BlobValueExpression:
+		if el.Factor != nil {
+			ArgCount(&el.Factor.Primary, count)
+		}
+	case *grammar.BlobPrimary:
 		if el.Primary != nil {
 			ArgCount(el.Primary, count)
 		} else if el.Function != nil {
