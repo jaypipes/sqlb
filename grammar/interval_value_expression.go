@@ -141,3 +141,8 @@ type SecondPrimaryDatetimeField struct {
 	Precision           *uint
 	FractionalPrecision *uint
 }
+
+type PrimaryDatetimeField struct {
+	Nonsecond *NonsecondPrimaryDatetimeField
+	Second    bool
+}
