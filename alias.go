@@ -249,6 +249,23 @@ var LocalTimestamp = fn.LocalTimestamp
 var CharacterLength = fn.CharacterLength
 var CharLength = fn.CharacterLength
 
+// OctetLength returns a LengthExpression that produces a OCTET_LENGTH() SQL
+// function that can be passed to sqlb constructs and functions like Select()
+//
+// The first argument is the subject of the OCTET_LENGTH function and must be
+// coercible to a string value expression.
+var OctetLength = fn.OctetLength
+
+// Position returns a PositionExpression that produces a POSITION() SQL function
+// that can be passed to sqlb constructs and functions like Select()
+//
+// The first argument is the subject of the POSITION function and must be
+// coercible to either a blob value expression or a string value expression.
+// The second argument is the thing to search for the presence of the subject.
+// The second argument must also be coercible to either a blob value expression
+// or a string value expression.
+var Position = fn.Position
+
 /*
 // Cast returns a Projection that contains the CAST() SQL function
 var Cast = function.Cast

@@ -27,6 +27,24 @@ func (b *Builder) doPositionExpression(
 	qargs []interface{},
 	curarg *int,
 ) {
+	if el.String != nil {
+		b.Write(grammar.Symbols[grammar.SYM_POSITION])
+		b.doStringValueExpression(&el.String.Subject, qargs, curarg)
+		b.Write(grammar.Symbols[grammar.SYM_IN])
+		b.doStringValueExpression(&el.String.In, qargs, curarg)
+		if el.String.Using != grammar.CharacterLengthUnitsCharacters {
+			b.WriteRune(' ')
+			b.Write(grammar.Symbols[grammar.SYM_USING])
+			b.WriteString(grammar.CharacterLengthUnitsSymbol[el.String.Using])
+		}
+		b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+	} else if el.Blob != nil {
+		b.Write(grammar.Symbols[grammar.SYM_POSITION])
+		b.doBlobValueExpression(&el.Blob.Subject, qargs, curarg)
+		b.Write(grammar.Symbols[grammar.SYM_IN])
+		b.doBlobValueExpression(&el.Blob.In, qargs, curarg)
+		b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+	}
 }
 
 func (b *Builder) doLengthExpression(

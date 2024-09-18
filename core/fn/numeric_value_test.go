@@ -123,3 +123,234 @@ func TestSelectCharacterLengthFunction(t *testing.T) {
 		})
 	}
 }
+
+func TestNumericValueFunctionOctetLength(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+
+	tests := []struct {
+		name        string
+		subject     interface{}
+		exp         *grammar.LengthExpression
+		expRefersTo types.Relation
+	}{
+		{
+			name:    "column",
+			subject: colUserId,
+			exp: &grammar.LengthExpression{
+				Octet: &grammar.OctetLengthExpression{
+					Subject: grammar.StringValueExpression{
+						Character: &grammar.CharacterValueExpression{
+							Factor: &grammar.CharacterFactor{
+								Primary: grammar.CharacterPrimary{
+									Primary: &grammar.ValueExpressionPrimary{
+										Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+											ColumnReference: &grammar.ColumnReference{
+												BasicIdentifierChain: &grammar.IdentifierChain{
+													Identifiers: []string{
+														"users",
+														"id",
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expRefersTo: users,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+			got := fn.OctetLength(tt.subject)
+			assert.Equal(tt.exp, got.LengthExpression)
+			assert.Equal(tt.expRefersTo, got.References())
+		})
+	}
+
+	// First argument must be coercible into a OctetValueExpression
+	assert.Panics(t, func() {
+		_ = fn.OctetLength(struct{}{})
+	})
+	assert.Panics(t, func() {
+		// A Table is not coercible into a OctetValueExpression
+		_ = fn.OctetLength(users)
+	})
+}
+
+func TestSelectOctetLengthFunction(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+
+	tests := []struct {
+		name  string
+		q     *expr.Selection
+		qs    string
+		qargs []interface{}
+	}{
+		{
+			name:  "octet_length literal",
+			q:     expr.Select(colUserId, fn.OctetLength("42")),
+			qs:    "SELECT users.id, OCTET_LENGTH(?) FROM users",
+			qargs: []interface{}{"42"},
+		},
+		{
+			name: "octet_length column",
+			q:    expr.Select(fn.OctetLength(colUserId)),
+			qs:   "SELECT OCTET_LENGTH(users.id) FROM users",
+		},
+		{
+			name: "octet_length column using alias",
+			q:    expr.Select(fn.OctetLength(colUserId).As("clen")),
+			qs:   "SELECT OCTET_LENGTH(users.id) AS clen FROM users",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			b := builder.New()
+
+			qs, qargs := b.StringArgs(tt.q.Query())
+			assert.Equal(len(tt.qargs), len(qargs))
+			assert.Equal(tt.qs, qs)
+		})
+	}
+}
+
+func TestNumericValueFunctionPosition(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+
+	tests := []struct {
+		name        string
+		subject     interface{}
+		in          interface{}
+		exp         *grammar.PositionExpression
+		expRefersTo types.Relation
+	}{
+		{
+			name:    "literal and column",
+			subject: "foo",
+			in:      colUserId,
+			exp: &grammar.PositionExpression{
+				Blob: &grammar.BlobPositionExpression{
+					Subject: grammar.BlobValueExpression{
+						Factor: &grammar.BlobFactor{
+							Primary: grammar.BlobPrimary{
+								Primary: &grammar.ValueExpressionPrimary{
+									Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+										UnsignedValue: &grammar.UnsignedValueSpecification{
+											UnsignedLiteral: &grammar.UnsignedLiteral{
+												GeneralLiteral: &grammar.GeneralLiteral{
+													Value: "foo",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					In: grammar.BlobValueExpression{
+						Factor: &grammar.BlobFactor{
+							Primary: grammar.BlobPrimary{
+								Primary: &grammar.ValueExpressionPrimary{
+									Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+										ColumnReference: &grammar.ColumnReference{
+											BasicIdentifierChain: &grammar.IdentifierChain{
+												Identifiers: []string{
+													"users",
+													"id",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expRefersTo: users,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+			got := fn.Position(tt.subject, tt.in)
+			assert.Equal(tt.exp, got.PositionExpression)
+			assert.Equal(tt.expRefersTo, got.References())
+		})
+	}
+
+	// First argument must be coercible into a BlobValueExpression or StringValueExpression
+	assert.Panics(t, func() {
+		_ = fn.Position(struct{}{}, colUserId)
+	})
+	// Second argument must be coercible into a BlobValueExpression or StringValueExpression
+	assert.Panics(t, func() {
+		_ = fn.Substring(colUserId, struct{}{})
+	})
+	assert.Panics(t, func() {
+		// A Table is not coercible into a StringValueExpression
+		_ = fn.Position(users, colUserId)
+	})
+}
+
+func TestSelectPositionFunction(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+
+	tests := []struct {
+		name  string
+		q     *expr.Selection
+		qs    string
+		qargs []interface{}
+	}{
+		{
+			name:  "position literal in column",
+			q:     expr.Select(fn.Position("42", colUserId)),
+			qs:    "SELECT POSITION(? IN users.id) FROM users",
+			qargs: []interface{}{"42"},
+		},
+		{
+			name:  "position column in literal",
+			q:     expr.Select(fn.Position(colUserId, "42")),
+			qs:    "SELECT POSITION(users.id IN ?) FROM users",
+			qargs: []interface{}{"42"},
+		},
+		{
+			name:  "position column with using",
+			q:     expr.Select(fn.Position("42", colUserId).Using(grammar.CharacterLengthUnitsOctets)),
+			qs:    "SELECT POSITION(? IN users.id USING OCTETS) FROM users",
+			qargs: []interface{}{"42"},
+		},
+		{
+			name:  "position column using alias",
+			q:     expr.Select(fn.Position("42", colUserId).As("pos")),
+			qs:    "SELECT POSITION(? IN users.id) AS pos FROM users",
+			qargs: []interface{}{"42"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			b := builder.New()
+
+			qs, qargs := b.StringArgs(tt.q.Query())
+			assert.Equal(len(tt.qargs), len(qargs))
+			assert.Equal(tt.qs, qs)
+		})
+	}
+}

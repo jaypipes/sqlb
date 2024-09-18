@@ -72,6 +72,7 @@ const (
 	SYM_BOTH
 	SYM_CHAR_LENGTH
 	SYM_OCTET_LENGTH
+	SYM_POSITION
 	SYM_BIT_LENGTH
 	SYM_ASCII
 	SYM_REVERSE
@@ -151,7 +152,7 @@ var (
 		SYM_SET:                     []byte(" SET "),
 		SYM_LPAREN:                  []byte("("),
 		SYM_RPAREN:                  []byte(")"),
-		SYM_IN:                      []byte(" IN ("),
+		SYM_IN:                      []byte(" IN "),
 		SYM_AND:                     []byte(" AND "),
 		SYM_OR:                      []byte(" OR "),
 		SYM_EQUAL:                   []byte(" = "),
@@ -183,6 +184,7 @@ var (
 		SYM_BOTH:                    []byte("BOTH"),
 		SYM_CHAR_LENGTH:             []byte("CHAR_LENGTH("),
 		SYM_OCTET_LENGTH:            []byte("OCTET_LENGTH("),
+		SYM_POSITION:                []byte("POSITION("),
 		SYM_BIT_LENGTH:              []byte("BIT_LENGTH("),
 		SYM_ASCII:                   []byte("ASCII("),
 		SYM_REVERSE:                 []byte("REVERSE("),
