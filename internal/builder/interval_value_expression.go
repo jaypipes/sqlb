@@ -16,3 +16,15 @@ func (b *Builder) doIntervalValueExpression(
 	curarg *int,
 ) {
 }
+
+func (b *Builder) doPrimaryDatetimeField(
+	el *grammar.PrimaryDatetimeField,
+	qargs []interface{},
+	curarg *int,
+) {
+	if el.Second {
+		b.WriteString("SECOND")
+	} else {
+		b.WriteString(grammar.NonsecondPrimaryDatetimeFieldSymbols[el.Nonsecond])
+	}
+}

@@ -113,15 +113,23 @@ type StartEndDatetimeField struct {
 	End   EndField
 }
 
-type NonsecondPrimaryDatetimeType int
+type NonsecondPrimaryDatetimeField int
 
 const (
-	NonsecondPrimaryDatetimeTypeYear NonsecondPrimaryDatetimeType = iota
-	NonsecondPrimaryDatetimeTypeMonth
-	NonsecondPrimaryDatetimeTypeDay
-	NonsecondPrimaryDatetimeTypeHour
-	NonsecondPrimaryDatetimeTypeMinute
+	NonsecondPrimaryDatetimeFieldYear NonsecondPrimaryDatetimeField = iota
+	NonsecondPrimaryDatetimeFieldMonth
+	NonsecondPrimaryDatetimeFieldDay
+	NonsecondPrimaryDatetimeFieldHour
+	NonsecondPrimaryDatetimeFieldMinute
 )
+
+var NonsecondPrimaryDatetimeFieldSymbols = map[NonsecondPrimaryDatetimeField]string{
+	NonsecondPrimaryDatetimeFieldYear:   "YEAR",
+	NonsecondPrimaryDatetimeFieldMonth:  "MONTH",
+	NonsecondPrimaryDatetimeFieldDay:    "DAY",
+	NonsecondPrimaryDatetimeFieldHour:   "HOUR",
+	NonsecondPrimaryDatetimeFieldMinute: "MINUTE",
+}
 
 type StartField struct {
 	Nonsecond NonsecondPrimaryDatetimeField
@@ -132,17 +140,12 @@ type EndField struct {
 	Second    *SecondPrimaryDatetimeField
 }
 
-type NonsecondPrimaryDatetimeField struct {
-	Type      NonsecondPrimaryDatetimeType
-	Precision *uint
-}
-
 type SecondPrimaryDatetimeField struct {
 	Precision           *uint
 	FractionalPrecision *uint
 }
 
 type PrimaryDatetimeField struct {
-	Nonsecond *NonsecondPrimaryDatetimeField
+	Nonsecond NonsecondPrimaryDatetimeField
 	Second    bool
 }

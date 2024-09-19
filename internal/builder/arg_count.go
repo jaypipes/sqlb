@@ -52,12 +52,22 @@ func ArgCount(target interface{}, count *int) {
 			ArgCount(el.Position, count)
 		} else if el.Length != nil {
 			ArgCount(el.Length, count)
+		} else if el.Extract != nil {
+			ArgCount(el.Extract, count)
 		}
 	case *grammar.LengthExpression:
 		if el.Character != nil {
 			ArgCount(&el.Character.Subject, count)
 		} else if el.Octet != nil {
 			ArgCount(&el.Octet.Subject, count)
+		}
+	case *grammar.ExtractExpression:
+		ArgCount(&el.From, count)
+	case *grammar.ExtractSource:
+		if el.Datetime != nil {
+			ArgCount(el.Datetime, count)
+		} else if el.Interval != nil {
+			ArgCount(el.Interval, count)
 		}
 	case *grammar.PositionExpression:
 		if el.String != nil {

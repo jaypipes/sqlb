@@ -354,3 +354,101 @@ func TestSelectPositionFunction(t *testing.T) {
 		})
 	}
 }
+
+func TestNumericValueFunctionExtract(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+
+	tests := []struct {
+		name        string
+		from        interface{}
+		what        fn.ExtractField
+		exp         *grammar.ExtractExpression
+		expRefersTo types.Relation
+	}{
+		{
+			name: "extract second from column",
+			from: colUserId,
+			what: fn.ExtractFieldSecond,
+			exp: &grammar.ExtractExpression{
+				From: grammar.ExtractSource{
+					Datetime: &grammar.DatetimeValueExpression{
+						Unary: &grammar.DatetimeTerm{
+							Factor: grammar.DatetimeFactor{
+								Primary: grammar.DatetimePrimary{
+									Primary: &grammar.ValueExpressionPrimary{
+										Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+											ColumnReference: &grammar.ColumnReference{
+												BasicIdentifierChain: &grammar.IdentifierChain{
+													Identifiers: []string{
+														"users",
+														"id",
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				What: grammar.ExtractField{
+					Datetime: &grammar.PrimaryDatetimeField{
+						Second: true,
+					},
+				},
+			},
+			expRefersTo: users,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+			got := fn.Extract(tt.from, tt.what)
+			assert.Equal(tt.exp, got.ExtractExpression)
+			assert.Equal(tt.expRefersTo, got.References())
+		})
+	}
+}
+
+func TestSelectExtractFunction(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+
+	tests := []struct {
+		name  string
+		q     *expr.Selection
+		qs    string
+		qargs []interface{}
+	}{
+		{
+			name: "extract second from column",
+			q:    expr.Select(fn.Extract(colUserId, fn.ExtractFieldSecond)),
+			qs:   "SELECT EXTRACT(SECOND FROM users.id) FROM users",
+		},
+		{
+			name: "extract month from column",
+			q:    expr.Select(fn.Extract(colUserId, fn.ExtractFieldMonth)),
+			qs:   "SELECT EXTRACT(MONTH FROM users.id) FROM users",
+		},
+		{
+			name: "extract timezone minute from column using alias",
+			q:    expr.Select(fn.Extract(colUserId, fn.ExtractFieldTimezoneMinute).As("tzm")),
+			qs:   "SELECT EXTRACT(TIMEZONE_MINUTE FROM users.id) AS tzm FROM users",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			b := builder.New()
+
+			qs, qargs := b.StringArgs(tt.q.Query())
+			assert.Equal(len(tt.qargs), len(qargs))
+			assert.Equal(tt.qs, qs)
+		})
+	}
+}
