@@ -158,8 +158,8 @@ type ExponentialFunction struct {
 // <numeric value expression exponent>    ::=   <numeric value expression>
 
 type PowerFunction struct {
-	Base      NumericValueExpression
-	Expontent NumericValueExpression
+	Base     NumericValueExpression
+	Exponent NumericValueExpression
 }
 
 // <square root>    ::=   SQRT <left paren> <numeric value expression> <right paren>

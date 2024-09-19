@@ -25,6 +25,8 @@ func (b *Builder) doNumericValueFunction(
 		b.doNaturalLogarithm(el.Natural, qargs, curarg)
 	} else if el.AbsoluteValue != nil {
 		b.doAbsoluteValueExpression(el.AbsoluteValue, qargs, curarg)
+	} else if el.Exponential != nil {
+		b.doExponentialFunction(el.Exponential, qargs, curarg)
 	}
 }
 
@@ -127,6 +129,16 @@ func (b *Builder) doAbsoluteValueExpression(
 	curarg *int,
 ) {
 	b.Write(grammar.Symbols[grammar.SYM_ABS])
+	b.doNumericValueExpression(&el.Subject, qargs, curarg)
+	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+}
+
+func (b *Builder) doExponentialFunction(
+	el *grammar.ExponentialFunction,
+	qargs []interface{},
+	curarg *int,
+) {
+	b.Write(grammar.Symbols[grammar.SYM_EXP])
 	b.doNumericValueExpression(&el.Subject, qargs, curarg)
 	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
 }
