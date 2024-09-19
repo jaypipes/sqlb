@@ -282,3 +282,129 @@ func (f *PositionExpression) Using(
 	f.PositionExpression.String.Using = using
 	return f
 }
+
+type ExtractField int
+
+const (
+	ExtractFieldYear ExtractField = iota
+	ExtractFieldMonth
+	ExtractFieldDay
+	ExtractFieldHour
+	ExtractFieldMinute
+	ExtractFieldSecond
+	ExtractFieldTimezoneHour
+	ExtractFieldTimezoneMinute
+)
+
+func grammarExtractField(field ExtractField) *grammar.ExtractField {
+	switch field {
+	case ExtractFieldSecond:
+		return &grammar.ExtractField{
+			Datetime: &grammar.PrimaryDatetimeField{
+				Second: true,
+			},
+		}
+	case ExtractFieldTimezoneHour:
+		tzf := grammar.TimezoneFieldHour
+		return &grammar.ExtractField{
+			Timezone: &tzf,
+		}
+	case ExtractFieldTimezoneMinute:
+		tzf := grammar.TimezoneFieldMinute
+		return &grammar.ExtractField{
+			Timezone: &tzf,
+		}
+	default:
+		return &grammar.ExtractField{
+			Datetime: &grammar.PrimaryDatetimeField{
+				Nonsecond: grammar.NonsecondPrimaryDatetimeField(field),
+			},
+		}
+	}
+}
+
+// Extract returns a ExtractExpression that produces a EXTRACT() SQL
+// function that can be passed to sqlb constructs and functions like Select()
+//
+// The first argument is the subject of the EXTRACT function and must be
+// coercible to a datetime value expression or interval value expression. The
+// second argument specifies which datetime or timezone field to extract from
+// the value expression identified in the first parameter.
+func Extract(
+	fromAny interface{},
+	what ExtractField,
+) *ExtractExpression {
+	var ref types.Relation
+	switch fromAny := fromAny.(type) {
+	case types.Projection:
+		ref = fromAny.References()
+	}
+	var source *grammar.ExtractSource
+	fromDatetime := inspect.DatetimeValueExpressionFromAny(fromAny)
+	if fromDatetime != nil {
+		source = &grammar.ExtractSource{Datetime: fromDatetime}
+	} else {
+		fromInterval := inspect.IntervalValueExpressionFromAny(fromAny)
+		if fromInterval == nil {
+			msg := fmt.Sprintf(
+				"expected coerceable DatetimeValueExpression or IntervalValueExpression but got %+v(%T)",
+				fromAny, fromAny,
+			)
+			panic(msg)
+		}
+		source = &grammar.ExtractSource{Interval: fromInterval}
+	}
+	return &ExtractExpression{
+		BaseFunction: BaseFunction{
+			ref: ref,
+		},
+		ExtractExpression: &grammar.ExtractExpression{
+			From: *source,
+			What: *grammarExtractField(what),
+		},
+	}
+}
+
+// ExtractExpression wraps the CHAR_LENGTH() SQL function grammar element
+type ExtractExpression struct {
+	BaseFunction
+	*grammar.ExtractExpression
+}
+
+// CommonValueExpression returns the object as a
+// `*grammar.CommonValueExpression`
+func (f *ExtractExpression) CommonValueExpression() *grammar.CommonValueExpression {
+	return &grammar.CommonValueExpression{
+		Numeric: &grammar.NumericValueExpression{
+			Unary: &grammar.Term{
+				Unary: &grammar.Factor{
+					Primary: grammar.NumericPrimary{
+						Function: &grammar.NumericValueFunction{
+							Extract: f.ExtractExpression,
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+// DerivedColumn returns the `*grammar.DerivedColumn` element representing
+// the Projection
+func (f *ExtractExpression) DerivedColumn() *grammar.DerivedColumn {
+	dc := &grammar.DerivedColumn{
+		ValueExpression: grammar.ValueExpression{
+			Common: f.CommonValueExpression(),
+		},
+	}
+	if f.alias != "" {
+		dc.As = &f.alias
+	}
+	return dc
+}
+
+// As aliases the SQL function as the supplied column name
+func (f *ExtractExpression) As(alias string) types.Projection {
+	f.alias = alias
+	return f
+}

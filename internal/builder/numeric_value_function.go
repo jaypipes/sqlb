@@ -19,6 +19,8 @@ func (b *Builder) doNumericValueFunction(
 		b.doPositionExpression(el.Position, qargs, curarg)
 	} else if el.Length != nil {
 		b.doLengthExpression(el.Length, qargs, curarg)
+	} else if el.Extract != nil {
+		b.doExtractExpression(el.Extract, qargs, curarg)
 	}
 }
 
@@ -65,5 +67,42 @@ func (b *Builder) doLengthExpression(
 		b.Write(grammar.Symbols[grammar.SYM_OCTET_LENGTH])
 		b.doStringValueExpression(&el.Octet.Subject, qargs, curarg)
 		b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+	}
+}
+
+func (b *Builder) doExtractExpression(
+	el *grammar.ExtractExpression,
+	qargs []interface{},
+	curarg *int,
+) {
+	b.Write(grammar.Symbols[grammar.SYM_EXTRACT])
+	b.doExtractField(&el.What, qargs, curarg)
+	b.WriteRune(' ')
+	b.Write(grammar.Symbols[grammar.SYM_FROM])
+	b.doExtractSource(&el.From, qargs, curarg)
+	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+}
+
+func (b *Builder) doExtractField(
+	el *grammar.ExtractField,
+	qargs []interface{},
+	curarg *int,
+) {
+	if el.Datetime != nil {
+		b.doPrimaryDatetimeField(el.Datetime, qargs, curarg)
+	} else if el.Timezone != nil {
+		b.WriteString(grammar.TimezoneFieldSymbols[*el.Timezone])
+	}
+}
+
+func (b *Builder) doExtractSource(
+	el *grammar.ExtractSource,
+	qargs []interface{},
+	curarg *int,
+) {
+	if el.Datetime != nil {
+		b.doDatetimeValueExpression(el.Datetime, qargs, curarg)
+	} else if el.Interval != nil {
+		b.doIntervalValueExpression(el.Interval, qargs, curarg)
 	}
 }

@@ -266,6 +266,15 @@ var OctetLength = fn.OctetLength
 // or a string value expression.
 var Position = fn.Position
 
+// Extract returns a ExtractExpression that produces a EXTRACT() SQL
+// function that can be passed to sqlb constructs and functions like Select()
+//
+// The first argument is the subject of the EXTRACT function and must be
+// coercible to a datetime value expression or interval value expression. The
+// second argument specifies which datetime or timezone field to extract from
+// the value expression identified in the first parameter.
+var Extract = fn.Extract
+
 /*
 // Cast returns a Projection that contains the CAST() SQL function
 var Cast = function.Cast
