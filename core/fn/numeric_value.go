@@ -408,3 +408,140 @@ func (f *ExtractExpression) As(alias string) types.Projection {
 	f.alias = alias
 	return f
 }
+
+// NaturalLogarithm returns a NumericUnaryfunction that produces a LN() SQL
+// function that can be passed to sqlb constructs and functions like Select()
+//
+// The argument is the subject of the LN function and must be coercible to a
+// numeric value expression.
+func NaturalLogarithm(
+	subjectAny interface{},
+) *NumericValueFunction {
+	ref, subject := relationsAndSubjectAsNumericValueExpression(
+		subjectAny,
+	)
+	return &NumericValueFunction{
+		BaseFunction: BaseFunction{
+			ref: ref,
+		},
+		NumericValueFunction: &grammar.NumericValueFunction{
+			Natural: &grammar.NaturalLogarithm{
+				Subject: *subject,
+			},
+		},
+	}
+}
+
+var Ln = NaturalLogarithm
+
+// Absolute returns a NumericUnaryfunction that produces a ABS() SQL
+// function that can be passed to sqlb constructs and functions like Select()
+//
+// The argument is the subject of the ABS function and must be coercible to a
+// numeric value expression.
+func Absolute(
+	subjectAny interface{},
+) *NumericValueFunction {
+	ref, subject := relationsAndSubjectAsNumericValueExpression(
+		subjectAny,
+	)
+	return &NumericValueFunction{
+		BaseFunction: BaseFunction{
+			ref: ref,
+		},
+		NumericValueFunction: &grammar.NumericValueFunction{
+			AbsoluteValue: &grammar.AbsoluteValueExpression{
+				Subject: *subject,
+			},
+		},
+	}
+}
+
+var Abs = Absolute
+
+// Exponential returns a NumericUnaryfunction that produces a EXP() SQL
+// function that can be passed to sqlb constructs and functions like Select()
+//
+// The argument is the subject of the EXP function and must be coercible to a
+// numeric value expression.
+func Exponential(
+	subjectAny interface{},
+) *NumericValueFunction {
+	ref, subject := relationsAndSubjectAsNumericValueExpression(
+		subjectAny,
+	)
+	return &NumericValueFunction{
+		BaseFunction: BaseFunction{
+			ref: ref,
+		},
+		NumericValueFunction: &grammar.NumericValueFunction{
+			Exponential: &grammar.ExponentialFunction{
+				Subject: *subject,
+			},
+		},
+	}
+}
+
+var Exp = Exponential
+
+// NumericValueFunction wraps a number of unary numeric value SQL function
+// grammar elements
+type NumericValueFunction struct {
+	BaseFunction
+	*grammar.NumericValueFunction
+}
+
+func relationsAndSubjectAsNumericValueExpression(
+	subjectAny interface{},
+) (types.Relation, *grammar.NumericValueExpression) {
+	var ref types.Relation
+	switch subjectAny := subjectAny.(type) {
+	case types.Projection:
+		ref = subjectAny.References()
+	}
+	subject := inspect.NumericValueExpressionFromAny(subjectAny)
+	if subject == nil {
+		msg := fmt.Sprintf(
+			"expected coerceable NumericValueExpression but got %+v(%T)",
+			subjectAny, subjectAny,
+		)
+		panic(msg)
+	}
+	return ref, subject
+}
+
+// CommonValueExpression returns the object as a
+// `*grammar.CommonValueExpression`
+func (f *NumericValueFunction) CommonValueExpression() *grammar.CommonValueExpression {
+	return &grammar.CommonValueExpression{
+		Numeric: &grammar.NumericValueExpression{
+			Unary: &grammar.Term{
+				Unary: &grammar.Factor{
+					Primary: grammar.NumericPrimary{
+						Function: f.NumericValueFunction,
+					},
+				},
+			},
+		},
+	}
+}
+
+// DerivedColumn returns the `*grammar.DerivedColumn` element representing
+// the Projection
+func (f *NumericValueFunction) DerivedColumn() *grammar.DerivedColumn {
+	dc := &grammar.DerivedColumn{
+		ValueExpression: grammar.ValueExpression{
+			Common: f.CommonValueExpression(),
+		},
+	}
+	if f.alias != "" {
+		dc.As = &f.alias
+	}
+	return dc
+}
+
+// As aliases the SQL function as the supplied column name
+func (f *NumericValueFunction) As(alias string) types.Projection {
+	f.alias = alias
+	return f
+}

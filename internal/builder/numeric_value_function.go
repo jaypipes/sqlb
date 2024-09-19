@@ -21,6 +21,12 @@ func (b *Builder) doNumericValueFunction(
 		b.doLengthExpression(el.Length, qargs, curarg)
 	} else if el.Extract != nil {
 		b.doExtractExpression(el.Extract, qargs, curarg)
+	} else if el.Natural != nil {
+		b.doNaturalLogarithm(el.Natural, qargs, curarg)
+	} else if el.AbsoluteValue != nil {
+		b.doAbsoluteValueExpression(el.AbsoluteValue, qargs, curarg)
+	} else if el.Exponential != nil {
+		b.doExponentialFunction(el.Exponential, qargs, curarg)
 	}
 }
 
@@ -105,4 +111,34 @@ func (b *Builder) doExtractSource(
 	} else if el.Interval != nil {
 		b.doIntervalValueExpression(el.Interval, qargs, curarg)
 	}
+}
+
+func (b *Builder) doNaturalLogarithm(
+	el *grammar.NaturalLogarithm,
+	qargs []interface{},
+	curarg *int,
+) {
+	b.Write(grammar.Symbols[grammar.SYM_LN])
+	b.doNumericValueExpression(&el.Subject, qargs, curarg)
+	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+}
+
+func (b *Builder) doAbsoluteValueExpression(
+	el *grammar.AbsoluteValueExpression,
+	qargs []interface{},
+	curarg *int,
+) {
+	b.Write(grammar.Symbols[grammar.SYM_ABS])
+	b.doNumericValueExpression(&el.Subject, qargs, curarg)
+	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+}
+
+func (b *Builder) doExponentialFunction(
+	el *grammar.ExponentialFunction,
+	qargs []interface{},
+	curarg *int,
+) {
+	b.Write(grammar.Symbols[grammar.SYM_EXP])
+	b.doNumericValueExpression(&el.Subject, qargs, curarg)
+	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
 }

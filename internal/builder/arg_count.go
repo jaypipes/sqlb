@@ -54,6 +54,12 @@ func ArgCount(target interface{}, count *int) {
 			ArgCount(el.Length, count)
 		} else if el.Extract != nil {
 			ArgCount(el.Extract, count)
+		} else if el.Natural != nil {
+			ArgCount(&el.Natural.Subject, count)
+		} else if el.AbsoluteValue != nil {
+			ArgCount(&el.AbsoluteValue.Subject, count)
+		} else if el.Exponential != nil {
+			ArgCount(&el.Exponential.Subject, count)
 		}
 	case *grammar.LengthExpression:
 		if el.Character != nil {
