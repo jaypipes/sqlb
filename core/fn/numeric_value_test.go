@@ -452,3 +452,94 @@ func TestSelectExtractFunction(t *testing.T) {
 		})
 	}
 }
+
+func TestNumericValueFunctionNaturalLogarithm(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+
+	tests := []struct {
+		name        string
+		subject     interface{}
+		exp         *grammar.NumericValueFunction
+		expRefersTo types.Relation
+	}{
+		{
+			name:    "natural logarithm column",
+			subject: colUserId,
+			exp: &grammar.NumericValueFunction{
+				Natural: &grammar.NaturalLogarithm{
+					Subject: grammar.NumericValueExpression{
+						Unary: &grammar.Term{
+							Unary: &grammar.Factor{
+								Primary: grammar.NumericPrimary{
+									Primary: &grammar.ValueExpressionPrimary{
+										Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+											ColumnReference: &grammar.ColumnReference{
+												BasicIdentifierChain: &grammar.IdentifierChain{
+													Identifiers: []string{
+														"users",
+														"id",
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expRefersTo: users,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+			got := fn.NaturalLogarithm(tt.subject)
+			assert.Equal(tt.exp, got.NumericValueFunction)
+			assert.Equal(tt.expRefersTo, got.References())
+		})
+	}
+}
+
+func TestSelectNaturalLogarithm(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+
+	tests := []struct {
+		name  string
+		q     *expr.Selection
+		qs    string
+		qargs []interface{}
+	}{
+		{
+			name: "natural logarithm on column",
+			q:    expr.Select(fn.NaturalLogarithm(colUserId)),
+			qs:   "SELECT LN(users.id) FROM users",
+		},
+		{
+			name: "ln on column",
+			q:    expr.Select(fn.Ln(colUserId)),
+			qs:   "SELECT LN(users.id) FROM users",
+		},
+		{
+			name: "natural logarithm on column using alias",
+			q:    expr.Select(fn.Ln(colUserId).As("nlog")),
+			qs:   "SELECT LN(users.id) AS nlog FROM users",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			b := builder.New()
+
+			qs, qargs := b.StringArgs(tt.q.Query())
+			assert.Equal(len(tt.qargs), len(qargs))
+			assert.Equal(tt.qs, qs)
+		})
+	}
+}

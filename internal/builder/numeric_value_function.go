@@ -21,6 +21,8 @@ func (b *Builder) doNumericValueFunction(
 		b.doLengthExpression(el.Length, qargs, curarg)
 	} else if el.Extract != nil {
 		b.doExtractExpression(el.Extract, qargs, curarg)
+	} else if el.Natural != nil {
+		b.doNaturalLogarithm(el.Natural, qargs, curarg)
 	}
 }
 
@@ -105,4 +107,14 @@ func (b *Builder) doExtractSource(
 	} else if el.Interval != nil {
 		b.doIntervalValueExpression(el.Interval, qargs, curarg)
 	}
+}
+
+func (b *Builder) doNaturalLogarithm(
+	el *grammar.NaturalLogarithm,
+	qargs []interface{},
+	curarg *int,
+) {
+	b.Write(grammar.Symbols[grammar.SYM_LN])
+	b.doNumericValueExpression(&el.Subject, qargs, curarg)
+	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
 }
