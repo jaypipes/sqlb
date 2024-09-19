@@ -86,6 +86,7 @@ const (
 	SYM_CURRENT_DATE
 	SYM_EXTRACT
 	SYM_LN
+	SYM_ABS
 	SYM_COLLATE
 	SYM_TYPE_CHAR
 	SYM_TYPE_VARCHAR
@@ -199,6 +200,7 @@ var (
 		SYM_CURRENT_DATE:            []byte("CURRENT_DATE()"),
 		SYM_EXTRACT:                 []byte("EXTRACT("),
 		SYM_LN:                      []byte("LN("),
+		SYM_ABS:                     []byte("ABS("),
 		SYM_COLLATE:                 []byte("COLLATE "),
 		SYM_TYPE_CHAR:               []byte("CHAR"),
 		SYM_TYPE_VARCHAR:            []byte("VARCHAR"),

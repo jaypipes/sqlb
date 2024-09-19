@@ -543,3 +543,94 @@ func TestSelectNaturalLogarithm(t *testing.T) {
 		})
 	}
 }
+
+func TestNumericValueFunctionAbsolute(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+
+	tests := []struct {
+		name        string
+		subject     interface{}
+		exp         *grammar.NumericValueFunction
+		expRefersTo types.Relation
+	}{
+		{
+			name:    "absolute value column",
+			subject: colUserId,
+			exp: &grammar.NumericValueFunction{
+				AbsoluteValue: &grammar.AbsoluteValueExpression{
+					Subject: grammar.NumericValueExpression{
+						Unary: &grammar.Term{
+							Unary: &grammar.Factor{
+								Primary: grammar.NumericPrimary{
+									Primary: &grammar.ValueExpressionPrimary{
+										Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+											ColumnReference: &grammar.ColumnReference{
+												BasicIdentifierChain: &grammar.IdentifierChain{
+													Identifiers: []string{
+														"users",
+														"id",
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expRefersTo: users,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+			got := fn.Absolute(tt.subject)
+			assert.Equal(tt.exp, got.NumericValueFunction)
+			assert.Equal(tt.expRefersTo, got.References())
+		})
+	}
+}
+
+func TestSelectAbsolute(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+
+	tests := []struct {
+		name  string
+		q     *expr.Selection
+		qs    string
+		qargs []interface{}
+	}{
+		{
+			name: "absolute value on column",
+			q:    expr.Select(fn.Absolute(colUserId)),
+			qs:   "SELECT ABS(users.id) FROM users",
+		},
+		{
+			name: "abs on column",
+			q:    expr.Select(fn.Abs(colUserId)),
+			qs:   "SELECT ABS(users.id) FROM users",
+		},
+		{
+			name: "absolute value on column using alias",
+			q:    expr.Select(fn.Abs(colUserId).As("abber")),
+			qs:   "SELECT ABS(users.id) AS abber FROM users",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			b := builder.New()
+
+			qs, qargs := b.StringArgs(tt.q.Query())
+			assert.Equal(len(tt.qargs), len(qargs))
+			assert.Equal(tt.qs, qs)
+		})
+	}
+}

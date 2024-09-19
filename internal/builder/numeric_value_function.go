@@ -23,6 +23,8 @@ func (b *Builder) doNumericValueFunction(
 		b.doExtractExpression(el.Extract, qargs, curarg)
 	} else if el.Natural != nil {
 		b.doNaturalLogarithm(el.Natural, qargs, curarg)
+	} else if el.AbsoluteValue != nil {
+		b.doAbsoluteValueExpression(el.AbsoluteValue, qargs, curarg)
 	}
 }
 
@@ -115,6 +117,16 @@ func (b *Builder) doNaturalLogarithm(
 	curarg *int,
 ) {
 	b.Write(grammar.Symbols[grammar.SYM_LN])
+	b.doNumericValueExpression(&el.Subject, qargs, curarg)
+	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+}
+
+func (b *Builder) doAbsoluteValueExpression(
+	el *grammar.AbsoluteValueExpression,
+	qargs []interface{},
+	curarg *int,
+) {
+	b.Write(grammar.Symbols[grammar.SYM_ABS])
 	b.doNumericValueExpression(&el.Subject, qargs, curarg)
 	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
 }

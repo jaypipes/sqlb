@@ -417,19 +417,9 @@ func (f *ExtractExpression) As(alias string) types.Projection {
 func NaturalLogarithm(
 	subjectAny interface{},
 ) *NumericValueFunction {
-	var ref types.Relation
-	switch subjectAny := subjectAny.(type) {
-	case types.Projection:
-		ref = subjectAny.References()
-	}
-	subject := inspect.NumericValueExpressionFromAny(subjectAny)
-	if subject == nil {
-		msg := fmt.Sprintf(
-			"expected coerceable NumericValueExpression but got %+v(%T)",
-			subjectAny, subjectAny,
-		)
-		panic(msg)
-	}
+	ref, subject := relationsAndSubjectAsNumericValueExpression(
+		subjectAny,
+	)
 	return &NumericValueFunction{
 		BaseFunction: BaseFunction{
 			ref: ref,
@@ -444,11 +434,55 @@ func NaturalLogarithm(
 
 var Ln = NaturalLogarithm
 
+// Absolute returns a NumericUnaryfunction that produces a ABS() SQL
+// function that can be passed to sqlb constructs and functions like Select()
+//
+// The argument is the subject of the ABS function and must be coercible to a
+// numeric value expression.
+func Absolute(
+	subjectAny interface{},
+) *NumericValueFunction {
+	ref, subject := relationsAndSubjectAsNumericValueExpression(
+		subjectAny,
+	)
+	return &NumericValueFunction{
+		BaseFunction: BaseFunction{
+			ref: ref,
+		},
+		NumericValueFunction: &grammar.NumericValueFunction{
+			AbsoluteValue: &grammar.AbsoluteValueExpression{
+				Subject: *subject,
+			},
+		},
+	}
+}
+
+var Abs = Absolute
+
 // NumericValueFunction wraps a number of unary numeric value SQL function
 // grammar elements
 type NumericValueFunction struct {
 	BaseFunction
 	*grammar.NumericValueFunction
+}
+
+func relationsAndSubjectAsNumericValueExpression(
+	subjectAny interface{},
+) (types.Relation, *grammar.NumericValueExpression) {
+	var ref types.Relation
+	switch subjectAny := subjectAny.(type) {
+	case types.Projection:
+		ref = subjectAny.References()
+	}
+	subject := inspect.NumericValueExpressionFromAny(subjectAny)
+	if subject == nil {
+		msg := fmt.Sprintf(
+			"expected coerceable NumericValueExpression but got %+v(%T)",
+			subjectAny, subjectAny,
+		)
+		panic(msg)
+	}
+	return ref, subject
 }
 
 // CommonValueExpression returns the object as a

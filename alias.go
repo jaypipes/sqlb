@@ -275,6 +275,22 @@ var Position = fn.Position
 // the value expression identified in the first parameter.
 var Extract = fn.Extract
 
+// NaturalLogarithm returns a NumericUnaryfunction that produces a LN() SQL
+// function that can be passed to sqlb constructs and functions like Select()
+//
+// The argument is the subject of the LN function and must be coercible to a
+// numeric value expression.
+var NaturalLogarithm = fn.NaturalLogarithm
+var Ln = fn.NaturalLogarithm
+
+// Absolute returns a NumericUnaryfunction that produces a ABS() SQL
+// function that can be passed to sqlb constructs and functions like Select()
+//
+// The argument is the subject of the ABS function and must be coercible to a
+// numeric value expression.
+var Absolute = fn.Absolute
+var Abs = fn.Absolute
+
 /*
 // Cast returns a Projection that contains the CAST() SQL function
 var Cast = function.Cast
