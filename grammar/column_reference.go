@@ -13,5 +13,4 @@ package grammar
 type ColumnReference struct {
 	BasicIdentifierChain *IdentifierChain
 	//ModuleIdentifier *ModuleIdentifier
-	Correlation *Correlation
 }

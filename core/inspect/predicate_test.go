@@ -114,9 +114,6 @@ func TestPredicateEqual(t *testing.T) {
 									"author",
 								},
 							},
-							Correlation: &grammar.Correlation{
-								Name: "a",
-							},
 						},
 					},
 				},

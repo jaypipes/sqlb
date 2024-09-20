@@ -57,11 +57,6 @@ func (f *BaseFunction) ColumnReference() *grammar.ColumnReference {
 			Identifiers: ids,
 		},
 	}
-	if f.alias != "" {
-		cr.Correlation = &grammar.Correlation{
-			Name: f.alias,
-		}
-	}
 	return cr
 }
 

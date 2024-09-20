@@ -61,11 +61,6 @@ func (c *Column) ColumnReference() *grammar.ColumnReference {
 			Identifiers: []string{c.t.AliasOrName(), c.name},
 		},
 	}
-	if c.alias != "" {
-		cr.Correlation = &grammar.Correlation{
-			Name: c.alias,
-		}
-	}
 	return cr
 }
 
@@ -79,6 +74,9 @@ func (c *Column) DerivedColumn() *grammar.DerivedColumn {
 				},
 			},
 		},
+	}
+	if c.alias != "" {
+		dc.As = &c.alias
 	}
 	return dc
 }
