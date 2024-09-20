@@ -315,6 +315,13 @@ var SqRt = SquareRoot
 var Ceiling = fn.Ceiling
 var Ceil = fn.Ceiling
 
+// Floor returns a NumericUnaryfunction that produces a FLOOR() SQL function
+// that can be passed to sqlb constructs and functions like Select()
+//
+// The argument is the subject of the FLOOR function and must be coercible to a
+// numeric value expression.
+var Floor = fn.Floor
+
 /*
 // Cast returns a Projection that contains the CAST() SQL function
 var Cast = function.Cast

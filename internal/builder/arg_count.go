@@ -64,6 +64,8 @@ func ArgCount(target interface{}, count *int) {
 			ArgCount(&el.SquareRoot.Subject, count)
 		} else if el.Ceiling != nil {
 			ArgCount(&el.Ceiling.Subject, count)
+		} else if el.Floor != nil {
+			ArgCount(&el.Floor.Subject, count)
 		}
 	case *grammar.LengthExpression:
 		if el.Character != nil {

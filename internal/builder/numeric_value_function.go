@@ -31,6 +31,8 @@ func (b *Builder) doNumericValueFunction(
 		b.doSquareRoot(el.SquareRoot, qargs, curarg)
 	} else if el.Ceiling != nil {
 		b.doCeilingFunction(el.Ceiling, qargs, curarg)
+	} else if el.Floor != nil {
+		b.doFloorFunction(el.Floor, qargs, curarg)
 	}
 }
 
@@ -163,6 +165,16 @@ func (b *Builder) doCeilingFunction(
 	curarg *int,
 ) {
 	b.Write(grammar.Symbols[grammar.SYM_CEIL])
+	b.doNumericValueExpression(&el.Subject, qargs, curarg)
+	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+}
+
+func (b *Builder) doFloorFunction(
+	el *grammar.FloorFunction,
+	qargs []interface{},
+	curarg *int,
+) {
+	b.Write(grammar.Symbols[grammar.SYM_FLOOR])
 	b.doNumericValueExpression(&el.Subject, qargs, curarg)
 	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
 }
