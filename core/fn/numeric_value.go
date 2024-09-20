@@ -509,6 +509,31 @@ func SquareRoot(
 
 var SqRt = SquareRoot
 
+// Ceiling returns a NumericUnaryfunction that produces a CEIL() SQL function
+// that can be passed to sqlb constructs and functions like Select()
+//
+// The argument is the subject of the CEIL function and must be coercible to a
+// numeric value expression.
+func Ceiling(
+	subjectAny interface{},
+) *NumericValueFunction {
+	ref, subject := relationsAndSubjectAsNumericValueExpression(
+		subjectAny,
+	)
+	return &NumericValueFunction{
+		BaseFunction: BaseFunction{
+			ref: ref,
+		},
+		NumericValueFunction: &grammar.NumericValueFunction{
+			Ceiling: &grammar.CeilingFunction{
+				Subject: *subject,
+			},
+		},
+	}
+}
+
+var Ceil = Ceiling
+
 // NumericValueFunction wraps a number of unary numeric value SQL function
 // grammar elements
 type NumericValueFunction struct {

@@ -89,6 +89,7 @@ const (
 	SYM_ABS
 	SYM_EXP
 	SYM_SQRT
+	SYM_CEIL
 	SYM_COLLATE
 	SYM_TYPE_CHAR
 	SYM_TYPE_VARCHAR
@@ -205,6 +206,7 @@ var (
 		SYM_ABS:                     []byte("ABS("),
 		SYM_EXP:                     []byte("EXP("),
 		SYM_SQRT:                    []byte("SQRT("),
+		SYM_CEIL:                    []byte("CEIL("),
 		SYM_COLLATE:                 []byte("COLLATE "),
 		SYM_TYPE_CHAR:               []byte("CHAR"),
 		SYM_TYPE_VARCHAR:            []byte("VARCHAR"),

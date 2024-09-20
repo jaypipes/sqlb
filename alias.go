@@ -307,6 +307,14 @@ var Exp = fn.Exponential
 var SquareRoot = fn.SquareRoot
 var SqRt = SquareRoot
 
+// Ceiling returns a NumericUnaryfunction that produces a CEIL() SQL function
+// that can be passed to sqlb constructs and functions like Select()
+//
+// The argument is the subject of the CEIL function and must be coercible to a
+// numeric value expression.
+var Ceiling = fn.Ceiling
+var Ceil = fn.Ceiling
+
 /*
 // Cast returns a Projection that contains the CAST() SQL function
 var Cast = function.Cast

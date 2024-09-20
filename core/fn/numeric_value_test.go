@@ -738,7 +738,7 @@ func TestNumericValueFunctionSquareRoot(t *testing.T) {
 		expRefersTo types.Relation
 	}{
 		{
-			name:    "exponential column",
+			name:    "square root column",
 			subject: colUserId,
 			exp: &grammar.NumericValueFunction{
 				SquareRoot: &grammar.SquareRoot{
@@ -789,7 +789,7 @@ func TestSelectSquareRoot(t *testing.T) {
 		qargs []interface{}
 	}{
 		{
-			name: "exponential function on column",
+			name: "square root function on column",
 			q:    expr.Select(fn.SquareRoot(colUserId)),
 			qs:   "SELECT SQRT(users.id) FROM users",
 		},
@@ -799,9 +799,100 @@ func TestSelectSquareRoot(t *testing.T) {
 			qs:   "SELECT SQRT(users.id) FROM users",
 		},
 		{
-			name: "exponential function on column using alias",
-			q:    expr.Select(fn.SqRt(colUserId).As("exper")),
-			qs:   "SELECT SQRT(users.id) AS exper FROM users",
+			name: "square root function on column using alias",
+			q:    expr.Select(fn.SqRt(colUserId).As("rooter")),
+			qs:   "SELECT SQRT(users.id) AS rooter FROM users",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			b := builder.New()
+
+			qs, qargs := b.StringArgs(tt.q.Query())
+			assert.Equal(len(tt.qargs), len(qargs))
+			assert.Equal(tt.qs, qs)
+		})
+	}
+}
+
+func TestNumericValueFunctionCeiling(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+
+	tests := []struct {
+		name        string
+		subject     interface{}
+		exp         *grammar.NumericValueFunction
+		expRefersTo types.Relation
+	}{
+		{
+			name:    "ceiling column",
+			subject: colUserId,
+			exp: &grammar.NumericValueFunction{
+				Ceiling: &grammar.CeilingFunction{
+					Subject: grammar.NumericValueExpression{
+						Unary: &grammar.Term{
+							Unary: &grammar.Factor{
+								Primary: grammar.NumericPrimary{
+									Primary: &grammar.ValueExpressionPrimary{
+										Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+											ColumnReference: &grammar.ColumnReference{
+												BasicIdentifierChain: &grammar.IdentifierChain{
+													Identifiers: []string{
+														"users",
+														"id",
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expRefersTo: users,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+			got := fn.Ceiling(tt.subject)
+			assert.Equal(tt.exp, got.NumericValueFunction)
+			assert.Equal(tt.expRefersTo, got.References())
+		})
+	}
+}
+
+func TestSelectCeiling(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+
+	tests := []struct {
+		name  string
+		q     *expr.Selection
+		qs    string
+		qargs []interface{}
+	}{
+		{
+			name: "ceiling function on column",
+			q:    expr.Select(fn.Ceiling(colUserId)),
+			qs:   "SELECT CEIL(users.id) FROM users",
+		},
+		{
+			name: "exp on column",
+			q:    expr.Select(fn.Ceil(colUserId)),
+			qs:   "SELECT CEIL(users.id) FROM users",
+		},
+		{
+			name: "ceiling function on column using alias",
+			q:    expr.Select(fn.Ceil(colUserId).As("ceiler")),
+			qs:   "SELECT CEIL(users.id) AS ceiler FROM users",
 		},
 	}
 	for _, tt := range tests {
