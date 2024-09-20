@@ -6,7 +6,7 @@
 
 package types
 
-import "github.com/jaypipes/sqlb/grammar"
+import "github.com/jaypipes/sqlb/core/grammar"
 
 // ColumnReferenceConverter knows how to convert itself into a
 // `*grammar.ColumnReference`

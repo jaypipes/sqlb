@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/jaypipes/sqlb/core/grammar"
 	"github.com/jaypipes/sqlb/core/types"
-	"github.com/jaypipes/sqlb/grammar"
 )
 
 // Builder holds information about the formatting and dialect of the output SQL

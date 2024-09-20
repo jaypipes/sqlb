@@ -7,7 +7,7 @@
 package builder
 
 import (
-	"github.com/jaypipes/sqlb/grammar"
+	"github.com/jaypipes/sqlb/core/grammar"
 )
 
 func (b *Builder) doAggregateFunction(

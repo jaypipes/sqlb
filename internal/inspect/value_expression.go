@@ -6,7 +6,7 @@
 
 package inspect
 
-import "github.com/jaypipes/sqlb/grammar"
+import "github.com/jaypipes/sqlb/core/grammar"
 
 // ValueExpressionFromAny evaluates the supplied interface argument and returns
 // a *ValueExpression if the supplied argument can be converted into a

@@ -6,7 +6,7 @@
 
 package builder
 
-import "github.com/jaypipes/sqlb/grammar"
+import "github.com/jaypipes/sqlb/core/grammar"
 
 func (b *Builder) doStringValueFunction(
 	el *grammar.StringValueFunction,

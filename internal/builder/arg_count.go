@@ -7,7 +7,7 @@
 package builder
 
 import (
-	"github.com/jaypipes/sqlb/grammar"
+	"github.com/jaypipes/sqlb/core/grammar"
 )
 
 // ArgCount examines the supplied element and recursively determines the number

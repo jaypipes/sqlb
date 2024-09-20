@@ -10,9 +10,9 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/jaypipes/sqlb/core/grammar"
 	"github.com/jaypipes/sqlb/core/meta"
 	"github.com/jaypipes/sqlb/core/types"
-	"github.com/jaypipes/sqlb/grammar"
 )
 
 // NewDerivedTable returns a new DerivedTable from the supplied

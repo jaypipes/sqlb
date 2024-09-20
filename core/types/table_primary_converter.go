@@ -6,7 +6,7 @@
 
 package types
 
-import "github.com/jaypipes/sqlb/grammar"
+import "github.com/jaypipes/sqlb/core/grammar"
 
 // TablePrimaryConverter knows how to convert itself into a
 // `*grammar.TablePrimary`

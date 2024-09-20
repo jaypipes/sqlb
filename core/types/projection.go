@@ -7,7 +7,7 @@
 package types
 
 import (
-	"github.com/jaypipes/sqlb/grammar"
+	"github.com/jaypipes/sqlb/core/grammar"
 )
 
 // Projection is a thing that can be included in a SELECT statement and allow

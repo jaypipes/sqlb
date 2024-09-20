@@ -7,8 +7,8 @@
 package meta
 
 import (
+	"github.com/jaypipes/sqlb/core/grammar"
 	"github.com/jaypipes/sqlb/core/types"
-	"github.com/jaypipes/sqlb/grammar"
 )
 
 // NewColumn returns a new Column with the supplied properties

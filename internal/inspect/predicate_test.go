@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/jaypipes/sqlb/core/expr"
-	"github.com/jaypipes/sqlb/grammar"
+	"github.com/jaypipes/sqlb/core/grammar"
 	"github.com/jaypipes/sqlb/internal/testutil"
 	"github.com/stretchr/testify/assert"
 )
