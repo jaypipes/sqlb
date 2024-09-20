@@ -41,12 +41,12 @@ func NewTable(
 
 // Table describes metadata about a table in a database.
 type Table struct {
-	// Meta is a pointer at the metadata collection for the database
+	// Meta is a pointer at the metadata collection for the database.
 	m *Meta
-	// Name is the name of the table in the database
+	// Name is the name of the table in the database.
 	name string
 	// Columns is a map of Column structs, keyed by the column's actual name
-	// (not alias)
+	// (not alias).
 	columns map[string]types.Projection
 	// Alias is any alias/correlation name given to this Table for use in a
 	// SELECT statement
@@ -127,13 +127,13 @@ func (t *Table) As(alias string) *Table {
 	return at
 }
 
-// C returns a pointer to a Column with a name matching the supplied string, or
-// nil if no such column is known
+// Column returns a pointer to a Column with a name matching the supplied
+// string, or nil if no such column is known
 //
 // The name matching is done using case-insensitive matching, since this is how
 // the SQL standard works for identifiers and symbols (even though Microsoft
 // SQL Server uses case-sensitive identifier names).
-func (t *Table) C(name string) types.Projection {
+func (t *Table) Column(name string) types.Projection {
 	if c, ok := t.columns[name]; ok {
 		return c
 	}
@@ -145,10 +145,14 @@ func (t *Table) C(name string) types.Projection {
 	return nil
 }
 
-// Column returns a pointer to a Column with a name or alias matching the
-// supplied string, or nil if no such column is known
-func (t *Table) Column(name string) types.Projection {
-	return t.C(name)
+// C returns a pointer to a Column with a name matching the supplied string, or
+// nil if no such column is known
+//
+// The name matching is done using case-insensitive matching, since this is how
+// the SQL standard works for identifiers and symbols (even though Microsoft
+// SQL Server uses case-sensitive identifier names).
+func (t *Table) C(name string) types.Projection {
+	return t.Column(name)
 }
 
 // QuerySpecification returns the object as a `*grammar.QuerySpecification`
