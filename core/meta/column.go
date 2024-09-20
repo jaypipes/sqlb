@@ -11,6 +11,7 @@ import (
 	"github.com/jaypipes/sqlb/grammar"
 )
 
+// NewColumn returns a new Column with the supplied properties
 func NewColumn(
 	t types.Relation,
 	name string,
@@ -25,9 +26,9 @@ func NewColumn(
 type Column struct {
 	// Table is a pointer to the Table or DerivedTable housing this Column
 	t types.Relation
-	// Name is the name of the Column in the Table
+	// name is the name of the Column in the Table
 	name string
-	// Alias is an optional alias for the column (when a user uses the As()
+	// alias is an optional alias for the column (when a user uses the As()
 	// method to alias a column in a SELECT statement)
 	alias string
 }

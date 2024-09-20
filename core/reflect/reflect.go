@@ -33,7 +33,7 @@ ORDER BY t.TABLE_NAME
 
 // Reflect examines the supplied database connection and discovers Table
 // definitions within that connection's associated database, returning a
-// pointer to a Meta struct with the discovered information.
+// pointer to a [core/meta] Meta struct with the discovered information.
 func Reflect(
 	db *sql.DB,
 	mods ...types.Option,
