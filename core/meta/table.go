@@ -12,7 +12,7 @@ import (
 	"strings"
 
 	"github.com/jaypipes/sqlb/core/fn"
-	"github.com/jaypipes/sqlb/core/inspect"
+	"github.com/jaypipes/sqlb/internal/inspect"
 	"github.com/jaypipes/sqlb/core/types"
 	"github.com/jaypipes/sqlb/grammar"
 )
