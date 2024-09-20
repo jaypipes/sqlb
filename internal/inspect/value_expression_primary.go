@@ -9,8 +9,8 @@ package inspect
 import (
 	"slices"
 
-	"github.com/jaypipes/sqlb/core/types"
 	"github.com/jaypipes/sqlb/core/grammar"
+	"github.com/jaypipes/sqlb/core/types"
 )
 
 // ValueExpressionPrimaryFromAny evaluates the supplied interface argument and

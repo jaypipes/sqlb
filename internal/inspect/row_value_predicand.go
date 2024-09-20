@@ -7,8 +7,8 @@
 package inspect
 
 import (
-	"github.com/jaypipes/sqlb/core/types"
 	"github.com/jaypipes/sqlb/core/grammar"
+	"github.com/jaypipes/sqlb/core/types"
 )
 
 // RowValuePredicandFromAny evaluates the supplied interface argument and

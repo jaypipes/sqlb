@@ -11,8 +11,8 @@ import (
 
 	"github.com/jaypipes/sqlb/core/expr"
 	"github.com/jaypipes/sqlb/core/fn"
-	"github.com/jaypipes/sqlb/core/types"
 	"github.com/jaypipes/sqlb/core/grammar"
+	"github.com/jaypipes/sqlb/core/types"
 	"github.com/jaypipes/sqlb/internal/builder"
 	"github.com/jaypipes/sqlb/internal/testutil"
 	"github.com/stretchr/testify/assert"
