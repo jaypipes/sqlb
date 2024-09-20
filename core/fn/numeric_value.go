@@ -484,6 +484,79 @@ func Exponential(
 
 var Exp = Exponential
 
+// SquareRoot returns a NumericUnaryfunction that produces a SQRT() SQL
+// function that can be passed to sqlb constructs and functions like Select()
+//
+// The argument is the subject of the SQRT function and must be coercible to a
+// numeric value expression.
+func SquareRoot(
+	subjectAny interface{},
+) *NumericValueFunction {
+	ref, subject := relationsAndSubjectAsNumericValueExpression(
+		subjectAny,
+	)
+	return &NumericValueFunction{
+		BaseFunction: BaseFunction{
+			ref: ref,
+		},
+		NumericValueFunction: &grammar.NumericValueFunction{
+			SquareRoot: &grammar.SquareRoot{
+				Subject: *subject,
+			},
+		},
+	}
+}
+
+var SqRt = SquareRoot
+
+// Ceiling returns a NumericUnaryfunction that produces a CEIL() SQL function
+// that can be passed to sqlb constructs and functions like Select()
+//
+// The argument is the subject of the CEIL function and must be coercible to a
+// numeric value expression.
+func Ceiling(
+	subjectAny interface{},
+) *NumericValueFunction {
+	ref, subject := relationsAndSubjectAsNumericValueExpression(
+		subjectAny,
+	)
+	return &NumericValueFunction{
+		BaseFunction: BaseFunction{
+			ref: ref,
+		},
+		NumericValueFunction: &grammar.NumericValueFunction{
+			Ceiling: &grammar.CeilingFunction{
+				Subject: *subject,
+			},
+		},
+	}
+}
+
+var Ceil = Ceiling
+
+// Floor returns a NumericUnaryfunction that produces a FLOOR() SQL function
+// that can be passed to sqlb constructs and functions like Select()
+//
+// The argument is the subject of the FLOOR function and must be coercible to a
+// numeric value expression.
+func Floor(
+	subjectAny interface{},
+) *NumericValueFunction {
+	ref, subject := relationsAndSubjectAsNumericValueExpression(
+		subjectAny,
+	)
+	return &NumericValueFunction{
+		BaseFunction: BaseFunction{
+			ref: ref,
+		},
+		NumericValueFunction: &grammar.NumericValueFunction{
+			Floor: &grammar.FloorFunction{
+				Subject: *subject,
+			},
+		},
+	}
+}
+
 // NumericValueFunction wraps a number of unary numeric value SQL function
 // grammar elements
 type NumericValueFunction struct {

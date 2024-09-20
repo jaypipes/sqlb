@@ -27,6 +27,12 @@ func (b *Builder) doNumericValueFunction(
 		b.doAbsoluteValueExpression(el.AbsoluteValue, qargs, curarg)
 	} else if el.Exponential != nil {
 		b.doExponentialFunction(el.Exponential, qargs, curarg)
+	} else if el.SquareRoot != nil {
+		b.doSquareRoot(el.SquareRoot, qargs, curarg)
+	} else if el.Ceiling != nil {
+		b.doCeilingFunction(el.Ceiling, qargs, curarg)
+	} else if el.Floor != nil {
+		b.doFloorFunction(el.Floor, qargs, curarg)
 	}
 }
 
@@ -139,6 +145,36 @@ func (b *Builder) doExponentialFunction(
 	curarg *int,
 ) {
 	b.Write(grammar.Symbols[grammar.SYM_EXP])
+	b.doNumericValueExpression(&el.Subject, qargs, curarg)
+	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+}
+
+func (b *Builder) doSquareRoot(
+	el *grammar.SquareRoot,
+	qargs []interface{},
+	curarg *int,
+) {
+	b.Write(grammar.Symbols[grammar.SYM_SQRT])
+	b.doNumericValueExpression(&el.Subject, qargs, curarg)
+	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+}
+
+func (b *Builder) doCeilingFunction(
+	el *grammar.CeilingFunction,
+	qargs []interface{},
+	curarg *int,
+) {
+	b.Write(grammar.Symbols[grammar.SYM_CEIL])
+	b.doNumericValueExpression(&el.Subject, qargs, curarg)
+	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+}
+
+func (b *Builder) doFloorFunction(
+	el *grammar.FloorFunction,
+	qargs []interface{},
+	curarg *int,
+) {
+	b.Write(grammar.Symbols[grammar.SYM_FLOOR])
 	b.doNumericValueExpression(&el.Subject, qargs, curarg)
 	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
 }

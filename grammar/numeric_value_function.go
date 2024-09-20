@@ -31,7 +31,7 @@ type NumericValueFunction struct {
 	Natural       *NaturalLogarithm
 	Exponential   *ExponentialFunction
 	Power         *PowerFunction
-	Square        *SquareRoot
+	SquareRoot    *SquareRoot
 	Floor         *FloorFunction
 	Ceiling       *CeilingFunction
 	WidthBucket   *WidthBucketFunction
