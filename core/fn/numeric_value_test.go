@@ -647,7 +647,7 @@ func TestNumericValueFunctionExponential(t *testing.T) {
 		expRefersTo types.Relation
 	}{
 		{
-			name:    "absolute value column",
+			name:    "exponential column",
 			subject: colUserId,
 			exp: &grammar.NumericValueFunction{
 				Exponential: &grammar.ExponentialFunction{
@@ -711,6 +711,97 @@ func TestSelectExponential(t *testing.T) {
 			name: "exponential function on column using alias",
 			q:    expr.Select(fn.Exp(colUserId).As("exper")),
 			qs:   "SELECT EXP(users.id) AS exper FROM users",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			b := builder.New()
+
+			qs, qargs := b.StringArgs(tt.q.Query())
+			assert.Equal(len(tt.qargs), len(qargs))
+			assert.Equal(tt.qs, qs)
+		})
+	}
+}
+
+func TestNumericValueFunctionSquareRoot(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+
+	tests := []struct {
+		name        string
+		subject     interface{}
+		exp         *grammar.NumericValueFunction
+		expRefersTo types.Relation
+	}{
+		{
+			name:    "exponential column",
+			subject: colUserId,
+			exp: &grammar.NumericValueFunction{
+				SquareRoot: &grammar.SquareRoot{
+					Subject: grammar.NumericValueExpression{
+						Unary: &grammar.Term{
+							Unary: &grammar.Factor{
+								Primary: grammar.NumericPrimary{
+									Primary: &grammar.ValueExpressionPrimary{
+										Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+											ColumnReference: &grammar.ColumnReference{
+												BasicIdentifierChain: &grammar.IdentifierChain{
+													Identifiers: []string{
+														"users",
+														"id",
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expRefersTo: users,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+			got := fn.SquareRoot(tt.subject)
+			assert.Equal(tt.exp, got.NumericValueFunction)
+			assert.Equal(tt.expRefersTo, got.References())
+		})
+	}
+}
+
+func TestSelectSquareRoot(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+
+	tests := []struct {
+		name  string
+		q     *expr.Selection
+		qs    string
+		qargs []interface{}
+	}{
+		{
+			name: "exponential function on column",
+			q:    expr.Select(fn.SquareRoot(colUserId)),
+			qs:   "SELECT SQRT(users.id) FROM users",
+		},
+		{
+			name: "exp on column",
+			q:    expr.Select(fn.SquareRoot(colUserId)),
+			qs:   "SELECT SQRT(users.id) FROM users",
+		},
+		{
+			name: "exponential function on column using alias",
+			q:    expr.Select(fn.SqRt(colUserId).As("exper")),
+			qs:   "SELECT SQRT(users.id) AS exper FROM users",
 		},
 	}
 	for _, tt := range tests {

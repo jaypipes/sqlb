@@ -27,6 +27,8 @@ func (b *Builder) doNumericValueFunction(
 		b.doAbsoluteValueExpression(el.AbsoluteValue, qargs, curarg)
 	} else if el.Exponential != nil {
 		b.doExponentialFunction(el.Exponential, qargs, curarg)
+	} else if el.SquareRoot != nil {
+		b.doSquareRoot(el.SquareRoot, qargs, curarg)
 	}
 }
 
@@ -139,6 +141,16 @@ func (b *Builder) doExponentialFunction(
 	curarg *int,
 ) {
 	b.Write(grammar.Symbols[grammar.SYM_EXP])
+	b.doNumericValueExpression(&el.Subject, qargs, curarg)
+	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+}
+
+func (b *Builder) doSquareRoot(
+	el *grammar.SquareRoot,
+	qargs []interface{},
+	curarg *int,
+) {
+	b.Write(grammar.Symbols[grammar.SYM_SQRT])
 	b.doNumericValueExpression(&el.Subject, qargs, curarg)
 	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
 }

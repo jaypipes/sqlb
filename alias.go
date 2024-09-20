@@ -299,6 +299,14 @@ var Abs = fn.Absolute
 var Exponential = fn.Exponential
 var Exp = fn.Exponential
 
+// SquareRoot returns a NumericUnaryfunction that produces a SQRT() SQL
+// function that can be passed to sqlb constructs and functions like Select()
+//
+// The argument is the subject of the SQRT function and must be coercible to a
+// numeric value expression.
+var SquareRoot = fn.SquareRoot
+var SqRt = SquareRoot
+
 /*
 // Cast returns a Projection that contains the CAST() SQL function
 var Cast = function.Cast
