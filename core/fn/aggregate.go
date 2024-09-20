@@ -9,9 +9,9 @@ package fn
 import (
 	"fmt"
 
-	"github.com/jaypipes/sqlb/internal/inspect"
 	"github.com/jaypipes/sqlb/core/types"
 	"github.com/jaypipes/sqlb/grammar"
+	"github.com/jaypipes/sqlb/internal/inspect"
 )
 
 // AggregateFunction describes a SQL aggregate function (COUNT, AVG, SUM, etc)

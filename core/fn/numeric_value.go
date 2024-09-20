@@ -9,9 +9,9 @@ package fn
 import (
 	"fmt"
 
-	"github.com/jaypipes/sqlb/internal/inspect"
 	"github.com/jaypipes/sqlb/core/types"
 	"github.com/jaypipes/sqlb/grammar"
+	"github.com/jaypipes/sqlb/internal/inspect"
 )
 
 // CharacterLength returns a LengthExpression that produces a CHAR_LENGTH() SQL

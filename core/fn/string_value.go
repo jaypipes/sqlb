@@ -10,9 +10,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jaypipes/sqlb/internal/inspect"
 	"github.com/jaypipes/sqlb/core/types"
 	"github.com/jaypipes/sqlb/grammar"
+	"github.com/jaypipes/sqlb/internal/inspect"
 )
 
 // Substring returns a SubstringFunction that produces a SUBSTRING() SQL

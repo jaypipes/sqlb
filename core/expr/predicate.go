@@ -9,8 +9,8 @@ package expr
 import (
 	"fmt"
 
-	"github.com/jaypipes/sqlb/internal/inspect"
 	"github.com/jaypipes/sqlb/grammar"
+	"github.com/jaypipes/sqlb/internal/inspect"
 )
 
 // Equal accepts two things and returns a ComparisonPredicate representing an

@@ -12,9 +12,9 @@ import (
 	"strings"
 
 	"github.com/jaypipes/sqlb/core/fn"
-	"github.com/jaypipes/sqlb/internal/inspect"
 	"github.com/jaypipes/sqlb/core/types"
 	"github.com/jaypipes/sqlb/grammar"
+	"github.com/jaypipes/sqlb/internal/inspect"
 )
 
 // NewTable returns a new Table with the supplied properties
