@@ -7,7 +7,7 @@
 package inspect
 
 import (
-	"github.com/jaypipes/sqlb/grammar"
+	"github.com/jaypipes/sqlb/core/grammar"
 )
 
 // PredicateFromAny evaluates the supplied interface argument and

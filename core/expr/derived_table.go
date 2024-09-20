@@ -12,7 +12,7 @@ import (
 
 	"github.com/jaypipes/sqlb/core/meta"
 	"github.com/jaypipes/sqlb/core/types"
-	"github.com/jaypipes/sqlb/grammar"
+	"github.com/jaypipes/sqlb/core/grammar"
 )
 
 // NewDerivedTable returns a new DerivedTable from the supplied

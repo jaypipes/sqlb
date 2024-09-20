@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/jaypipes/sqlb/core/types"
-	"github.com/jaypipes/sqlb/grammar"
+	"github.com/jaypipes/sqlb/core/grammar"
 	"github.com/jaypipes/sqlb/internal/inspect"
 )
 

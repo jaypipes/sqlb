@@ -8,7 +8,7 @@ package fn
 
 import (
 	"github.com/jaypipes/sqlb/core/types"
-	"github.com/jaypipes/sqlb/grammar"
+	"github.com/jaypipes/sqlb/core/grammar"
 )
 
 // BaseFunction is the struct from which all other projectable functions

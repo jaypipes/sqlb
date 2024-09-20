@@ -9,7 +9,7 @@ package inspect
 import (
 	"slices"
 
-	"github.com/jaypipes/sqlb/grammar"
+	"github.com/jaypipes/sqlb/core/grammar"
 )
 
 // BooleanValueExpressionFromAny evaluates the supplied interface argument and

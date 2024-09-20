@@ -8,7 +8,7 @@ package inspect
 
 import (
 	"github.com/jaypipes/sqlb/core/types"
-	"github.com/jaypipes/sqlb/grammar"
+	"github.com/jaypipes/sqlb/core/grammar"
 )
 
 // DerivedColumnFromAnyAndAlias returns a DerivedColumn from something that can

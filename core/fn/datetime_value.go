@@ -8,7 +8,7 @@ package fn
 
 import (
 	"github.com/jaypipes/sqlb/core/types"
-	"github.com/jaypipes/sqlb/grammar"
+	"github.com/jaypipes/sqlb/core/grammar"
 )
 
 // CurrentDate returns a CurrentDateFunction that produces a CURRENT_DATE() SQL

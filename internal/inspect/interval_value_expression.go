@@ -6,7 +6,7 @@
 
 package inspect
 
-import "github.com/jaypipes/sqlb/grammar"
+import "github.com/jaypipes/sqlb/core/grammar"
 
 // ReferredFromIntervalValueExpression returns a slice of string names of any
 // tables or derived tables (subqueries in the FROM clause) that are referenced

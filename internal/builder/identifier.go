@@ -9,7 +9,7 @@ package builder
 import (
 	"strings"
 
-	"github.com/jaypipes/sqlb/grammar"
+	"github.com/jaypipes/sqlb/core/grammar"
 )
 
 func (b *Builder) doIdentifierChain(

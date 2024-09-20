@@ -6,7 +6,7 @@
 
 package inspect
 
-import "github.com/jaypipes/sqlb/grammar"
+import "github.com/jaypipes/sqlb/core/grammar"
 
 // NumericValueExpressionFromAny evaluates the supplied interface argument and
 // returns a *NumericValueExpression if the supplied argument can be converted
