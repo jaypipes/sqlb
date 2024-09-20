@@ -18,8 +18,4 @@ func (b *Builder) doColumnReference(
 	if el.BasicIdentifierChain != nil {
 		b.doIdentifierChain(el.BasicIdentifierChain, qargs, curarg)
 	}
-	if el.Correlation != nil {
-		b.Write(grammar.Symbols[grammar.SYM_AS])
-		b.WriteString(el.Correlation.Name)
-	}
 }
