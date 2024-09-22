@@ -138,23 +138,51 @@ package grammar
 // <boolean literal>    ::=   TRUE | FALSE | UNKNOWN
 
 type Literal struct {
-	SignedNumericLiteral *SignedNumericLiteral
-	GeneralLiteral       *GeneralLiteral
+	SignedNumeric *SignedNumericLiteral
+	General       *GeneralLiteral
+}
+
+func (l *Literal) ArgCount(count *int) {
+	if l.SignedNumeric != nil {
+		l.SignedNumeric.ArgCount(count)
+	} else if l.General != nil {
+		l.General.ArgCount(count)
+	}
 }
 
 type UnsignedLiteral struct {
-	UnsignedNumericLiteral *UnsignedNumericLiteral
-	GeneralLiteral         *GeneralLiteral
+	UnsignedNumeric *UnsignedNumericLiteral
+	General         *GeneralLiteral
+}
+
+func (l *UnsignedLiteral) ArgCount(count *int) {
+	if l.UnsignedNumeric != nil {
+		l.UnsignedNumeric.ArgCount(count)
+	} else if l.General != nil {
+		l.General.ArgCount(count)
+	}
 }
 
 type SignedNumericLiteral struct {
 	Value interface{}
 }
 
+func (l *SignedNumericLiteral) ArgCount(count *int) {
+	*count++
+}
+
 type UnsignedNumericLiteral struct {
 	Value interface{}
 }
 
+func (l *UnsignedNumericLiteral) ArgCount(count *int) {
+	*count++
+}
+
 type GeneralLiteral struct {
 	Value interface{}
+}
+
+func (l *GeneralLiteral) ArgCount(count *int) {
+	*count++
 }

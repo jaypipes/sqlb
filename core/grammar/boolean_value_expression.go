@@ -36,10 +36,34 @@ type BooleanValueExpression struct {
 	OrRight *BooleanTerm
 }
 
+func (e *BooleanValueExpression) ArgCount(count *int) {
+	if e.Unary != nil {
+		e.Unary.ArgCount(count)
+	}
+	if e.OrLeft != nil {
+		e.OrLeft.ArgCount(count)
+	}
+	if e.OrRight != nil {
+		e.OrRight.ArgCount(count)
+	}
+}
+
 type BooleanTerm struct {
 	Unary    *BooleanFactor
 	AndLeft  *BooleanTerm
 	AndRight *BooleanFactor
+}
+
+func (t *BooleanTerm) ArgCount(count *int) {
+	if t.Unary != nil {
+		t.Unary.ArgCount(count)
+	}
+	if t.AndLeft != nil {
+		t.AndLeft.ArgCount(count)
+	}
+	if t.AndRight != nil {
+		t.AndRight.ArgCount(count)
+	}
 }
 
 type BooleanFactor struct {
@@ -47,16 +71,40 @@ type BooleanFactor struct {
 	Not  bool
 }
 
+func (f *BooleanFactor) ArgCount(count *int) {
+	f.Test.ArgCount(count)
+}
+
 type BooleanTest struct {
 	Primary BooleanPrimary
 }
 
+func (t *BooleanTest) ArgCount(count *int) {
+	t.Primary.ArgCount(count)
+}
+
 type BooleanPrimary struct {
-	Predicate        *Predicate
-	BooleanPredicand *BooleanPredicand
+	Predicate *Predicate
+	Predicand *BooleanPredicand
+}
+
+func (p *BooleanPrimary) ArgCount(count *int) {
+	if p.Predicate != nil {
+		p.Predicate.ArgCount(count)
+	} else if p.Predicand != nil {
+		p.Predicand.ArgCount(count)
+	}
 }
 
 type BooleanPredicand struct {
-	ParenthesizedBooleanValueExpression    *BooleanValueExpression
-	NonParenthesizedValueExpressionPrimary *NonParenthesizedValueExpressionPrimary
+	Parenthesized *BooleanValueExpression
+	Primary       *NonParenthesizedValueExpressionPrimary
+}
+
+func (p *BooleanPredicand) ArgCount(count *int) {
+	if p.Parenthesized != nil {
+		p.Parenthesized.ArgCount(count)
+	} else if p.Primary != nil {
+		p.Primary.ArgCount(count)
+	}
 }

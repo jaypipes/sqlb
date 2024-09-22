@@ -10,8 +10,15 @@ package grammar
 
 // UpdateStatementSearched represents an UPDATE SQL statement
 type UpdateStatementSearched struct {
-	TableName   string
-	Columns     []string
-	Values      []interface{}
-	WhereClause *WhereClause
+	TableName string
+	Columns   []string
+	Values    []interface{}
+	Where     *WhereClause
+}
+
+func (s *UpdateStatementSearched) ArgCount(count *int) {
+	*count += len(s.Values)
+	if s.Where != nil {
+		s.Where.ArgCount(count)
+	}
 }

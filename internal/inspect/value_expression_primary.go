@@ -22,8 +22,6 @@ func ValueExpressionPrimaryFromAny(
 	switch v := subject.(type) {
 	case *grammar.ValueExpressionPrimary:
 		return v
-	case grammar.ValueExpressionPrimary:
-		return &v
 	}
 	v := NonParenthesizedValueExpressionPrimaryFromAny(subject)
 	if v != nil {
@@ -45,23 +43,13 @@ func NonParenthesizedValueExpressionPrimaryFromAny(
 	switch v := subject.(type) {
 	case *grammar.NonParenthesizedValueExpressionPrimary:
 		return v
-	case grammar.NonParenthesizedValueExpressionPrimary:
-		return &v
 	case *grammar.UnsignedValueSpecification:
 		return &grammar.NonParenthesizedValueExpressionPrimary{
 			UnsignedValue: v,
 		}
-	case grammar.UnsignedValueSpecification:
-		return &grammar.NonParenthesizedValueExpressionPrimary{
-			UnsignedValue: &v,
-		}
 	case *grammar.ColumnReference:
 		return &grammar.NonParenthesizedValueExpressionPrimary{
 			ColumnReference: v,
-		}
-	case grammar.ColumnReference:
-		return &grammar.NonParenthesizedValueExpressionPrimary{
-			ColumnReference: &v,
 		}
 	case types.ColumnReferenceConverter:
 		return &grammar.NonParenthesizedValueExpressionPrimary{
@@ -71,28 +59,14 @@ func NonParenthesizedValueExpressionPrimaryFromAny(
 		return &grammar.NonParenthesizedValueExpressionPrimary{
 			SetFunction: v,
 		}
-	case grammar.SetFunctionSpecification:
-		return &grammar.NonParenthesizedValueExpressionPrimary{
-			SetFunction: &v,
-		}
 	case *grammar.Subquery:
 		return &grammar.NonParenthesizedValueExpressionPrimary{
 			ScalarSubquery: v,
-		}
-	case grammar.Subquery:
-		return &grammar.NonParenthesizedValueExpressionPrimary{
-			ScalarSubquery: &v,
 		}
 	case *grammar.QueryExpression:
 		return &grammar.NonParenthesizedValueExpressionPrimary{
 			ScalarSubquery: &grammar.Subquery{
 				QueryExpression: *v,
-			},
-		}
-	case grammar.QueryExpression:
-		return &grammar.NonParenthesizedValueExpressionPrimary{
-			ScalarSubquery: &grammar.Subquery{
-				QueryExpression: v,
 			},
 		}
 	case *grammar.QueryExpressionBody:
@@ -103,42 +77,16 @@ func NonParenthesizedValueExpressionPrimaryFromAny(
 				},
 			},
 		}
-	case grammar.QueryExpressionBody:
-		return &grammar.NonParenthesizedValueExpressionPrimary{
-			ScalarSubquery: &grammar.Subquery{
-				QueryExpression: grammar.QueryExpression{
-					Body: v,
-				},
-			},
-		}
 	case *grammar.QuerySpecification:
 		return &grammar.NonParenthesizedValueExpressionPrimary{
 			ScalarSubquery: &grammar.Subquery{
 				QueryExpression: grammar.QueryExpression{
 					Body: grammar.QueryExpressionBody{
-						NonJoinQueryExpression: &grammar.NonJoinQueryExpression{
-							NonJoinQueryTerm: &grammar.NonJoinQueryTerm{
+						NonJoin: &grammar.NonJoinQueryExpression{
+							NonJoin: &grammar.NonJoinQueryTerm{
 								Primary: &grammar.NonJoinQueryPrimary{
-									SimpleTable: &grammar.SimpleTable{
+									Simple: &grammar.SimpleTable{
 										QuerySpecification: v,
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		}
-	case grammar.QuerySpecification:
-		return &grammar.NonParenthesizedValueExpressionPrimary{
-			ScalarSubquery: &grammar.Subquery{
-				QueryExpression: grammar.QueryExpression{
-					Body: grammar.QueryExpressionBody{
-						NonJoinQueryExpression: &grammar.NonJoinQueryExpression{
-							NonJoinQueryTerm: &grammar.NonJoinQueryTerm{
-								Primary: &grammar.NonJoinQueryPrimary{
-									SimpleTable: &grammar.SimpleTable{
-										QuerySpecification: &v,
 									},
 								},
 							},

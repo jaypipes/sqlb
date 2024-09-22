@@ -100,7 +100,7 @@ func BooleanTermFromAny(
 			Unary: &grammar.BooleanFactor{
 				Test: grammar.BooleanTest{
 					Primary: grammar.BooleanPrimary{
-						BooleanPredicand: v,
+						Predicand: v,
 					},
 				},
 			},
@@ -110,7 +110,7 @@ func BooleanTermFromAny(
 			Unary: &grammar.BooleanFactor{
 				Test: grammar.BooleanTest{
 					Primary: grammar.BooleanPrimary{
-						BooleanPredicand: &v,
+						Predicand: &v,
 					},
 				},
 			},
@@ -167,7 +167,7 @@ func BooleanFactorFromAny(
 		return &grammar.BooleanFactor{
 			Test: grammar.BooleanTest{
 				Primary: grammar.BooleanPrimary{
-					BooleanPredicand: v,
+					Predicand: v,
 				},
 			},
 		}
@@ -175,7 +175,7 @@ func BooleanFactorFromAny(
 		return &grammar.BooleanFactor{
 			Test: grammar.BooleanTest{
 				Primary: grammar.BooleanPrimary{
-					BooleanPredicand: &v,
+					Predicand: &v,
 				},
 			},
 		}
@@ -207,19 +207,19 @@ func BooleanPredicandFromAny(
 		return &v
 	case *grammar.BooleanValueExpression:
 		return &grammar.BooleanPredicand{
-			ParenthesizedBooleanValueExpression: v,
+			Parenthesized: v,
 		}
 	case grammar.BooleanValueExpression:
 		return &grammar.BooleanPredicand{
-			ParenthesizedBooleanValueExpression: &v,
+			Parenthesized: &v,
 		}
 	case *grammar.NonParenthesizedValueExpressionPrimary:
 		return &grammar.BooleanPredicand{
-			NonParenthesizedValueExpressionPrimary: v,
+			Primary: v,
 		}
 	case grammar.NonParenthesizedValueExpressionPrimary:
 		return &grammar.BooleanPredicand{
-			NonParenthesizedValueExpressionPrimary: &v,
+			Primary: &v,
 		}
 	}
 	return nil
@@ -265,7 +265,7 @@ func ReferredFromBooleanFactor(
 	if tp.Predicate != nil {
 		return ReferredFromPredicate(tp.Predicate)
 	}
-	return ReferredFromBooleanPredicand(tp.BooleanPredicand)
+	return ReferredFromBooleanPredicand(tp.Predicand)
 }
 
 // ReferredFromBooleanPredicand returns a slice of string names of any tables or
@@ -274,10 +274,10 @@ func ReferredFromBooleanFactor(
 func ReferredFromBooleanPredicand(
 	bp *grammar.BooleanPredicand,
 ) []string {
-	if bp.ParenthesizedBooleanValueExpression != nil {
-		return ReferredFromBooleanValueExpression(bp.ParenthesizedBooleanValueExpression)
+	if bp.Parenthesized != nil {
+		return ReferredFromBooleanValueExpression(bp.Parenthesized)
 	}
-	p := bp.NonParenthesizedValueExpressionPrimary
+	p := bp.Primary
 	if p.ColumnReference != nil {
 		if len(p.ColumnReference.BasicIdentifierChain.Identifiers) > 0 {
 			return slices.Clone(p.ColumnReference.BasicIdentifierChain.Identifiers[:len(p.ColumnReference.BasicIdentifierChain.Identifiers)-1])

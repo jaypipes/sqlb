@@ -36,15 +36,35 @@ type IntervalValueExpression struct {
 	SubtractDatetime *SubtractDatetimeExpression
 }
 
+func (e *IntervalValueExpression) ArgCount(count *int) {
+	if e.Unary != nil {
+		e.Unary.ArgCount(count)
+	} else if e.AddSubtract != nil {
+		e.AddSubtract.ArgCount(count)
+	} else if e.SubtractDatetime != nil {
+		e.SubtractDatetime.ArgCount(count)
+	}
+}
+
 type AddSubtractIntervalExpression struct {
 	Left     IntervalValueExpression
 	Right    Term
 	Subtract bool
 }
 
+func (e *AddSubtractIntervalExpression) ArgCount(count *int) {
+	e.Left.ArgCount(count)
+	e.Right.ArgCount(count)
+}
+
 type SubtractDatetimeExpression struct {
 	Left  DatetimeValueExpression
 	Right DatetimeTerm
+}
+
+func (e *SubtractDatetimeExpression) ArgCount(count *int) {
+	e.Left.ArgCount(count)
+	e.Right.ArgCount(count)
 }
 
 type IntervalTerm struct {
@@ -53,9 +73,23 @@ type IntervalTerm struct {
 	MultiplyNumeric *MultiplyNumericIntervalFactor
 }
 
+func (t *IntervalTerm) ArgCount(count *int) {
+	if t.Unary != nil {
+		t.Unary.ArgCount(count)
+	} else if t.MultiplyDivide != nil {
+		t.MultiplyDivide.ArgCount(count)
+	} else if t.MultiplyNumeric != nil {
+		t.MultiplyNumeric.ArgCount(count)
+	}
+}
+
 type IntervalFactor struct {
 	Sign    Sign
 	Primary IntervalPrimary
+}
+
+func (f *IntervalFactor) ArgCount(count *int) {
+	f.Primary.ArgCount(count)
 }
 
 type MultiplyDivideIntervalTerm struct {
@@ -64,15 +98,33 @@ type MultiplyDivideIntervalTerm struct {
 	Divide bool
 }
 
+func (t *MultiplyDivideIntervalTerm) ArgCount(count *int) {
+	t.Left.ArgCount(count)
+	t.Right.ArgCount(count)
+}
+
 type MultiplyNumericIntervalFactor struct {
 	Left  Term
 	Right IntervalFactor
+}
+
+func (t *MultiplyNumericIntervalFactor) ArgCount(count *int) {
+	t.Left.ArgCount(count)
+	t.Right.ArgCount(count)
 }
 
 type IntervalPrimary struct {
 	Primary   *ValueExpressionPrimary
 	Qualifier *IntervalQualifier
 	Function  *IntervalValueFunction
+}
+
+func (p *IntervalPrimary) ArgCount(count *int) {
+	if p.Primary != nil {
+		p.Primary.ArgCount(count)
+	} else if p.Function != nil {
+		p.Function.ArgCount(count)
+	}
 }
 
 // <interval qualifier>    ::=

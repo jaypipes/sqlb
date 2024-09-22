@@ -38,6 +38,14 @@ type ValueExpressionPrimary struct {
 	Primary       *NonParenthesizedValueExpressionPrimary
 }
 
+func (p *ValueExpressionPrimary) ArgCount(count *int) {
+	if p.Parenthesized != nil {
+		p.Parenthesized.ArgCount(count)
+	} else if p.Primary != nil {
+		p.Primary.ArgCount(count)
+	}
+}
+
 type NonParenthesizedValueExpressionPrimary struct {
 	UnsignedValue   *UnsignedValueSpecification
 	ColumnReference *ColumnReference
@@ -55,4 +63,16 @@ type NonParenthesizedValueExpressionPrimary struct {
 	//ReferenceResolution *ReferenceResolution
 	//CollectionValueConstructor *CollectionValueConstructor
 	//ArrayElementReference *ArrayElementReference
+}
+
+func (p *NonParenthesizedValueExpressionPrimary) ArgCount(count *int) {
+	if p.UnsignedValue != nil {
+		p.UnsignedValue.ArgCount(count)
+	} else if p.ColumnReference != nil {
+		p.ColumnReference.ArgCount(count)
+	} else if p.SetFunction != nil {
+		p.SetFunction.ArgCount(count)
+	} else if p.ScalarSubquery != nil {
+		p.ScalarSubquery.ArgCount(count)
+	}
 }

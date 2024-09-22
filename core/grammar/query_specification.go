@@ -29,3 +29,8 @@ type QuerySpecification struct {
 	SelectList      SelectList
 	TableExpression TableExpression
 }
+
+func (s *QuerySpecification) ArgCount(count *int) {
+	s.SelectList.ArgCount(count)
+	s.TableExpression.ArgCount(count)
+}

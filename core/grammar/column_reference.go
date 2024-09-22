@@ -14,3 +14,7 @@ type ColumnReference struct {
 	BasicIdentifierChain *IdentifierChain
 	//ModuleIdentifier *ModuleIdentifier
 }
+
+func (r *ColumnReference) ArgCount(count *int) {
+	// Column references don't produce query arguments
+}

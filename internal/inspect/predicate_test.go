@@ -37,7 +37,7 @@ func TestPredicateEqual(t *testing.T) {
 			exp: &grammar.ComparisonPredicate{
 				Operator: grammar.ComparisonOperatorEquals,
 				A: grammar.RowValuePredicand{
-					NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+					Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 						ColumnReference: &grammar.ColumnReference{
 							BasicIdentifierChain: &grammar.IdentifierChain{
 								Identifiers: []string{
@@ -49,7 +49,7 @@ func TestPredicateEqual(t *testing.T) {
 					},
 				},
 				B: grammar.RowValuePredicand{
-					NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+					Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 						ColumnReference: &grammar.ColumnReference{
 							BasicIdentifierChain: &grammar.IdentifierChain{
 								Identifiers: []string{
@@ -69,7 +69,7 @@ func TestPredicateEqual(t *testing.T) {
 			exp: &grammar.ComparisonPredicate{
 				Operator: grammar.ComparisonOperatorEquals,
 				A: grammar.RowValuePredicand{
-					NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+					Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 						ColumnReference: &grammar.ColumnReference{
 							BasicIdentifierChain: &grammar.IdentifierChain{
 								Identifiers: []string{
@@ -81,10 +81,10 @@ func TestPredicateEqual(t *testing.T) {
 					},
 				},
 				B: grammar.RowValuePredicand{
-					NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+					Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 						UnsignedValue: &grammar.UnsignedValueSpecification{
 							UnsignedLiteral: &grammar.UnsignedLiteral{
-								UnsignedNumericLiteral: &grammar.UnsignedNumericLiteral{
+								UnsignedNumeric: &grammar.UnsignedNumericLiteral{
 									Value: 42,
 								},
 							},
@@ -100,7 +100,7 @@ func TestPredicateEqual(t *testing.T) {
 			exp: &grammar.ComparisonPredicate{
 				Operator: grammar.ComparisonOperatorEquals,
 				A: grammar.RowValuePredicand{
-					NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+					Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 						ColumnReference: &grammar.ColumnReference{
 							BasicIdentifierChain: &grammar.IdentifierChain{
 								Identifiers: []string{
@@ -118,10 +118,10 @@ func TestPredicateEqual(t *testing.T) {
 					},
 				},
 				B: grammar.RowValuePredicand{
-					NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+					Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 						UnsignedValue: &grammar.UnsignedValueSpecification{
 							UnsignedLiteral: &grammar.UnsignedLiteral{
-								UnsignedNumericLiteral: &grammar.UnsignedNumericLiteral{
+								UnsignedNumeric: &grammar.UnsignedNumericLiteral{
 									Value: 42,
 								},
 							},
@@ -137,7 +137,7 @@ func TestPredicateEqual(t *testing.T) {
 			exp: &grammar.ComparisonPredicate{
 				Operator: grammar.ComparisonOperatorEquals,
 				A: grammar.RowValuePredicand{
-					NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+					Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 						ColumnReference: &grammar.ColumnReference{
 							BasicIdentifierChain: &grammar.IdentifierChain{
 								Identifiers: []string{
@@ -149,10 +149,10 @@ func TestPredicateEqual(t *testing.T) {
 					},
 				},
 				B: grammar.RowValuePredicand{
-					NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+					Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 						UnsignedValue: &grammar.UnsignedValueSpecification{
 							UnsignedLiteral: &grammar.UnsignedLiteral{
-								GeneralLiteral: &grammar.GeneralLiteral{
+								General: &grammar.GeneralLiteral{
 									Value: "foo",
 								},
 							},
@@ -168,7 +168,7 @@ func TestPredicateEqual(t *testing.T) {
 			exp: &grammar.ComparisonPredicate{
 				Operator: grammar.ComparisonOperatorEquals,
 				A: grammar.RowValuePredicand{
-					NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+					Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 						ColumnReference: &grammar.ColumnReference{
 							BasicIdentifierChain: &grammar.IdentifierChain{
 								Identifiers: []string{
@@ -180,14 +180,14 @@ func TestPredicateEqual(t *testing.T) {
 					},
 				},
 				B: grammar.RowValuePredicand{
-					NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+					Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 						ScalarSubquery: &grammar.Subquery{
 							QueryExpression: grammar.QueryExpression{
 								Body: grammar.QueryExpressionBody{
-									NonJoinQueryExpression: &grammar.NonJoinQueryExpression{
-										NonJoinQueryTerm: &grammar.NonJoinQueryTerm{
+									NonJoin: &grammar.NonJoinQueryExpression{
+										NonJoin: &grammar.NonJoinQueryTerm{
 											Primary: &grammar.NonJoinQueryPrimary{
-												SimpleTable: &grammar.SimpleTable{
+												Simple: &grammar.SimpleTable{
 													QuerySpecification: scalarSubquery.(*grammar.QuerySpecification),
 												},
 											},
@@ -233,7 +233,7 @@ func TestPredicateBetween(t *testing.T) {
 			end:    42,
 			exp: &grammar.BetweenPredicate{
 				Target: grammar.RowValuePredicand{
-					NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+					Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 						ColumnReference: &grammar.ColumnReference{
 							BasicIdentifierChain: &grammar.IdentifierChain{
 								Identifiers: []string{
@@ -245,10 +245,10 @@ func TestPredicateBetween(t *testing.T) {
 					},
 				},
 				Start: grammar.RowValuePredicand{
-					NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+					Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 						UnsignedValue: &grammar.UnsignedValueSpecification{
 							UnsignedLiteral: &grammar.UnsignedLiteral{
-								UnsignedNumericLiteral: &grammar.UnsignedNumericLiteral{
+								UnsignedNumeric: &grammar.UnsignedNumericLiteral{
 									Value: 1,
 								},
 							},
@@ -256,10 +256,10 @@ func TestPredicateBetween(t *testing.T) {
 					},
 				},
 				End: grammar.RowValuePredicand{
-					NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+					Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 						UnsignedValue: &grammar.UnsignedValueSpecification{
 							UnsignedLiteral: &grammar.UnsignedLiteral{
-								UnsignedNumericLiteral: &grammar.UnsignedNumericLiteral{
+								UnsignedNumeric: &grammar.UnsignedNumericLiteral{
 									Value: 42,
 								},
 							},
@@ -275,7 +275,7 @@ func TestPredicateBetween(t *testing.T) {
 			end:    42,
 			exp: &grammar.BetweenPredicate{
 				Target: grammar.RowValuePredicand{
-					NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+					Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 						ColumnReference: &grammar.ColumnReference{
 							BasicIdentifierChain: &grammar.IdentifierChain{
 								Identifiers: []string{
@@ -287,7 +287,7 @@ func TestPredicateBetween(t *testing.T) {
 					},
 				},
 				Start: grammar.RowValuePredicand{
-					NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+					Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 						ColumnReference: &grammar.ColumnReference{
 							BasicIdentifierChain: &grammar.IdentifierChain{
 								Identifiers: []string{
@@ -299,10 +299,10 @@ func TestPredicateBetween(t *testing.T) {
 					},
 				},
 				End: grammar.RowValuePredicand{
-					NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+					Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 						UnsignedValue: &grammar.UnsignedValueSpecification{
 							UnsignedLiteral: &grammar.UnsignedLiteral{
-								UnsignedNumericLiteral: &grammar.UnsignedNumericLiteral{
+								UnsignedNumeric: &grammar.UnsignedNumericLiteral{
 									Value: 42,
 								},
 							},
@@ -318,7 +318,7 @@ func TestPredicateBetween(t *testing.T) {
 			end:    scalarSubquery,
 			exp: &grammar.BetweenPredicate{
 				Target: grammar.RowValuePredicand{
-					NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+					Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 						ColumnReference: &grammar.ColumnReference{
 							BasicIdentifierChain: &grammar.IdentifierChain{
 								Identifiers: []string{
@@ -330,10 +330,10 @@ func TestPredicateBetween(t *testing.T) {
 					},
 				},
 				Start: grammar.RowValuePredicand{
-					NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+					Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 						UnsignedValue: &grammar.UnsignedValueSpecification{
 							UnsignedLiteral: &grammar.UnsignedLiteral{
-								UnsignedNumericLiteral: &grammar.UnsignedNumericLiteral{
+								UnsignedNumeric: &grammar.UnsignedNumericLiteral{
 									Value: 42,
 								},
 							},
@@ -341,14 +341,14 @@ func TestPredicateBetween(t *testing.T) {
 					},
 				},
 				End: grammar.RowValuePredicand{
-					NonParenthesizedValueExpressionPrimary: &grammar.NonParenthesizedValueExpressionPrimary{
+					Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 						ScalarSubquery: &grammar.Subquery{
 							QueryExpression: grammar.QueryExpression{
 								Body: grammar.QueryExpressionBody{
-									NonJoinQueryExpression: &grammar.NonJoinQueryExpression{
-										NonJoinQueryTerm: &grammar.NonJoinQueryTerm{
+									NonJoin: &grammar.NonJoinQueryExpression{
+										NonJoin: &grammar.NonJoinQueryTerm{
 											Primary: &grammar.NonJoinQueryPrimary{
-												SimpleTable: &grammar.SimpleTable{
+												Simple: &grammar.SimpleTable{
 													QuerySpecification: scalarSubquery.(*grammar.QuerySpecification),
 												},
 											},

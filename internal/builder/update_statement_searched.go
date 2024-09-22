@@ -34,7 +34,7 @@ func (b *Builder) doUpdateStatementSearched(
 		*curarg++
 	}
 
-	if el.WhereClause != nil {
-		b.doWhereClause(el.WhereClause, qargs, curarg)
+	if el.Where != nil {
+		b.doWhereClause(el.Where, qargs, curarg)
 	}
 }

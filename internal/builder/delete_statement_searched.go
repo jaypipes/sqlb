@@ -19,7 +19,7 @@ func (b *Builder) doDeleteStatementSearched(
 	// We don't add any table alias when outputting the table identifier
 	b.WriteString(el.TableName)
 
-	if el.WhereClause != nil {
-		b.doWhereClause(el.WhereClause, qargs, curarg)
+	if el.Where != nil {
+		b.doWhereClause(el.Where, qargs, curarg)
 	}
 }

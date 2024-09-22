@@ -15,9 +15,9 @@ func (b *Builder) doUnsignedLiteral(
 	qargs []interface{},
 	curarg *int,
 ) {
-	if el.UnsignedNumericLiteral != nil {
-		b.doScalar(el.UnsignedNumericLiteral.Value, qargs, curarg)
+	if el.UnsignedNumeric != nil {
+		b.doScalar(el.UnsignedNumeric.Value, qargs, curarg)
 	} else {
-		b.doScalar(el.GeneralLiteral.Value, qargs, curarg)
+		b.doScalar(el.General.Value, qargs, curarg)
 	}
 }

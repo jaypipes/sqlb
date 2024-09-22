@@ -45,6 +45,18 @@ type Predicate struct {
 	//Type *TypePredicate
 }
 
+func (p *Predicate) ArgCount(count *int) {
+	if p.Comparison != nil {
+		p.Comparison.ArgCount(count)
+	} else if p.In != nil {
+		p.In.ArgCount(count)
+	} else if p.Between != nil {
+		p.Between.ArgCount(count)
+	} else if p.Null != nil {
+		p.Null.ArgCount(count)
+	}
+}
+
 // <comparison predicate>    ::=   <row value predicand> <comparison predicate part 2>
 //
 // <comparison predicate part 2>    ::=   <comp op> <row value predicand>
@@ -74,6 +86,11 @@ type ComparisonPredicate struct {
 	B        RowValuePredicand
 }
 
+func (p *ComparisonPredicate) ArgCount(count *int) {
+	p.A.ArgCount(count)
+	p.B.ArgCount(count)
+}
+
 // <between predicate>    ::=   <row value predicand> <between predicate part 2>
 //
 // <between predicate part 2>    ::=   [ NOT ] BETWEEN [ ASYMMETRIC | SYMMETRIC ] <row value predicand> AND <row value predicand>
@@ -82,6 +99,12 @@ type BetweenPredicate struct {
 	Target RowValuePredicand
 	Start  RowValuePredicand
 	End    RowValuePredicand
+}
+
+func (p *BetweenPredicate) ArgCount(count *int) {
+	p.Target.ArgCount(count)
+	p.Start.ArgCount(count)
+	p.End.ArgCount(count)
 }
 
 // <in predicate>    ::=   <row value predicand> <in predicate part 2>
@@ -99,6 +122,13 @@ type InPredicate struct {
 	Values []RowValueExpression
 }
 
+func (p *InPredicate) ArgCount(count *int) {
+	p.Target.ArgCount(count)
+	for _, v := range p.Values {
+		v.ArgCount(count)
+	}
+}
+
 // <null predicate>    ::=   <row value predicand> <null predicate part 2>
 //
 // <null predicate part 2>    ::=   IS [ NOT ] NULL
@@ -106,4 +136,8 @@ type InPredicate struct {
 type NullPredicate struct {
 	Target RowValuePredicand
 	Not    bool
+}
+
+func (p *NullPredicate) ArgCount(count *int) {
+	p.Target.ArgCount(count)
 }

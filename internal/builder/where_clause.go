@@ -17,5 +17,5 @@ func (b *Builder) doWhereClause(
 ) {
 	b.WriteString(b.opts.FormatSeparateClauseWith())
 	b.Write(grammar.Symbols[grammar.SYM_WHERE])
-	b.doBooleanValueExpression(&el.SearchCondition, qargs, curarg)
+	b.doBooleanValueExpression(&el.Search, qargs, curarg)
 }

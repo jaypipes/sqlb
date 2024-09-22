@@ -47,7 +47,7 @@ func (f *CurrentDateFunction) CommonValueExpression() *grammar.CommonValueExpres
 // the Projection
 func (f *CurrentDateFunction) DerivedColumn() *grammar.DerivedColumn {
 	dc := &grammar.DerivedColumn{
-		ValueExpression: grammar.ValueExpression{
+		Value: grammar.ValueExpression{
 			Common: f.CommonValueExpression(),
 		},
 	}
@@ -110,7 +110,7 @@ func (f *CurrentTimeFunction) CommonValueExpression() *grammar.CommonValueExpres
 // the Projection
 func (f *CurrentTimeFunction) DerivedColumn() *grammar.DerivedColumn {
 	dc := &grammar.DerivedColumn{
-		ValueExpression: grammar.ValueExpression{
+		Value: grammar.ValueExpression{
 			Common: f.CommonValueExpression(),
 		},
 	}
@@ -175,7 +175,7 @@ func (f *CurrentTimestampFunction) CommonValueExpression() *grammar.CommonValueE
 // the Projection
 func (f *CurrentTimestampFunction) DerivedColumn() *grammar.DerivedColumn {
 	dc := &grammar.DerivedColumn{
-		ValueExpression: grammar.ValueExpression{
+		Value: grammar.ValueExpression{
 			Common: f.CommonValueExpression(),
 		},
 	}
@@ -238,7 +238,7 @@ func (f *LocalTimeFunction) CommonValueExpression() *grammar.CommonValueExpressi
 // the Projection
 func (f *LocalTimeFunction) DerivedColumn() *grammar.DerivedColumn {
 	dc := &grammar.DerivedColumn{
-		ValueExpression: grammar.ValueExpression{
+		Value: grammar.ValueExpression{
 			Common: f.CommonValueExpression(),
 		},
 	}
@@ -303,7 +303,7 @@ func (f *LocalTimestampFunction) CommonValueExpression() *grammar.CommonValueExp
 // the Projection
 func (f *LocalTimestampFunction) DerivedColumn() *grammar.DerivedColumn {
 	dc := &grammar.DerivedColumn{
-		ValueExpression: grammar.ValueExpression{
+		Value: grammar.ValueExpression{
 			Common: f.CommonValueExpression(),
 		},
 	}

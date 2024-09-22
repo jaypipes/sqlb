@@ -15,11 +15,11 @@ func (b *Builder) doCursorSpecification(
 	qargs []interface{},
 	curarg *int,
 ) {
-	b.doQueryExpression(&el.QueryExpression, qargs, curarg)
-	if el.OrderByClause != nil {
-		b.doOrderByClause(el.OrderByClause, qargs, curarg)
+	b.doQueryExpression(&el.Query, qargs, curarg)
+	if el.OrderBy != nil {
+		b.doOrderByClause(el.OrderBy, qargs, curarg)
 	}
-	if el.LimitClause != nil {
-		b.doLimitClause(el.LimitClause, qargs, curarg)
+	if el.Limit != nil {
+		b.doLimitClause(el.Limit, qargs, curarg)
 	}
 }

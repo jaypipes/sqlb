@@ -15,14 +15,14 @@ func (b *Builder) doTableExpression(
 	qargs []interface{},
 	curarg *int,
 ) {
-	b.doFromClause(&el.FromClause, qargs, curarg)
-	if el.WhereClause != nil {
-		b.doWhereClause(el.WhereClause, qargs, curarg)
+	b.doFromClause(&el.From, qargs, curarg)
+	if el.Where != nil {
+		b.doWhereClause(el.Where, qargs, curarg)
 	}
-	if el.GroupByClause != nil {
-		b.doGroupByClause(el.GroupByClause, qargs, curarg)
+	if el.GroupBy != nil {
+		b.doGroupByClause(el.GroupBy, qargs, curarg)
 	}
-	if el.HavingClause != nil {
-		b.doHavingClause(el.HavingClause, qargs, curarg)
+	if el.Having != nil {
+		b.doHavingClause(el.Having, qargs, curarg)
 	}
 }

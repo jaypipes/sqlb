@@ -8,7 +8,10 @@ package grammar
 
 // <having clause>    ::=   HAVING <search condition>
 
-// HavingClause represents the SQL HAVING clause
 type HavingClause struct {
-	SearchCondition BooleanValueExpression
+	Search BooleanValueExpression
+}
+
+func (c *HavingClause) ArgCount(count *int) {
+	c.Search.ArgCount(count)
 }

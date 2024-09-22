@@ -23,7 +23,7 @@ func (s *Selection) Join(
 	if s.qs == nil {
 		panic("attempt to join against nil query specification")
 	}
-	if len(s.qs.TableExpression.FromClause.TableReferences) == 0 {
+	if len(s.qs.TableExpression.From.TableReferences) == 0 {
 		msg := "attempt to join against nothing. before calling Join() " +
 			"first call Select()"
 		panic(msg)
@@ -57,7 +57,7 @@ func (s *Selection) OuterJoin(
 	if s.qs == nil {
 		panic("attempt to join against nil query specification")
 	}
-	if len(s.qs.TableExpression.FromClause.TableReferences) == 0 {
+	if len(s.qs.TableExpression.From.TableReferences) == 0 {
 		msg := "attempt to join against nothing. before calling OuterJoin() " +
 			"first call Select()"
 		panic(msg)
@@ -181,15 +181,15 @@ func (s *Selection) doJoin(
 			search = *rp.QueryName
 		}
 		rightTR = inspect.TableReferenceByName(
-			s.qs.TableExpression.FromClause.TableReferences,
+			s.qs.TableExpression.From.TableReferences,
 			search,
 		)
 		if rightTR == nil {
 			// We are joining a table that has not yet been referenced in the
 			// query specification
-			trefs := s.qs.TableExpression.FromClause.TableReferences
+			trefs := s.qs.TableExpression.From.TableReferences
 			trefs = append(trefs, *right)
-			s.qs.TableExpression.FromClause.TableReferences = trefs
+			s.qs.TableExpression.From.TableReferences = trefs
 			rightTR = right
 		}
 	}
@@ -234,7 +234,7 @@ func (s *Selection) doJoin(
 	// reference.
 	updatedTRefs := []grammar.TableReference{}
 	for _, referred := range referreds {
-		leftTR := inspect.TableReferenceByName(s.qs.TableExpression.FromClause.TableReferences, referred)
+		leftTR := inspect.TableReferenceByName(s.qs.TableExpression.From.TableReferences, referred)
 		if leftTR != nil {
 			jt := &grammar.JoinedTable{
 				Qualified: &grammar.QualifiedJoin{
@@ -256,9 +256,6 @@ func (s *Selection) doJoin(
 			panic(msg)
 		}
 	}
-
-	// Now we replace the right table reference with a new one representing the
-	// joined table
-	s.qs.TableExpression.FromClause.TableReferences = updatedTRefs
+	s.qs.TableExpression.From.TableReferences = updatedTRefs
 	return s
 }

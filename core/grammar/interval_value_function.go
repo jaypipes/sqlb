@@ -13,3 +13,9 @@ package grammar
 type IntervalValueFunction struct {
 	Abs *IntervalValueExpression
 }
+
+func (f *IntervalValueFunction) ArgCount(count *int) {
+	if f.Abs != nil {
+		f.Abs.ArgCount(count)
+	}
+}

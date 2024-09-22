@@ -71,16 +71,30 @@ const (
 )
 
 type AggregateFunction struct {
-	CountStar          *struct{}
-	GeneralSetFunction *GeneralSetFunction
-	BinarySetFunction  *BinarySetFunction
-	OrderedSetFunction *OrderedSetFunction
+	CountStar  *struct{}
+	GeneralSet *GeneralSetFunction
+	BinarySet  *BinarySetFunction
+	OrderedSet *OrderedSetFunction
+}
+
+func (f *AggregateFunction) ArgCount(count *int) {
+	if f.GeneralSet != nil {
+		f.GeneralSet.ArgCount(count)
+	} else if f.BinarySet != nil {
+		f.BinarySet.ArgCount(count)
+	} else if f.OrderedSet != nil {
+		f.OrderedSet.ArgCount(count)
+	}
 }
 
 type GeneralSetFunction struct {
-	Operation       ComputationalOperation
-	Quantifier      SetQuantifier
-	ValueExpression ValueExpression
+	Operation  ComputationalOperation
+	Quantifier SetQuantifier
+	Value      ValueExpression
+}
+
+func (f *GeneralSetFunction) ArgCount(count *int) {
+	f.Value.ArgCount(count)
 }
 
 // <binary set function>    ::=   <binary set function type> <left paren> <dependent variable expression> <comma> <independent variable expression> <right paren>
@@ -95,6 +109,9 @@ type GeneralSetFunction struct {
 // <independent variable expression>    ::=   <numeric value expression>
 
 type BinarySetFunction struct{}
+
+func (f *BinarySetFunction) ArgCount(count *int) {
+}
 
 // <ordered set function>    ::=   <hypothetical set function> | <inverse distribution function>
 //
@@ -111,3 +128,6 @@ type BinarySetFunction struct{}
 // <inverse distribution function type>    ::=   PERCENTILE_CONT | PERCENTILE_DISC
 
 type OrderedSetFunction struct{}
+
+func (f *OrderedSetFunction) ArgCount(count *int) {
+}
