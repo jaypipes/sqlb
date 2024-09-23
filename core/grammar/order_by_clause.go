@@ -13,3 +13,9 @@ package grammar
 type OrderByClause struct {
 	SortSpecifications []SortSpecification
 }
+
+func (c *OrderByClause) ArgCount(count *int) {
+	for _, ss := range c.SortSpecifications {
+		ss.ArgCount(count)
+	}
+}

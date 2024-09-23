@@ -16,8 +16,21 @@ package grammar
 // TableExpression represents a table expression in the SQL
 // statement, e.g. "FROM t WHERE a = b"
 type TableExpression struct {
-	FromClause    FromClause
-	WhereClause   *WhereClause
-	GroupByClause *GroupByClause
-	HavingClause  *HavingClause
+	From    FromClause
+	Where   *WhereClause
+	GroupBy *GroupByClause
+	Having  *HavingClause
+}
+
+func (e *TableExpression) ArgCount(count *int) {
+	e.From.ArgCount(count)
+	if e.Where != nil {
+		e.Where.ArgCount(count)
+	}
+	if e.GroupBy != nil {
+		e.GroupBy.ArgCount(count)
+	}
+	if e.Having != nil {
+		e.Having.ArgCount(count)
+	}
 }

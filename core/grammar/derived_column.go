@@ -11,6 +11,10 @@ package grammar
 // <as clause>    ::=   [ AS ] <column name>
 
 type DerivedColumn struct {
-	ValueExpression ValueExpression
-	As              *string
+	Value ValueExpression
+	As    *string
+}
+
+func (c *DerivedColumn) ArgCount(count *int) {
+	c.Value.ArgCount(count)
 }

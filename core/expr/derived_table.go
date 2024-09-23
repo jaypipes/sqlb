@@ -113,10 +113,10 @@ func (t *DerivedTable) TablePrimary() *grammar.TablePrimary {
 			Subquery: grammar.Subquery{
 				QueryExpression: grammar.QueryExpression{
 					Body: grammar.QueryExpressionBody{
-						NonJoinQueryExpression: &grammar.NonJoinQueryExpression{
-							NonJoinQueryTerm: &grammar.NonJoinQueryTerm{
+						NonJoin: &grammar.NonJoinQueryExpression{
+							NonJoin: &grammar.NonJoinQueryTerm{
 								Primary: &grammar.NonJoinQueryPrimary{
-									SimpleTable: &grammar.SimpleTable{
+									Simple: &grammar.SimpleTable{
 										QuerySpecification: t.QuerySpecification(),
 									},
 								},

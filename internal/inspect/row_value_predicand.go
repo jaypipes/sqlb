@@ -22,31 +22,19 @@ func RowValuePredicandFromAny(subject interface{}) *grammar.RowValuePredicand {
 		return &v
 	case *grammar.NonParenthesizedValueExpressionPrimary:
 		return &grammar.RowValuePredicand{
-			NonParenthesizedValueExpressionPrimary: v,
-		}
-	case grammar.NonParenthesizedValueExpressionPrimary:
-		return &grammar.RowValuePredicand{
-			NonParenthesizedValueExpressionPrimary: &v,
+			Primary: v,
 		}
 	case *grammar.CommonValueExpression:
 		return &grammar.RowValuePredicand{
-			CommonValueExpression: v,
-		}
-	case grammar.CommonValueExpression:
-		return &grammar.RowValuePredicand{
-			CommonValueExpression: &v,
+			Common: v,
 		}
 	case types.CommonValueExpressionConverter:
 		return &grammar.RowValuePredicand{
-			CommonValueExpression: v.CommonValueExpression(),
+			Common: v.CommonValueExpression(),
 		}
 	case *grammar.BooleanPredicand:
 		return &grammar.RowValuePredicand{
-			BooleanPredicand: v,
-		}
-	case grammar.BooleanPredicand:
-		return &grammar.RowValuePredicand{
-			BooleanPredicand: &v,
+			Boolean: v,
 		}
 	}
 	// We could have a simple literal passed to us. See if we can convert it
@@ -55,7 +43,7 @@ func RowValuePredicandFromAny(subject interface{}) *grammar.RowValuePredicand {
 	v := NonParenthesizedValueExpressionPrimaryFromAny(subject)
 	if v != nil {
 		return &grammar.RowValuePredicand{
-			NonParenthesizedValueExpressionPrimary: v,
+			Primary: v,
 		}
 	}
 	return nil
@@ -67,12 +55,12 @@ func RowValuePredicandFromAny(subject interface{}) *grammar.RowValuePredicand {
 func ReferredFromRowValuePredicand(
 	rvp *grammar.RowValuePredicand,
 ) []string {
-	if rvp.NonParenthesizedValueExpressionPrimary != nil {
-		return ReferredFromNonParenthesizedValueExpressionPrimary(rvp.NonParenthesizedValueExpressionPrimary)
-	} else if rvp.CommonValueExpression != nil {
-		return ReferredFromCommonValueExpression(rvp.CommonValueExpression)
-	} else if rvp.BooleanPredicand != nil {
-		return ReferredFromBooleanPredicand(rvp.BooleanPredicand)
+	if rvp.Primary != nil {
+		return ReferredFromNonParenthesizedValueExpressionPrimary(rvp.Primary)
+	} else if rvp.Common != nil {
+		return ReferredFromCommonValueExpression(rvp.Common)
+	} else if rvp.Boolean != nil {
+		return ReferredFromBooleanPredicand(rvp.Boolean)
 	}
 	return []string{}
 }

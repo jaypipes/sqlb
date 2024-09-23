@@ -15,11 +15,11 @@ func (b *Builder) doRowValuePredicand(
 	qargs []interface{},
 	curarg *int,
 ) {
-	if el.NonParenthesizedValueExpressionPrimary != nil {
-		b.doNonParenthesizedValueExpressionPrimary(el.NonParenthesizedValueExpressionPrimary, qargs, curarg)
-	} else if el.CommonValueExpression != nil {
-		b.doCommonValueExpression(el.CommonValueExpression, qargs, curarg)
-	} else {
-		b.doBooleanPredicand(el.BooleanPredicand, qargs, curarg)
+	if el.Primary != nil {
+		b.doNonParenthesizedValueExpressionPrimary(el.Primary, qargs, curarg)
+	} else if el.Common != nil {
+		b.doCommonValueExpression(el.Common, qargs, curarg)
+	} else if el.Boolean != nil {
+		b.doBooleanPredicand(el.Boolean, qargs, curarg)
 	}
 }

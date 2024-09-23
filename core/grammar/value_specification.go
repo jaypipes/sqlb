@@ -68,9 +68,23 @@ type ValueSpecification struct {
 	UnsignedValue *UnsignedValueSpecification
 }
 
+func (s *ValueSpecification) ArgCount(count *int) {
+	if s.Literal != nil {
+		s.Literal.ArgCount(count)
+	} else if s.UnsignedValue != nil {
+		s.UnsignedValue.ArgCount(count)
+	}
+}
+
 type UnsignedValueSpecification struct {
 	UnsignedLiteral *UnsignedLiteral
 	GeneralValue    *GeneralValueSpecification
+}
+
+func (s *UnsignedValueSpecification) ArgCount(count *int) {
+	if s.UnsignedLiteral != nil {
+		s.UnsignedLiteral.ArgCount(count)
+	}
 }
 
 type GeneralValueSpecification struct {

@@ -61,7 +61,7 @@ func TestStringValueFunctionSubstring(t *testing.T) {
 									Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 										UnsignedValue: &grammar.UnsignedValueSpecification{
 											UnsignedLiteral: &grammar.UnsignedLiteral{
-												UnsignedNumericLiteral: &grammar.UnsignedNumericLiteral{
+												UnsignedNumeric: &grammar.UnsignedNumericLiteral{
 													Value: 42,
 												},
 											},
@@ -226,7 +226,7 @@ func TestStringValueFunctionRegexSubstring(t *testing.T) {
 								Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 									UnsignedValue: &grammar.UnsignedValueSpecification{
 										UnsignedLiteral: &grammar.UnsignedLiteral{
-											GeneralLiteral: &grammar.GeneralLiteral{
+											General: &grammar.GeneralLiteral{
 												Value: "$[a-z]",
 											},
 										},
@@ -243,7 +243,7 @@ func TestStringValueFunctionRegexSubstring(t *testing.T) {
 								Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 									UnsignedValue: &grammar.UnsignedValueSpecification{
 										UnsignedLiteral: &grammar.UnsignedLiteral{
-											GeneralLiteral: &grammar.GeneralLiteral{
+											General: &grammar.GeneralLiteral{
 												Value: "/",
 											},
 										},
@@ -497,7 +497,7 @@ func TestStringValueFunctionTranscoding(t *testing.T) {
 								Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 									UnsignedValue: &grammar.UnsignedValueSpecification{
 										UnsignedLiteral: &grammar.UnsignedLiteral{
-											GeneralLiteral: &grammar.GeneralLiteral{
+											General: &grammar.GeneralLiteral{
 												Value: "foo",
 											},
 										},
@@ -624,7 +624,7 @@ func TestStringValueFunctionTransliteration(t *testing.T) {
 								Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 									UnsignedValue: &grammar.UnsignedValueSpecification{
 										UnsignedLiteral: &grammar.UnsignedLiteral{
-											GeneralLiteral: &grammar.GeneralLiteral{
+											General: &grammar.GeneralLiteral{
 												Value: "foo",
 											},
 										},
@@ -739,7 +739,7 @@ func TestStringValueFunctionTrim(t *testing.T) {
 								Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 									UnsignedValue: &grammar.UnsignedValueSpecification{
 										UnsignedLiteral: &grammar.UnsignedLiteral{
-											GeneralLiteral: &grammar.GeneralLiteral{
+											General: &grammar.GeneralLiteral{
 												Value: "\n",
 											},
 										},
@@ -763,7 +763,7 @@ func TestStringValueFunctionTrim(t *testing.T) {
 								Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 									UnsignedValue: &grammar.UnsignedValueSpecification{
 										UnsignedLiteral: &grammar.UnsignedLiteral{
-											GeneralLiteral: &grammar.GeneralLiteral{
+											General: &grammar.GeneralLiteral{
 												Value: "foo",
 											},
 										},
@@ -789,7 +789,7 @@ func TestStringValueFunctionTrim(t *testing.T) {
 								Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 									UnsignedValue: &grammar.UnsignedValueSpecification{
 										UnsignedLiteral: &grammar.UnsignedLiteral{
-											GeneralLiteral: &grammar.GeneralLiteral{
+											General: &grammar.GeneralLiteral{
 												Value: "foo",
 											},
 										},
@@ -806,7 +806,7 @@ func TestStringValueFunctionTrim(t *testing.T) {
 								Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 									UnsignedValue: &grammar.UnsignedValueSpecification{
 										UnsignedLiteral: &grammar.UnsignedLiteral{
-											GeneralLiteral: &grammar.GeneralLiteral{
+											General: &grammar.GeneralLiteral{
 												Value: "\n",
 											},
 										},

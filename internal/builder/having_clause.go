@@ -17,5 +17,5 @@ func (b *Builder) doHavingClause(
 ) {
 	b.WriteString(b.opts.FormatSeparateClauseWith())
 	b.Write(grammar.Symbols[grammar.SYM_HAVING])
-	b.doBooleanValueExpression(&el.SearchCondition, qargs, curarg)
+	b.doBooleanValueExpression(&el.Search, qargs, curarg)
 }

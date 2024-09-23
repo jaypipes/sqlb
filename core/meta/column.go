@@ -68,7 +68,7 @@ func (c *Column) ColumnReference() *grammar.ColumnReference {
 // DerivedColumn returns the object as a `*grammar.DerivedColumn`
 func (c *Column) DerivedColumn() *grammar.DerivedColumn {
 	dc := &grammar.DerivedColumn{
-		ValueExpression: grammar.ValueExpression{
+		Value: grammar.ValueExpression{
 			Row: &grammar.RowValueExpression{
 				Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 					ColumnReference: c.ColumnReference(),

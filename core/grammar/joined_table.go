@@ -49,11 +49,38 @@ type JoinedTable struct {
 	Union     *UnionJoin
 }
 
+func (j *JoinedTable) ArgCount(count *int) {
+	if j.Qualified != nil {
+		j := j.Qualified
+		j.Left.ArgCount(count)
+		j.Right.ArgCount(count)
+		j.On.ArgCount(count)
+	} else if j.Cross != nil {
+		j := j.Cross
+		j.Left.ArgCount(count)
+		j.Right.ArgCount(count)
+	} else if j.Union != nil {
+		j := j.Union
+		j.Left.ArgCount(count)
+		j.Right.ArgCount(count)
+	} else if j.Natural != nil {
+		j := j.Natural
+		j.Left.ArgCount(count)
+		j.Right.ArgCount(count)
+	}
+}
+
 type QualifiedJoin struct {
 	Type  JoinType
 	Left  TableReference
 	Right TableReference
 	On    BooleanValueExpression
+}
+
+func (j *QualifiedJoin) ArgCount(count *int) {
+	j.Left.ArgCount(count)
+	j.Right.ArgCount(count)
+	j.On.ArgCount(count)
 }
 
 type NaturalJoin struct {
@@ -62,12 +89,27 @@ type NaturalJoin struct {
 	Right TablePrimary
 }
 
+func (j *NaturalJoin) ArgCount(count *int) {
+	j.Left.ArgCount(count)
+	j.Right.ArgCount(count)
+}
+
 type CrossJoin struct {
 	Left  TableReference
 	Right TablePrimary
 }
 
+func (j *CrossJoin) ArgCount(count *int) {
+	j.Left.ArgCount(count)
+	j.Right.ArgCount(count)
+}
+
 type UnionJoin struct {
 	Left  TableReference
 	Right TablePrimary
+}
+
+func (j *UnionJoin) ArgCount(count *int) {
+	j.Left.ArgCount(count)
+	j.Right.ArgCount(count)
 }

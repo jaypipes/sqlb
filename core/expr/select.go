@@ -70,10 +70,10 @@ func (s *Selection) TablePrimary() *grammar.TablePrimary {
 			Subquery: grammar.Subquery{
 				QueryExpression: grammar.QueryExpression{
 					Body: grammar.QueryExpressionBody{
-						NonJoinQueryExpression: &grammar.NonJoinQueryExpression{
-							NonJoinQueryTerm: &grammar.NonJoinQueryTerm{
+						NonJoin: &grammar.NonJoinQueryExpression{
+							NonJoin: &grammar.NonJoinQueryTerm{
 								Primary: &grammar.NonJoinQueryPrimary{
-									SimpleTable: &grammar.SimpleTable{
+									Simple: &grammar.SimpleTable{
 										QuerySpecification: s.qs,
 									},
 								},
@@ -154,10 +154,10 @@ func Select(
 					Subquery: grammar.Subquery{
 						QueryExpression: grammar.QueryExpression{
 							Body: grammar.QueryExpressionBody{
-								NonJoinQueryExpression: &grammar.NonJoinQueryExpression{
-									NonJoinQueryTerm: &grammar.NonJoinQueryTerm{
+								NonJoin: &grammar.NonJoinQueryExpression{
+									NonJoin: &grammar.NonJoinQueryTerm{
 										Primary: &grammar.NonJoinQueryPrimary{
-											SimpleTable: &grammar.SimpleTable{
+											Simple: &grammar.SimpleTable{
 												QuerySpecification: item.qs,
 											},
 										},
@@ -182,7 +182,7 @@ func Select(
 			for _, c := range item.Projections() {
 				outerCol := meta.NewColumn(selAsTable, c.Name())
 				dc := grammar.DerivedColumn{
-					ValueExpression: grammar.ValueExpression{
+					Value: grammar.ValueExpression{
 						Row: &grammar.RowValueExpression{
 							Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 								ColumnReference: &grammar.ColumnReference{
@@ -203,11 +203,11 @@ func Select(
 			// Project all columns from the subquery to the outer
 			// QuerySpecification
 			body := item.QueryExpression.Body
-			njqe := body.NonJoinQueryExpression
+			njqe := body.NonJoin
 			if njqe == nil {
 				panic("expected subquery to have non-nil non-join query expression")
 			}
-			njqt := njqe.NonJoinQueryTerm
+			njqt := njqe.NonJoin
 			if njqt == nil {
 				panic("expected subquery to have non-nil non-join query term")
 			}
@@ -215,7 +215,7 @@ func Select(
 			if njqp == nil {
 				panic("expected subquery to have non-nil non-join query primary")
 			}
-			st := njqp.SimpleTable
+			st := njqp.Simple
 			if st == nil {
 				panic("expected subquery to have non-nil simple table")
 			}
@@ -225,7 +225,7 @@ func Select(
 			}
 			// TODO(jaypipes): Determine if this is a SCALAR subquery or not...
 			dc := grammar.DerivedColumn{
-				ValueExpression: grammar.ValueExpression{
+				Value: grammar.ValueExpression{
 					Row: &grammar.RowValueExpression{
 						Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 							ScalarSubquery: item,
@@ -258,12 +258,12 @@ func Select(
 			// instance, a user can do SELECT 1, which is, technically
 			// valid SQL.
 			dc := grammar.DerivedColumn{
-				ValueExpression: grammar.ValueExpression{
+				Value: grammar.ValueExpression{
 					Row: &grammar.RowValueExpression{
 						Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 							UnsignedValue: &grammar.UnsignedValueSpecification{
 								UnsignedLiteral: &grammar.UnsignedLiteral{
-									GeneralLiteral: &grammar.GeneralLiteral{
+									General: &grammar.GeneralLiteral{
 										Value: item,
 									},
 								},
@@ -272,6 +272,7 @@ func Select(
 					},
 				},
 			}
+			fmt.Println("ADDED", fmt.Sprintf("%+v", item))
 			sels = append(sels, grammar.SelectSublist{DerivedColumn: &dc})
 		}
 	}
@@ -293,7 +294,7 @@ func Select(
 				Sublists: sels,
 			},
 			TableExpression: grammar.TableExpression{
-				FromClause: grammar.FromClause{
+				From: grammar.FromClause{
 					TableReferences: trefs,
 				},
 			},
@@ -316,7 +317,7 @@ func (s *Selection) Count() *Selection {
 		panic("called Count() on a nil Selection.")
 	}
 	dc := grammar.DerivedColumn{
-		ValueExpression: grammar.ValueExpression{
+		Value: grammar.ValueExpression{
 			Row: &grammar.RowValueExpression{
 				Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 					SetFunction: &grammar.SetFunctionSpecification{
@@ -338,7 +339,7 @@ func (s *Selection) Count() *Selection {
 // variants)
 func (s *Selection) Limit(count int) *Selection {
 	if s.cs != nil {
-		s.cs.LimitClause = &grammar.LimitClause{
+		s.cs.Limit = &grammar.LimitClause{
 			Count: count,
 		}
 		return s
@@ -347,12 +348,12 @@ func (s *Selection) Limit(count int) *Selection {
 		panic("cannot call Limit() on a nil QuerySpecification")
 	}
 	cs := &grammar.CursorSpecification{
-		QueryExpression: grammar.QueryExpression{
+		Query: grammar.QueryExpression{
 			Body: grammar.QueryExpressionBody{
-				NonJoinQueryExpression: &grammar.NonJoinQueryExpression{
-					NonJoinQueryTerm: &grammar.NonJoinQueryTerm{
+				NonJoin: &grammar.NonJoinQueryExpression{
+					NonJoin: &grammar.NonJoinQueryTerm{
 						Primary: &grammar.NonJoinQueryPrimary{
-							SimpleTable: &grammar.SimpleTable{
+							Simple: &grammar.SimpleTable{
 								QuerySpecification: s.qs,
 							},
 						},
@@ -360,7 +361,7 @@ func (s *Selection) Limit(count int) *Selection {
 				},
 			},
 		},
-		LimitClause: &grammar.LimitClause{
+		Limit: &grammar.LimitClause{
 			Count: count,
 		},
 	}
@@ -374,7 +375,7 @@ func (s *Selection) LimitWithOffset(
 	offset int,
 ) *Selection {
 	if s.cs != nil {
-		s.cs.LimitClause = &grammar.LimitClause{
+		s.cs.Limit = &grammar.LimitClause{
 			Count:  count,
 			Offset: &offset,
 		}
@@ -384,12 +385,12 @@ func (s *Selection) LimitWithOffset(
 		panic("cannot call Limit() on a nil QuerySpecification")
 	}
 	cs := &grammar.CursorSpecification{
-		QueryExpression: grammar.QueryExpression{
+		Query: grammar.QueryExpression{
 			Body: grammar.QueryExpressionBody{
-				NonJoinQueryExpression: &grammar.NonJoinQueryExpression{
-					NonJoinQueryTerm: &grammar.NonJoinQueryTerm{
+				NonJoin: &grammar.NonJoinQueryExpression{
+					NonJoin: &grammar.NonJoinQueryTerm{
 						Primary: &grammar.NonJoinQueryPrimary{
-							SimpleTable: &grammar.SimpleTable{
+							Simple: &grammar.SimpleTable{
 								QuerySpecification: s.qs,
 							},
 						},
@@ -397,7 +398,7 @@ func (s *Selection) LimitWithOffset(
 				},
 			},
 		},
-		LimitClause: &grammar.LimitClause{
+		Limit: &grammar.LimitClause{
 			Count:  count,
 			Offset: &offset,
 		},
@@ -423,11 +424,11 @@ func (s *Selection) Where(
 		panic(msg)
 	}
 	te := &s.qs.TableExpression
-	if te.WhereClause != nil {
-		te.WhereClause.SearchCondition = *And(&te.WhereClause.SearchCondition, bve)
+	if te.Where != nil {
+		te.Where.Search = *And(&te.Where.Search, bve)
 	} else {
-		te.WhereClause = &grammar.WhereClause{
-			SearchCondition: *bve,
+		te.Where = &grammar.WhereClause{
+			Search: *bve,
 		}
 	}
 	s.qs.TableExpression = *te
@@ -443,10 +444,10 @@ func (s *Selection) GroupBy(
 		panic("cannot call Where() on a nil QuerySpecification")
 	}
 	te := &s.qs.TableExpression
-	if te.GroupByClause == nil {
-		te.GroupByClause = &grammar.GroupByClause{}
+	if te.GroupBy == nil {
+		te.GroupBy = &grammar.GroupByClause{}
 	}
-	ges := te.GroupByClause.GroupingElements
+	ges := te.GroupBy.GroupingElements
 	if ges == nil {
 		ges = []grammar.GroupingElement{}
 	}
@@ -468,7 +469,7 @@ func (s *Selection) GroupBy(
 		}
 		ges = append(ges, ge)
 	}
-	te.GroupByClause.GroupingElements = ges
+	te.GroupBy.GroupingElements = ges
 	s.qs.TableExpression = *te
 	return s
 }
@@ -491,11 +492,11 @@ func (s *Selection) Having(
 		panic(msg)
 	}
 	te := &s.qs.TableExpression
-	if te.HavingClause != nil {
-		te.HavingClause.SearchCondition = *And(&te.HavingClause.SearchCondition, bve)
+	if te.Having != nil {
+		te.Having.Search = *And(&te.Having.Search, bve)
 	} else {
-		te.HavingClause = &grammar.HavingClause{
-			SearchCondition: *bve,
+		te.Having = &grammar.HavingClause{
+			Search: *bve,
 		}
 	}
 	s.qs.TableExpression = *te
@@ -508,12 +509,12 @@ func (s *Selection) OrderBy(
 ) *Selection {
 	if s.cs == nil {
 		s.cs = &grammar.CursorSpecification{
-			QueryExpression: grammar.QueryExpression{
+			Query: grammar.QueryExpression{
 				Body: grammar.QueryExpressionBody{
-					NonJoinQueryExpression: &grammar.NonJoinQueryExpression{
-						NonJoinQueryTerm: &grammar.NonJoinQueryTerm{
+					NonJoin: &grammar.NonJoinQueryExpression{
+						NonJoin: &grammar.NonJoinQueryTerm{
 							Primary: &grammar.NonJoinQueryPrimary{
-								SimpleTable: &grammar.SimpleTable{
+								Simple: &grammar.SimpleTable{
 									QuerySpecification: s.qs,
 								},
 							},
@@ -546,13 +547,13 @@ func (s *Selection) OrderBy(
 			specs = append(specs, grammar.SortSpecification{Key: *ve})
 		}
 	}
-	if s.cs.OrderByClause == nil {
-		s.cs.OrderByClause = &grammar.OrderByClause{
+	if s.cs.OrderBy == nil {
+		s.cs.OrderBy = &grammar.OrderByClause{
 			SortSpecifications: []grammar.SortSpecification{},
 		}
 	}
-	s.cs.OrderByClause.SortSpecifications = append(
-		s.cs.OrderByClause.SortSpecifications, specs...,
+	s.cs.OrderBy.SortSpecifications = append(
+		s.cs.OrderBy.SortSpecifications, specs...,
 	)
 	return s
 }

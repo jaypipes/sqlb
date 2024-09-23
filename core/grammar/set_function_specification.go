@@ -14,3 +14,9 @@ type SetFunctionSpecification struct {
 	Aggregate *AggregateFunction
 	//GroupingOperation *GroupingOperation
 }
+
+func (s *SetFunctionSpecification) ArgCount(count *int) {
+	if s.Aggregate != nil {
+		s.Aggregate.ArgCount(count)
+	}
+}

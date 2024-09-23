@@ -39,9 +39,9 @@ func TestAggregateFunctionCount(t *testing.T) {
 			name:   "column",
 			target: []interface{}{colUserId},
 			exp: &grammar.AggregateFunction{
-				GeneralSetFunction: &grammar.GeneralSetFunction{
+				GeneralSet: &grammar.GeneralSetFunction{
 					Operation: grammar.ComputationalOperationCount,
-					ValueExpression: grammar.ValueExpression{
+					Value: grammar.ValueExpression{
 						Row: &grammar.RowValueExpression{
 							Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 								ColumnReference: &grammar.ColumnReference{
@@ -101,9 +101,9 @@ func TestAggregateFunctionAvgMinMaxSum(t *testing.T) {
 			target: colUserId,
 			f:      fn.Avg,
 			exp: &grammar.AggregateFunction{
-				GeneralSetFunction: &grammar.GeneralSetFunction{
+				GeneralSet: &grammar.GeneralSetFunction{
 					Operation: grammar.ComputationalOperationAvg,
-					ValueExpression: grammar.ValueExpression{
+					Value: grammar.ValueExpression{
 						Row: &grammar.RowValueExpression{
 							Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 								ColumnReference: &grammar.ColumnReference{
@@ -126,9 +126,9 @@ func TestAggregateFunctionAvgMinMaxSum(t *testing.T) {
 			target: colUserId,
 			f:      fn.Min,
 			exp: &grammar.AggregateFunction{
-				GeneralSetFunction: &grammar.GeneralSetFunction{
+				GeneralSet: &grammar.GeneralSetFunction{
 					Operation: grammar.ComputationalOperationMin,
-					ValueExpression: grammar.ValueExpression{
+					Value: grammar.ValueExpression{
 						Row: &grammar.RowValueExpression{
 							Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 								ColumnReference: &grammar.ColumnReference{
@@ -151,9 +151,9 @@ func TestAggregateFunctionAvgMinMaxSum(t *testing.T) {
 			target: colUserId,
 			f:      fn.Max,
 			exp: &grammar.AggregateFunction{
-				GeneralSetFunction: &grammar.GeneralSetFunction{
+				GeneralSet: &grammar.GeneralSetFunction{
 					Operation: grammar.ComputationalOperationMax,
-					ValueExpression: grammar.ValueExpression{
+					Value: grammar.ValueExpression{
 						Row: &grammar.RowValueExpression{
 							Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 								ColumnReference: &grammar.ColumnReference{
@@ -176,9 +176,9 @@ func TestAggregateFunctionAvgMinMaxSum(t *testing.T) {
 			target: colUserId,
 			f:      fn.Sum,
 			exp: &grammar.AggregateFunction{
-				GeneralSetFunction: &grammar.GeneralSetFunction{
+				GeneralSet: &grammar.GeneralSetFunction{
 					Operation: grammar.ComputationalOperationSum,
-					ValueExpression: grammar.ValueExpression{
+					Value: grammar.ValueExpression{
 						Row: &grammar.RowValueExpression{
 							Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 								ColumnReference: &grammar.ColumnReference{
@@ -233,10 +233,10 @@ func TestAggregateFunctionDistinct(t *testing.T) {
 			target: colUserId,
 			f:      fn.Avg,
 			exp: &grammar.AggregateFunction{
-				GeneralSetFunction: &grammar.GeneralSetFunction{
+				GeneralSet: &grammar.GeneralSetFunction{
 					Operation:  grammar.ComputationalOperationAvg,
 					Quantifier: grammar.SetQuantifierDistinct,
-					ValueExpression: grammar.ValueExpression{
+					Value: grammar.ValueExpression{
 						Row: &grammar.RowValueExpression{
 							Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 								ColumnReference: &grammar.ColumnReference{

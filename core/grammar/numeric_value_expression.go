@@ -55,15 +55,38 @@ type NumericValueExpression struct {
 	AddSubtract *AddSubtractExpression
 }
 
+func (e *NumericValueExpression) ArgCount(count *int) {
+	if e.Unary != nil {
+		e.Unary.ArgCount(count)
+	} else if e.AddSubtract != nil {
+		e.AddSubtract.Left.ArgCount(count)
+		e.AddSubtract.Right.ArgCount(count)
+	}
+}
+
 type AddSubtractExpression struct {
 	Left     NumericValueExpression
 	Right    Term
 	Subtract bool
 }
 
+func (e *AddSubtractExpression) ArgCount(count *int) {
+	e.Left.ArgCount(count)
+	e.Right.ArgCount(count)
+}
+
 type Term struct {
 	Unary          *Factor
 	MultiplyDivide *MultiplyDivideExpression
+}
+
+func (t *Term) ArgCount(count *int) {
+	if t.Unary != nil {
+		t.Unary.ArgCount(count)
+	} else if t.MultiplyDivide != nil {
+		t.MultiplyDivide.Left.ArgCount(count)
+		t.MultiplyDivide.Right.ArgCount(count)
+	}
 }
 
 type MultiplyDivideExpression struct {
@@ -72,12 +95,29 @@ type MultiplyDivideExpression struct {
 	Divide bool
 }
 
+func (e *MultiplyDivideExpression) ArgCount(count *int) {
+	e.Left.ArgCount(count)
+	e.Right.ArgCount(count)
+}
+
 type Factor struct {
 	Sign    Sign
 	Primary NumericPrimary
 }
 
+func (f *Factor) ArgCount(count *int) {
+	f.Primary.ArgCount(count)
+}
+
 type NumericPrimary struct {
 	Primary  *ValueExpressionPrimary
 	Function *NumericValueFunction
+}
+
+func (p *NumericPrimary) ArgCount(count *int) {
+	if p.Primary != nil {
+		p.Primary.ArgCount(count)
+	} else if p.Function != nil {
+		p.Function.ArgCount(count)
+	}
 }

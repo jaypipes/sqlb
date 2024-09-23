@@ -8,7 +8,10 @@ package grammar
 
 // WHERE <search condition>
 
-// WhereClause represents the SQL WHERE clause
 type WhereClause struct {
-	SearchCondition BooleanValueExpression
+	Search BooleanValueExpression
+}
+
+func (c *WhereClause) ArgCount(count *int) {
+	c.Search.ArgCount(count)
 }

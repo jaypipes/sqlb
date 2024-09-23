@@ -247,13 +247,13 @@ func TestNestedSetWithAdditionalJoin(t *testing.T) {
 		expr.Equal(o1rootid, o2rootid),
 		expr.Between(o1nestedleft, o2nestedleft, o2nestedright),
 	)
-	ouJoin := expr.And(
+	ouJoinCond := expr.And(
 		expr.Equal(o2id, ouOrgId),
 		expr.Equal(ouUserId, 1),
 	)
 	q := expr.Select(o1id)
 	q.Join(o2, nestedJoinCond)
-	q.Join(ou, ouJoin)
+	q.Join(ou, ouJoinCond)
 
 	b := builder.New()
 	qs, qargs := b.StringArgs(q.Query())

@@ -32,3 +32,7 @@ type InsertStatement struct {
 	Columns   []string
 	Values    []interface{}
 }
+
+func (s *InsertStatement) ArgCount(count *int) {
+	*count += len(s.Values)
+}

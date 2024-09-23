@@ -15,7 +15,7 @@ func (b *Builder) doDerivedColumn(
 	qargs []interface{},
 	curarg *int,
 ) {
-	b.doValueExpression(&el.ValueExpression, qargs, curarg)
+	b.doValueExpression(&el.Value, qargs, curarg)
 	if el.As != nil {
 		b.Write(grammar.Symbols[grammar.SYM_AS])
 		b.WriteString(*el.As)

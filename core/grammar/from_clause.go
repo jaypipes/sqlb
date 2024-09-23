@@ -10,7 +10,12 @@ package grammar
 //
 // <table reference list>    ::=   <table reference> [ { <comma> <table reference> }... ]
 
-// FromClause represents the SQL FROM clause
 type FromClause struct {
 	TableReferences []TableReference
+}
+
+func (c *FromClause) ArgCount(count *int) {
+	for _, tref := range c.TableReferences {
+		tref.ArgCount(count)
+	}
 }

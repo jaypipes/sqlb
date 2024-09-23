@@ -13,3 +13,11 @@ type LimitClause struct {
 	Count  int
 	Offset *int
 }
+
+func (c *LimitClause) ArgCount(count *int) {
+	if c.Offset != nil {
+		*count = *count + 2
+	} else {
+		*count++
+	}
+}

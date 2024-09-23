@@ -56,6 +56,14 @@ type StringValueFunction struct {
 	Blob      *BlobValueFunction
 }
 
+func (f *StringValueFunction) ArgCount(count *int) {
+	if f.Character != nil {
+		f.Character.ArgCount(count)
+	} else if f.Blob != nil {
+		f.Blob.ArgCount(count)
+	}
+}
+
 type CharacterValueFunction struct {
 	Substring       *SubstringFunction
 	RegexSubstring  *RegexSubstringFunction
@@ -66,6 +74,22 @@ type CharacterValueFunction struct {
 	Overlay         *OverlayFunction
 	Normalize       *NormalizeFunction
 	SpecificType    *SpecificTypeFunction
+}
+
+func (f *CharacterValueFunction) ArgCount(count *int) {
+	if f.Substring != nil {
+		f.Substring.ArgCount(count)
+	} else if f.RegexSubstring != nil {
+		f.RegexSubstring.ArgCount(count)
+	} else if f.Fold != nil {
+		f.Fold.ArgCount(count)
+	} else if f.Transcoding != nil {
+		f.Transcoding.ArgCount(count)
+	} else if f.Transliteration != nil {
+		f.Transliteration.ArgCount(count)
+	} else if f.Trim != nil {
+		f.Trim.ArgCount(count)
+	}
 }
 
 // <character substring function>    ::=
@@ -79,6 +103,14 @@ type SubstringFunction struct {
 	Using   CharacterLengthUnits
 }
 
+func (f *SubstringFunction) ArgCount(count *int) {
+	f.Subject.ArgCount(count)
+	f.From.ArgCount(count)
+	if f.For != nil {
+		f.For.ArgCount(count)
+	}
+}
+
 // <regular expression substring function>    ::=
 //          SUBSTRING <left paren> <character value expression>
 //          SIMILAR <character value expression> ESCAPE <escape character> <right paren>
@@ -87,6 +119,12 @@ type RegexSubstringFunction struct {
 	Subject CharacterValueExpression
 	Similar CharacterValueExpression
 	Escape  CharacterValueExpression
+}
+
+func (f *RegexSubstringFunction) ArgCount(count *int) {
+	f.Subject.ArgCount(count)
+	f.Similar.ArgCount(count)
+	f.Escape.ArgCount(count)
 }
 
 // <fold>    ::=   { UPPER | LOWER } <left paren> <character value expression> <right paren>
@@ -108,6 +146,10 @@ type FoldFunction struct {
 	Subject CharacterValueExpression
 }
 
+func (f *FoldFunction) ArgCount(count *int) {
+	f.Subject.ArgCount(count)
+}
+
 // <transcoding>    ::=   CONVERT <left paren> <character value expression> USING <transcoding name> <right paren>
 
 type TranscodingFunction struct {
@@ -115,11 +157,19 @@ type TranscodingFunction struct {
 	Using   SchemaQualifiedName
 }
 
+func (f *TranscodingFunction) ArgCount(count *int) {
+	f.Subject.ArgCount(count)
+}
+
 // <character transliteration>    ::=   TRANSLATE <left paren> <character value expression> USING <transliteration name> <right paren>
 
 type TransliterationFunction struct {
 	Subject CharacterValueExpression
 	Using   SchemaQualifiedName
+}
+
+func (f *TransliterationFunction) ArgCount(count *int) {
+	f.Subject.ArgCount(count)
 }
 
 // <trim function>    ::=   TRIM <left paren> <trim operands> <right paren>
@@ -152,10 +202,29 @@ type TrimFunction struct {
 	Subject       CharacterValueExpression
 }
 
+func (f *TrimFunction) ArgCount(count *int) {
+	f.Subject.ArgCount(count)
+	if f.Character != nil {
+		f.Character.ArgCount(count)
+	}
+}
+
 type OverlayFunction struct{}
+
+func (f *OverlayFunction) ArgCount(count *int) {
+}
 
 type NormalizeFunction struct{}
 
+func (f *NormalizeFunction) ArgCount(count *int) {
+}
+
 type SpecificTypeFunction struct{}
 
+func (f *SpecificTypeFunction) ArgCount(count *int) {
+}
+
 type BlobValueFunction struct{}
+
+func (f *BlobValueFunction) ArgCount(count *int) {
+}

@@ -25,9 +25,21 @@ type QueryExpression struct {
 	Body QueryExpressionBody
 }
 
+func (e *QueryExpression) ArgCount(count *int) {
+	e.Body.ArgCount(count)
+}
+
 type QueryExpressionBody struct {
-	NonJoinQueryExpression *NonJoinQueryExpression
-	JoinedTable            *JoinedTable
+	NonJoin *NonJoinQueryExpression
+	Joined  *JoinedTable
+}
+
+func (b *QueryExpressionBody) ArgCount(count *int) {
+	if b.NonJoin != nil {
+		b.NonJoin.ArgCount(count)
+	} else if b.Joined != nil {
+		b.Joined.ArgCount(count)
+	}
 }
 
 // <non-join query expression>    ::=
@@ -60,9 +72,15 @@ type QueryExpressionBody struct {
 // <corresponding column list>    ::=   <column name list>
 
 type NonJoinQueryExpression struct {
-	NonJoinQueryTerm *NonJoinQueryTerm
+	NonJoin *NonJoinQueryTerm
 	// Union *UnionQueryExpression
 	// Except *ExceptQueryExpression
+}
+
+func (e *NonJoinQueryExpression) ArgCount(count *int) {
+	if e.NonJoin != nil {
+		e.NonJoin.ArgCount(count)
+	}
 }
 
 type NonJoinQueryTerm struct {
@@ -70,15 +88,35 @@ type NonJoinQueryTerm struct {
 	Intersect *IntersectQuery
 }
 
+func (t *NonJoinQueryTerm) ArgCount(count *int) {
+	if t.Primary != nil {
+		t.Primary.ArgCount(count)
+	}
+}
+
 type NonJoinQueryPrimary struct {
-	SimpleTable                         *SimpleTable
-	ParenthesizedNonJoinQueryExpression *NonJoinQueryExpression
+	Simple        *SimpleTable
+	Parenthesized *NonJoinQueryExpression
+}
+
+func (p *NonJoinQueryPrimary) ArgCount(count *int) {
+	if p.Simple != nil {
+		p.Simple.ArgCount(count)
+	} else if p.Parenthesized != nil {
+		p.Parenthesized.ArgCount(count)
+	}
 }
 
 type SimpleTable struct {
 	QuerySpecification *QuerySpecification
 	//TableValueConstructor *TableValueConstructor
 	//ExplicitTable string
+}
+
+func (t *SimpleTable) ArgCount(count *int) {
+	if t.QuerySpecification != nil {
+		t.QuerySpecification.ArgCount(count)
+	}
 }
 
 type QueryTerm struct {

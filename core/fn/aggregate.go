@@ -25,7 +25,7 @@ type AggregateFunction struct {
 // the Projection
 func (f *AggregateFunction) DerivedColumn() *grammar.DerivedColumn {
 	dc := &grammar.DerivedColumn{
-		ValueExpression: grammar.ValueExpression{
+		Value: grammar.ValueExpression{
 			Row: &grammar.RowValueExpression{
 				Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 					SetFunction: &grammar.SetFunctionSpecification{
@@ -54,10 +54,10 @@ func (f *AggregateFunction) As(alias string) types.Projection {
 // COUNT, STDDEV_POP, STDDEV_SAMP, VAR_SAMP, VAR_POP, COLLECT, FUSION,
 // INTERSECTION.
 func (f *AggregateFunction) Distinct() *AggregateFunction {
-	if f.AggregateFunction.GeneralSetFunction == nil {
+	if f.AggregateFunction.GeneralSet == nil {
 		return f
 	}
-	f.AggregateFunction.GeneralSetFunction.Quantifier = grammar.SetQuantifierDistinct
+	f.AggregateFunction.GeneralSet.Quantifier = grammar.SetQuantifierDistinct
 	return f
 }
 
@@ -74,18 +74,9 @@ func Aggregate(
 	case *grammar.ValueExpression:
 		return &AggregateFunction{
 			AggregateFunction: &grammar.AggregateFunction{
-				GeneralSetFunction: &grammar.GeneralSetFunction{
-					Operation:       op,
-					ValueExpression: *subjectAny,
-				},
-			},
-		}
-	case grammar.ValueExpression:
-		return &AggregateFunction{
-			AggregateFunction: &grammar.AggregateFunction{
-				GeneralSetFunction: &grammar.GeneralSetFunction{
-					Operation:       op,
-					ValueExpression: subjectAny,
+				GeneralSet: &grammar.GeneralSetFunction{
+					Operation: op,
+					Value:     *subjectAny,
 				},
 			},
 		}
@@ -103,9 +94,9 @@ func Aggregate(
 			ref: ref,
 		},
 		AggregateFunction: &grammar.AggregateFunction{
-			GeneralSetFunction: &grammar.GeneralSetFunction{
-				Operation:       op,
-				ValueExpression: *v,
+			GeneralSet: &grammar.GeneralSetFunction{
+				Operation: op,
+				Value:     *v,
 			},
 		},
 	}

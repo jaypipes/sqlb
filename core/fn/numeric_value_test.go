@@ -250,7 +250,7 @@ func TestNumericValueFunctionPosition(t *testing.T) {
 									Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 										UnsignedValue: &grammar.UnsignedValueSpecification{
 											UnsignedLiteral: &grammar.UnsignedLiteral{
-												GeneralLiteral: &grammar.GeneralLiteral{
+												General: &grammar.GeneralLiteral{
 													Value: "foo",
 												},
 											},

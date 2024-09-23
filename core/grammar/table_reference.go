@@ -27,6 +27,14 @@ type TableReference struct {
 	Joined  *JoinedTable
 }
 
+func (r *TableReference) ArgCount(count *int) {
+	if r.Primary != nil {
+		r.Primary.ArgCount(count)
+	} else if r.Joined != nil {
+		r.Joined.ArgCount(count)
+	}
+}
+
 // TableReferenceFromAny evaluates the supplied
 // interface argument and returns a *TableReference if
 // the supplied argument can be converted into a

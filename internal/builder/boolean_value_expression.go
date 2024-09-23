@@ -68,8 +68,8 @@ func (b *Builder) doBooleanPrimary(
 ) {
 	if el.Predicate != nil {
 		b.doPredicate(el.Predicate, qargs, curarg)
-	} else if el.BooleanPredicand != nil {
-		b.doBooleanPredicand(el.BooleanPredicand, qargs, curarg)
+	} else if el.Predicand != nil {
+		b.doBooleanPredicand(el.Predicand, qargs, curarg)
 	}
 }
 
@@ -78,11 +78,11 @@ func (b *Builder) doBooleanPredicand(
 	qargs []interface{},
 	curarg *int,
 ) {
-	if el.ParenthesizedBooleanValueExpression != nil {
+	if el.Parenthesized != nil {
 		b.Write(grammar.Symbols[grammar.SYM_LPAREN])
-		b.doBooleanValueExpression(el.ParenthesizedBooleanValueExpression, qargs, curarg)
+		b.doBooleanValueExpression(el.Parenthesized, qargs, curarg)
 		b.Write(grammar.Symbols[grammar.SYM_RPAREN])
-	} else if el.NonParenthesizedValueExpressionPrimary != nil {
-		b.doNonParenthesizedValueExpressionPrimary(el.NonParenthesizedValueExpressionPrimary, qargs, curarg)
+	} else if el.Primary != nil {
+		b.doNonParenthesizedValueExpressionPrimary(el.Primary, qargs, curarg)
 	}
 }

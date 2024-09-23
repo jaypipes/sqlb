@@ -28,14 +28,14 @@ func (b *Builder) StringArgs(target interface{}) (string, []interface{}) {
 	switch el := target.(type) {
 	case *grammar.UpdateStatementSearched:
 		argc := 0
-		ArgCount(el, &argc)
+		el.ArgCount(&argc)
 		qargs := make([]interface{}, argc)
 		curarg := 0
 		b.doUpdateStatementSearched(el, qargs, &curarg)
 		return b.Builder.String(), qargs
 	case *grammar.DeleteStatementSearched:
 		argc := 0
-		ArgCount(el, &argc)
+		el.ArgCount(&argc)
 		qargs := make([]interface{}, argc)
 		curarg := 0
 		b.doDeleteStatementSearched(el, qargs, &curarg)
@@ -48,14 +48,14 @@ func (b *Builder) StringArgs(target interface{}) (string, []interface{}) {
 		return b.Builder.String(), qargs
 	case *grammar.QuerySpecification:
 		argc := 0
-		ArgCount(el, &argc)
+		el.ArgCount(&argc)
 		qargs := make([]interface{}, argc)
 		curarg := 0
 		b.doQuerySpecification(el, qargs, &curarg)
 		return b.Builder.String(), qargs
 	case *grammar.CursorSpecification:
 		argc := 0
-		ArgCount(el, &argc)
+		el.ArgCount(&argc)
 		qargs := make([]interface{}, argc)
 		curarg := 0
 		b.doCursorSpecification(el, qargs, &curarg)

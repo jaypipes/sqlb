@@ -14,6 +14,12 @@ package grammar
 
 // DeleteStatementSearched represents a DELETE FROM SQL statement
 type DeleteStatementSearched struct {
-	TableName   string
-	WhereClause *WhereClause
+	TableName string
+	Where     *WhereClause
+}
+
+func (s *DeleteStatementSearched) ArgCount(count *int) {
+	if s.Where != nil {
+		s.Where.ArgCount(count)
+	}
 }

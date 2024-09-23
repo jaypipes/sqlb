@@ -166,7 +166,7 @@ func (t *Table) QuerySpecification() *grammar.QuerySpecification {
 			Sublists: sels,
 		},
 		TableExpression: grammar.TableExpression{
-			FromClause: grammar.FromClause{
+			From: grammar.FromClause{
 				TableReferences: []grammar.TableReference{*t.TableReference()},
 			},
 		},
@@ -250,8 +250,8 @@ func (t *Table) Delete(
 	}
 	return &grammar.DeleteStatementSearched{
 		TableName: t.name,
-		WhereClause: &grammar.WhereClause{
-			SearchCondition: *bve,
+		Where: &grammar.WhereClause{
+			Search: *bve,
 		},
 	}
 }
@@ -305,8 +305,8 @@ func (t *Table) Update(
 	if err != nil {
 		panic(err)
 	}
-	us.WhereClause = &grammar.WhereClause{
-		SearchCondition: *bve,
+	us.Where = &grammar.WhereClause{
+		Search: *bve,
 	}
 	return us
 }

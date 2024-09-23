@@ -27,7 +27,21 @@ type SelectList struct {
 	Sublists []SelectSublist
 }
 
+func (l *SelectList) ArgCount(count *int) {
+	if !l.Asterisk {
+		for _, sub := range l.Sublists {
+			sub.ArgCount(count)
+		}
+	}
+}
+
 type SelectSublist struct {
 	Asterisk      bool
 	DerivedColumn *DerivedColumn
+}
+
+func (l *SelectSublist) ArgCount(count *int) {
+	if l.DerivedColumn != nil {
+		l.DerivedColumn.ArgCount(count)
+	}
 }

@@ -39,6 +39,12 @@ type TablePrimary struct {
 	Correlation  *Correlation
 }
 
+func (p *TablePrimary) ArgCount(count *int) {
+	if p.DerivedTable != nil {
+		p.DerivedTable.Subquery.QueryExpression.ArgCount(count)
+	}
+}
+
 type Correlation struct {
 	Name string
 }

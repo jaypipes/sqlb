@@ -89,7 +89,7 @@ func (f *SubstringFunction) CommonValueExpression() *grammar.CommonValueExpressi
 // the Projection
 func (f *SubstringFunction) DerivedColumn() *grammar.DerivedColumn {
 	dc := &grammar.DerivedColumn{
-		ValueExpression: grammar.ValueExpression{
+		Value: grammar.ValueExpression{
 			Common: f.CommonValueExpression(),
 		},
 	}
@@ -220,7 +220,7 @@ func (f *RegexSubstringFunction) CommonValueExpression() *grammar.CommonValueExp
 // the Projection
 func (f *RegexSubstringFunction) DerivedColumn() *grammar.DerivedColumn {
 	dc := &grammar.DerivedColumn{
-		ValueExpression: grammar.ValueExpression{
+		Value: grammar.ValueExpression{
 			Common: f.CommonValueExpression(),
 		},
 	}
@@ -321,7 +321,7 @@ func (f *FoldFunction) CommonValueExpression() *grammar.CommonValueExpression {
 // the Projection
 func (f *FoldFunction) DerivedColumn() *grammar.DerivedColumn {
 	dc := &grammar.DerivedColumn{
-		ValueExpression: grammar.ValueExpression{
+		Value: grammar.ValueExpression{
 			Common: f.CommonValueExpression(),
 		},
 	}
@@ -405,7 +405,7 @@ func (f *TranscodingFunction) CommonValueExpression() *grammar.CommonValueExpres
 // the Projection
 func (f *TranscodingFunction) DerivedColumn() *grammar.DerivedColumn {
 	dc := &grammar.DerivedColumn{
-		ValueExpression: grammar.ValueExpression{
+		Value: grammar.ValueExpression{
 			Common: f.CommonValueExpression(),
 		},
 	}
@@ -489,7 +489,7 @@ func (f *TransliterationFunction) CommonValueExpression() *grammar.CommonValueEx
 // the Projection
 func (f *TransliterationFunction) DerivedColumn() *grammar.DerivedColumn {
 	dc := &grammar.DerivedColumn{
-		ValueExpression: grammar.ValueExpression{
+		Value: grammar.ValueExpression{
 			Common: f.CommonValueExpression(),
 		},
 	}
@@ -660,7 +660,7 @@ func (f *TrimFunction) CommonValueExpression() *grammar.CommonValueExpression {
 // the Projection
 func (f *TrimFunction) DerivedColumn() *grammar.DerivedColumn {
 	dc := &grammar.DerivedColumn{
-		ValueExpression: grammar.ValueExpression{
+		Value: grammar.ValueExpression{
 			Common: f.CommonValueExpression(),
 		},
 	}

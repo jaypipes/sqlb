@@ -41,3 +41,7 @@ type SortSpecification struct {
 	Order     OrderSpecification
 	NullOrder NullOrderSpecification
 }
+
+func (s *SortSpecification) ArgCount(count *int) {
+	s.Key.ArgCount(count)
+}

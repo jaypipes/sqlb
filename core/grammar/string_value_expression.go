@@ -29,9 +29,21 @@ type StringValueExpression struct {
 	Blob      *BlobValueExpression
 }
 
+func (e *StringValueExpression) ArgCount(count *int) {
+	if e.Character != nil {
+		e.Character.ArgCount(count)
+	} else if e.Blob != nil {
+		e.Blob.ArgCount(count)
+	}
+}
+
 type CharacterValueExpression struct {
 	// Concatenation *Concatenation
 	Factor *CharacterFactor
+}
+
+func (e *CharacterValueExpression) ArgCount(count *int) {
+	e.Factor.ArgCount(count)
 }
 
 type CharacterFactor struct {
@@ -39,9 +51,21 @@ type CharacterFactor struct {
 	Collation *string
 }
 
+func (f *CharacterFactor) ArgCount(count *int) {
+	f.Primary.ArgCount(count)
+}
+
 type CharacterPrimary struct {
 	Primary  *ValueExpressionPrimary
 	Function *StringValueFunction
+}
+
+func (p *CharacterPrimary) ArgCount(count *int) {
+	if p.Primary != nil {
+		p.Primary.ArgCount(count)
+	} else if p.Function != nil {
+		p.Function.ArgCount(count)
+	}
 }
 
 type BlobValueExpression struct {
@@ -49,11 +73,27 @@ type BlobValueExpression struct {
 	Factor *BlobFactor
 }
 
+func (e *BlobValueExpression) ArgCount(count *int) {
+	e.Factor.ArgCount(count)
+}
+
 type BlobFactor struct {
 	Primary BlobPrimary
+}
+
+func (f *BlobFactor) ArgCount(count *int) {
+	f.Primary.ArgCount(count)
 }
 
 type BlobPrimary struct {
 	Primary  *ValueExpressionPrimary
 	Function *StringValueFunction
+}
+
+func (p *BlobPrimary) ArgCount(count *int) {
+	if p.Primary != nil {
+		p.Primary.ArgCount(count)
+	} else if p.Function != nil {
+		p.Function.ArgCount(count)
+	}
 }

@@ -11,3 +11,7 @@ package grammar
 type Subquery struct {
 	QueryExpression
 }
+
+func (q *Subquery) ArgCount(count *int) {
+	q.QueryExpression.ArgCount(count)
+}

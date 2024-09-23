@@ -29,7 +29,7 @@ func DerivedColumnFromAnyAndAlias(
 		dc = v.DerivedColumn()
 	case *grammar.AggregateFunction:
 		dc = &grammar.DerivedColumn{
-			ValueExpression: grammar.ValueExpression{
+			Value: grammar.ValueExpression{
 				Row: &grammar.RowValueExpression{
 					Primary: &grammar.NonParenthesizedValueExpressionPrimary{
 						SetFunction: &grammar.SetFunctionSpecification{
@@ -41,7 +41,7 @@ func DerivedColumnFromAnyAndAlias(
 		}
 	case *grammar.SubstringFunction:
 		dc = &grammar.DerivedColumn{
-			ValueExpression: grammar.ValueExpression{
+			Value: grammar.ValueExpression{
 				Common: &grammar.CommonValueExpression{
 					String: &grammar.StringValueExpression{
 						Character: &grammar.CharacterValueExpression{
@@ -61,7 +61,7 @@ func DerivedColumnFromAnyAndAlias(
 		}
 	case *grammar.RegexSubstringFunction:
 		dc = &grammar.DerivedColumn{
-			ValueExpression: grammar.ValueExpression{
+			Value: grammar.ValueExpression{
 				Common: &grammar.CommonValueExpression{
 					String: &grammar.StringValueExpression{
 						Character: &grammar.CharacterValueExpression{
@@ -81,7 +81,7 @@ func DerivedColumnFromAnyAndAlias(
 		}
 	case *grammar.FoldFunction:
 		dc = &grammar.DerivedColumn{
-			ValueExpression: grammar.ValueExpression{
+			Value: grammar.ValueExpression{
 				Common: &grammar.CommonValueExpression{
 					String: &grammar.StringValueExpression{
 						Character: &grammar.CharacterValueExpression{
@@ -101,7 +101,7 @@ func DerivedColumnFromAnyAndAlias(
 		}
 	case *grammar.TranscodingFunction:
 		dc = &grammar.DerivedColumn{
-			ValueExpression: grammar.ValueExpression{
+			Value: grammar.ValueExpression{
 				Common: &grammar.CommonValueExpression{
 					String: &grammar.StringValueExpression{
 						Character: &grammar.CharacterValueExpression{
@@ -121,7 +121,7 @@ func DerivedColumnFromAnyAndAlias(
 		}
 	case *grammar.TransliterationFunction:
 		dc = &grammar.DerivedColumn{
-			ValueExpression: grammar.ValueExpression{
+			Value: grammar.ValueExpression{
 				Common: &grammar.CommonValueExpression{
 					String: &grammar.StringValueExpression{
 						Character: &grammar.CharacterValueExpression{
@@ -141,7 +141,7 @@ func DerivedColumnFromAnyAndAlias(
 		}
 	case *grammar.TrimFunction:
 		dc = &grammar.DerivedColumn{
-			ValueExpression: grammar.ValueExpression{
+			Value: grammar.ValueExpression{
 				Common: &grammar.CommonValueExpression{
 					String: &grammar.StringValueExpression{
 						Character: &grammar.CharacterValueExpression{

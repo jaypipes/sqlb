@@ -18,8 +18,18 @@ package grammar
 //      |     <explicit row value constructor>
 
 type RowValuePredicand struct {
-	NonParenthesizedValueExpressionPrimary *NonParenthesizedValueExpressionPrimary
-	CommonValueExpression                  *CommonValueExpression
-	BooleanPredicand                       *BooleanPredicand
+	Primary *NonParenthesizedValueExpressionPrimary
+	Common  *CommonValueExpression
+	Boolean *BooleanPredicand
 	//ExplictRowValueConstructor             *ExplicitRowValueConstructor
+}
+
+func (p *RowValuePredicand) ArgCount(count *int) {
+	if p.Primary != nil {
+		p.Primary.ArgCount(count)
+	} else if p.Common != nil {
+		p.Common.ArgCount(count)
+	} else if p.Boolean != nil {
+		p.Boolean.ArgCount(count)
+	}
 }

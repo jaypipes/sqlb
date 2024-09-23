@@ -110,7 +110,7 @@ func (f *LengthExpression) CommonValueExpression() *grammar.CommonValueExpressio
 // the Projection
 func (f *LengthExpression) DerivedColumn() *grammar.DerivedColumn {
 	dc := &grammar.DerivedColumn{
-		ValueExpression: grammar.ValueExpression{
+		Value: grammar.ValueExpression{
 			Common: f.CommonValueExpression(),
 		},
 	}
@@ -240,7 +240,7 @@ func (f *PositionExpression) CommonValueExpression() *grammar.CommonValueExpress
 // the Projection
 func (f *PositionExpression) DerivedColumn() *grammar.DerivedColumn {
 	dc := &grammar.DerivedColumn{
-		ValueExpression: grammar.ValueExpression{
+		Value: grammar.ValueExpression{
 			Common: f.CommonValueExpression(),
 		},
 	}
@@ -393,7 +393,7 @@ func (f *ExtractExpression) CommonValueExpression() *grammar.CommonValueExpressi
 // the Projection
 func (f *ExtractExpression) DerivedColumn() *grammar.DerivedColumn {
 	dc := &grammar.DerivedColumn{
-		ValueExpression: grammar.ValueExpression{
+		Value: grammar.ValueExpression{
 			Common: f.CommonValueExpression(),
 		},
 	}
@@ -603,7 +603,7 @@ func (f *NumericValueFunction) CommonValueExpression() *grammar.CommonValueExpre
 // the Projection
 func (f *NumericValueFunction) DerivedColumn() *grammar.DerivedColumn {
 	dc := &grammar.DerivedColumn{
-		ValueExpression: grammar.ValueExpression{
+		Value: grammar.ValueExpression{
 			Common: f.CommonValueExpression(),
 		},
 	}

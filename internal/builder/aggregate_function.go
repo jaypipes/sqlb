@@ -17,8 +17,8 @@ func (b *Builder) doAggregateFunction(
 ) {
 	if el.CountStar != nil {
 		b.Write(grammar.Symbols[grammar.SYM_COUNT_STAR])
-	} else if el.GeneralSetFunction != nil {
-		b.doGeneralSetFunction(el.GeneralSetFunction, qargs, curarg)
+	} else if el.GeneralSet != nil {
+		b.doGeneralSetFunction(el.GeneralSet, qargs, curarg)
 	}
 }
 
@@ -32,6 +32,6 @@ func (b *Builder) doGeneralSetFunction(
 	if el.Quantifier == grammar.SetQuantifierDistinct {
 		b.Write(grammar.Symbols[grammar.SYM_DISTINCT])
 	}
-	b.doValueExpression(&el.ValueExpression, qargs, curarg)
+	b.doValueExpression(&el.Value, qargs, curarg)
 	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
 }

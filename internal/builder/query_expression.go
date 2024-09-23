@@ -16,10 +16,10 @@ func (b *Builder) doQueryExpression(
 	curarg *int,
 ) {
 	body := el.Body
-	if body.NonJoinQueryExpression != nil {
-		b.doNonJoinQueryExpression(body.NonJoinQueryExpression, qargs, curarg)
-	} else if body.JoinedTable != nil {
-		b.doJoinedTable(body.JoinedTable, qargs, curarg)
+	if body.NonJoin != nil {
+		b.doNonJoinQueryExpression(body.NonJoin, qargs, curarg)
+	} else if body.Joined != nil {
+		b.doJoinedTable(body.Joined, qargs, curarg)
 	}
 }
 
@@ -28,8 +28,8 @@ func (b *Builder) doNonJoinQueryExpression(
 	qargs []interface{},
 	curarg *int,
 ) {
-	if el.NonJoinQueryTerm != nil {
-		b.doNonJoinQueryTerm(el.NonJoinQueryTerm, qargs, curarg)
+	if el.NonJoin != nil {
+		b.doNonJoinQueryTerm(el.NonJoin, qargs, curarg)
 	}
 }
 
@@ -48,11 +48,11 @@ func (b *Builder) doNonJoinQueryPrimary(
 	qargs []interface{},
 	curarg *int,
 ) {
-	if el.SimpleTable != nil {
-		b.doSimpleTable(el.SimpleTable, qargs, curarg)
-	} else if el.ParenthesizedNonJoinQueryExpression != nil {
+	if el.Simple != nil {
+		b.doSimpleTable(el.Simple, qargs, curarg)
+	} else if el.Parenthesized != nil {
 		b.Write(grammar.Symbols[grammar.SYM_LPAREN])
-		b.doNonJoinQueryExpression(el.ParenthesizedNonJoinQueryExpression, qargs, curarg)
+		b.doNonJoinQueryExpression(el.Parenthesized, qargs, curarg)
 		b.Write(grammar.Symbols[grammar.SYM_RPAREN])
 	}
 }

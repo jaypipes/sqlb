@@ -49,6 +49,12 @@ type GroupByClause struct {
 	GroupingElements []GroupingElement
 }
 
+func (c *GroupByClause) ArgCount(count *int) {
+	for _, ge := range c.GroupingElements {
+		ge.ArgCount(count)
+	}
+}
+
 type GroupingElement struct {
 	OrdinaryGroupingSet *OrdinaryGroupingSet
 	//Rollup []OrdinaryGroupingSet
@@ -56,11 +62,27 @@ type GroupingElement struct {
 	//GroupingSetsSpecification *GroupingSetsSpecification
 }
 
+func (e *GroupingElement) ArgCount(count *int) {
+	if e.OrdinaryGroupingSet != nil {
+		e.OrdinaryGroupingSet.ArgCount(count)
+	}
+}
+
 type OrdinaryGroupingSet struct {
 	GroupingColumnReference *GroupingColumnReference
+}
+
+func (s *OrdinaryGroupingSet) ArgCount(count *int) {
+	if s.GroupingColumnReference != nil {
+		s.GroupingColumnReference.ArgCount(count)
+	}
 }
 
 type GroupingColumnReference struct {
 	ColumnReference *ColumnReference
 	Collation       *string
+}
+
+func (r *GroupingColumnReference) ArgCount(count *int) {
+	// Column references don't produce query arguments
 }
