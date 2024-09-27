@@ -1,8 +1,20 @@
 VERSION ?= $(shell git describe --tags --always --dirty)
+MYSQL_CONTAINER_NAME ?= sqlb-test-mysql
 
 .PHONY: test
-test:
-	go test -v -cover ./...
+test: test-unit test-func
+
+.PHONY: test-unit
+test-unit:
+	@go test -v -cover ./...
+
+.PHONY: test-func test-func-reset
+test-func: test-func-reset
+	@cd internal/testing; \
+	SQLBTEST_MYSQL_IP="$(shell ./internal/testing/scripts/mysql_get_ip.sh $$MYSQL_CONTAINER_NAME)" go test -v ./...
+
+test-func-reset:
+	@./internal/testing/scripts/reset.sh
 
 .PHONY: lint
 lint:

@@ -14,6 +14,7 @@
 DEBUG=${DEBUG:-0}
 
 this_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+schema_dir="$this_dir/../schema"
 scripts_dir="$this_dir"
 lib_dir="$scripts_dir/lib"
 
@@ -47,6 +48,6 @@ print::ok
 
 print::inline_first "Creating mysql test $dbname database ... "
 tmpsql_path=$(mktemp)
-dbname=$dbname envsubst < $scripts_dir/sqlbtest_mysql.sql > $tmpsql_path
+dbname=$dbname envsubst < $schema_dir/mysql.sql > $tmpsql_path
 mysql -uroot -P3306 -h$mysql_container_ip < $tmpsql_path
 print::ok

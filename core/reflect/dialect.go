@@ -14,6 +14,7 @@ import (
 )
 
 var driverNameToDialect = map[string]types.Dialect{
+	"*mysql.MySQLDriver": types.DialectMySQL,
 	"*mssql.MssqlDriver": types.DialectTSQL,
 	"*pq.Driver":         types.DialectPostgreSQL,
 	"*stdlib.Driver":     types.DialectPostgreSQL,
