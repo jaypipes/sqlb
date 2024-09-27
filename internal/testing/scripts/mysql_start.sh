@@ -11,10 +11,6 @@ check_is_installed docker
 source $lib_dir/container.sh
 source $lib_dir/mysql.sh
 
-if debug_enabled; then
-    set -o xtrace
-fi
-
 container_name=${1:-${MYSQL_CONTAINER_NAME:-"$DEFAULT_MYSQL_CONTAINER_NAME"}}
 
 mysql::start "$container_name"
