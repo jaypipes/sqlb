@@ -10,9 +10,11 @@ source "$lib_dir/common.sh"
 
 check_is_installed docker
 check_is_installed mysql
+check_is_installed psql
 
 source "$lib_dir/container.sh"
 source "$lib_dir/mysql.sh"
+source "$lib_dir/postgresql.sh"
 
 default_test_dbname="sqlbtest"
 
@@ -38,6 +40,15 @@ Environment variables:
                                         MySQL. If MYSQL_HOST is supplied, this
                                         is ignored.
                                         Default: '$DEFAULT_MYSQL_CONTAINER_NAME'
+  POSTGRESQL_HOST                       Informs the script of a PostgreSQL
+                                        server to use for testing. If not set
+                                        (the default), a Docker container
+                                        running PostgreSQL will automatically
+                                        be started.
+  POSTGRESQL_CONTAINER_NAME             Name of the Docker container to run
+                                        PostgreSQL. If POSTGRESQL_HOST is
+                                        supplied, this is ignored.
+                                        Default: '$DEFAULT_POSTGRESQL_CONTAINER_NAME'
   TEST_DBNAME                           Name of the database/schema to use for
                                         testing.
                                         Default: '$default_test_dbname'
@@ -86,10 +97,59 @@ fi
 
 print::inline_first "Dropping mysql test $test_dbname database ... "
 mysql -uroot -P3306 $mysql_root_password_arg -h$mysql_host --protocol=tcp -e "DROP DATABASE IF EXISTS $test_dbname;"
-print::ok
+if [ $? -eq 0 ]; then
+  print::ok
+else
+  print::fail
+fi
 
 print::inline_first "Creating mysql test $test_dbname database ... "
 tmpsql_path=$(mktemp)
 dbname=$test_dbname envsubst < $schema_dir/mysql.sql > $tmpsql_path
 mysql -uroot -P3306 $mysql_root_password_arg -h$mysql_host --protocol=tcp < $tmpsql_path
-print::ok
+if [ $? -eq 0 ]; then
+  print::ok
+else
+  print::fail
+fi
+
+postgresql_container_name="${POSTGRESQL_CONTAINER_NAME:-$DEFAULT_POSTGRESQL_CONTAINER_NAME}"
+postgresql_host="${POSTGRESQL_HOST}"
+postgresql_root_password="${POSTGRESQL_ROOT_PASSWORD}"
+
+if [ -z $postgresql_host ]; then
+  if ! container::is_running "$postgresql_container_name"; then
+    $scripts_dir/postgresql_start.sh "$postgresql_container_name"
+  else
+    print::info "postgresql container '$postgresql_container_name' already running"
+  fi
+  
+  if ! container::get_ip "$postgresql_container_name" postgresql_container_ip; then
+    echo "ERROR: could not get IP for postgresql container"
+    exit 1
+  fi
+  postgresql_host="$postgresql_container_ip"
+fi
+
+postgresql_password="mysecretpassword"
+
+print::inline_first "Dropping postgresql test $test_dbname database ... "
+PGOPTIONS='--client-min-messages=warning' psql postgres://postgres:$postgresql_password@$postgresql_host:5432 -c "DROP DATABASE IF EXISTS $test_dbname;" >/dev/null 2>&1
+if [ $? -eq 0 ]; then
+  print::ok
+else
+  print::fail
+fi
+
+print::inline_first "Creating postgresql test $test_dbname database ... "
+psql postgres://postgres:$postgresql_password@$postgresql_host:5432 -tc "SELECT 1 FROM pg_database WHERE datname = '$test_dbname'" | \
+    grep -q 1 | \
+    psql postgres://postgres:$postgresql_password@$postgresql_host:5432 -c "CREATE DATABASE $test_dbname" >/dev/null 2>&1
+tmpsql_path=$(mktemp)
+dbname=$test_dbname envsubst < $schema_dir/postgresql.sql > $tmpsql_path
+psql postgres://postgres:$postgresql_password@$postgresql_host:5432/$test_dbname < $tmpsql_path >/dev/null 2>&1
+if [ $? -eq 0 ]; then
+  print::ok
+else
+  print::fail
+fi
