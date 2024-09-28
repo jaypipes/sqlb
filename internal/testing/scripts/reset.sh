@@ -1,24 +1,10 @@
 #!/usr/bin/env bash
-
-# Used for "resetting" a functional testing environment back to a clean start
-# state.
-#
-# This script stops the following containers if they are running:
-#  * sqlb-test-mysql
-#
-# And then proceeds to clear out the SQL database. We do not attempt to
-# stop/start the sqlb-test-mysql container because this container takes a
-# stupid long time to start up due to the init scripts used by the MySQL Docker
-# container. Instead, we just DROP and re-CREATE the database.
-
 DEBUG=${DEBUG:-0}
 
 this_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 schema_dir="$this_dir/../schema"
 scripts_dir="$this_dir"
 lib_dir="$scripts_dir/lib"
-
-default_dbname="sqlbtest"
 
 source "$lib_dir/common.sh"
 
@@ -28,26 +14,82 @@ check_is_installed mysql
 source "$lib_dir/container.sh"
 source "$lib_dir/mysql.sh"
 
-dbname="${TESTDB_NAME:-$default_dbname}"
-mysql_container_name=${MYSQL_CONTAINER_NAME:-"$DEFAULT_MYSQL_CONTAINER_NAME"}
+default_test_dbname="sqlbtest"
 
-if ! container::is_running "$mysql_container_name"; then
-  $scripts_dir/mysql_start.sh "$mysql_container_name"
-else
-  print::info "mysql container '$mysql_container_name' already running"
+usage="Usage:
+  $(basename "$0") [-dh]
+
+Options:
+  -d                                    Enables debug output.
+  -h                                    Shows this help.
+
+Environment variables:
+  DEBUG:                                Toggles debug output. Set to any
+                                        non-zero value to enable.
+                                        Default: 0
+  MYSQL_HOST                            Informs the script of a MySQL server to
+                                        use for testing. If not set (the
+                                        default), a Docker container running
+                                        MySQL will automatically be started.
+  MYSQL_ROOT_PASSWORD                   The root user password for the MySQL
+                                        server.
+                                        Default: ''
+  MYSQL_CONTAINER_NAME                  Name of the Docker container to run
+                                        MySQL. If MYSQL_HOST is supplied, this
+                                        is ignored.
+                                        Default: '$DEFAULT_MYSQL_CONTAINER_NAME'
+  TEST_DBNAME                           Name of the database/schema to use for
+                                        testing.
+                                        Default: '$default_test_dbname'
+"
+
+while getopts ":hd" opt; do
+  case ${opt} in
+    d)
+      DEBUG=1
+      ;;
+    h)
+      echo "$usage"
+      exit 0
+      ;;
+    ?)
+      echo "Invalid option: -${OPTARG}."
+      echo "$usage"
+      exit 1
+      ;;
+  esac
+done
+
+test_dbname="${TEST_DBNAME:-$default_test_dbname}"
+mysql_container_name="${MYSQL_CONTAINER_NAME:-$DEFAULT_MYSQL_CONTAINER_NAME}"
+mysql_host="${MYSQL_HOST}"
+mysql_root_password="${MYSQL_ROOT_PASSWORD}"
+
+if [ -z $mysql_host ]; then
+  if ! container::is_running "$mysql_container_name"; then
+    $scripts_dir/mysql_start.sh "$mysql_container_name"
+  else
+    print::info "mysql container '$mysql_container_name' already running"
+  fi
+  
+  if ! container::get_ip "$mysql_container_name" mysql_container_ip; then
+    echo "ERROR: could not get IP for mysql container"
+    exit 1
+  fi
+  mysql_host="$mysql_container_ip"
 fi
 
-if ! container::get_ip "$mysql_container_name" mysql_container_ip; then
-  echo "ERROR: could not get IP for mysql container"
-  exit 1
+mysql_root_password_arg=""
+if [ ! -z $mysql_root_password ]; then
+  mysql_root_password_arg="--password=$mysql_root_password"
 fi
 
-print::inline_first "Dropping mysql test $dbname database ... "
-mysql -uroot -P3306 -h$mysql_container_ip -e "DROP DATABASE IF EXISTS $dbname;"
+print::inline_first "Dropping mysql test $test_dbname database ... "
+mysql -uroot -P3306 $mysql_root_password_arg -h$mysql_host --protocol=tcp -e "DROP DATABASE IF EXISTS $test_dbname;"
 print::ok
 
-print::inline_first "Creating mysql test $dbname database ... "
+print::inline_first "Creating mysql test $test_dbname database ... "
 tmpsql_path=$(mktemp)
-dbname=$dbname envsubst < $schema_dir/mysql.sql > $tmpsql_path
-mysql -uroot -P3306 -h$mysql_container_ip < $tmpsql_path
+dbname=$test_dbname envsubst < $schema_dir/mysql.sql > $tmpsql_path
+mysql -uroot -P3306 $mysql_root_password_arg -h$mysql_host --protocol=tcp < $tmpsql_path
 print::ok

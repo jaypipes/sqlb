@@ -20,18 +20,20 @@ import (
 )
 
 const (
-	envVarMySQLContainerIP = "SQLBTEST_MYSQL_IP"
+	envVarMySQLHost         = "MYSQL_HOST"
+	envVarMySQLRootPassword = "MYSQL_ROOT_PASSWORD"
 )
 
 func skipIfNoMySQL(t *testing.T) {
-	if _, ok := os.LookupEnv(envVarMySQLContainerIP); !ok {
+	if _, ok := os.LookupEnv(envVarMySQLHost); !ok {
 		t.Skip("No MySQL container found.")
 	}
 }
 
 func getMySQLDSN() string {
-	containerIP := os.Getenv(envVarMySQLContainerIP)
-	return fmt.Sprintf("root@(%s:3306)/sqlbtest", containerIP)
+	host := os.Getenv(envVarMySQLHost)
+	pwd := os.Getenv(envVarMySQLRootPassword)
+	return fmt.Sprintf("root:%s@tcp(%s:3306)/sqlbtest", pwd, host)
 }
 
 func TestReflectMySQL(t *testing.T) {
