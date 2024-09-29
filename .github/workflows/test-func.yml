@@ -15,7 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     env:
       MYSQL_HOST: 127.0.0.1
+      MYSQL_PASSWORD: root
       MYSQL_ROOT_PASSWORD: root
+      POSTGRESQL_HOST: localhost
+      PGPASSWORD: password
+      POSTGRES_PASSWORD: password
+      POSTGRESQL_PASSWORD: password
     steps:
      - name: harden runner
        uses: step-security/harden-runner@17d0e2bd7d51742c71671bd19fa12bdc9d40a3d6 # v2.8.1
@@ -37,6 +42,8 @@ jobs:
          go-version: "1.21"
      - name: start the MySQL service
        run: sudo systemctl start mysql.service
+     - name: start the PostgreSQL service
+       run: sudo systemctl start postgresql.service
      - name: reset test databases
        run: ./internal/testing/scripts/reset.sh
      - name: run functional tests

@@ -1,5 +1,4 @@
 VERSION ?= $(shell git describe --tags --always --dirty)
-MYSQL_CONTAINER_NAME ?= sqlb-test-mysql
 
 .PHONY: test
 test: test-unit test-func
@@ -11,7 +10,10 @@ test-unit:
 .PHONY: test-func test-func-reset
 test-func: test-func-reset
 	@cd internal/testing; \
-	MYSQL_HOST="$(shell ./internal/testing/scripts/container_get_ip.sh $$MYSQL_CONTAINER_NAME)" go test -v ./...
+	MYSQL_HOST="$(shell ./internal/testing/scripts/container_get_ip.sh sqlb-test-mysql)" \
+	POSTGRESQL_HOST="$(shell ./internal/testing/scripts/container_get_ip.sh sqlb-test-postgresql)" \
+	POSTGRESQL_PASSWORD=mysecretpassword \
+	go test -v ./...
 
 test-func-reset:
 	@./internal/testing/scripts/reset.sh
