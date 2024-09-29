@@ -5,6 +5,7 @@ go 1.21.11
 require (
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/jaypipes/sqlb v0.0.0-20240927000255-1416c33ef9fb
+	github.com/lib/pq v1.10.9
 	github.com/stretchr/testify v1.9.0
 )
 

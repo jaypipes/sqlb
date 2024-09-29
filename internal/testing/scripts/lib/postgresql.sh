@@ -2,6 +2,7 @@
 
 DEFAULT_POSTGRESQL_CONTAINER_NAME="sqlb-test-postgresql"
 DEFAULT_POSTGRESQL_IMAGE_VERSION="16.4"
+DEFAULT_POSTGRESQL_PASSWORD="mysecretpassword"
 
 this_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 scripts_dir="$this_dir/.."
@@ -14,7 +15,7 @@ source "$lib_dir/print.sh"
 #
 # Usage:
 #
-#   postgresql::start [CONTAINER_NAME] [DATA_DIR] [BIND_ADDRESS]
+#   postgresql::start [CONTAINER_NAME] [DATA_DIR] [BIND_ADDRESS] [VERSION] [PASSWORD]
 #
 #   CONTAINER_NAME: (optional) name for the container
 #     Default: sqlbtestpostgresql
@@ -23,8 +24,10 @@ source "$lib_dir/print.sh"
 #   BIND_ADDRESS: (optional) bind address that postgresql will use within the
 #   container
 #     Default: 0.0.0.0
-#   VERSION: (optional) the version of MySQL to run
+#   VERSION: (optional) the version of PostgreSQL to run
 #     Default: 16.4
+#   PASSWORD: (optional) the password for the 'postgres' user
+#     Default: mysecretpassword
 #
 # Usage:
 #
@@ -46,7 +49,7 @@ postgresql::start() {
   fi
 
   local __postgresql_image_version="${4:-$DEFAULT_POSTGRESQL_IMAGE_VERSION}"
-  local __postgresql_password="mysecretpassword"
+  local __postgresql_password="${5:-$DEFAULT_POSTGRESQL_PASSWORD}"
 
   print::inline_first "starting postgresql container '$__container_name' ..."
   docker run -d \
