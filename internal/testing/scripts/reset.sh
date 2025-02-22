@@ -118,7 +118,6 @@ fi
 
 postgresql_container_name="${POSTGRESQL_CONTAINER_NAME:-$DEFAULT_POSTGRESQL_CONTAINER_NAME}"
 postgresql_host="${POSTGRESQL_HOST}"
-postgresql_password="${POSTGRESQL_PASSWORD:-${POSTGRES_PASSWORD}}"
 
 if [ -z $postgresql_host ]; then
   if ! container::is_running "$postgresql_container_name"; then
@@ -132,17 +131,12 @@ if [ -z $postgresql_host ]; then
     exit 1
   fi
   postgresql_host="$postgresql_container_ip"
-  postgresql_password="${postgresql_password:-$DEFAULT_POSTGRESQL_PASSWORD}"
 fi
 
-postgresql_password_arg=""
-if [ -z $PGPASSWORD ]; then
-  postgresql_password_arg=":$postgresql_password"
-fi
-postgresql_uri="postgres://postgres$postgresql_password_arg@$postgresql_host:5432"
+postgresql_password="${POSTGRESQL_PASSWORD:-${POSTGRES_PASSWORD:-$DEFAULT_POSTGRESQL_PASSWORD}}"
 
 print::inline_first "Dropping postgresql test $test_dbname database ... "
-PGOPTIONS='--client-min-messages=warning' psql $postgresql_uri -c "DROP DATABASE IF EXISTS $test_dbname;" >/dev/null 2>&1
+PGOPTIONS='--client-min-messages=warning' psql postgres://postgres:$postgresql_password@$postgresql_host:5432 -c "DROP DATABASE IF EXISTS $test_dbname;" >/dev/null 2>&1
 if [ $? -eq 0 ]; then
   print::ok
 else
@@ -150,12 +144,12 @@ else
 fi
 
 print::inline_first "Creating postgresql test $test_dbname database ... "
-psql $postgresql_uri -tc "SELECT 1 FROM pg_database WHERE datname = '$test_dbname'" | \
+psql postgres://postgres:$postgresql_password@$postgresql_host:5432 -tc "SELECT 1 FROM pg_database WHERE datname = '$test_dbname'" | \
     grep -q 1 | \
-    psql $postgresql_uri -c "CREATE DATABASE $test_dbname" >/dev/null 2>&1
+    psql postgres://postgres:$postgresql_password@$postgresql_host:5432 -c "CREATE DATABASE $test_dbname" >/dev/null 2>&1
 tmpsql_path=$(mktemp)
 dbname=$test_dbname envsubst < $schema_dir/postgresql.sql > $tmpsql_path
-psql $postgresql_uri/$test_dbname < $tmpsql_path >/dev/null 2>&1
+psql postgres://postgres:$postgresql_password@$postgresql_host:5432/$test_dbname < $tmpsql_path >/dev/null 2>&1
 if [ $? -eq 0 ]; then
   print::ok
 else

@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 DEFAULT_POSTGRESQL_CONTAINER_NAME="sqlb-test-postgresql"
-DEFAULT_POSTGRESQL_IMAGE_VERSION="16.4"
+DEFAULT_POSTGRESQL_IMAGE="docker.io/postgres"
+DEFAULT_POSTGRESQL_IMAGE_VERSION="17.4"
 DEFAULT_POSTGRESQL_PASSWORD="mysecretpassword"
 
 this_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
@@ -24,8 +25,10 @@ source "$lib_dir/print.sh"
 #   BIND_ADDRESS: (optional) bind address that postgresql will use within the
 #   container
 #     Default: 0.0.0.0
+#   IMAGE: (optional) the Docker Image ID of PostgreSQL to run
+#     Default: docker.io/postgres
 #   VERSION: (optional) the version of PostgreSQL to run
-#     Default: 16.4
+#     Default: 17.4
 #   PASSWORD: (optional) the password for the 'postgres' user
 #     Default: mysecretpassword
 #
@@ -48,8 +51,14 @@ postgresql::start() {
     return 0
   fi
 
-  local __postgresql_image_version="${4:-$DEFAULT_POSTGRESQL_IMAGE_VERSION}"
-  local __postgresql_password="${5:-$DEFAULT_POSTGRESQL_PASSWORD}"
+  local __postgresql_image="${4:-$DEFAULT_POSTGRESQL_IMAGE}"
+  local __postgresql_image_version="${5:-$DEFAULT_POSTGRESQL_IMAGE_VERSION}"
+  local __postgresql_password="${6:-$DEFAULT_POSTGRESQL_PASSWORD}"
+
+  if [ -z "$(docker images -q $__postgresql_image:$__postgresql_image_version)" ]; then
+    print::inline_first "postgresql image '$__postgresql_image:$__postgresql_image_version' not found. pulling..."
+    docker pull "$__postgresql_image:$__postgresql_image_version" >/dev/null && print::ok || (print::fail && return 1)
+  fi
 
   print::inline_first "starting postgresql container '$__container_name' ..."
   docker run -d \
@@ -58,7 +67,7 @@ postgresql::start() {
     --volume="$__data_dir":/var/lib/postgresql/data \
     --name "$__container_name" \
     -e POSTGRES_PASSWORD=$__postgresql_password \
-    postgres:$__postgresql_image_version >/dev/null 2>&1
+    "$__postgresql_image:$__postgresql_image_version" >/dev/null 2>&1
   if [ $? -eq 0 ]; then
     print::ok
   else
@@ -89,4 +98,3 @@ postgresql::stop() {
   container::stop "$__container_name"
   print::ok
 }
-

@@ -15,9 +15,10 @@ container_name=${1:-${POSTGRESQL_CONTAINER_NAME:-"$DEFAULT_POSTGRESQL_CONTAINER_
 
 postgresql::start "$container_name"
 
-if container::get_ip "$container_name" container_ip; then
-    print::info "postgresql running in container '${container_name}' at ${container_ip}:5432."
-else
-    echo "failed to determine postgresql container's IP address."
-    exit 1
+container::get_ip "$container_name" container_ip
+if [ -z "$container_ip" ]; then
+  print::error "failed to determine IP address for '$container_name' container."
+  exit 1
 fi
+
+print::info "postgresql running in container '${container_name}' at ${container_ip}:5432."

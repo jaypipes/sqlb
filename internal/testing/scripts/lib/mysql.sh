@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 DEFAULT_MYSQL_CONTAINER_NAME="sqlb-test-mysql"
-DEFAULT_MYSQL_IMAGE_VERSION="8.39.0"
+DEFAULT_MYSQL_IMAGE="docker.io/mysql"
+DEFAULT_MYSQL_IMAGE_VERSION="9.2.0"
 
 this_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 scripts_dir="$this_dir/.."
@@ -23,8 +24,10 @@ source "$lib_dir/print.sh"
 #   BIND_ADDRESS: (optional) bind address that mysql will use within the
 #   container
 #     Default: 0.0.0.0
+#   IMAGE: (optional) the Docker Image ID of MySQL to run
+#     Default: docker.io/mysql
 #   VERSION: (optional) the version of MySQL to run
-#     Default: 8.39.0
+#     Default: 9.2.0
 #
 # Usage:
 #
@@ -45,7 +48,13 @@ mysql::start() {
     return 0
   fi
 
-  mysql_image_version="${4:-$DEFAULT_MYSQL_IMAGE_VERSION}"
+  local __mysql_image="${4:-$DEFAULT_MYSQL_IMAGE}"
+  local __mysql_image_version="${5:-$DEFAULT_MYSQL_IMAGE_VERSION}"
+
+  if [ -z "$(docker images -q $__mysql_image:$__mysql_image_version)" ]; then
+    print::inline_first "mysql image '$__mysql_image:$__mysql_image_version' not found. pulling..."
+    docker pull "$__mysql_image:$__mysql_image_version" >/dev/null && print::ok || (print::fail && return 1)
+  fi
 
   print::inline_first "starting mysql container '$__container_name' ..."
   docker run -d \
@@ -55,7 +64,7 @@ mysql::start() {
     --name "$__container_name" \
     -e MYSQL_ALLOW_EMPTY_PASSWORD=1 \
     -e MYSQL_ROOT_HOST="%" \
-    mysql/mysql-server:$mysql_image_version \
+    "$__mysql_image:$__mysql_image_version" \
     --bind-address "$__node_addr" >/dev/null 2>&1
   if [ $? -eq 0 ]; then
     print::ok

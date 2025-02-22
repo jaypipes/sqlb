@@ -23,6 +23,7 @@ import (
 const (
 	envVarMySQLHost          = "MYSQL_HOST"
 	envVarMySQLPassword      = "MYSQL_PASSWORD"
+	envVarPostgreSQLDSN      = "POSTGRESQL_DSN"
 	envVarPostgreSQLHost     = "POSTGRESQL_HOST"
 	envVarPostgreSQLPassword = "POSTGRESQL_PASSWORD"
 )
@@ -46,6 +47,9 @@ func skipIfNoPostgreSQL(t *testing.T) {
 }
 
 func getPostgreSQLDSN() string {
+	if uri, ok := os.LookupEnv(envVarPostgreSQLDSN); ok {
+		return uri
+	}
 	host := os.Getenv(envVarPostgreSQLHost)
 	pwd := os.Getenv(envVarPostgreSQLPassword)
 	if pwd != "" {
