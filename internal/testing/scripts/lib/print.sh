@@ -8,6 +8,7 @@ source "$lib_dir/common.sh"
 
 default_debug_prefix="[debug] "
 default_info_prefix="[info] "
+default_error_prefix="[error] "
 
 # print::debug prints out a supplied message if the DEBUG environs variable is
 # set. An optional second argument indicates the "indentation level" for the
@@ -54,6 +55,15 @@ print::inline_first() {
 print::debug_inline_first() {
   local __msg="$1"
   print::debug_inline "$(_debug_prefix)$__msg"
+}
+
+# print::error prints out a supplied message. An optional second argument
+# indicates the "indentation level" for the message.
+print::error() {
+  local __msg="$1"
+  local __indent_level=${2:-}
+  local __error_prefix="${ERROR_PREFIX:-$default_error_prefix}"
+  _echo_with_indent "$__msg" "$(_error_prefix)" no $__indent_level
 }
 
 # print::inline prints out a supplied message with no trailing newline.
@@ -107,6 +117,11 @@ _debug_prefix() {
 _info_prefix() {
   local __info_prefix="${INFO_PREFIX:-$default_info_prefix}"
   echo "$(_timestamp) $__info_prefix"
+}
+
+_error_prefix() {
+  local __error_prefix="${ERROR_PREFIX:-$default_error_prefix}"
+  echo "$(_timestamp) $__error_prefix"
 }
 
 _timestamp() {

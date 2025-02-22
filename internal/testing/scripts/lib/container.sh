@@ -30,7 +30,7 @@ container::get_ip() {
 
   until [ $__sleep_time -eq 8 ]; do
     sleep $(( __sleep_time++ ))
-    __found_ip=$(docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$__container_name")
+    __found_ip=$(docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$__container_name" 2>/dev/null)
     if [[ "$__found_ip" != "" ]]; then
       break
     fi

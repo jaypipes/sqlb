@@ -45,6 +45,9 @@ Environment variables:
                                         (the default), a Docker container
                                         running PostgreSQL will automatically
                                         be started.
+  POSTGRESQL_PASSWORD                   The postgres user password for the
+                                        PostgreSQL server.
+                                        Default: 'mysecretpassword'
   POSTGRESQL_CONTAINER_NAME             Name of the Docker container to run
                                         PostgreSQL. If POSTGRESQL_HOST is
                                         supplied, this is ignored.
@@ -115,7 +118,6 @@ fi
 
 postgresql_container_name="${POSTGRESQL_CONTAINER_NAME:-$DEFAULT_POSTGRESQL_CONTAINER_NAME}"
 postgresql_host="${POSTGRESQL_HOST}"
-postgresql_root_password="${POSTGRESQL_ROOT_PASSWORD}"
 
 if [ -z $postgresql_host ]; then
   if ! container::is_running "$postgresql_container_name"; then
@@ -131,7 +133,7 @@ if [ -z $postgresql_host ]; then
   postgresql_host="$postgresql_container_ip"
 fi
 
-postgresql_password="mysecretpassword"
+postgresql_password="${POSTGRESQL_PASSWORD:-${POSTGRES_PASSWORD:-$DEFAULT_POSTGRESQL_PASSWORD}}"
 
 print::inline_first "Dropping postgresql test $test_dbname database ... "
 PGOPTIONS='--client-min-messages=warning' psql postgres://postgres:$postgresql_password@$postgresql_host:5432 -c "DROP DATABASE IF EXISTS $test_dbname;" >/dev/null 2>&1
