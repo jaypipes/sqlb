@@ -19,18 +19,7 @@ package grammar
 //      |     <normalize function>
 //      |     <specific type method>
 //
-// <character overlay function>    ::=
-//          OVERLAY <left paren> <character value expression> PLACING <character value expression>
-//          FROM <start position> [ FOR <string length> ] [ USING <char length units> ] <right paren>
-//
-// <normalize function>    ::=   NORMALIZE <left paren> <character value expression> <right paren>
-//
 // <specific type method>    ::=   <user-defined type value expression> <period> SPECIFICTYPE
-//
-// <blob value function>    ::=
-//          <blob substring function>
-//      |     <blob trim function>
-//      |     <blob overlay function>
 //
 // <blob substring function>    ::=
 //          SUBSTRING <left paren> <blob value expression> FROM <start position> [ FOR <string length> ] <right paren>
@@ -65,13 +54,13 @@ func (f *StringValueFunction) ArgCount(count *int) {
 }
 
 type CharacterValueFunction struct {
-	Substring       *SubstringFunction
+	Substring       *CharacterSubstringFunction
 	RegexSubstring  *RegexSubstringFunction
 	Fold            *FoldFunction
 	Transcoding     *TranscodingFunction
-	Transliteration *TransliterationFunction
+	Transliteration *CharacterTransliterationFunction
 	Trim            *TrimFunction
-	Overlay         *OverlayFunction
+	Overlay         *CharacterOverlayFunction
 	Normalize       *NormalizeFunction
 	SpecificType    *SpecificTypeFunction
 }
@@ -89,6 +78,8 @@ func (f *CharacterValueFunction) ArgCount(count *int) {
 		f.Transliteration.ArgCount(count)
 	} else if f.Trim != nil {
 		f.Trim.ArgCount(count)
+	} else if f.Overlay != nil {
+		f.Overlay.ArgCount(count)
 	}
 }
 
@@ -96,14 +87,14 @@ func (f *CharacterValueFunction) ArgCount(count *int) {
 //          SUBSTRING <left paren> <character value expression> FROM <start position>
 //          [ FOR <string length> ] [ USING <char length units> ] <right paren>
 
-type SubstringFunction struct {
+type CharacterSubstringFunction struct {
 	Subject CharacterValueExpression
 	From    NumericValueExpression
 	For     *NumericValueExpression
 	Using   CharacterLengthUnits
 }
 
-func (f *SubstringFunction) ArgCount(count *int) {
+func (f *CharacterSubstringFunction) ArgCount(count *int) {
 	f.Subject.ArgCount(count)
 	f.From.ArgCount(count)
 	if f.For != nil {
@@ -163,12 +154,12 @@ func (f *TranscodingFunction) ArgCount(count *int) {
 
 // <character transliteration>    ::=   TRANSLATE <left paren> <character value expression> USING <transliteration name> <right paren>
 
-type TransliterationFunction struct {
+type CharacterTransliterationFunction struct {
 	Subject CharacterValueExpression
 	Using   SchemaQualifiedName
 }
 
-func (f *TransliterationFunction) ArgCount(count *int) {
+func (f *CharacterTransliterationFunction) ArgCount(count *int) {
 	f.Subject.ArgCount(count)
 }
 
@@ -209,10 +200,28 @@ func (f *TrimFunction) ArgCount(count *int) {
 	}
 }
 
-type OverlayFunction struct{}
+// <character overlay function>    ::=
+//          OVERLAY <left paren> <character value expression> PLACING <character value expression>
+//          FROM <start position> [ FOR <string length> ] [ USING <char length units> ] <right paren>
 
-func (f *OverlayFunction) ArgCount(count *int) {
+type CharacterOverlayFunction struct {
+	Subject CharacterValueExpression
+	Placing CharacterValueExpression
+	From    NumericValueExpression
+	For     *NumericValueExpression
+	Using   CharacterLengthUnits
 }
+
+func (f *CharacterOverlayFunction) ArgCount(count *int) {
+	f.Subject.ArgCount(count)
+	f.Placing.ArgCount(count)
+	f.From.ArgCount(count)
+	if f.For != nil {
+		f.For.ArgCount(count)
+	}
+}
+
+// <normalize function>    ::=   NORMALIZE <left paren> <character value expression> <right paren>
 
 type NormalizeFunction struct{}
 
@@ -224,7 +233,13 @@ type SpecificTypeFunction struct{}
 func (f *SpecificTypeFunction) ArgCount(count *int) {
 }
 
-type BlobValueFunction struct{}
+// <blob value function>    ::=
+//          <blob substring function>
+//      |     <blob trim function>
+//      |     <blob overlay function>
+
+type BlobValueFunction struct {
+}
 
 func (f *BlobValueFunction) ArgCount(count *int) {
 }

@@ -219,6 +219,19 @@ var TrimPrefix = fn.TrimPrefix
 var RTrim = fn.RTrim
 var TrimSuffix = fn.RTrim
 
+// Overlay returns a OverlayFunction that produces an OVERLAY() SQL function
+// that can be passed to sqlb constructs and functions like Select()
+//
+// The first argument is the subject of the OVERLAY function and must be
+// coercible to a character value expression. THe second argument is the
+// PLACING portion of the OVERLAY function, which is the string that is
+// replacing the characters in the subject string. The second argument must be
+// coercible to a character value expression. The third argument is the FROM
+// portion of the OVERLAY function, which is the index in the subject from
+// which to insert the PLACING argument string. The third argument must be
+// coercible to a numeric value expression.
+var Overlay = fn.Overlay
+
 // CurrentDate returns a CurrentDateFunction that produces a CURRENT_DATE() SQL
 // function that can be passed to sqlb constructs and functions like Select()
 var CurrentDate = fn.CurrentDate
@@ -326,9 +339,6 @@ var Floor = fn.Floor
 // Cast returns a Projection that contains the CAST() SQL function
 var Cast = function.Cast
 
-// CharLength returns a Projection that contains the CHAR_LENGTH() SQL function
-var CharLength = function.CharLength
-
 // BitLength returns a Projection that contains the BIT_LENGTH() SQL function
 var BitLength = function.BitLength
 
@@ -346,18 +356,6 @@ var ConcatWs = function.ConcatWs
 
 // Now returns a Projection that contains the NOW() SQL function
 var Now = function.Now
-
-// CurrentTimestamp returns a Projection that contains the CURRENT_TIMESTAMP() SQL function
-var CurrentTimestamp = function.CurrentTimestamp
-
-// CurrentTime returns a Projection that contains the CURRENT_TIME() SQL function
-var CurrentTime = function.CurrentTime
-
-// CurrentDate returns a Projection that contains the CURRENT_DATE() SQL function
-var CurrentDate = function.CurrentDate
-
-// Extract returns a Projection that contains the EXTRACT() SQL function
-var Extract = function.Extract
 */
 
 // Query accepts a `database/sql` `DB` handle and a queryable object (returned

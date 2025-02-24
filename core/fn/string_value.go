@@ -52,7 +52,7 @@ func Substring(
 		BaseFunction: BaseFunction{
 			ref: ref,
 		},
-		SubstringFunction: &grammar.SubstringFunction{
+		CharacterSubstringFunction: &grammar.CharacterSubstringFunction{
 			Subject: *subject,
 			From:    *from,
 		},
@@ -62,7 +62,7 @@ func Substring(
 // SubstringFunction wraps the SUBSTRING() SQL function grammar element
 type SubstringFunction struct {
 	BaseFunction
-	*grammar.SubstringFunction
+	*grammar.CharacterSubstringFunction
 }
 
 // CommonValueExpression returns the object as a
@@ -75,7 +75,7 @@ func (f *SubstringFunction) CommonValueExpression() *grammar.CommonValueExpressi
 					Primary: grammar.CharacterPrimary{
 						Function: &grammar.StringValueFunction{
 							Character: &grammar.CharacterValueFunction{
-								Substring: f.SubstringFunction,
+								Substring: f.CharacterSubstringFunction,
 							},
 						},
 					},
@@ -109,7 +109,7 @@ func (f *SubstringFunction) As(alias string) types.Projection {
 func (f *SubstringFunction) Using(
 	using grammar.CharacterLengthUnits,
 ) *SubstringFunction {
-	f.SubstringFunction.Using = using
+	f.CharacterSubstringFunction.Using = using
 	return f
 }
 
@@ -124,7 +124,7 @@ func (f *SubstringFunction) For(valAny interface{}) *SubstringFunction {
 		)
 		panic(msg)
 	}
-	f.SubstringFunction.For = v
+	f.CharacterSubstringFunction.For = v
 	return f
 }
 
@@ -448,7 +448,7 @@ func Translate(
 		BaseFunction: BaseFunction{
 			ref: ref,
 		},
-		TransliterationFunction: &grammar.TransliterationFunction{
+		CharacterTransliterationFunction: &grammar.CharacterTransliterationFunction{
 			Subject: *subject,
 			Using: grammar.SchemaQualifiedName{
 				Identifiers: grammar.IdentifierChain{
@@ -462,7 +462,7 @@ func Translate(
 // TransliterationFunction wraps the TRANSLATE() SQL function grammar element
 type TransliterationFunction struct {
 	BaseFunction
-	*grammar.TransliterationFunction
+	*grammar.CharacterTransliterationFunction
 }
 
 // CommonValueExpression returns the object as a
@@ -475,7 +475,7 @@ func (f *TransliterationFunction) CommonValueExpression() *grammar.CommonValueEx
 					Primary: grammar.CharacterPrimary{
 						Function: &grammar.StringValueFunction{
 							Character: &grammar.CharacterValueFunction{
-								Transliteration: f.TransliterationFunction,
+								Transliteration: f.CharacterTransliterationFunction,
 							},
 						},
 					},
@@ -673,6 +673,118 @@ func (f *TrimFunction) DerivedColumn() *grammar.DerivedColumn {
 // As aliases the SQL function as the supplied column name
 func (f *TrimFunction) As(alias string) types.Projection {
 	f.alias = alias
+	return f
+}
+
+// Overlay returns a OverlayFunction that produces an OVERLAY() SQL function
+// that can be passed to sqlb constructs and functions like Select()
+//
+// The first argument is the subject of the OVERLAY function and must be
+// coercible to a character value expression. THe second argument is the
+// PLACING portion of the OVERLAY function, which is the string that is
+// replacing the characters in the subject string. The second argument must be
+// coercible to a character value expression. The third argument is the FROM
+// portion of the OVERLAY function, which is the index in the subject from
+// which to insert the PLACING argument string. The third argument must be
+// coercible to a numeric value expression.
+func Overlay(
+	subjectAny interface{},
+	placingAny interface{},
+	fromAny interface{},
+) *OverlayFunction {
+	var ref types.Relation
+	switch subjectAny := subjectAny.(type) {
+	case types.Projection:
+		ref = subjectAny.References()
+	}
+	subject := inspect.CharacterValueExpressionFromAny(subjectAny)
+	if subject == nil {
+		msg := fmt.Sprintf(
+			"expected coerceable CharacterValueExpression but got %+v(%T)",
+			subjectAny, subjectAny,
+		)
+		panic(msg)
+	}
+	placing := inspect.CharacterValueExpressionFromAny(placingAny)
+	if placing == nil {
+		msg := fmt.Sprintf(
+			"expected coerceable CharacterValueExpression but got %+v(%T)",
+			placingAny, placingAny,
+		)
+		panic(msg)
+	}
+	from := inspect.NumericValueExpressionFromAny(fromAny)
+	if from == nil {
+		msg := fmt.Sprintf(
+			"expected coerceable NumericValueExpression but got %+v(%T)",
+			fromAny, fromAny,
+		)
+		panic(msg)
+	}
+	return &OverlayFunction{
+		BaseFunction: BaseFunction{
+			ref: ref,
+		},
+		CharacterOverlayFunction: &grammar.CharacterOverlayFunction{
+			Subject: *subject,
+			Placing: *placing,
+			From:    *from,
+		},
+	}
+}
+
+// OverlayFunction wraps the SUBSTRING() SQL function grammar element
+type OverlayFunction struct {
+	BaseFunction
+	*grammar.CharacterOverlayFunction
+}
+
+// CommonValueExpression returns the object as a
+// `*grammar.CommonValueExpression`
+func (f *OverlayFunction) CommonValueExpression() *grammar.CommonValueExpression {
+	return &grammar.CommonValueExpression{
+		String: &grammar.StringValueExpression{
+			Character: &grammar.CharacterValueExpression{
+				Factor: &grammar.CharacterFactor{
+					Primary: grammar.CharacterPrimary{
+						Function: &grammar.StringValueFunction{
+							Character: &grammar.CharacterValueFunction{
+								Overlay: f.CharacterOverlayFunction,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+// DerivedColumn returns the `*grammar.DerivedColumn` element representing
+// the Projection
+func (f *OverlayFunction) DerivedColumn() *grammar.DerivedColumn {
+	dc := &grammar.DerivedColumn{
+		Value: grammar.ValueExpression{
+			Common: f.CommonValueExpression(),
+		},
+	}
+	if f.alias != "" {
+		dc.As = &f.alias
+	}
+	return dc
+}
+
+// As aliases the SQL function as the supplied column name
+func (f *OverlayFunction) As(alias string) types.Projection {
+	f.alias = alias
+	return f
+}
+
+// Using modifies the OVERLAY function with a character length units in the
+// USING portion of the function expression.
+func (f *OverlayFunction) Using(
+	using grammar.CharacterLengthUnits,
+) *OverlayFunction {
+	f.CharacterOverlayFunction.Using = using
 	return f
 }
 
