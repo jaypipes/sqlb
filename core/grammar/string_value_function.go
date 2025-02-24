@@ -19,8 +19,6 @@ package grammar
 //      |     <normalize function>
 //      |     <specific type method>
 //
-// <specific type method>    ::=   <user-defined type value expression> <period> SPECIFICTYPE
-//
 // <blob substring function>    ::=
 //          SUBSTRING <left paren> <blob value expression> FROM <start position> [ FOR <string length> ] <right paren>
 //
@@ -80,6 +78,8 @@ func (f *CharacterValueFunction) ArgCount(count *int) {
 		f.Trim.ArgCount(count)
 	} else if f.Overlay != nil {
 		f.Overlay.ArgCount(count)
+	} else if f.Normalize != nil {
+		f.Normalize.ArgCount(count)
 	}
 }
 
@@ -223,10 +223,15 @@ func (f *CharacterOverlayFunction) ArgCount(count *int) {
 
 // <normalize function>    ::=   NORMALIZE <left paren> <character value expression> <right paren>
 
-type NormalizeFunction struct{}
+type NormalizeFunction struct {
+	Subject CharacterValueExpression
+}
 
 func (f *NormalizeFunction) ArgCount(count *int) {
+	f.Subject.ArgCount(count)
 }
+
+// <specific type method>    ::=   <user-defined type value expression> <period> SPECIFICTYPE
 
 type SpecificTypeFunction struct{}
 

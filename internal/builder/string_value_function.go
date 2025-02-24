@@ -39,6 +39,8 @@ func (b *Builder) doCharacterValueFunction(
 		b.doTrimFunction(el.Trim, qargs, curarg)
 	} else if el.Overlay != nil {
 		b.doCharacterOverlayFunction(el.Overlay, qargs, curarg)
+	} else if el.Normalize != nil {
+		b.doNormalizeFunction(el.Normalize, qargs, curarg)
 	}
 }
 
@@ -167,5 +169,15 @@ func (b *Builder) doCharacterOverlayFunction(
 		b.Write(grammar.Symbols[grammar.SYM_USING])
 		b.WriteString(grammar.CharacterLengthUnitsSymbol[el.Using])
 	}
+	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+}
+
+func (b *Builder) doNormalizeFunction(
+	el *grammar.NormalizeFunction,
+	qargs []interface{},
+	curarg *int,
+) {
+	b.Write(grammar.Symbols[grammar.SYM_NORMALIZE])
+	b.doCharacterValueExpression(&el.Subject, qargs, curarg)
 	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
 }
