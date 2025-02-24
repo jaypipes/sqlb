@@ -72,6 +72,8 @@ const (
 	SYM_BOTH
 	SYM_CHAR_LENGTH
 	SYM_OCTET_LENGTH
+	SYM_OVERLAY
+	SYM_PLACING
 	SYM_POSITION
 	SYM_BIT_LENGTH
 	SYM_ASCII
@@ -190,6 +192,8 @@ var (
 		SYM_BOTH:                    []byte("BOTH"),
 		SYM_CHAR_LENGTH:             []byte("CHAR_LENGTH("),
 		SYM_OCTET_LENGTH:            []byte("OCTET_LENGTH("),
+		SYM_OVERLAY:                 []byte("OVERLAY("),
+		SYM_PLACING:                 []byte("PLACING "),
 		SYM_POSITION:                []byte("POSITION("),
 		SYM_BIT_LENGTH:              []byte("BIT_LENGTH("),
 		SYM_ASCII:                   []byte("ASCII("),

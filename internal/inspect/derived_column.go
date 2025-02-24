@@ -39,7 +39,7 @@ func DerivedColumnFromAnyAndAlias(
 				},
 			},
 		}
-	case *grammar.SubstringFunction:
+	case *grammar.CharacterSubstringFunction:
 		dc = &grammar.DerivedColumn{
 			Value: grammar.ValueExpression{
 				Common: &grammar.CommonValueExpression{
@@ -119,7 +119,7 @@ func DerivedColumnFromAnyAndAlias(
 				},
 			},
 		}
-	case *grammar.TransliterationFunction:
+	case *grammar.CharacterTransliterationFunction:
 		dc = &grammar.DerivedColumn{
 			Value: grammar.ValueExpression{
 				Common: &grammar.CommonValueExpression{

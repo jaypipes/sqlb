@@ -26,7 +26,7 @@ func (b *Builder) doCharacterValueFunction(
 	curarg *int,
 ) {
 	if el.Substring != nil {
-		b.doSubstringFunction(el.Substring, qargs, curarg)
+		b.doCharacterSubstringFunction(el.Substring, qargs, curarg)
 	} else if el.RegexSubstring != nil {
 		b.doRegexSubstringFunction(el.RegexSubstring, qargs, curarg)
 	} else if el.Fold != nil {
@@ -34,9 +34,11 @@ func (b *Builder) doCharacterValueFunction(
 	} else if el.Transcoding != nil {
 		b.doTranscodingFunction(el.Transcoding, qargs, curarg)
 	} else if el.Transliteration != nil {
-		b.doTransliterationFunction(el.Transliteration, qargs, curarg)
+		b.doCharacterTransliterationFunction(el.Transliteration, qargs, curarg)
 	} else if el.Trim != nil {
 		b.doTrimFunction(el.Trim, qargs, curarg)
+	} else if el.Overlay != nil {
+		b.doCharacterOverlayFunction(el.Overlay, qargs, curarg)
 	}
 }
 
@@ -47,8 +49,8 @@ func (b *Builder) doBlobValueFunction(
 ) {
 }
 
-func (b *Builder) doSubstringFunction(
-	el *grammar.SubstringFunction,
+func (b *Builder) doCharacterSubstringFunction(
+	el *grammar.CharacterSubstringFunction,
 	qargs []interface{},
 	curarg *int,
 ) {
@@ -110,8 +112,8 @@ func (b *Builder) doTranscodingFunction(
 	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
 }
 
-func (b *Builder) doTransliterationFunction(
-	el *grammar.TransliterationFunction,
+func (b *Builder) doCharacterTransliterationFunction(
+	el *grammar.CharacterTransliterationFunction,
 	qargs []interface{},
 	curarg *int,
 ) {
@@ -139,5 +141,31 @@ func (b *Builder) doTrimFunction(
 		b.Write(grammar.Symbols[grammar.SYM_FROM])
 	}
 	b.doCharacterValueExpression(&el.Subject, qargs, curarg)
+	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+}
+
+func (b *Builder) doCharacterOverlayFunction(
+	el *grammar.CharacterOverlayFunction,
+	qargs []interface{},
+	curarg *int,
+) {
+	b.Write(grammar.Symbols[grammar.SYM_OVERLAY])
+	b.doCharacterValueExpression(&el.Subject, qargs, curarg)
+	b.WriteRune(' ')
+	b.Write(grammar.Symbols[grammar.SYM_PLACING])
+	b.doCharacterValueExpression(&el.Placing, qargs, curarg)
+	b.WriteRune(' ')
+	b.Write(grammar.Symbols[grammar.SYM_FROM])
+	b.doNumericValueExpression(&el.From, qargs, curarg)
+	if el.For != nil {
+		b.WriteRune(' ')
+		b.Write(grammar.Symbols[grammar.SYM_FOR])
+		b.doNumericValueExpression(el.For, qargs, curarg)
+	}
+	if el.Using != grammar.CharacterLengthUnitsCharacters {
+		b.WriteRune(' ')
+		b.Write(grammar.Symbols[grammar.SYM_USING])
+		b.WriteString(grammar.CharacterLengthUnitsSymbol[el.Using])
+	}
 	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
 }

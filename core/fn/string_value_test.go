@@ -18,7 +18,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestStringValueFunctionSubstring(t *testing.T) {
+func TestStringValueFunctionCharacterSubstring(t *testing.T) {
 	m := testutil.M()
 	users := m.T("users")
 	colUserId := users.C("id")
@@ -27,14 +27,14 @@ func TestStringValueFunctionSubstring(t *testing.T) {
 		name        string
 		subject     interface{}
 		from        interface{}
-		exp         *grammar.SubstringFunction
+		exp         *grammar.CharacterSubstringFunction
 		expRefersTo types.Relation
 	}{
 		{
 			name:    "column and unsigned literal",
 			subject: colUserId,
 			from:    42,
-			exp: &grammar.SubstringFunction{
+			exp: &grammar.CharacterSubstringFunction{
 				Subject: grammar.CharacterValueExpression{
 					Factor: &grammar.CharacterFactor{
 						Primary: grammar.CharacterPrimary{
@@ -79,7 +79,7 @@ func TestStringValueFunctionSubstring(t *testing.T) {
 			name:    "column and another column",
 			subject: colUserId,
 			from:    colUserId,
-			exp: &grammar.SubstringFunction{
+			exp: &grammar.CharacterSubstringFunction{
 				Subject: grammar.CharacterValueExpression{
 					Factor: &grammar.CharacterFactor{
 						Primary: grammar.CharacterPrimary{
@@ -126,7 +126,7 @@ func TestStringValueFunctionSubstring(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			assert := assert.New(t)
 			got := fn.Substring(tt.subject, tt.from)
-			assert.Equal(tt.exp, got.SubstringFunction)
+			assert.Equal(tt.exp, got.CharacterSubstringFunction)
 			assert.Equal(tt.expRefersTo, got.References())
 		})
 	}
@@ -569,7 +569,7 @@ func TestSelectTranscodingFunction(t *testing.T) {
 	}
 }
 
-func TestStringValueFunctionTransliteration(t *testing.T) {
+func TestStringValueFunctionCharacterTransliteration(t *testing.T) {
 	m := testutil.M()
 	users := m.T("users")
 	colUserId := users.C("id")
@@ -578,14 +578,14 @@ func TestStringValueFunctionTransliteration(t *testing.T) {
 		name            string
 		subject         interface{}
 		transcodingName string
-		exp             *grammar.TransliterationFunction
+		exp             *grammar.CharacterTransliterationFunction
 		expRefersTo     types.Relation
 	}{
 		{
 			name:            "TRANSLATE column",
 			subject:         colUserId,
 			transcodingName: "utf8",
-			exp: &grammar.TransliterationFunction{
+			exp: &grammar.CharacterTransliterationFunction{
 				Subject: grammar.CharacterValueExpression{
 					Factor: &grammar.CharacterFactor{
 						Primary: grammar.CharacterPrimary{
@@ -616,7 +616,7 @@ func TestStringValueFunctionTransliteration(t *testing.T) {
 			name:            "TRANSLATE string literal",
 			subject:         "foo",
 			transcodingName: "utf8",
-			exp: &grammar.TransliterationFunction{
+			exp: &grammar.CharacterTransliterationFunction{
 				Subject: grammar.CharacterValueExpression{
 					Factor: &grammar.CharacterFactor{
 						Primary: grammar.CharacterPrimary{
@@ -646,7 +646,7 @@ func TestStringValueFunctionTransliteration(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			assert := assert.New(t)
 			got := fn.Translate(tt.subject, tt.transcodingName)
-			assert.Equal(tt.exp, got.TransliterationFunction)
+			assert.Equal(tt.exp, got.CharacterTransliterationFunction)
 			assert.Equal(tt.expRefersTo, got.References())
 		})
 	}
@@ -891,6 +891,214 @@ func TestSelectTrimFunction(t *testing.T) {
 			name: "trim column with alias",
 			q:    expr.Select(fn.TrimSpace(colUserId).As("trimmed")),
 			qs:   "SELECT TRIM(users.id) AS trimmed FROM users",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			b := builder.New()
+
+			qs, qargs := b.StringArgs(tt.q.Query())
+			assert.Equal(len(tt.qargs), len(qargs))
+			assert.Equal(tt.qs, qs)
+		})
+	}
+}
+
+func TestStringValueFunctionCharacterOverlay(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+
+	tests := []struct {
+		name        string
+		subject     interface{}
+		placing     interface{}
+		from        interface{}
+		exp         *grammar.CharacterOverlayFunction
+		expRefersTo types.Relation
+	}{
+		{
+			name:    "column, character literal and unsigned literal",
+			subject: colUserId,
+			placing: "replace",
+			from:    1,
+			exp: &grammar.CharacterOverlayFunction{
+				Subject: grammar.CharacterValueExpression{
+					Factor: &grammar.CharacterFactor{
+						Primary: grammar.CharacterPrimary{
+							Primary: &grammar.ValueExpressionPrimary{
+								Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+									ColumnReference: &grammar.ColumnReference{
+										BasicIdentifierChain: &grammar.IdentifierChain{
+											Identifiers: []string{
+												"users",
+												"id",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				Placing: grammar.CharacterValueExpression{
+					Factor: &grammar.CharacterFactor{
+						Primary: grammar.CharacterPrimary{
+							Primary: &grammar.ValueExpressionPrimary{
+								Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+									UnsignedValue: &grammar.UnsignedValueSpecification{
+										UnsignedLiteral: &grammar.UnsignedLiteral{
+											General: &grammar.GeneralLiteral{
+												Value: "replace",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				From: grammar.NumericValueExpression{
+					Unary: &grammar.Term{
+						Unary: &grammar.Factor{
+							Primary: grammar.NumericPrimary{
+								Primary: &grammar.ValueExpressionPrimary{
+									Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+										UnsignedValue: &grammar.UnsignedValueSpecification{
+											UnsignedLiteral: &grammar.UnsignedLiteral{
+												UnsignedNumeric: &grammar.UnsignedNumericLiteral{
+													Value: 1,
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expRefersTo: users,
+		},
+		{
+			name:    "column, another column and another column",
+			subject: colUserId,
+			placing: colUserId,
+			from:    colUserId,
+			exp: &grammar.CharacterOverlayFunction{
+				Subject: grammar.CharacterValueExpression{
+					Factor: &grammar.CharacterFactor{
+						Primary: grammar.CharacterPrimary{
+							Primary: &grammar.ValueExpressionPrimary{
+								Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+									ColumnReference: &grammar.ColumnReference{
+										BasicIdentifierChain: &grammar.IdentifierChain{
+											Identifiers: []string{
+												"users",
+												"id",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				Placing: grammar.CharacterValueExpression{
+					Factor: &grammar.CharacterFactor{
+						Primary: grammar.CharacterPrimary{
+							Primary: &grammar.ValueExpressionPrimary{
+								Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+									ColumnReference: &grammar.ColumnReference{
+										BasicIdentifierChain: &grammar.IdentifierChain{
+											Identifiers: []string{
+												"users",
+												"id",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				From: grammar.NumericValueExpression{
+					Unary: &grammar.Term{
+						Unary: &grammar.Factor{
+							Primary: grammar.NumericPrimary{
+								Primary: &grammar.ValueExpressionPrimary{
+									Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+										ColumnReference: &grammar.ColumnReference{
+											BasicIdentifierChain: &grammar.IdentifierChain{
+												Identifiers: []string{
+													"users",
+													"id",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expRefersTo: users,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+			got := fn.Overlay(tt.subject, tt.placing, tt.from)
+			assert.Equal(tt.exp, got.CharacterOverlayFunction)
+			assert.Equal(tt.expRefersTo, got.References())
+		})
+	}
+
+	// First argument must be coercible into a CharacterValueExpression
+	assert.Panics(t, func() {
+		_ = fn.Overlay(struct{}{}, "replace", 1)
+	})
+	// Second argument must be coercible into a CharacterValueExpression
+	assert.Panics(t, func() {
+		_ = fn.Overlay(colUserId, struct{}{}, 1)
+	})
+	// Third argument must be coercible into a NumericValueExpression
+	assert.Panics(t, func() {
+		_ = fn.Overlay(users, "replace", struct{}{})
+	})
+}
+
+func TestSelectOverlayFunction(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+
+	tests := []struct {
+		name  string
+		q     *expr.Selection
+		qs    string
+		qargs []interface{}
+	}{
+		{
+			name:  "overlay column with literal from",
+			q:     expr.Select(fn.Overlay(colUserId, "replace", 42)),
+			qs:    "SELECT OVERLAY(users.id PLACING ? FROM ?) FROM users",
+			qargs: []interface{}{"replace", 42},
+		},
+		{
+			name:  "overlay column with literal from using alias",
+			q:     expr.Select(fn.Overlay(colUserId, "replace", 42).As("overlayer")),
+			qs:    "SELECT OVERLAY(users.id PLACING ? FROM ?) AS overlayer FROM users",
+			qargs: []interface{}{"replace", 42},
+		},
+		{
+			name:  "overlay column placing column with literal from",
+			q:     expr.Select(fn.Overlay(colUserId, colUserId, 42)),
+			qs:    "SELECT OVERLAY(users.id PLACING users.id FROM ?) FROM users",
+			qargs: []interface{}{42},
 		},
 	}
 	for _, tt := range tests {
