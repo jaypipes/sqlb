@@ -1113,3 +1113,117 @@ func TestSelectOverlayFunction(t *testing.T) {
 		})
 	}
 }
+
+func TestStringValueFunctionNormalize(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+
+	tests := []struct {
+		name        string
+		subject     interface{}
+		exp         *grammar.NormalizeFunction
+		expRefersTo types.Relation
+	}{
+		{
+			name:    "NORMALIZE column",
+			subject: colUserId,
+			exp: &grammar.NormalizeFunction{
+				Subject: grammar.CharacterValueExpression{
+					Factor: &grammar.CharacterFactor{
+						Primary: grammar.CharacterPrimary{
+							Primary: &grammar.ValueExpressionPrimary{
+								Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+									ColumnReference: &grammar.ColumnReference{
+										BasicIdentifierChain: &grammar.IdentifierChain{
+											Identifiers: []string{
+												"users",
+												"id",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expRefersTo: users,
+		},
+		{
+			name:    "NORMALIZE string literal",
+			subject: "foo",
+			exp: &grammar.NormalizeFunction{
+				Subject: grammar.CharacterValueExpression{
+					Factor: &grammar.CharacterFactor{
+						Primary: grammar.CharacterPrimary{
+							Primary: &grammar.ValueExpressionPrimary{
+								Primary: &grammar.NonParenthesizedValueExpressionPrimary{
+									UnsignedValue: &grammar.UnsignedValueSpecification{
+										UnsignedLiteral: &grammar.UnsignedLiteral{
+											General: &grammar.GeneralLiteral{
+												Value: "foo",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+			got := fn.Normalize(tt.subject)
+			assert.Equal(tt.exp, got.NormalizeFunction)
+			assert.Equal(tt.expRefersTo, got.References())
+		})
+	}
+
+	// First argument must be coercible into a CharacterValueExpression
+	assert.Panics(t, func() {
+		_ = fn.Normalize(struct{}{})
+	})
+	assert.Panics(t, func() {
+		// A Table is not coercible into a CharacterValueExpression
+		_ = fn.Normalize(users)
+	})
+}
+
+func TestSelectNormalizeFunction(t *testing.T) {
+	m := testutil.M()
+	users := m.T("users")
+	colUserId := users.C("id")
+
+	tests := []struct {
+		name  string
+		q     *expr.Selection
+		qs    string
+		qargs []interface{}
+	}{
+		{
+			name: "normalize column",
+			q:    expr.Select(fn.Normalize(colUserId)),
+			qs:   "SELECT NORMALIZE(users.id) FROM users",
+		},
+		{
+			name: "nortmalize column with alias",
+			q:    expr.Select(fn.Normalize(colUserId).As("normalized")),
+			qs:   "SELECT NORMALIZE(users.id) AS normalized FROM users",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			b := builder.New()
+
+			qs, qargs := b.StringArgs(tt.q.Query())
+			assert.Equal(len(tt.qargs), len(qargs))
+			assert.Equal(tt.qs, qs)
+		})
+	}
+}

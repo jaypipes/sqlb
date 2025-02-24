@@ -232,6 +232,13 @@ var TrimSuffix = fn.RTrim
 // coercible to a numeric value expression.
 var Overlay = fn.Overlay
 
+// Normalize returns a NormalizeFunction that produces a NORMALIZE() SQL
+// function that can be passed to sqlb constructs and functions like Select()
+//
+// The only argument is the subject of the NORMALIZE function and must be
+// coercible to a character value expression.
+var Normalize = fn.Normalize
+
 // CurrentDate returns a CurrentDateFunction that produces a CURRENT_DATE() SQL
 // function that can be passed to sqlb constructs and functions like Select()
 var CurrentDate = fn.CurrentDate

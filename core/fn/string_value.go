@@ -788,6 +788,83 @@ func (f *OverlayFunction) Using(
 	return f
 }
 
+// Normalize returns a NormalizeFunction that produces a NORMALIZE() SQL
+// function that can be passed to sqlb constructs and functions like Select()
+//
+// The only argument is the subject of the NORMALIZE function and must be
+// coercible to a character value expression.
+func Normalize(
+	subjectAny interface{},
+) *NormalizeFunction {
+	var ref types.Relation
+	switch subjectAny := subjectAny.(type) {
+	case types.Projection:
+		ref = subjectAny.References()
+	}
+	subject := inspect.CharacterValueExpressionFromAny(subjectAny)
+	if subject == nil {
+		msg := fmt.Sprintf(
+			"expected coerceable CharacterValueExpression but got %+v(%T)",
+			subjectAny, subjectAny,
+		)
+		panic(msg)
+	}
+	return &NormalizeFunction{
+		BaseFunction: BaseFunction{
+			ref: ref,
+		},
+		NormalizeFunction: &grammar.NormalizeFunction{
+			Subject: *subject,
+		},
+	}
+}
+
+// NormalizeFunction wraps the NORMALIZE() SQL function grammar element
+type NormalizeFunction struct {
+	BaseFunction
+	*grammar.NormalizeFunction
+}
+
+// CommonValueExpression returns the object as a
+// `*grammar.CommonValueExpression`
+func (f *NormalizeFunction) CommonValueExpression() *grammar.CommonValueExpression {
+	return &grammar.CommonValueExpression{
+		String: &grammar.StringValueExpression{
+			Character: &grammar.CharacterValueExpression{
+				Factor: &grammar.CharacterFactor{
+					Primary: grammar.CharacterPrimary{
+						Function: &grammar.StringValueFunction{
+							Character: &grammar.CharacterValueFunction{
+								Normalize: f.NormalizeFunction,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+// DerivedColumn returns the `*grammar.DerivedColumn` element representing
+// the Projection
+func (f *NormalizeFunction) DerivedColumn() *grammar.DerivedColumn {
+	dc := &grammar.DerivedColumn{
+		Value: grammar.ValueExpression{
+			Common: f.CommonValueExpression(),
+		},
+	}
+	if f.alias != "" {
+		dc.As = &f.alias
+	}
+	return dc
+}
+
+// As aliases the SQL function as the supplied column name
+func (f *NormalizeFunction) As(alias string) types.Projection {
+	f.alias = alias
+	return f
+}
+
 /*
 // Ascii returns a Projection that contains the ASCII() SQL function
 func Ascii(p api.Projection) api.Projection {
