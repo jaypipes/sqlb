@@ -18,25 +18,6 @@ package grammar
 //      |     <character overlay function>
 //      |     <normalize function>
 //      |     <specific type method>
-//
-// <blob substring function>    ::=
-//          SUBSTRING <left paren> <blob value expression> FROM <start position> [ FOR <string length> ] <right paren>
-//
-// <blob trim function>    ::=   TRIM <left paren> <blob trim operands> <right paren>
-//
-// <blob trim operands>    ::=   [ [ <trim specification> ] [ <trim octet> ] FROM ] <blob trim source>
-//
-// <blob trim source>    ::=   <blob value expression>
-//
-// <trim octet>    ::=   <blob value expression>
-//
-// <blob overlay function>    ::=
-//          OVERLAY <left paren> <blob value expression> PLACING <blob value expression>
-//          FROM <start position> [ FOR <string length> ] <right paren>
-//
-// <start position>    ::=   <numeric value expression>
-//
-// <string length>    ::=   <numeric value expression>
 
 type StringValueFunction struct {
 	Character *CharacterValueFunction
@@ -86,6 +67,10 @@ func (f *CharacterValueFunction) ArgCount(count *int) {
 // <character substring function>    ::=
 //          SUBSTRING <left paren> <character value expression> FROM <start position>
 //          [ FOR <string length> ] [ USING <char length units> ] <right paren>
+//
+// <start position>    ::=   <numeric value expression>
+//
+// <string length>    ::=   <numeric value expression>
 
 type CharacterSubstringFunction struct {
 	Subject CharacterValueExpression
@@ -244,7 +229,75 @@ func (f *SpecificTypeFunction) ArgCount(count *int) {
 //      |     <blob overlay function>
 
 type BlobValueFunction struct {
+	Substring *BlobSubstringFunction
+	Trim      *BlobTrimFunction
+	Overlay   *BlobOverlayFunction
 }
 
 func (f *BlobValueFunction) ArgCount(count *int) {
+	if f.Substring != nil {
+		f.Substring.ArgCount(count)
+	} else if f.Trim != nil {
+		f.Trim.ArgCount(count)
+	} else if f.Overlay != nil {
+		f.Overlay.ArgCount(count)
+	}
+}
+
+// <blob substring function>    ::=
+//          SUBSTRING <left paren> <blob value expression> FROM <start position> [ FOR <string length> ] <right paren>
+
+type BlobSubstringFunction struct {
+	Subject BlobValueExpression
+	From    NumericValueExpression
+	For     *NumericValueExpression
+}
+
+func (f *BlobSubstringFunction) ArgCount(count *int) {
+	f.Subject.ArgCount(count)
+	f.From.ArgCount(count)
+	if f.For != nil {
+		f.For.ArgCount(count)
+	}
+}
+
+// <blob trim function>    ::=   TRIM <left paren> <blob trim operands> <right paren>
+//
+// <blob trim operands>    ::=   [ [ <trim specification> ] [ <trim octet> ] FROM ] <blob trim source>
+//
+// <blob trim source>    ::=   <blob value expression>
+//
+// <trim octet>    ::=   <blob value expression>
+
+type BlobTrimFunction struct {
+	Specification TrimSpecification
+	Octet         *BlobValueExpression
+	Subject       BlobValueExpression
+}
+
+func (f *BlobTrimFunction) ArgCount(count *int) {
+	f.Subject.ArgCount(count)
+	if f.Octet != nil {
+		f.Octet.ArgCount(count)
+	}
+}
+
+// <blob overlay function>    ::=
+//          OVERLAY <left paren> <blob value expression> PLACING <blob value expression>
+//          FROM <start position> [ FOR <string length> ] <right paren>
+
+type BlobOverlayFunction struct {
+	Subject BlobValueExpression
+	Placing BlobValueExpression
+	From    NumericValueExpression
+	For     *NumericValueExpression
+}
+
+func (f *BlobOverlayFunction) ArgCount(count *int) {
+	f.Subject.ArgCount(count)
+	f.Placing.ArgCount(count)
+	f.From.ArgCount(count)
+	if f.For != nil {
+		f.For.ArgCount(count)
+	}
 }
