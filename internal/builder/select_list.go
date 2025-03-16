@@ -8,6 +8,7 @@ package builder
 
 import (
 	"github.com/jaypipes/sqlb/core/grammar"
+	"github.com/jaypipes/sqlb/core/grammar/symbol"
 )
 
 func (b *Builder) doSelectList(
@@ -16,11 +17,12 @@ func (b *Builder) doSelectList(
 	curarg *int,
 ) {
 	if el.Asterisk {
-		b.Write(grammar.Symbols[grammar.SYM_ASTERISK])
+		b.WriteString(symbol.Asterisk)
 	} else {
 		for x, s := range el.Sublists {
 			if x > 0 {
-				b.Write(grammar.Symbols[grammar.SYM_COMMA_WS])
+				b.WriteString(symbol.Comma)
+				b.WriteString(symbol.Space)
 			}
 			b.doSelectSublist(&s, qargs, curarg)
 		}

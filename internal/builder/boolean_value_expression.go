@@ -8,6 +8,7 @@ package builder
 
 import (
 	"github.com/jaypipes/sqlb/core/grammar"
+	"github.com/jaypipes/sqlb/core/grammar/symbol"
 )
 
 func (b *Builder) doBooleanValueExpression(
@@ -23,11 +24,13 @@ func (b *Builder) doBooleanValueExpression(
 			// in sqlb's parsing logic.
 			panic("got nil OrRight but non-nil OrLeft")
 		}
-		b.Write(grammar.Symbols[grammar.SYM_LPAREN])
+		b.WriteString(symbol.LeftParen)
 		b.doBooleanValueExpression(el.OrLeft, qargs, curarg)
-		b.Write(grammar.Symbols[grammar.SYM_OR])
+		b.WriteString(symbol.Space)
+		b.WriteString(symbol.Or)
+		b.WriteString(symbol.Space)
 		b.doBooleanTerm(el.OrRight, qargs, curarg)
-		b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+		b.WriteString(symbol.RightParen)
 	}
 }
 
@@ -45,7 +48,9 @@ func (b *Builder) doBooleanTerm(
 			panic("got nil AndRight but non-nil AndLeft")
 		}
 		b.doBooleanTerm(el.AndLeft, qargs, curarg)
-		b.Write(grammar.Symbols[grammar.SYM_AND])
+		b.WriteString(symbol.Space)
+		b.WriteString(symbol.And)
+		b.WriteString(symbol.Space)
 		b.doBooleanFactor(el.AndRight, qargs, curarg)
 	}
 }
@@ -56,7 +61,9 @@ func (b *Builder) doBooleanFactor(
 	curarg *int,
 ) {
 	if el.Not {
-		b.Write(grammar.Symbols[grammar.SYM_NOT])
+		b.WriteString(symbol.Space)
+		b.WriteString(symbol.Not)
+		b.WriteString(symbol.Space)
 	}
 	b.doBooleanPrimary(&el.Test.Primary, qargs, curarg)
 }
@@ -79,9 +86,9 @@ func (b *Builder) doBooleanPredicand(
 	curarg *int,
 ) {
 	if el.Parenthesized != nil {
-		b.Write(grammar.Symbols[grammar.SYM_LPAREN])
+		b.WriteString(symbol.LeftParen)
 		b.doBooleanValueExpression(el.Parenthesized, qargs, curarg)
-		b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+		b.WriteString(symbol.RightParen)
 	} else if el.Primary != nil {
 		b.doNonParenthesizedValueExpressionPrimary(el.Primary, qargs, curarg)
 	}

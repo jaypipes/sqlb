@@ -8,6 +8,7 @@ package builder
 
 import (
 	"github.com/jaypipes/sqlb/core/grammar"
+	"github.com/jaypipes/sqlb/core/grammar/symbol"
 )
 
 func (b *Builder) doInsertStatement(
@@ -15,28 +16,37 @@ func (b *Builder) doInsertStatement(
 	qargs []interface{},
 	curarg *int,
 ) {
-	b.Write(grammar.Symbols[grammar.SYM_INSERT])
+	b.WriteString(symbol.Insert)
+	b.WriteString(symbol.Space)
+	b.WriteString(symbol.Into)
+	b.WriteString(symbol.Space)
 	// We don't add any table alias when outputting the table identifier
 	b.WriteString(el.TableName)
-	b.WriteRune(' ')
-	b.Write(grammar.Symbols[grammar.SYM_LPAREN])
+	b.WriteString(symbol.Space)
+	b.WriteString(symbol.LeftParen)
 
 	for x, c := range el.Columns {
 		if x > 0 {
-			b.Write(grammar.Symbols[grammar.SYM_COMMA_WS])
+			b.WriteString(symbol.Comma)
+			b.WriteString(symbol.Space)
 		}
 		// We don't add the table identifier or use an alias when outputting
 		// the column names in the <columns> element of the INSERT statement
 		b.WriteString(c)
 	}
-	b.Write(grammar.Symbols[grammar.SYM_VALUES])
+	b.WriteString(symbol.RightParen)
+	b.WriteString(symbol.Space)
+	b.WriteString(symbol.Values)
+	b.WriteString(symbol.Space)
+	b.WriteString(symbol.LeftParen)
 	for x, v := range el.Values {
 		if x > 0 {
-			b.Write(grammar.Symbols[grammar.SYM_COMMA_WS])
+			b.WriteString(symbol.Comma)
+			b.WriteString(symbol.Space)
 		}
 		b.WriteString(InterpolationMarker(b.opts, *curarg))
 		qargs[*curarg] = v
 		*curarg++
 	}
-	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+	b.WriteString(symbol.RightParen)
 }

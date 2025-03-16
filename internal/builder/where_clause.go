@@ -8,6 +8,7 @@ package builder
 
 import (
 	"github.com/jaypipes/sqlb/core/grammar"
+	"github.com/jaypipes/sqlb/core/grammar/symbol"
 )
 
 func (b *Builder) doWhereClause(
@@ -16,6 +17,7 @@ func (b *Builder) doWhereClause(
 	curarg *int,
 ) {
 	b.WriteString(b.opts.FormatSeparateClauseWith())
-	b.Write(grammar.Symbols[grammar.SYM_WHERE])
+	b.WriteString(symbol.Where)
+	b.WriteString(symbol.Space)
 	b.doBooleanValueExpression(&el.Search, qargs, curarg)
 }

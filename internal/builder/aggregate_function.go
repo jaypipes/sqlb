@@ -8,6 +8,7 @@ package builder
 
 import (
 	"github.com/jaypipes/sqlb/core/grammar"
+	"github.com/jaypipes/sqlb/core/grammar/symbol"
 )
 
 func (b *Builder) doAggregateFunction(
@@ -16,7 +17,10 @@ func (b *Builder) doAggregateFunction(
 	curarg *int,
 ) {
 	if el.CountStar != nil {
-		b.Write(grammar.Symbols[grammar.SYM_COUNT_STAR])
+		b.WriteString(symbol.Count)
+		b.WriteString(symbol.LeftParen)
+		b.WriteString(symbol.Asterisk)
+		b.WriteString(symbol.RightParen)
 	} else if el.GeneralSet != nil {
 		b.doGeneralSetFunction(el.GeneralSet, qargs, curarg)
 	}
@@ -28,10 +32,11 @@ func (b *Builder) doGeneralSetFunction(
 	curarg *int,
 ) {
 	b.WriteString(grammar.ComputationalOperationSymbol[el.Operation])
-	b.Write(grammar.Symbols[grammar.SYM_LPAREN])
+	b.WriteString(symbol.LeftParen)
 	if el.Quantifier == grammar.SetQuantifierDistinct {
-		b.Write(grammar.Symbols[grammar.SYM_DISTINCT])
+		b.WriteString(symbol.Distinct)
+		b.WriteString(symbol.Space)
 	}
 	b.doValueExpression(&el.Value, qargs, curarg)
-	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+	b.WriteString(symbol.RightParen)
 }

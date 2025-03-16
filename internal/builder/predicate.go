@@ -8,6 +8,7 @@ package builder
 
 import (
 	"github.com/jaypipes/sqlb/core/grammar"
+	"github.com/jaypipes/sqlb/core/grammar/symbol"
 )
 
 func (b *Builder) doPredicate(
@@ -34,17 +35,32 @@ func (b *Builder) doComparisonPredicate(
 	b.doRowValuePredicand(&el.A, qargs, curarg)
 	switch el.Operator {
 	case grammar.ComparisonOperatorEquals:
-		b.Write(grammar.Symbols[grammar.SYM_EQUAL])
+		b.WriteString(symbol.Space)
+		b.WriteString(symbol.EqualsOperator)
+		b.WriteString(symbol.Space)
 	case grammar.ComparisonOperatorNotEquals:
-		b.Write(grammar.Symbols[grammar.SYM_NEQUAL])
+		b.WriteString(symbol.Space)
+		b.WriteString(symbol.LessThanOperator)
+		b.WriteString(symbol.GreaterThanOperator)
+		b.WriteString(symbol.Space)
 	case grammar.ComparisonOperatorGreaterThan:
-		b.Write(grammar.Symbols[grammar.SYM_GREATER])
+		b.WriteString(symbol.Space)
+		b.WriteString(symbol.GreaterThanOperator)
+		b.WriteString(symbol.Space)
 	case grammar.ComparisonOperatorGreaterThanEquals:
-		b.Write(grammar.Symbols[grammar.SYM_GREATER_EQUAL])
+		b.WriteString(symbol.Space)
+		b.WriteString(symbol.GreaterThanOperator)
+		b.WriteString(symbol.EqualsOperator)
+		b.WriteString(symbol.Space)
 	case grammar.ComparisonOperatorLessThan:
-		b.Write(grammar.Symbols[grammar.SYM_LESS])
+		b.WriteString(symbol.Space)
+		b.WriteString(symbol.LessThanOperator)
+		b.WriteString(symbol.Space)
 	case grammar.ComparisonOperatorLessThanEquals:
-		b.Write(grammar.Symbols[grammar.SYM_LESS_EQUAL])
+		b.WriteString(symbol.Space)
+		b.WriteString(symbol.LessThanOperator)
+		b.WriteString(symbol.EqualsOperator)
+		b.WriteString(symbol.Space)
 	}
 	b.doRowValuePredicand(&el.B, qargs, curarg)
 }
@@ -55,15 +71,17 @@ func (b *Builder) doInPredicate(
 	curarg *int,
 ) {
 	b.doRowValuePredicand(&el.Target, qargs, curarg)
-	b.Write(grammar.Symbols[grammar.SYM_IN])
-	b.Write(grammar.Symbols[grammar.SYM_LPAREN])
+	b.WriteString(symbol.Space)
+	b.WriteString(symbol.In)
+	b.WriteString(symbol.LeftParen)
 	for x, rve := range el.Values {
 		if x > 0 {
-			b.Write(grammar.Symbols[grammar.SYM_COMMA_WS])
+			b.WriteString(symbol.Comma)
+			b.WriteString(symbol.Space)
 		}
 		b.doNonParenthesizedValueExpressionPrimary(rve.Primary, qargs, curarg)
 	}
-	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+	b.WriteString(symbol.RightParen)
 }
 
 func (b *Builder) doBetweenPredicate(
@@ -72,9 +90,13 @@ func (b *Builder) doBetweenPredicate(
 	curarg *int,
 ) {
 	b.doRowValuePredicand(&el.Target, qargs, curarg)
-	b.Write(grammar.Symbols[grammar.SYM_BETWEEN])
+	b.WriteString(symbol.Space)
+	b.WriteString(symbol.Between)
+	b.WriteString(symbol.Space)
 	b.doRowValuePredicand(&el.Start, qargs, curarg)
-	b.Write(grammar.Symbols[grammar.SYM_AND])
+	b.WriteString(symbol.Space)
+	b.WriteString(symbol.And)
+	b.WriteString(symbol.Space)
 	b.doRowValuePredicand(&el.End, qargs, curarg)
 }
 
@@ -84,9 +106,12 @@ func (b *Builder) doNullPredicate(
 	curarg *int,
 ) {
 	b.doRowValuePredicand(&el.Target, qargs, curarg)
+	b.WriteString(symbol.Space)
+	b.WriteString(symbol.Is)
 	if el.Not {
-		b.Write(grammar.Symbols[grammar.SYM_IS_NOT_NULL])
-	} else {
-		b.Write(grammar.Symbols[grammar.SYM_IS_NULL])
+		b.WriteString(symbol.Space)
+		b.WriteString(symbol.Not)
 	}
+	b.WriteString(symbol.Space)
+	b.WriteString(symbol.Null)
 }

@@ -8,6 +8,7 @@ package builder
 
 import (
 	"github.com/jaypipes/sqlb/core/grammar"
+	"github.com/jaypipes/sqlb/core/grammar/symbol"
 )
 
 func (b *Builder) doNumericValueFunction(
@@ -42,22 +43,29 @@ func (b *Builder) doPositionExpression(
 	curarg *int,
 ) {
 	if el.String != nil {
-		b.Write(grammar.Symbols[grammar.SYM_POSITION])
+		b.WriteString(symbol.Position)
+		b.WriteString(symbol.LeftParen)
 		b.doStringValueExpression(&el.String.Subject, qargs, curarg)
-		b.Write(grammar.Symbols[grammar.SYM_IN])
+		b.WriteString(symbol.Space)
+		b.WriteString(symbol.In)
+		b.WriteString(symbol.Space)
 		b.doStringValueExpression(&el.String.In, qargs, curarg)
 		if el.String.Using != grammar.CharacterLengthUnitsCharacters {
-			b.WriteRune(' ')
-			b.Write(grammar.Symbols[grammar.SYM_USING])
+			b.WriteString(symbol.Space)
+			b.WriteString(symbol.Using)
+			b.WriteString(symbol.Space)
 			b.WriteString(grammar.CharacterLengthUnitsSymbol[el.String.Using])
 		}
-		b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+		b.WriteString(symbol.RightParen)
 	} else if el.Blob != nil {
-		b.Write(grammar.Symbols[grammar.SYM_POSITION])
+		b.WriteString(symbol.Position)
+		b.WriteString(symbol.LeftParen)
 		b.doBlobValueExpression(&el.Blob.Subject, qargs, curarg)
-		b.Write(grammar.Symbols[grammar.SYM_IN])
+		b.WriteString(symbol.Space)
+		b.WriteString(symbol.In)
+		b.WriteString(symbol.Space)
 		b.doBlobValueExpression(&el.Blob.In, qargs, curarg)
-		b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+		b.WriteString(symbol.RightParen)
 	}
 }
 
@@ -67,18 +75,21 @@ func (b *Builder) doLengthExpression(
 	curarg *int,
 ) {
 	if el.Character != nil {
-		b.Write(grammar.Symbols[grammar.SYM_CHAR_LENGTH])
+		b.WriteString(symbol.CharLength)
+		b.WriteString(symbol.LeftParen)
 		b.doStringValueExpression(&el.Character.Subject, qargs, curarg)
 		if el.Character.Using != grammar.CharacterLengthUnitsCharacters {
-			b.WriteRune(' ')
-			b.Write(grammar.Symbols[grammar.SYM_USING])
+			b.WriteString(symbol.Space)
+			b.WriteString(symbol.Using)
+			b.WriteString(symbol.Space)
 			b.WriteString(grammar.CharacterLengthUnitsSymbol[el.Character.Using])
 		}
-		b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+		b.WriteString(symbol.RightParen)
 	} else if el.Octet != nil {
-		b.Write(grammar.Symbols[grammar.SYM_OCTET_LENGTH])
+		b.WriteString(symbol.OctetLength)
+		b.WriteString(symbol.LeftParen)
 		b.doStringValueExpression(&el.Octet.Subject, qargs, curarg)
-		b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+		b.WriteString(symbol.RightParen)
 	}
 }
 
@@ -87,12 +98,14 @@ func (b *Builder) doExtractExpression(
 	qargs []interface{},
 	curarg *int,
 ) {
-	b.Write(grammar.Symbols[grammar.SYM_EXTRACT])
+	b.WriteString(symbol.Extract)
+	b.WriteString(symbol.LeftParen)
 	b.doExtractField(&el.What, qargs, curarg)
-	b.WriteRune(' ')
-	b.Write(grammar.Symbols[grammar.SYM_FROM])
+	b.WriteString(symbol.Space)
+	b.WriteString(symbol.From)
+	b.WriteString(symbol.Space)
 	b.doExtractSource(&el.From, qargs, curarg)
-	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+	b.WriteString(symbol.RightParen)
 }
 
 func (b *Builder) doExtractField(
@@ -124,9 +137,10 @@ func (b *Builder) doNaturalLogarithm(
 	qargs []interface{},
 	curarg *int,
 ) {
-	b.Write(grammar.Symbols[grammar.SYM_LN])
+	b.WriteString(symbol.Ln)
+	b.WriteString(symbol.LeftParen)
 	b.doNumericValueExpression(&el.Subject, qargs, curarg)
-	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+	b.WriteString(symbol.RightParen)
 }
 
 func (b *Builder) doAbsoluteValueExpression(
@@ -134,9 +148,10 @@ func (b *Builder) doAbsoluteValueExpression(
 	qargs []interface{},
 	curarg *int,
 ) {
-	b.Write(grammar.Symbols[grammar.SYM_ABS])
+	b.WriteString(symbol.Abs)
+	b.WriteString(symbol.LeftParen)
 	b.doNumericValueExpression(&el.Subject, qargs, curarg)
-	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+	b.WriteString(symbol.RightParen)
 }
 
 func (b *Builder) doExponentialFunction(
@@ -144,9 +159,10 @@ func (b *Builder) doExponentialFunction(
 	qargs []interface{},
 	curarg *int,
 ) {
-	b.Write(grammar.Symbols[grammar.SYM_EXP])
+	b.WriteString(symbol.Exp)
+	b.WriteString(symbol.LeftParen)
 	b.doNumericValueExpression(&el.Subject, qargs, curarg)
-	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+	b.WriteString(symbol.RightParen)
 }
 
 func (b *Builder) doSquareRoot(
@@ -154,9 +170,10 @@ func (b *Builder) doSquareRoot(
 	qargs []interface{},
 	curarg *int,
 ) {
-	b.Write(grammar.Symbols[grammar.SYM_SQRT])
+	b.WriteString(symbol.Sqrt)
+	b.WriteString(symbol.LeftParen)
 	b.doNumericValueExpression(&el.Subject, qargs, curarg)
-	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+	b.WriteString(symbol.RightParen)
 }
 
 func (b *Builder) doCeilingFunction(
@@ -164,9 +181,10 @@ func (b *Builder) doCeilingFunction(
 	qargs []interface{},
 	curarg *int,
 ) {
-	b.Write(grammar.Symbols[grammar.SYM_CEIL])
+	b.WriteString(symbol.Ceil)
+	b.WriteString(symbol.LeftParen)
 	b.doNumericValueExpression(&el.Subject, qargs, curarg)
-	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+	b.WriteString(symbol.RightParen)
 }
 
 func (b *Builder) doFloorFunction(
@@ -174,7 +192,8 @@ func (b *Builder) doFloorFunction(
 	qargs []interface{},
 	curarg *int,
 ) {
-	b.Write(grammar.Symbols[grammar.SYM_FLOOR])
+	b.WriteString(symbol.Floor)
+	b.WriteString(symbol.LeftParen)
 	b.doNumericValueExpression(&el.Subject, qargs, curarg)
-	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+	b.WriteString(symbol.RightParen)
 }
