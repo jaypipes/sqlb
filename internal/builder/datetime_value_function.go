@@ -10,6 +10,7 @@ import (
 	"strconv"
 
 	"github.com/jaypipes/sqlb/core/grammar"
+	"github.com/jaypipes/sqlb/core/grammar/symbol"
 )
 
 func (b *Builder) doDatetimeValueFunction(
@@ -18,30 +19,36 @@ func (b *Builder) doDatetimeValueFunction(
 	curarg *int,
 ) {
 	if el.CurrentDate {
-		b.Write(grammar.Symbols[grammar.SYM_CURRENT_DATE])
+		b.WriteString(symbol.CurrentDate)
+		b.WriteString(symbol.LeftParen)
+		b.WriteString(symbol.RightParen)
 	} else if el.CurrentTime != nil {
-		b.Write(grammar.Symbols[grammar.SYM_CURRENT_TIME])
+		b.WriteString(symbol.CurrentTime)
+		b.WriteString(symbol.LeftParen)
 		if el.CurrentTime.Precision != nil {
 			b.WriteString(strconv.Itoa(int(*el.CurrentTime.Precision)))
 		}
-		b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+		b.WriteString(symbol.RightParen)
 	} else if el.CurrentTimestamp != nil {
-		b.Write(grammar.Symbols[grammar.SYM_CURRENT_TIMESTAMP])
+		b.WriteString(symbol.CurrentTimestamp)
+		b.WriteString(symbol.LeftParen)
 		if el.CurrentTimestamp.Precision != nil {
 			b.WriteString(strconv.Itoa(int(*el.CurrentTimestamp.Precision)))
 		}
-		b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+		b.WriteString(symbol.RightParen)
 	} else if el.LocalTime != nil {
-		b.Write(grammar.Symbols[grammar.SYM_LOCALTIME])
+		b.WriteString(symbol.LocalTime)
+		b.WriteString(symbol.LeftParen)
 		if el.LocalTime.Precision != nil {
 			b.WriteString(strconv.Itoa(int(*el.LocalTime.Precision)))
 		}
-		b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+		b.WriteString(symbol.RightParen)
 	} else if el.LocalTimestamp != nil {
-		b.Write(grammar.Symbols[grammar.SYM_LOCALTIMESTAMP])
+		b.WriteString(symbol.LocalTimestamp)
+		b.WriteString(symbol.LeftParen)
 		if el.LocalTimestamp.Precision != nil {
 			b.WriteString(strconv.Itoa(int(*el.LocalTimestamp.Precision)))
 		}
-		b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+		b.WriteString(symbol.RightParen)
 	}
 }

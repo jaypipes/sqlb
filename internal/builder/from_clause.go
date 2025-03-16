@@ -8,6 +8,7 @@ package builder
 
 import (
 	"github.com/jaypipes/sqlb/core/grammar"
+	"github.com/jaypipes/sqlb/core/grammar/symbol"
 )
 
 func (b *Builder) doFromClause(
@@ -16,10 +17,12 @@ func (b *Builder) doFromClause(
 	curarg *int,
 ) {
 	b.WriteString(b.opts.FormatSeparateClauseWith())
-	b.Write(grammar.Symbols[grammar.SYM_FROM])
+	b.WriteString(symbol.From)
+	b.WriteString(symbol.Space)
 	for x, tr := range el.TableReferences {
 		if x > 0 {
-			b.Write(grammar.Symbols[grammar.SYM_COMMA_WS])
+			b.WriteString(symbol.Comma)
+			b.WriteString(symbol.Space)
 		}
 		b.doTableReference(&tr, qargs, curarg)
 	}

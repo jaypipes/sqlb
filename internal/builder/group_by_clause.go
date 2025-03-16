@@ -8,6 +8,7 @@ package builder
 
 import (
 	"github.com/jaypipes/sqlb/core/grammar"
+	"github.com/jaypipes/sqlb/core/grammar/symbol"
 )
 
 func (b *Builder) doGroupByClause(
@@ -16,10 +17,14 @@ func (b *Builder) doGroupByClause(
 	curarg *int,
 ) {
 	b.WriteString(b.opts.FormatSeparateClauseWith())
-	b.Write(grammar.Symbols[grammar.SYM_GROUP_BY])
+	b.WriteString(symbol.Group)
+	b.WriteString(symbol.Space)
+	b.WriteString(symbol.By)
+	b.WriteString(symbol.Space)
 	for x, ge := range el.GroupingElements {
 		if x > 0 {
-			b.Write(grammar.Symbols[grammar.SYM_COMMA_WS])
+			b.WriteString(symbol.Comma)
+			b.WriteString(symbol.Space)
 		}
 		b.doGroupingElement(&ge, qargs, curarg)
 	}
@@ -42,7 +47,8 @@ func (b *Builder) doOrdinaryGroupingSet(
 ) {
 	b.doColumnReference(el.GroupingColumnReference.ColumnReference, qargs, curarg)
 	if el.GroupingColumnReference.Collation != nil {
-		b.Write(grammar.Symbols[grammar.SYM_COLLATE])
+		b.WriteString(symbol.Collate)
+		b.WriteString(symbol.Space)
 		b.WriteString(*el.GroupingColumnReference.Collation)
 	}
 }

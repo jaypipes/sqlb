@@ -8,6 +8,7 @@ package builder
 
 import (
 	"github.com/jaypipes/sqlb/core/grammar"
+	"github.com/jaypipes/sqlb/core/grammar/symbol"
 )
 
 func (b *Builder) doValueExpressionPrimary(
@@ -16,9 +17,9 @@ func (b *Builder) doValueExpressionPrimary(
 	curarg *int,
 ) {
 	if el.Parenthesized != nil {
-		b.Write(grammar.Symbols[grammar.SYM_LPAREN])
+		b.WriteString(symbol.LeftParen)
 		b.doValueExpression(el.Parenthesized, qargs, curarg)
-		b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+		b.WriteString(symbol.RightParen)
 	} else if el.Primary != nil {
 		b.doNonParenthesizedValueExpressionPrimary(el.Primary, qargs, curarg)
 	}

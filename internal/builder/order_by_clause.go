@@ -8,6 +8,7 @@ package builder
 
 import (
 	"github.com/jaypipes/sqlb/core/grammar"
+	"github.com/jaypipes/sqlb/core/grammar/symbol"
 )
 
 func (b *Builder) doOrderByClause(
@@ -16,10 +17,14 @@ func (b *Builder) doOrderByClause(
 	curarg *int,
 ) {
 	b.WriteString(b.opts.FormatSeparateClauseWith())
-	b.Write(grammar.Symbols[grammar.SYM_ORDER_BY])
+	b.WriteString(symbol.Order)
+	b.WriteString(symbol.Space)
+	b.WriteString(symbol.By)
+	b.WriteString(symbol.Space)
 	for x, ss := range el.SortSpecifications {
 		if x > 0 {
-			b.Write(grammar.Symbols[grammar.SYM_COMMA_WS])
+			b.WriteString(symbol.Comma)
+			b.WriteString(symbol.Space)
 		}
 		b.doSortSpecification(&ss, qargs, curarg)
 	}

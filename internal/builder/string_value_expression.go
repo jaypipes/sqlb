@@ -8,6 +8,7 @@ package builder
 
 import (
 	"github.com/jaypipes/sqlb/core/grammar"
+	"github.com/jaypipes/sqlb/core/grammar/symbol"
 )
 
 func (b *Builder) doStringValueExpression(
@@ -49,7 +50,8 @@ func (b *Builder) doCharacterFactor(
 ) {
 	b.doCharacterPrimary(&el.Primary, qargs, curarg)
 	if el.Collation != nil {
-		b.Write(grammar.Symbols[grammar.SYM_COLLATE])
+		b.WriteString(symbol.Collate)
+		b.WriteString(symbol.Space)
 		b.WriteString(*el.Collation)
 	}
 }

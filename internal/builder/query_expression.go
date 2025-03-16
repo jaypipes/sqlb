@@ -8,6 +8,7 @@ package builder
 
 import (
 	"github.com/jaypipes/sqlb/core/grammar"
+	"github.com/jaypipes/sqlb/core/grammar/symbol"
 )
 
 func (b *Builder) doQueryExpression(
@@ -51,9 +52,9 @@ func (b *Builder) doNonJoinQueryPrimary(
 	if el.Simple != nil {
 		b.doSimpleTable(el.Simple, qargs, curarg)
 	} else if el.Parenthesized != nil {
-		b.Write(grammar.Symbols[grammar.SYM_LPAREN])
+		b.WriteString(symbol.LeftParen)
 		b.doNonJoinQueryExpression(el.Parenthesized, qargs, curarg)
-		b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+		b.WriteString(symbol.RightParen)
 	}
 }
 

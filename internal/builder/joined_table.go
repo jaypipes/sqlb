@@ -8,6 +8,7 @@ package builder
 
 import (
 	"github.com/jaypipes/sqlb/core/grammar"
+	"github.com/jaypipes/sqlb/core/grammar/symbol"
 )
 
 func (b *Builder) doJoinedTable(
@@ -35,14 +36,23 @@ func (b *Builder) doQualifiedJoin(
 	b.WriteString(b.opts.FormatSeparateClauseWith())
 	switch el.Type {
 	case grammar.JoinTypeInner:
-		b.Write(grammar.Symbols[grammar.SYM_JOIN])
+		b.WriteString(symbol.Join)
+		b.WriteString(symbol.Space)
 	case grammar.JoinTypeLeftOuter:
-		b.Write(grammar.Symbols[grammar.SYM_LEFT_JOIN])
+		b.WriteString(symbol.Left)
+		b.WriteString(symbol.Space)
+		b.WriteString(symbol.Join)
+		b.WriteString(symbol.Space)
 	case grammar.JoinTypeFullOuter:
-		b.Write(grammar.Symbols[grammar.SYM_CROSS_JOIN])
+		b.WriteString(symbol.Cross)
+		b.WriteString(symbol.Space)
+		b.WriteString(symbol.Join)
+		b.WriteString(symbol.Space)
 	}
 	b.doTableReference(&el.Right, qargs, curarg)
-	b.Write(grammar.Symbols[grammar.SYM_ON])
+	b.WriteString(symbol.Space)
+	b.WriteString(symbol.On)
+	b.WriteString(symbol.Space)
 	b.doBooleanValueExpression(&el.On, qargs, curarg)
 }
 
@@ -53,14 +63,22 @@ func (b *Builder) doNaturalJoin(
 ) {
 	b.doTableReference(&el.Left, qargs, curarg)
 	b.WriteString(b.opts.FormatSeparateClauseWith())
-	b.Write(grammar.Symbols[grammar.SYM_NATURAL])
+	b.WriteString(symbol.Natural)
+	b.WriteString(symbol.Space)
 	switch el.Type {
 	case grammar.JoinTypeInner:
-		b.Write(grammar.Symbols[grammar.SYM_JOIN])
+		b.WriteString(symbol.Join)
+		b.WriteString(symbol.Space)
 	case grammar.JoinTypeLeftOuter:
-		b.Write(grammar.Symbols[grammar.SYM_LEFT_JOIN])
+		b.WriteString(symbol.Left)
+		b.WriteString(symbol.Space)
+		b.WriteString(symbol.Join)
+		b.WriteString(symbol.Space)
 	case grammar.JoinTypeFullOuter:
-		b.Write(grammar.Symbols[grammar.SYM_CROSS_JOIN])
+		b.WriteString(symbol.Cross)
+		b.WriteString(symbol.Space)
+		b.WriteString(symbol.Join)
+		b.WriteString(symbol.Space)
 	}
 	b.doTablePrimary(&el.Right, qargs, curarg)
 }
@@ -72,8 +90,10 @@ func (b *Builder) doUnionJoin(
 ) {
 	b.doTableReference(&el.Left, qargs, curarg)
 	b.WriteString(b.opts.FormatSeparateClauseWith())
-	b.Write(grammar.Symbols[grammar.SYM_UNION])
-	b.Write(grammar.Symbols[grammar.SYM_JOIN])
+	b.WriteString(symbol.Union)
+	b.WriteString(symbol.Space)
+	b.WriteString(symbol.Join)
+	b.WriteString(symbol.Space)
 	b.doTablePrimary(&el.Right, qargs, curarg)
 }
 
@@ -84,7 +104,9 @@ func (b *Builder) doCrossJoin(
 ) {
 	b.doTableReference(&el.Left, qargs, curarg)
 	b.WriteString(b.opts.FormatSeparateClauseWith())
-	b.Write(grammar.Symbols[grammar.SYM_CROSS])
-	b.Write(grammar.Symbols[grammar.SYM_JOIN])
+	b.WriteString(symbol.Cross)
+	b.WriteString(symbol.Space)
+	b.WriteString(symbol.Join)
+	b.WriteString(symbol.Space)
 	b.doTablePrimary(&el.Right, qargs, curarg)
 }

@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/jaypipes/sqlb/core/grammar"
+	"github.com/jaypipes/sqlb/core/grammar/symbol"
 	"github.com/jaypipes/sqlb/core/types"
 )
 
@@ -70,10 +71,10 @@ func (b *Builder) StringArgs(target interface{}) (string, []interface{}) {
 func InterpolationMarker(opts types.Options, position int) string {
 	b := &strings.Builder{}
 	if opts.Dialect() == types.DialectPostgreSQL {
-		b.Write(grammar.Symbols[grammar.SYM_DOLLAR])
+		b.WriteString(symbol.Dollar)
 		b.WriteString(strconv.Itoa(position + 1))
 	} else {
-		b.Write(grammar.Symbols[grammar.SYM_QUEST_MARK])
+		b.WriteString(symbol.QuestionMark)
 	}
 	return b.String()
 }

@@ -8,6 +8,7 @@ package builder
 
 import (
 	"github.com/jaypipes/sqlb/core/grammar"
+	"github.com/jaypipes/sqlb/core/grammar/symbol"
 )
 
 func (b *Builder) doTablePrimary(
@@ -23,7 +24,9 @@ func (b *Builder) doTablePrimary(
 		b.doDerivedTable(el.DerivedTable, qargs, curarg)
 	}
 	if el.Correlation != nil {
-		b.Write(grammar.Symbols[grammar.SYM_AS])
+		b.WriteString(symbol.Space)
+		b.WriteString(symbol.As)
+		b.WriteString(symbol.Space)
 		b.WriteString(el.Correlation.Name)
 	}
 }

@@ -8,6 +8,7 @@ package builder
 
 import (
 	"github.com/jaypipes/sqlb/core/grammar"
+	"github.com/jaypipes/sqlb/core/grammar/symbol"
 )
 
 func (b *Builder) doDerivedColumn(
@@ -17,7 +18,9 @@ func (b *Builder) doDerivedColumn(
 ) {
 	b.doValueExpression(&el.Value, qargs, curarg)
 	if el.As != nil {
-		b.Write(grammar.Symbols[grammar.SYM_AS])
+		b.WriteString(symbol.Space)
+		b.WriteString(symbol.As)
+		b.WriteString(symbol.Space)
 		b.WriteString(*el.As)
 	}
 }

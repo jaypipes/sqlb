@@ -8,6 +8,7 @@ package builder
 
 import (
 	"github.com/jaypipes/sqlb/core/grammar"
+	"github.com/jaypipes/sqlb/core/grammar/symbol"
 )
 
 func (b *Builder) doQuerySpecification(
@@ -15,7 +16,8 @@ func (b *Builder) doQuerySpecification(
 	qargs []interface{},
 	curarg *int,
 ) {
-	b.Write(grammar.Symbols[grammar.SYM_SELECT])
+	b.WriteString(symbol.Select)
+	b.WriteString(symbol.Space)
 	b.doSelectList(&el.SelectList, qargs, curarg)
 	b.doTableExpression(&el.TableExpression, qargs, curarg)
 }

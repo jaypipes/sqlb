@@ -8,6 +8,7 @@ package builder
 
 import (
 	"github.com/jaypipes/sqlb/core/grammar"
+	"github.com/jaypipes/sqlb/core/grammar/symbol"
 )
 
 func (b *Builder) doLimitClause(
@@ -16,12 +17,15 @@ func (b *Builder) doLimitClause(
 	curarg *int,
 ) {
 	b.WriteString(b.opts.FormatSeparateClauseWith())
-	b.Write(grammar.Symbols[grammar.SYM_LIMIT])
+	b.WriteString(symbol.Limit)
+	b.WriteString(symbol.Space)
 	b.WriteString(InterpolationMarker(b.opts, *curarg))
 	qargs[*curarg] = el.Count
 	*curarg++
 	if el.Offset != nil {
-		b.Write(grammar.Symbols[grammar.SYM_OFFSET])
+		b.WriteString(symbol.Space)
+		b.WriteString(symbol.Offset)
+		b.WriteString(symbol.Space)
 		b.WriteString(InterpolationMarker(b.opts, *curarg))
 		qargs[*curarg] = *el.Offset
 		*curarg++

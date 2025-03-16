@@ -6,7 +6,10 @@
 
 package builder
 
-import "github.com/jaypipes/sqlb/core/grammar"
+import (
+	"github.com/jaypipes/sqlb/core/grammar"
+	"github.com/jaypipes/sqlb/core/grammar/symbol"
+)
 
 func (b *Builder) doStringValueFunction(
 	el *grammar.StringValueFunction,
@@ -56,22 +59,26 @@ func (b *Builder) doCharacterSubstringFunction(
 	qargs []interface{},
 	curarg *int,
 ) {
-	b.Write(grammar.Symbols[grammar.SYM_SUBSTRING])
+	b.WriteString(symbol.Substring)
+	b.WriteString(symbol.LeftParen)
 	b.doCharacterValueExpression(&el.Subject, qargs, curarg)
-	b.WriteRune(' ')
-	b.Write(grammar.Symbols[grammar.SYM_FROM])
+	b.WriteString(symbol.Space)
+	b.WriteString(symbol.From)
+	b.WriteString(symbol.Space)
 	b.doNumericValueExpression(&el.From, qargs, curarg)
 	if el.For != nil {
-		b.WriteRune(' ')
-		b.Write(grammar.Symbols[grammar.SYM_FOR])
+		b.WriteString(symbol.Space)
+		b.WriteString(symbol.For)
+		b.WriteString(symbol.Space)
 		b.doNumericValueExpression(el.For, qargs, curarg)
 	}
 	if el.Using != grammar.CharacterLengthUnitsCharacters {
-		b.WriteRune(' ')
-		b.Write(grammar.Symbols[grammar.SYM_USING])
+		b.WriteString(symbol.Space)
+		b.WriteString(symbol.Using)
+		b.WriteString(symbol.Space)
 		b.WriteString(grammar.CharacterLengthUnitsSymbol[el.Using])
 	}
-	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+	b.WriteString(symbol.RightParen)
 }
 
 func (b *Builder) doRegexSubstringFunction(
@@ -79,15 +86,18 @@ func (b *Builder) doRegexSubstringFunction(
 	qargs []interface{},
 	curarg *int,
 ) {
-	b.Write(grammar.Symbols[grammar.SYM_SUBSTRING])
+	b.WriteString(symbol.Substring)
+	b.WriteString(symbol.LeftParen)
 	b.doCharacterValueExpression(&el.Subject, qargs, curarg)
-	b.WriteRune(' ')
-	b.Write(grammar.Symbols[grammar.SYM_SIMILAR])
+	b.WriteString(symbol.Space)
+	b.WriteString(symbol.Similar)
+	b.WriteString(symbol.Space)
 	b.doCharacterValueExpression(&el.Similar, qargs, curarg)
-	b.WriteRune(' ')
-	b.Write(grammar.Symbols[grammar.SYM_ESCAPE])
+	b.WriteString(symbol.Space)
+	b.WriteString(symbol.Escape)
+	b.WriteString(symbol.Space)
 	b.doCharacterValueExpression(&el.Escape, qargs, curarg)
-	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+	b.WriteString(symbol.RightParen)
 }
 
 func (b *Builder) doFoldFunction(
@@ -96,9 +106,9 @@ func (b *Builder) doFoldFunction(
 	curarg *int,
 ) {
 	b.WriteString(grammar.FoldCaseSymbols[el.Case])
-	b.Write(grammar.Symbols[grammar.SYM_LPAREN])
+	b.WriteString(symbol.LeftParen)
 	b.doCharacterValueExpression(&el.Subject, qargs, curarg)
-	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+	b.WriteString(symbol.RightParen)
 }
 
 func (b *Builder) doTranscodingFunction(
@@ -106,12 +116,14 @@ func (b *Builder) doTranscodingFunction(
 	qargs []interface{},
 	curarg *int,
 ) {
-	b.Write(grammar.Symbols[grammar.SYM_CONVERT])
+	b.WriteString(symbol.Convert)
+	b.WriteString(symbol.LeftParen)
 	b.doCharacterValueExpression(&el.Subject, qargs, curarg)
-	b.WriteRune(' ')
-	b.Write(grammar.Symbols[grammar.SYM_USING])
+	b.WriteString(symbol.Space)
+	b.WriteString(symbol.Using)
+	b.WriteString(symbol.Space)
 	b.doSchemaQualifiedName(&el.Using, qargs, curarg)
-	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+	b.WriteString(symbol.RightParen)
 }
 
 func (b *Builder) doCharacterTransliterationFunction(
@@ -119,12 +131,14 @@ func (b *Builder) doCharacterTransliterationFunction(
 	qargs []interface{},
 	curarg *int,
 ) {
-	b.Write(grammar.Symbols[grammar.SYM_TRANSLATE])
+	b.WriteString(symbol.Translate)
+	b.WriteString(symbol.LeftParen)
 	b.doCharacterValueExpression(&el.Subject, qargs, curarg)
-	b.WriteRune(' ')
-	b.Write(grammar.Symbols[grammar.SYM_USING])
+	b.WriteString(symbol.Space)
+	b.WriteString(symbol.Using)
+	b.WriteString(symbol.Space)
 	b.doSchemaQualifiedName(&el.Using, qargs, curarg)
-	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+	b.WriteString(symbol.RightParen)
 }
 
 func (b *Builder) doTrimFunction(
@@ -132,18 +146,20 @@ func (b *Builder) doTrimFunction(
 	qargs []interface{},
 	curarg *int,
 ) {
-	b.Write(grammar.Symbols[grammar.SYM_TRIM])
+	b.WriteString(symbol.Trim)
+	b.WriteString(symbol.LeftParen)
 	if el.Specification != grammar.TrimSpecificationBoth {
 		b.WriteString(grammar.TrimSpecificationSymbols[el.Specification])
-		b.WriteRune(' ')
+		b.WriteString(symbol.Space)
 	}
 	if el.Character != nil {
 		b.doCharacterValueExpression(el.Character, qargs, curarg)
-		b.WriteRune(' ')
-		b.Write(grammar.Symbols[grammar.SYM_FROM])
+		b.WriteString(symbol.Space)
+		b.WriteString(symbol.From)
+		b.WriteString(symbol.Space)
 	}
 	b.doCharacterValueExpression(&el.Subject, qargs, curarg)
-	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+	b.WriteString(symbol.RightParen)
 }
 
 func (b *Builder) doCharacterOverlayFunction(
@@ -151,25 +167,30 @@ func (b *Builder) doCharacterOverlayFunction(
 	qargs []interface{},
 	curarg *int,
 ) {
-	b.Write(grammar.Symbols[grammar.SYM_OVERLAY])
+	b.WriteString(symbol.Overlay)
+	b.WriteString(symbol.LeftParen)
 	b.doCharacterValueExpression(&el.Subject, qargs, curarg)
-	b.WriteRune(' ')
-	b.Write(grammar.Symbols[grammar.SYM_PLACING])
+	b.WriteString(symbol.Space)
+	b.WriteString(symbol.Placing)
+	b.WriteString(symbol.Space)
 	b.doCharacterValueExpression(&el.Placing, qargs, curarg)
-	b.WriteRune(' ')
-	b.Write(grammar.Symbols[grammar.SYM_FROM])
+	b.WriteString(symbol.Space)
+	b.WriteString(symbol.From)
+	b.WriteString(symbol.Space)
 	b.doNumericValueExpression(&el.From, qargs, curarg)
 	if el.For != nil {
-		b.WriteRune(' ')
-		b.Write(grammar.Symbols[grammar.SYM_FOR])
+		b.WriteString(symbol.Space)
+		b.WriteString(symbol.For)
+		b.WriteString(symbol.Space)
 		b.doNumericValueExpression(el.For, qargs, curarg)
 	}
 	if el.Using != grammar.CharacterLengthUnitsCharacters {
-		b.WriteRune(' ')
-		b.Write(grammar.Symbols[grammar.SYM_USING])
+		b.WriteString(symbol.Space)
+		b.WriteString(symbol.Using)
+		b.WriteString(symbol.Space)
 		b.WriteString(grammar.CharacterLengthUnitsSymbol[el.Using])
 	}
-	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+	b.WriteString(symbol.RightParen)
 }
 
 func (b *Builder) doNormalizeFunction(
@@ -177,7 +198,8 @@ func (b *Builder) doNormalizeFunction(
 	qargs []interface{},
 	curarg *int,
 ) {
-	b.Write(grammar.Symbols[grammar.SYM_NORMALIZE])
+	b.WriteString(symbol.Normalize)
+	b.WriteString(symbol.LeftParen)
 	b.doCharacterValueExpression(&el.Subject, qargs, curarg)
-	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+	b.WriteString(symbol.RightParen)
 }

@@ -8,6 +8,7 @@ package builder
 
 import (
 	"github.com/jaypipes/sqlb/core/grammar"
+	"github.com/jaypipes/sqlb/core/grammar/symbol"
 )
 
 func (b *Builder) doDeleteStatementSearched(
@@ -15,7 +16,10 @@ func (b *Builder) doDeleteStatementSearched(
 	qargs []interface{},
 	curarg *int,
 ) {
-	b.Write(grammar.Symbols[grammar.SYM_DELETE])
+	b.WriteString(symbol.Delete)
+	b.WriteString(symbol.Space)
+	b.WriteString(symbol.From)
+	b.WriteString(symbol.Space)
 	// We don't add any table alias when outputting the table identifier
 	b.WriteString(el.TableName)
 

@@ -8,6 +8,7 @@ package builder
 
 import (
 	"github.com/jaypipes/sqlb/core/grammar"
+	"github.com/jaypipes/sqlb/core/grammar/symbol"
 )
 
 func (b *Builder) doSubquery(
@@ -15,7 +16,7 @@ func (b *Builder) doSubquery(
 	qargs []interface{},
 	curarg *int,
 ) {
-	b.Write(grammar.Symbols[grammar.SYM_LPAREN])
+	b.WriteString(symbol.LeftParen)
 	b.doQueryExpression(&el.QueryExpression, qargs, curarg)
-	b.Write(grammar.Symbols[grammar.SYM_RPAREN])
+	b.WriteString(symbol.RightParen)
 }

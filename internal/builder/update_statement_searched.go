@@ -8,6 +8,7 @@ package builder
 
 import (
 	"github.com/jaypipes/sqlb/core/grammar"
+	"github.com/jaypipes/sqlb/core/grammar/symbol"
 )
 
 func (b *Builder) doUpdateStatementSearched(
@@ -15,20 +16,26 @@ func (b *Builder) doUpdateStatementSearched(
 	qargs []interface{},
 	curarg *int,
 ) {
-	b.Write(grammar.Symbols[grammar.SYM_UPDATE])
+	b.WriteString(symbol.Update)
+	b.WriteString(symbol.Space)
 	// We don't add any table alias when outputting the table identifier
 	b.WriteString(el.TableName)
-	b.Write(grammar.Symbols[grammar.SYM_SET])
+	b.WriteString(symbol.Space)
+	b.WriteString(symbol.Set)
+	b.WriteString(symbol.Space)
 
 	for x, c := range el.Columns {
 		if x > 0 {
-			b.Write(grammar.Symbols[grammar.SYM_COMMA_WS])
+			b.WriteString(symbol.Comma)
+			b.WriteString(symbol.Space)
 		}
 		// We don't add the table identifier or use an alias when outputting
 		// the column names in the <column_value_lists> element of the UPDATE
 		// statement
 		b.WriteString(c)
-		b.Write(grammar.Symbols[grammar.SYM_EQUAL])
+		b.WriteString(symbol.Space)
+		b.WriteString(symbol.EqualsOperator)
+		b.WriteString(symbol.Space)
 		b.WriteString(InterpolationMarker(b.opts, *curarg))
 		qargs[*curarg] = el.Values[x]
 		*curarg++
