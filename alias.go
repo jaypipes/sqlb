@@ -400,4 +400,23 @@ func QueryContext(
 	return db.QueryContext(ctx, qs, qargs...)
 }
 
+// Select returns a QuerySpecification that produces a SELECT SQL statement for
+// one or more items. Items can be a Table, a Column, a Function, another
+// SELECT query, or even a literal value.
+//
+// Select panics if sqlb cannot compile the supplied arguments into a valid
+// SELECT SQL query. This is intentional, as we want compile-time failures for
+// invalid SQL construction and we want Select() to be chainable with other
+// Select() calls.
+//
+// If you are constructing SQL expressions dynamically with user-supplied
+// input, use the `SelectE` function which returns a checkable `error` object.
 var Select = expr.Select
+
+// SelectE returns a QuerySpecification that produces a SELECT SQL statement for
+// one or more items. Items can be a Table, a Column, a Function, another
+// SELECT query, or even a literal value.
+//
+// If sqlb cannot compile the supplied arguments into a valid SELECT SQL query,
+// SelectE returns an error.
+var SelectE = expr.SelectE

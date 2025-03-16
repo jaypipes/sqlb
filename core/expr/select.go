@@ -41,8 +41,8 @@ func (s *Selection) AliasOrName() string {
 	return s.alias
 }
 
-// Projections returns a slice of Projection things referenced by the
-// Selectable. The slice should be sorted by the Projection's name.
+// Projections returns a slice of Projections referenced by the Selection. The
+// slice is sorted by the Projection's name.
 func (s *Selection) Projections() []types.Projection {
 	cols := slices.Clone(s.cols)
 	slices.SortFunc(cols, func(a, b types.Projection) int {
@@ -51,6 +51,8 @@ func (s *Selection) Projections() []types.Projection {
 	return cols
 }
 
+// Query returns the CursorSpecification if set, otherwise returns the wrapped
+// QuerySpecification.
 func (s *Selection) Query() interface{} {
 	if s.cs != nil {
 		return s.cs
@@ -122,10 +124,30 @@ func (s *Selection) C(name string) types.Projection {
 //
 // Select panics if sqlb cannot compile the supplied arguments into a valid
 // SELECT SQL query. This is intentional, as we want compile-time failures for
-// invalid SQL construction.
+// invalid SQL construction and we want Select() to be chainable with other
+// Select() calls.
+//
+// If you are constructing SQL expressions dynamically with user-supplied
+// input, use the `SelectE` function which returns a checkable `error` object.
 func Select(
 	items ...interface{},
 ) *Selection {
+	s, err := SelectE(items...)
+	if err != nil {
+		panic(err)
+	}
+	return s
+}
+
+// SelectE returns a QuerySpecification that produces a SELECT SQL statement for
+// one or more items. Items can be a Table, a Column, a Function, another
+// SELECT query, or even a literal value.
+//
+// If sqlb cannot compile the supplied arguments into a valid SELECT SQL query,
+// SelectE returns an error.
+func SelectE(
+	items ...interface{},
+) (*Selection, error) {
 	cols := []types.Projection{}
 	sels := []grammar.SelectSublist{}
 	trefByName := map[string]grammar.TableReference{}
@@ -205,23 +227,35 @@ func Select(
 			body := item.QueryExpression.Body
 			njqe := body.NonJoin
 			if njqe == nil {
-				panic("expected subquery to have non-nil non-join query expression")
+				return nil, fmt.Errorf(
+					"expected subquery to have non-nil non-join " +
+						"query expression",
+				)
 			}
 			njqt := njqe.NonJoin
 			if njqt == nil {
-				panic("expected subquery to have non-nil non-join query term")
+				return nil, fmt.Errorf(
+					"expected subquery to have non-nil non-join query term",
+				)
 			}
 			njqp := njqt.Primary
 			if njqp == nil {
-				panic("expected subquery to have non-nil non-join query primary")
+				return nil, fmt.Errorf(
+					"expected subquery to have non-nil non-join " +
+						"query primary",
+				)
 			}
 			st := njqp.Simple
 			if st == nil {
-				panic("expected subquery to have non-nil simple table")
+				return nil, fmt.Errorf(
+					"expected subquery to have non-nil simple table",
+				)
 			}
 			qs := st.QuerySpecification
 			if qs == nil {
-				panic("expected subquery to have non-nil query specification")
+				return nil, fmt.Errorf(
+					"expected subquery to have non-nil query specification",
+				)
 			}
 			// TODO(jaypipes): Determine if this is a SCALAR subquery or not...
 			dc := grammar.DerivedColumn{
@@ -278,7 +312,7 @@ func Select(
 	}
 
 	if len(trefByName) == 0 {
-		panic(
+		return nil, fmt.Errorf(
 			"no entries in FROM clause. you must pass Select() at " +
 				"least one element that references a table or subquery",
 		)
@@ -300,21 +334,60 @@ func Select(
 			},
 		},
 		cols: cols,
-	}
+	}, nil
 }
 
-// As returns a Selection as a DerivedTable
+// As returns a Selection as a DerivedTable.
+//
+// As panics if the Selection has not had a query specification set yet. This
+// is intentional, as we want compile-time failures for invalid SQL
+// construction and we want the result of As() to be chainable with other
+// Selection methods and be usable as an input to the Select() function.
+//
+// If you are constructing SQL expressions dynamically with user-supplied
+// input, use the `AsE` function which returns a checkable `error` object.
 func (s *Selection) As(subqueryName string) types.Relation {
-	if s.qs == nil {
-		panic("cannot call As before Selection has a query specification")
+	r, err := s.AsE(subqueryName)
+	if err != nil {
+		panic(err)
 	}
-	return NewDerivedTable(subqueryName, s)
+	return r
+}
+
+// AsE returns a Selection as a DerivedTable. If the Selection has not yet had
+// its query specification set, AsE returns an error.
+func (s *Selection) AsE(subqueryName string) (types.Relation, error) {
+	if s == nil || s.qs == nil {
+		return nil, fmt.Errorf(
+			"cannot call As before Selection has a query specification",
+		)
+	}
+	return NewDerivedTable(subqueryName, s), nil
 }
 
 // Count applies a SELECT COUNT(*) to the Selection
+//
+// Count panics if the Selection has not had a query specification set yet. This
+// is intentional, as we want compile-time failures for invalid SQL
+// construction and we want the result of Count() to be chainable with other
+// Selection methods and be usable as an input to the Select() function.
+//
+// If you are constructing SQL expressions dynamically with user-supplied
+// input, use the `CountE` function which returns a checkable `error` object.
 func (s *Selection) Count() *Selection {
-	if s.qs == nil {
-		panic("called Count() on a nil Selection.")
+	res, err := s.CountE()
+	if err != nil {
+		panic(err)
+	}
+	return res
+}
+
+// CountE applies a SELECT COUNT(*) to the Selection and returns the Selection.
+// If the Selection has not had its query specification set, CountE returns an
+// error.
+func (s *Selection) CountE() (*Selection, error) {
+	if s == nil || s.qs == nil {
+		return nil, fmt.Errorf("called Count() on a nil Selection.")
 	}
 	dc := grammar.DerivedColumn{
 		Value: grammar.ValueExpression{
@@ -332,20 +405,46 @@ func (s *Selection) Count() *Selection {
 			DerivedColumn: &dc,
 		},
 	}
-	return s
+	return s, nil
 }
 
 // Limit applies a LIMIT clause to the Selection (or a TOP N clause for T-SQL
 // variants)
+//
+// Limit panics if the Selection has not had a query specification set yet. This
+// is intentional, as we want compile-time failures for invalid SQL
+// construction and we want the result of Limit() to be chainable with other
+// Selection methods and be usable as an input to the Select() function.
+//
+// If you are constructing SQL expressions dynamically with user-supplied
+// input, use the `LimitE` function which returns a checkable `error` object.
 func (s *Selection) Limit(count int) *Selection {
+	res, err := s.LimitE(count)
+	if err != nil {
+		panic(err)
+	}
+	return res
+}
+
+// LimitE applies a LIMIT clause to the Selection (or a TOP N clause for T-SQL
+// variants). If the Selection has not had its query specification set, LimitE
+// returns an error.
+func (s *Selection) LimitE(count int) (*Selection, error) {
+	if s == nil {
+		return nil, fmt.Errorf(
+			"cannot call Limit() on a nil Selection",
+		)
+	}
 	if s.cs != nil {
 		s.cs.Limit = &grammar.LimitClause{
 			Count: count,
 		}
-		return s
+		return s, nil
 	}
 	if s.qs == nil {
-		panic("cannot call Limit() on a nil QuerySpecification")
+		return nil, fmt.Errorf(
+			"cannot call Limit() on a nil QuerySpecification",
+		)
 	}
 	cs := &grammar.CursorSpecification{
 		Query: grammar.QueryExpression{
@@ -366,23 +465,54 @@ func (s *Selection) Limit(count int) *Selection {
 		},
 	}
 	s.cs = cs
-	return s
+	return s, nil
 }
 
-// Limit applies a LIMIT M OFFSET N clause to the Selection
+// LimitWithOffset applies a LIMIT M OFFSET N clause to the Selection
+//
+// LimitWithOffset panics if the Selection has not had a query specification
+// set yet. This is intentional, as we want compile-time failures for invalid
+// SQL construction and we want the result of LimitWithOffset() to be chainable
+// with other Selection methods and be usable as an input to the Select()
+// function.
+//
+// If you are constructing SQL expressions dynamically with user-supplied
+// input, use the `LimitWithOffsetE` function which returns a checkable `error`
+// object.
 func (s *Selection) LimitWithOffset(
 	count int,
 	offset int,
 ) *Selection {
+	res, err := s.LimitWithOffsetE(count, offset)
+	if err != nil {
+		panic(err)
+	}
+	return res
+}
+
+// LimitWithOffset applies a LIMIT M OFFSET N clause to the Selection. If the
+// Selection has not had its query specification set, LimitWithOffsetE returns
+// an error.
+func (s *Selection) LimitWithOffsetE(
+	count int,
+	offset int,
+) (*Selection, error) {
+	if s == nil {
+		return nil, fmt.Errorf(
+			"cannot call LimitWithOffset() on a nil Selection",
+		)
+	}
 	if s.cs != nil {
 		s.cs.Limit = &grammar.LimitClause{
 			Count:  count,
 			Offset: &offset,
 		}
-		return s
+		return s, nil
 	}
 	if s.qs == nil {
-		panic("cannot call Limit() on a nil QuerySpecification")
+		return nil, fmt.Errorf(
+			"cannot call LimitWithOffset() on a nil QuerySpecification",
+		)
 	}
 	cs := &grammar.CursorSpecification{
 		Query: grammar.QueryExpression{
@@ -404,24 +534,48 @@ func (s *Selection) LimitWithOffset(
 		},
 	}
 	s.cs = cs
-	return s
+	return s, nil
 }
 
 // Where adapts the Selection with a filtering expression, returning the
 // Selection pointer to support method chaining.
+//
+// Where panics if the Selection has not had a query specification set yet.
+// This is intentional, as we want compile-time failures for invalid SQL
+// construction and we want the result of Where() to be chainable with other
+// Selection methods and be usable as an input to the Select() function.
+//
+// If you are constructing SQL expressions dynamically with user-supplied
+// input, use the `WhereE` function which returns a checkable `error`
+// object.
 func (s *Selection) Where(
 	exprAny interface{},
 ) *Selection {
-	if s.qs == nil {
-		panic("cannot call Where() on a nil QuerySpecification")
+	res, err := s.WhereE(exprAny)
+	if err != nil {
+		panic(err)
+	}
+	return res
+}
+
+// WhereE adapts the Selection with a filtering expression, returning the
+// Selection pointer to support method chaining. If the Selection has not had
+// its query specification set or the supplied parameters cannot be converted
+// to BooleanValueExpressions, WhereE returns an error.
+func (s *Selection) WhereE(
+	exprAny interface{},
+) (*Selection, error) {
+	if s == nil || s.qs == nil {
+		return nil, fmt.Errorf(
+			"cannot call Where() on a nil QuerySpecification",
+		)
 	}
 	bve := inspect.BooleanValueExpressionFromAny(exprAny)
 	if bve == nil {
-		msg := fmt.Sprintf(
+		return nil, fmt.Errorf(
 			"could not convert %s(%T) to expected BooleanValueExpression",
 			exprAny, exprAny,
 		)
-		panic(msg)
 	}
 	te := &s.qs.TableExpression
 	if te.Where != nil {
@@ -432,16 +586,40 @@ func (s *Selection) Where(
 		}
 	}
 	s.qs.TableExpression = *te
-	return s
+	return s, nil
 }
 
 // GroupBy adapts the Selection to group on the supplied columns, returning the
 // adapted Selection itself to support method chaining.
+//
+// GroupBy panics if the Selection has not had a query specification set yet.
+// This is intentional, as we want compile-time failures for invalid SQL
+// construction and we want the result of GroupBy() to be chainable with other
+// Selection methods and be usable as an input to the Select() function.
+//
+// If you are constructing SQL expressions dynamically with user-supplied
+// input, use the `GroupByE` function which returns a checkable `error` object.
 func (s *Selection) GroupBy(
 	cols ...interface{},
 ) *Selection {
-	if s.qs == nil {
-		panic("cannot call Where() on a nil QuerySpecification")
+	res, err := s.GroupByE(cols...)
+	if err != nil {
+		panic(err)
+	}
+	return res
+}
+
+// GroupByE adapts the Selection to group on the supplied columns, returning
+// the adapted Selection itself to support method chaining. If the Selection
+// has not had its query specification set or the supplied parameters cannot be
+// converted to ColumnReferences, WhereE returns an error.
+func (s *Selection) GroupByE(
+	cols ...interface{},
+) (*Selection, error) {
+	if s == nil || s.qs == nil {
+		return nil, fmt.Errorf(
+			"cannot call GroupBy() on a nil QuerySpecification",
+		)
 	}
 	te := &s.qs.TableExpression
 	if te.GroupBy == nil {
@@ -454,11 +632,10 @@ func (s *Selection) GroupBy(
 	for _, c := range cols {
 		cr := inspect.ColumnReferenceFromAny(c)
 		if cr == nil {
-			msg := fmt.Sprintf(
+			return nil, fmt.Errorf(
 				"could not convert %s(%T) to expected ColumnReference",
 				c, c,
 			)
-			panic(msg)
 		}
 		ge := grammar.GroupingElement{
 			OrdinaryGroupingSet: &grammar.OrdinaryGroupingSet{
@@ -471,25 +648,49 @@ func (s *Selection) GroupBy(
 	}
 	te.GroupBy.GroupingElements = ges
 	s.qs.TableExpression = *te
-	return s
+	return s, nil
 }
 
 // Having adapts the Selection with the supplied filtering expression as an
 // aggregate filter (a HAVING clause expression), returning the adapted
 // Selection itself to support method chaining.
+//
+// Having panics if the Selection has not had a query specification set yet.
+// This is intentional, as we want compile-time failures for invalid SQL
+// construction and we want the result of Having() to be chainable with other
+// Selection methods and be usable as an input to the Select() function.
+//
+// If you are constructing SQL expressions dynamically with user-supplied
+// input, use the `HavingE` function which returns a checkable `error` object.
 func (s *Selection) Having(
 	exprAny interface{},
 ) *Selection {
-	if s.qs == nil {
-		panic("cannot call Having() on a nil QuerySpecification")
+	res, err := s.HavingE(exprAny)
+	if err != nil {
+		panic(err)
+	}
+	return res
+}
+
+// HavingE adapts the Selection with the supplied filtering expression as an
+// aggregate filter (a HAVING clause expression), returning the adapted
+// Selection itself to support method chaining. If the Selection has not had
+// its query specification set or the supplied parameters cannot be converted
+// to BooleanValueExpressions, HavingE returns an error.
+func (s *Selection) HavingE(
+	exprAny interface{},
+) (*Selection, error) {
+	if s == nil || s.qs == nil {
+		return nil, fmt.Errorf(
+			"cannot call Having() on a nil QuerySpecification",
+		)
 	}
 	bve := inspect.BooleanValueExpressionFromAny(exprAny)
 	if bve == nil {
-		msg := fmt.Sprintf(
+		return nil, fmt.Errorf(
 			"could not convert %s(%T) to expected BooleanValueExpression",
 			exprAny, exprAny,
 		)
-		panic(msg)
 	}
 	te := &s.qs.TableExpression
 	if te.Having != nil {
@@ -500,13 +701,39 @@ func (s *Selection) Having(
 		}
 	}
 	s.qs.TableExpression = *te
-	return s
+	return s, nil
 }
 
 // OrderBy adds an ORDER BY to the Selection.
+//
+// OrderBy panics if the Selection has not had a query specification set yet.
+// This is intentional, as we want compile-time failures for invalid SQL
+// construction and we want the result of OrderBy() to be chainable with other
+// Selection methods and be usable as an input to the Select() function.
+//
+// If you are constructing SQL expressions dynamically with user-supplied
+// input, use the `OrderByE` function which returns a checkable `error` object.
 func (s *Selection) OrderBy(
 	specAnys ...interface{},
 ) *Selection {
+	res, err := s.OrderByE(specAnys...)
+	if err != nil {
+		panic(err)
+	}
+	return res
+}
+
+// OrderBy adds an ORDER BY to the Selection. If the Selection has not had its
+// query specification set or the supplied parameters cannot be converted to
+// ValueExpressions, OrderByE returns an error.
+func (s *Selection) OrderByE(
+	specAnys ...interface{},
+) (*Selection, error) {
+	if s == nil {
+		return nil, fmt.Errorf(
+			"cannot call OrderBy() on a nil Selection",
+		)
+	}
 	if s.cs == nil {
 		s.cs = &grammar.CursorSpecification{
 			Query: grammar.QueryExpression{
@@ -538,11 +765,10 @@ func (s *Selection) OrderBy(
 		default:
 			ve := inspect.ValueExpressionFromAny(specAny)
 			if ve == nil {
-				msg := fmt.Sprintf(
+				return nil, fmt.Errorf(
 					"could not convert %s(%T) to expected ValueExpression",
 					specAny, specAny,
 				)
-				panic(msg)
 			}
 			specs = append(specs, grammar.SortSpecification{Key: *ve})
 		}
@@ -555,5 +781,5 @@ func (s *Selection) OrderBy(
 	s.cs.OrderBy.SortSpecifications = append(
 		s.cs.OrderBy.SortSpecifications, specs...,
 	)
-	return s
+	return s, nil
 }
