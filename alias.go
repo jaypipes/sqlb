@@ -80,13 +80,42 @@ var NotEqual = expr.NotEqual
 // an error is returned.
 var NotEqualE = expr.NotEqualE
 
-// And accepts two things and returns an Element representing an AND expression
-// that can be passed to a Join or Where clause.
+// And accepts two things and returns a BooleanValueExpression ANDing the two
+// things together. This boolean value expression can be passed to a Join or
+// Where clause.
+//
+// And panics if sqlb cannot compile the supplied arguments into a valid
+// BooleanValueExpression. This is intentional, as we want compile-time
+// failures for invalid SQL construction and we want the result of And() to be
+// passed directly into other `core/expr` functions.
+//
+// If you are constructing SQL expressions dynamically with user-supplied
+// input, use the `AndE` function which returns a checkable `error` object.
 var And = expr.And
+
+// AndE accepts two things and returns a BooleanValueExpression ANDing the two
+// things together. This boolean value expression can be passed to a Join or
+// Where clause. If the two parameters cannot be compiled into a
+// BooleanValueExpression, an error is returned.
+var AndE = expr.AndE
 
 // Or accepts two things and returns an Element representing an OR expression
 // that can be passed to a Join or Where clause.
+//
+// Or panics if sqlb cannot compile the supplied arguments into a valid
+// BooleanValueExpression. This is intentional, as we want compile-time
+// failures for invalid SQL construction and we want the result of Or() to be
+// passed directly into other `core/expr` functions.
+//
+// If you are constructing SQL expressions dynamically with user-supplied
+// input, use the `OrE` function which returns a checkable `error` object.
 var Or = expr.Or
+
+// OrE accepts two things and returns a BooleanValueExpression ORing the two
+// things together. This boolean value expression can be passed to a Join or
+// Where clause. If the two parameters cannot be compiled into a
+// BooleanValueExpression, an error is returned.
+var OrE = expr.OrE
 
 // In accepts two things and returns an InPredicate representing an IN
 // expression that can be passed to a Join or Where clause.
