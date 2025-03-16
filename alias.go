@@ -46,11 +46,39 @@ var Reflect = reflect.Reflect
 
 // Equal accepts two things and returns an Element representing an equality
 // expression that can be passed to a Join or Where clause.
+//
+// Equal panics if sqlb cannot compile the supplied arguments into a valid
+// ComparisonPredicate. This is intentional, as we want compile-time failures
+// for invalid SQL construction and we want the result of Equal() to be passed
+// directly into other `core/expr` functions.
+//
+// If you are constructing SQL expressions dynamically with user-supplied
+// input, use the `EqualE` function which returns a checkable `error` object.
 var Equal = expr.Equal
 
-// NotEqual accepts two things and returns an Element representing an
-// inequality expression that can be passed to a Join or Where clause.
+// EqualE accepts two things and returns a ComparisonPredicate representing an
+// equality expression that can be passed to a Join or Where clause. If the two
+// supplied parameters cannot be evaluated into a ComparisonPredicate, an error
+// is returned.
+var EqualE = expr.EqualE
+
+// NotEqual accepts two things and returns a ComparisonPredicate representing
+// an inequality expression that can be passed to a Join or Where clause.
+//
+// NotEqual panics if sqlb cannot compile the supplied arguments into a valid
+// ComparisonPredicate. This is intentional, as we want compile-time failures
+// for invalid SQL construction and we want the result of NotEqual() to be
+// passed directly into other `core/expr` functions.
+//
+// If you are constructing SQL expressions dynamically with user-supplied
+// input, use the `NotEqualE` function which returns a checkable `error` object.
 var NotEqual = expr.NotEqual
+
+// NotEqualE accepts two things and returns a ComparisonPredicate representing
+// an inequality expression that can be passed to a Join or Where clause.  If
+// the two supplied parameters cannot be evaluated into a ComparisonPredicate,
+// an error is returned.
+var NotEqualE = expr.NotEqualE
 
 // And accepts two things and returns an Element representing an AND expression
 // that can be passed to a Join or Where clause.
@@ -60,40 +88,155 @@ var And = expr.And
 // that can be passed to a Join or Where clause.
 var Or = expr.Or
 
-// In accepts two things and returns an Element representing an IN expression
-// that can be passed to a Join or Where clause.
+// In accepts two things and returns an InPredicate representing an IN
+// expression that can be passed to a Join or Where clause.
+//
+// In panics if sqlb cannot compile the supplied arguments into a valid
+// InPredicate. This is intentional, as we want compile-time failures for
+// invalid SQL construction and we want the result of In() to be passed
+// directly into other `core/expr` functions.
+//
+// If you are constructing SQL expressions dynamically with user-supplied
+// input, use the `InE` function which returns a checkable `error` object.
 var In = expr.In
 
-// Between accepts an element and a start and end things and returns an Element
-// representing a BETWEEN expression that can be passed to a Join or Where
-// clause.
+// In accepts two things and returns an InPredicate representing an IN
+// expression that can be passed to a Join or Where clause. If the supplied
+// arguments cannot be compiled into a valid InPredicate, an error is returned.
+var InE = expr.InE
+
+// Between accepts three things and returns a BetweenPredicate representing a
+// SQL BETWEEN expression that can be passed to a Join or Where clause.
+//
+// Between panics if sqlb cannot compile the supplied arguments into a valid
+// BetweenPredicate. This is intentional, as we want compile-time failures for
+// invalid SQL construction and we want the result of Between() to be passed
+// directly into other `core/expr` functions.
+//
+// If you are constructing SQL expressions dynamically with user-supplied
+// input, use the `BetweenE` function which returns a checkable `error` object.
 var Between = expr.Between
 
-// IsNull accepts an element and returns an Element representing an IS NULL
+// BetweenE accepts three things and returns a BetweenPredicate representing a
+// SQL BETWEEN expression that can be passed to a Join or Where clause. If the
+// supplied arguments cannot be compiled into a valid BetweenPredicate, an
+// error is returned.
+var BetweenE = expr.BetweenE
+
+// IsNull accepts a thing and returns a NullPredicate representing an IS NULL
 // expression that can be passed to a Join or Where clause.
+//
+// IsNull panics if sqlb cannot compile the supplied arguments into a valid
+// NullPredicate. This is intentional, as we want compile-time failures for
+// invalid SQL construction and we want the result of IsNull() to be passed
+// directly into other `core/expr` functions.
+//
+// If you are constructing SQL expressions dynamically with user-supplied
+// input, use the `IsNullE` function which returns a checkable `error` object.
 var IsNull = expr.IsNull
 
-// IsNotNull accepts an element and returns an Element representing an IS NOT
+// IsNullE accepts a thing and returns a NullPredicate representing an IS NULL
+// expression that can be passed to a Join or Where clause. If the supplied
+// parameter cannot be converted into a RowValuePredicand, an error is
+// returned.
+var IsNullE = expr.IsNullE
+
+// IsNotNull accepts a thing and returns a NullPredicate representing an IS NOT
 // NULL expression that can be passed to a Join or Where clause.
+//
+// IsNotNull panics if sqlb cannot compile the supplied arguments into a valid
+// NullPredicate. This is intentional, as we want compile-time failures for
+// invalid SQL construction and we want the result of IsNotNull() to be passed
+// directly into other `core/expr` functions.
+//
+// If you are constructing SQL expressions dynamically with user-supplied
+// input, use the `IsNotNullE` function which returns a checkable `error` object.
 var IsNotNull = expr.IsNotNull
 
-// GreaterThan accepts two things and returns an Element representing a greater
-// than expression that can be passed to a Join or Where clause.
+// IsNotNullE accepts a thing and returns a NullPredicate representing an IS
+// NOT NULL expression that can be passed to a Join or Where clause. If the
+// supplied parameter cannot be converted into a RowValuePredicand, an error is
+// returned.
+var IsNotNullE = expr.IsNotNullE
+
+// GreaterThan accepts two things and returns a ComparisonPredicate
+// representing greater than expression that can be passed to a Join or Where
+// clause.
+//
+// GreaterThan panics if sqlb cannot compile the supplied arguments into a
+// valid ComparisonPredicate. This is intentional, as we want compile-time
+// failures for invalid SQL construction and we want the result of
+// GreaterThan() to be passed directly into other `core/expr` functions.
+//
+// If you are constructing SQL expressions dynamically with user-supplied
+// input, use the `GreaterThanE` function which returns a checkable `error`
+// object.
 var GreaterThan = expr.GreaterThan
 
-// GreaterThanOrEqual accepts two things and returns an Element representing a
-// greater than or equality expression that can be passed to a Join or Where
-// clause.
+// GreaterThanE accepts two things and returns a ComparisonPredicate
+// representing greater than expression that can be passed to a Join or Where
+// clause. If the two supplied parameters cannot be evaluated into a
+// ComparisonPredicate, an error is returned.
+var GreaterThanE = expr.GreaterThanE
+
+// GreaterThanOrEqual accepts two things and returns a ComparisonPredicate
+// representing greater than or equal expression that can be passed to a Join
+// or Where clause.
+//
+// GreaterThanOrEqual panics if sqlb cannot compile the supplied arguments into
+// a valid ComparisonPredicate. This is intentional, as we want compile-time
+// failures for invalid SQL construction and we want the result of
+// GreaterThanOrEqual() to be passed directly into other `core/expr` functions.
+//
+// If you are constructing SQL expressions dynamically with user-supplied
+// input, use the `GreaterThanOrEqualE` function which returns a checkable
+// `error` object.
 var GreaterThanOrEqual = expr.GreaterThanOrEqual
 
-// LessThan accepts two things and returns an Element representing a less than
-// expression that can be passed to a Join or Where clause.
+// GreaterThanOrEqualE accepts two things and returns a ComparisonPredicate
+// representing greater than or equal expression that can be passed to a Join
+// or Where clause. If the two supplied parameters cannot be evaluated into a
+// ComparisonPredicate, an error is returned.
+var GreaterThanOrEqualE = expr.GreaterThanOrEqualE
+
+// LessThan accepts two things and returns a ComparisonPredicate representing
+// less than expression that can be passed to a Join or Where clause.
+//
+// LessThan panics if sqlb cannot compile the supplied arguments into a valid
+// ComparisonPredicate. This is intentional, as we want compile-time failures
+// for invalid SQL construction and we want the result of LessThan() to be
+// passed directly into other `core/expr` functions.
+//
+// If you are constructing SQL expressions dynamically with user-supplied
+// input, use the `LessThanE` function which returns a checkable `error`
+// object.
 var LessThan = expr.LessThan
 
-// LessThanOrEqual accepts two things and returns an Element representing a
-// less than or equality expression that can be passed to a Join or Where
-// clause.
+// LessThanE accepts two things and returns a ComparisonPredicate representing
+// less than expression that can be passed to a Join or Where clause. If the
+// two supplied parameters cannot be evaluated into a ComparisonPredicate, an
+// error is returned.
+var LessThanE = expr.LessThanE
+
+// LessThanOrEqual accepts two things and returns a ComparisonPredicate
+// representing less than or equal expression that can be passed to a Join or
+// Where clause.
+//
+// LessThanOrEqual panics if sqlb cannot compile the supplied arguments into
+// a valid ComparisonPredicate. This is intentional, as we want compile-time
+// failures for invalid SQL construction and we want the result of
+// LessThanOrEqual() to be passed directly into other `core/expr` functions.
+//
+// If you are constructing SQL expressions dynamically with user-supplied
+// input, use the `LessThanOrEqualE` function which returns a checkable
+// `error` object.
 var LessThanOrEqual = expr.LessThanOrEqual
+
+// LessThanOrEqualE accepts two things and returns a ComparisonPredicate
+// representing less than or equal expression that can be passed to a Join or
+// Where clause. If the two supplied parameters cannot be evaluated into a
+// ComparisonPredicate, an error is returned.
+var LessThanOrEqualE = expr.LessThanOrEqualE
 
 var InvalidJoinNoSelect = types.InvalidJoinNoSelect
 var InvalidJoinUnknownTarget = types.InvalidJoinUnknownTarget
